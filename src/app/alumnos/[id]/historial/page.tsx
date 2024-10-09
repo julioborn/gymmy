@@ -8,6 +8,12 @@ import { useParams } from 'next/navigation';
 type Asistencia = {
     fecha: string;  // Fecha de la asistencia
     presente: boolean; // Si estuvo presente o no
+    actividad: string; // Actividad realizada
+};
+
+type Pago = {
+    mes: string;
+    fechaPago: string; // Fecha en que se realizó el pago
 };
 
 type Alumno = {
@@ -16,6 +22,7 @@ type Alumno = {
     apellido: string;
     dni: string;
     asistencia: Asistencia[];
+    pagos: Pago[];
 };
 
 export default function HistorialAlumnoPage() {
@@ -44,22 +51,32 @@ export default function HistorialAlumnoPage() {
     }
 
     // Transformar las asistencias en eventos para el calendario
-    const events = alumno.asistencia.map((asistencia) => ({
-        title: asistencia.presente ? 'Presente' : 'Ausente',
+    const asistenciaEvents = alumno.asistencia.map((asistencia) => ({
+        title: asistencia.presente ? `Presente - ${asistencia.actividad}` : 'Ausente',
         start: asistencia.fecha,
         color: asistencia.presente ? '#28a745' : '#dc3545', // Verde para presente, rojo para ausente
     }));
 
+    // Transformar los pagos en eventos para el calendario
+    const pagoEvents = alumno.pagos.map((pago) => ({
+        title: `Pago de cuota (${pago.mes})`,
+        start: pago.fechaPago,
+        color: '#007bff', // Azul para pagos
+    }));
+
+    // Combinar ambos tipos de eventos
+    const events = [...asistenciaEvents, ...pagoEvents];
+
     return (
         <div className="max-w-5xl mx-auto bg-white p-8 rounded shadow-md">
-            <h1 className="text-2xl font-semibold text-gray-800 mb-1">Asistencias</h1>
+            <h1 className="text-2xl font-semibold text-gray-800 mb-1">Historial de Asistencias y Pagos</h1>
             <h2 className="text-2xl font-light text-gray-800 mb-4">{alumno.nombre} {alumno.apellido}</h2>
             <FullCalendar
                 firstDay={1}
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={events}
-                locale="es" 
+                locale="es"
                 headerToolbar={{
                     left: 'prev,next today',
                     center: 'title',

@@ -10,14 +10,19 @@ export async function POST(request: Request, { params }: { params: { id: string 
     try {
         const alumno = await Alumno.findById(id);
         if (!alumno) {
-            return new Response('Alumno not found', { status: 404 });
+            return new Response('Alumno no encontrado', { status: 404 });
+        }
+
+        // Asegúrate de que el array asistencia existe
+        if (!alumno.asistencia) {
+            alumno.asistencia = [];
         }
 
         // Verificar si el alumno ya tiene una asistencia para la misma actividad en el día
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0); // Solo la fecha sin horas
         const asistenciaExistente = alumno.asistencia.find(
-            (asistencia: { fecha: string | number | Date; actividad: any; }) => {
+            (asistencia: { fecha: string | number | Date; actividad: string }) => {
                 const fechaAsistencia = new Date(asistencia.fecha);
                 fechaAsistencia.setHours(0, 0, 0, 0);
                 return (
@@ -41,3 +46,4 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return new Response('Error registrando asistencia', { status: 500 });
     }
 }
+
