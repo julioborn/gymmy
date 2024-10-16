@@ -100,21 +100,21 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Musculación' ? 'bg-green-300' : 'bg-gray-200'}`}
+                        className={`p-4 w-full mx-1 rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
                     >
                         Musculación
                     </button>
                     <button
                         type="button"
                         onClick={() => setActividad('Intermitente')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Intermitente' ? 'bg-blue-300' : 'bg-gray-200'}`}
+                        className={`p-4 w-full mx-1 rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
                     >
                         Intermitente
                     </button>
                     <button
                         type="button"
                         onClick={() => setActividad('Otro')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Otro' ? 'bg-yellow-300' : 'bg-gray-200'}`}
+                        className={`p-4 w-full mx-1 rounded ${actividad === 'Otro' ? 'bg-[#f1c40f]' : 'bg-gray-200'}`}
                     >
                         Otro
                     </button>

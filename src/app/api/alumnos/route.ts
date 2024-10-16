@@ -34,12 +34,18 @@ export async function POST(request: Request) {
     const { nombre, apellido, fechaNacimiento, dni } = await request.json();
 
     try {
+        // Crear nuevo alumno con plan de entrenamiento por defecto
         const nuevoAlumno = new Alumno({
             nombre,
             apellido,
             fechaNacimiento,
             dni,
             asistencia: [], // No hay asistencias al crear el alumno
+            pagos: [], // No hay pagos al crear el alumno
+            planEntrenamiento: {
+                fechaInicio: null, // Fecha de inicio predeterminada: hoy
+                duracion: null, // Duración del plan, o valor por defecto 30 si no se proporciona
+            },
         });
 
         await nuevoAlumno.save();

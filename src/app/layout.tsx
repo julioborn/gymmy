@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import ClientLayout from "@/components/ClientLayout"; // Donde manejamos las cosas del cliente
 import "./globals.css";
 
 const geistSans = localFont({
@@ -7,6 +8,7 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -23,45 +25,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <link className="rounded" rel="icon" href="favicon.ico" />
       <body className="bg-gray-400 min-h-screen">
-        <nav className="bg-gray-800 p-8">
-          <ul className="flex space-x-6">
-            <li>
-              <a href="/" className="text-white hover:underline">
-                Inicio
-              </a>
-            </li>
-            <li>
-              <a href="/alumnos" className="text-white hover:underline">
-                Alumnos
-              </a>
-            </li>
-            <li>
-              <a href="/alumnos/nuevo" className="text-white hover:underline">
-                Registrar Alumno
-              </a>
-            </li>
-            {/* <li>
-              <a href="/alumnos/asistencia" className="text-white hover:underline">
-                Asistencia
-              </a>
-            </li> */}
-            <li>
-              <a href="/alumnos/dni" className="text-white hover:underline">
-                DNI
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <main className="p-6">
-          {children}
-        </main>
+        <ClientLayout>{children}</ClientLayout> {/* Manejamos el cliente aquí */}
       </body>
     </html>
   );
