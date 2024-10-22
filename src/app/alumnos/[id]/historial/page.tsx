@@ -6,6 +6,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
+import listPlugin from '@fullcalendar/list';
 
 type Asistencia = {
     _id: string;
@@ -55,6 +56,65 @@ export default function HistorialAlumnoPage() {
     const [diasRestantes, setDiasRestantes] = useState<number | null>(null);
     const params = useParams();
     const { id } = params;
+    const [calendarView, setCalendarView] = useState<string>('dayGridMonth');
+    const [headerToolbar, setHeaderToolbar] = useState({
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,dayGridWeek,dayGridDay', // Vista completa en pantallas grandes
+    });
+    const [buttonText, setButtonText] = useState({
+        today: 'Hoy',
+        month: 'Mes',
+        week: 'Semana',
+        day: 'Día',
+        list: 'Lista',
+    });
+
+    const adjustCalendarView = () => {
+        if (window.innerWidth <= 768) {
+            setCalendarView('listWeek'); // Vista de lista en pantallas pequeñas
+            setHeaderToolbar({
+                left: 'prev,next',
+                center: '',
+                right: 'dayGridDay,today', // Agregar también otras vistas
+            });
+            setButtonText({
+                today: 'Hoy',
+                month: '',
+                week: '', // Puedes dejar vacío si no necesitas esta vista en dispositivos pequeños
+                day: 'Día',
+                list: '', // Texto de la lista en pantallas pequeñas
+            });
+        } else {
+            setCalendarView('dayGridMonth'); // Vista mensual para pantallas grandes
+            setHeaderToolbar({
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,dayGridWeek,dayGridDay', // Mostrar todas las vistas en pantallas grandes
+            });
+            setButtonText({
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                list: 'Lista', // Texto completo para pantallas grandes
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            fetchAlumno();
+        }
+
+        adjustCalendarView(); // Ajusta la vista cuando el componente se carga
+
+        // Detectar cambios en el tamaño de la pantalla
+        window.addEventListener('resize', adjustCalendarView);
+
+        // Limpiar el evento cuando se desmonte el componente
+        return () => window.removeEventListener('resize', adjustCalendarView);
+    }, [id]);
 
     // Función para obtener los datos del alumno
     const fetchAlumno = async () => {
@@ -248,10 +308,10 @@ export default function HistorialAlumnoPage() {
         } else if (action === 'pago') {
             const fechaSeleccionadaLocal = new Date(fechaSeleccionada);
             fechaSeleccionadaLocal.setMinutes(fechaSeleccionadaLocal.getMinutes() + fechaSeleccionadaLocal.getTimezoneOffset()); // Ajustar la fecha seleccionada a UTC si es necesario
-        
+
             const mesActual = fechaSeleccionadaLocal.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
             const nuevoPago = { mes: mesActual, fechaPago: fechaSeleccionadaLocal }; // Usar la fecha ajustada
-        
+
             try {
                 const response = await fetch(`/api/alumnos/pagos`, {
                     method: 'POST',
@@ -260,7 +320,7 @@ export default function HistorialAlumnoPage() {
                     },
                     body: JSON.stringify({ alumnoId: id, nuevoPago }), // Enviamos el alumnoId y el nuevo pago
                 });
-        
+
                 if (response.ok) {
                     Swal.fire('Pago registrado', '', 'success');
                     fetchAlumno(); // Refrescar los datos del alumno
@@ -458,21 +518,13 @@ export default function HistorialAlumnoPage() {
 
             <FullCalendar
                 firstDay={1}
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                plugins={[dayGridPlugin, interactionPlugin, listPlugin]} // Agregar listPlugin aquí
+                initialView={calendarView} // Vista adaptativa
                 events={events as any}
                 locale="es"
-                headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek,dayGridDay',
-                }}
-                buttonText={{
-                    today: 'Hoy',
-                    month: 'Mes',
-                    week: 'Semana',
-                    day: 'Día',
-                }}
+
+                headerToolbar={headerToolbar} // Aplicar el headerToolbar dinámico
+                buttonText={buttonText} // Aplicar el buttonText dinámico
                 height="auto"
                 selectable={true}
                 select={handleDateSelect}

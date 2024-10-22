@@ -243,82 +243,79 @@ export default function ListaAlumnosPage() {
     const letrasAlfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
     return (
-        <div className="max-w-4xl mx-auto bg-white p-8 rounded shadow-md">
+        <div className="w-full max-w-full lg:max-w-4xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
 
-            <h1 className="text-2xl font-semibold text-gray-800 mb-6">Lista de Alumnos</h1>
-
-            {/* Buscador */}
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o documento"
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="border border-gray-300 p-2 w-full mb-2 rounded"
-                />
-            </div>
-
-            {/* Filtros select */}
-            <div className='space-x-2'>
-                {/* Filtro por edad */}
-                <select
-                    value={filtroEdad}
-                    onChange={(e) => setFiltroEdad(e.target.value)}
-                    className="border border-gray-300 p-2 mb-2 rounded bg-gray-100"
-                >
-                    <option value="">Edad</option>
-                    {[...Array.from(new Set(alumnos.map(alumno => alumno.edad)))].sort((a, b) => a - b).map((edad) => (
-                        <option key={edad} value={edad}>{edad}</option>
-                    ))}
-                </select>
-
-                {/* Filtro de pago */}
-                <select
-                    value={filtroPago}
-                    onChange={(e) => setFiltroPago(e.target.value)}
-                    className="border border-gray-300 p-2 mb-2 rounded bg-gray-100"
-                >
-                    <option value="">Pago</option>
-                    <option value="pagado">Pagaron</option>
-                    <option value="no-pagado">No pagaron</option>
-                </select>
-
-                {/* Select para ordenar por días restantes */}
-                <select
-                    value={ordenDiasRestantes}
-                    onChange={(e) => setOrdenDiasRestantes(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-100"
-                >
-                    <option value="">Días restantes</option>
-                    <option value="asc">Días restantes (Ascendente)</option>
-                    <option value="desc">Días restantes (Descendente)</option>
-                </select>
-            </div>
-
-            {/* Filtro por letra del apellido */}
-            <div className="flex flex-wrap bg-gray-100 p-3 rounded border border-gray-300 mb-2">
-                <h2 className='mb-2'>Apellido</h2>
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {letrasAlfabeto.map((letra) => (
-                        <button
-                            key={letra}
-                            onClick={() => handleLetraClick(letra)}
-                            className={`p-2 w-10 border border-gray-300 rounded ${filtroLetraApellido === letra ? 'bg-gray-700 text-white' : 'bg-white'}`}
-                        >
-                            {letra}
-                        </button>
-                    ))}
+        <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
+    
+        {/* Buscador */}
+        <div className="mb-4">
+            <input
+                type="text"
+                placeholder="Buscar por nombre o documento"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="border border-gray-300 p-2 w-full mb-2 rounded"
+            />
+        </div>
+    
+        {/* Filtros select */}
+        <div className="space-y-2 lg:space-x-2 lg:space-y-0 flex flex-col lg:flex-row">
+            <select
+                value={filtroEdad}
+                onChange={(e) => setFiltroEdad(e.target.value)}
+                className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+            >
+                <option value="">Edad</option>
+                {[...Array.from(new Set(alumnos.map(alumno => alumno.edad)))].sort((a, b) => a - b).map((edad) => (
+                    <option key={edad} value={edad}>{edad}</option>
+                ))}
+            </select>
+    
+            <select
+                value={filtroPago}
+                onChange={(e) => setFiltroPago(e.target.value)}
+                className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+            >
+                <option value="">Pago</option>
+                <option value="pagado">Pagaron</option>
+                <option value="no-pagado">No pagaron</option>
+            </select>
+    
+            <select
+                value={ordenDiasRestantes}
+                onChange={(e) => setOrdenDiasRestantes(e.target.value)}
+                className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+            >
+                <option value="">Días restantes</option>
+                <option value="asc">Días restantes (Ascendente)</option>
+                <option value="desc">Días restantes (Descendente)</option>
+            </select>
+        </div>
+    
+        {/* Filtro por letra del apellido */}
+        <div className="bg-gray-100 p-3 rounded border border-gray-300 mb-4 mt-2 overflow-x-auto">
+            <h2 className='mb-2'>Apellido</h2>
+            <div className="flex flex-wrap gap-2">
+                {letrasAlfabeto.map((letra) => (
                     <button
-                        onClick={() => setFiltroLetraApellido('')}
-                        className="p-2 border rounded bg-gray-700 hover:bg-gray-600 text-white"
+                        key={letra}
+                        onClick={() => handleLetraClick(letra)}
+                        className={`p-2 w-10 border border-gray-300 rounded ${filtroLetraApellido === letra ? 'bg-gray-700 text-white' : 'bg-white'}`}
                     >
-                        Limpiar
+                        {letra}
                     </button>
-                </div>
-
+                ))}
+                <button
+                    onClick={() => setFiltroLetraApellido('')}
+                    className="p-2 border rounded bg-gray-700 hover:bg-gray-600 text-white"
+                >
+                    Limpiar
+                </button>
             </div>
-
-            {/* Tabla de alumnos */}
+        </div>
+    
+        {/* Tabla de alumnos */}
+        <div className="overflow-x-auto">
             <table className="table-auto w-full text-left">
                 <thead>
                     <tr>
@@ -333,43 +330,38 @@ export default function ListaAlumnosPage() {
                 <tbody>
                     {alumnosFiltrados.map((alumno) => (
                         <tr key={alumno._id} className="border-t">
-
-                            {/* Datos alumno */}
                             <td className="px-4 py-2">{alumno.nombre} {alumno.apellido}</td>
                             <td className="px-4 py-2">{alumno.edad}</td>
                             <td className="px-4 py-2">{alumno.dni}</td>
-
-                            {/* Pago */}
-                            <td className="text-center align-middle">
+    
+                            <td className="text-center">
                                 {verificarPagoMesActual(alumno.pagos) ? (
                                     <FaCheckCircle className="text-green-500 mx-auto" />
                                 ) : (
                                     <FaTimesCircle className="text-red-500 mx-auto" />
                                 )}
                             </td>
-
-                            {/* Plan */}
-                            <td className={`text-center align-middle ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
+    
+                            <td className={`text-center ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
                                 {alumno.diasRestantes !== null ? alumno.diasRestantes : 'Sin plan'}
                             </td>
-
-                            {/* Acciones */}
-                            <td className="px-4 py-2 flex space-x-2">
+    
+                            <td className="px-4 py-2 flex flex-col lg:flex-row lg:space-x-2">
                                 <button
                                     onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
-                                    className="bg-gray-700 text-white p-2 rounded text-sm"
+                                    className="bg-gray-700 text-white p-2 rounded text-sm mb-2 lg:mb-0"
                                 >
                                     Historial
                                 </button>
                                 <button
                                     onClick={() => setEditandoAlumno(alumno)}
-                                    className="bg-yellow-500 text-white p-2 rounded text-sm"
+                                    className="bg-yellow-500 text-white p-2 rounded text-sm mb-2 lg:mb-0"
                                 >
                                     Editar
                                 </button>
                                 <button
                                     onClick={() => eliminarAlumno(alumno._id)}
-                                    className="bg-red-500 text-white p-2 rounded text-sm"
+                                    className="bg-red-500 text-white p-2 rounded text-sm mb-2 lg:mb-0"
                                 >
                                     Eliminar
                                 </button>
@@ -385,75 +377,77 @@ export default function ListaAlumnosPage() {
                     ))}
                 </tbody>
             </table>
-
-
-            {/* Ventana modal para editar el alumno */}
-            {editandoAlumno && (
-                <Modal
-                    isOpen={Boolean(editandoAlumno)}
-                    onRequestClose={() => setEditandoAlumno(null)}
-                    className="bg-white p-8 rounded shadow-md max-w-lg mx-auto"
-                    overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-                >
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Alumno</h2>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        guardarAlumno(editandoAlumno._id, editandoAlumno); // Actualizar alumno
-                    }}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Nombre</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.nombre}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, nombre: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Apellido</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.apellido}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, apellido: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">DNI</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.dni}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, dni: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                type="button"
-                                onClick={() => setEditandoAlumno(null)}
-                                className="bg-red-500 text-white px-4 py-2 rounded"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className="bg-green-600 text-white px-4 py-2 rounded"
-                            >
-                                Guardar
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            )}
         </div>
+    
+        {/* Ventana modal para editar el alumno */}
+        {editandoAlumno && (
+            <Modal
+                isOpen={Boolean(editandoAlumno)}
+                onRequestClose={() => setEditandoAlumno(null)}
+                className="bg-white p-8 rounded shadow-md max-w-lg mx-auto"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Alumno</h2>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    guardarAlumno(editandoAlumno._id, editandoAlumno); // Actualizar alumno
+                }}>
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Nombre</label>
+                        <input
+                            type="text"
+                            value={editandoAlumno.nombre}
+                            onChange={(e) =>
+                                setEditandoAlumno((prev: any) => ({ ...prev, nombre: e.target.value }))
+                            }
+                            className="border border-gray-300 p-2 w-full"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Apellido</label>
+                        <input
+                            type="text"
+                            value={editandoAlumno.apellido}
+                            onChange={(e) =>
+                                setEditandoAlumno((prev: any) => ({ ...prev, apellido: e.target.value }))
+                            }
+                            className="border border-gray-300 p-2 w-full"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700">DNI</label>
+                        <input
+                            type="text"
+                            value={editandoAlumno.dni}
+                            onChange={(e) =>
+                                setEditandoAlumno((prev: any) => ({ ...prev, dni: e.target.value }))
+                            }
+                            className="border border-gray-300 p-2 w-full"
+                            required
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setEditandoAlumno(null)}
+                            className="bg-red-500 text-white px-4 py-2 rounded"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-green-600 text-white px-4 py-2 rounded"
+                        >
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+        )}
+    </div>
+    
+
     );
 }

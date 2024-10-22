@@ -32,7 +32,26 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 return;
             }
 
-            // Registrar la asistencia
+            // Obtener la fecha de hoy sin la hora
+            const hoy = new Date();
+            const fechaHoy = hoy.toISOString().split('T')[0];
+
+            // Verificar si ya se ha registrado esta actividad hoy
+            const actividadHoy = alumno.asistencia.some((asistencia: any) =>
+                asistencia.fecha.startsWith(fechaHoy) && asistencia.actividad === actividad && asistencia.presente
+            );
+
+            if (actividadHoy) {
+                Swal.fire({
+                    icon: 'info',
+                    title: `Hola, ${alumno.nombre}...`,
+                    text: `Ya tienes registrada la actividad "${actividad}" para el día de hoy. No es posible registrar esta actividad nuevamente.`,
+                });
+                setIsLoading(false);
+                return;
+            }
+
+            // Registrar la asistencia para la actividad seleccionada
             const fecha = new Date();  // Generar la fecha y hora actual
             const presente = true;  // El alumno está presente
 
@@ -45,17 +64,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             });
 
             if (!asistenciaResponse.ok) {
-                if (asistenciaResponse.status === 400) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: `Hola, ${alumno.nombre}...`,
-                        text: 'Ya tienes registrada la asistencia para esta actividad del día de hoy.',
-                    });
-                } else {
-                    throw new Error('Error al registrar asistencia');
-                }
-                setIsLoading(false);
-                return;
+                throw new Error('Error al registrar asistencia');
             }
 
             // Mostrar alerta de éxito
@@ -84,37 +93,38 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     return (
-        <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md">
-            <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
+        <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     type="text"
                     value={dni}
                     onChange={(e) => setDni(e.target.value)}
-                    className="border border-gray-300 p-2 w-full"
+                    className="border border-gray-300 p-2 w-full rounded"
+                    placeholder="Ingrese su DNI"
                     required
                 />
 
                 {/* Botones interactivos para seleccionar la actividad */}
-                <div className="flex justify-between mb-4">
+                <div className="grid grid-cols-3 gap-2 mb-4">
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
                     >
                         Musculación
                     </button>
                     <button
                         type="button"
                         onClick={() => setActividad('Intermitente')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
                     >
                         Intermitente
                     </button>
                     <button
                         type="button"
                         onClick={() => setActividad('Otro')}
-                        className={`p-4 w-full mx-1 rounded ${actividad === 'Otro' ? 'bg-[#f1c40f]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Otro' ? 'bg-[#f1c40f]' : 'bg-gray-200'}`}
                     >
                         Otro
                     </button>
@@ -144,7 +154,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 <div className="flex justify-center">
                     <button
                         type="submit"
-                        className="bg-gray-600 hover:bg-gray-500 text-white p-2 rounded"
+                        className="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 sm:px-6 sm:py-3 rounded"
                         disabled={isLoading}
                     >
                         {isLoading ? 'Buscando...' : 'Registrar Presente'}

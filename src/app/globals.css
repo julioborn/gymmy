@@ -25,3 +25,12 @@ body {
     text-wrap: balance;
   }
 }
+
+@media (max-width: 768px) {
+  .fc-toolbar-title {
+    font-size: 1.2rem; /* Ajusta el tamaño de la fuente del título */
+    white-space: nowrap; /* Evita que el título se corte o haga saltos de línea */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Si el título es muy largo, se cortará con "..." */
+  }
+}
