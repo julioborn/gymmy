@@ -1,6 +1,6 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Interfaz para el pago
 interface Pago {
@@ -10,53 +10,56 @@ interface Pago {
 }
 
 // Método POST para registrar el pago de un alumno
-export async function POST(request: Request) {
-    try {
-        await connectMongoDB();
-
-        const { alumnoId, nuevoPago } = await request.json();
-
-        const alumno = await Alumno.findById(alumnoId);
-
-        if (!alumno) {
-            return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
-        }
-
-        alumno.pagos.push(nuevoPago);
-        await alumno.save();
-
-        return NextResponse.json(alumno, { status: 200 });
-    } catch (error) {
-        console.error('Error al registrar el pago:', error);
-        return NextResponse.json({ message: 'Error al registrar el pago' }, { status: 500 });
-    }
-}
-
-// Método DELETE para eliminar un pago de un alumno
-// export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+// export async function POST(request: Request) {
 //     try {
 //         await connectMongoDB();
 
-//         const { id } = params;
-//         const { mes } = await request.json(); // Obtenemos el mes del pago a eliminar
+//         const { alumnoId, nuevoPago } = await request.json();
 
-//         const alumno = await Alumno.findById(id);
+//         const alumno = await Alumno.findById(alumnoId);
 
 //         if (!alumno) {
 //             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
 //         }
 
-//         // Tipamos explícitamente el array de pagos
-//         alumno.pagos = alumno.pagos.filter((pago: Pago) => pago.mes !== mes);
-
+//         alumno.pagos.push(nuevoPago);
 //         await alumno.save();
 
 //         return NextResponse.json(alumno, { status: 200 });
 //     } catch (error) {
-//         console.error('Error eliminando pago:', error);
-//         return NextResponse.json({ message: 'Error eliminando el pago' }, { status: 500 });
+//         console.error('Error al registrar el pago:', error);
+//         return NextResponse.json({ message: 'Error al registrar el pago' }, { status: 500 });
 //     }
 // }
+// Método POST para registrar el pago de un alumno
+// En el controlador del endpoint de pagos
+
+export async function POST(request: NextRequest) {
+    try {
+        const { alumnoId, nuevoPago } = await request.json();
+        
+        // Validar que todos los campos requeridos estén presentes
+        if (!nuevoPago.mes || !nuevoPago.fechaPago || !nuevoPago.tarifa || nuevoPago.diasMusculacion === undefined) {
+            return NextResponse.json({ message: 'Faltan campos requeridos para registrar el pago' }, { status: 400 });
+        }
+
+        // Actualizar el alumno para agregar el nuevo pago
+        const alumnoActualizado = await Alumno.findByIdAndUpdate(
+            alumnoId,
+            { $push: { pagos: nuevoPago } },
+            { new: true, runValidators: true }
+        );
+
+        if (!alumnoActualizado) {
+            return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
+        }
+
+        return NextResponse.json(alumnoActualizado, { status: 200 });
+    } catch (error) {
+        console.error('Error al registrar el pago:', error);
+        return NextResponse.json({ message: 'Error interno al registrar el pago' }, { status: 500 });
+    }
+}
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     await connectMongoDB();

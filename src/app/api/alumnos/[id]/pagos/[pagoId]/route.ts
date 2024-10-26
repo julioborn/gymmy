@@ -1,6 +1,7 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 
 // Definir el tipo Pago
 interface Pago {
@@ -44,21 +45,32 @@ export async function PUT(request: Request, { params }: { params: { id: string; 
         await connectMongoDB();
 
         const { id, pagoId } = params;
-        const { nuevaFechaPago } = await request.json();
+        const { nuevaFechaPago, tarifa, diasMusculacion } = await request.json();
+
+        if (!nuevaFechaPago || !tarifa || !diasMusculacion) {
+            return NextResponse.json({ message: 'Faltan campos obligatorios' }, { status: 400 });
+        }
 
         const alumno = await Alumno.findById(id);
         if (!alumno) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        // Usar el tipo Pago para definir el array
-        const pago = alumno.pagos.find((pago: Pago) => pago._id === pagoId);
+        // Convertir el pagoId en ObjectId para la comparación
+        const pagoObjectId = new mongoose.Types.ObjectId(pagoId);
+
+        // Encontrar el pago correspondiente
+        const pago = alumno.pagos.find((pago: any) => pago._id.equals(pagoObjectId));
         if (!pago) {
             return NextResponse.json({ message: 'Pago no encontrado' }, { status: 404 });
         }
 
+        // Actualizar los valores del pago
         pago.fechaPago = nuevaFechaPago;
+        pago.tarifa = tarifa;
+        pago.diasMusculacion = diasMusculacion;
 
+        // Guardar los cambios
         await alumno.save();
 
         return NextResponse.json(alumno, { status: 200 });

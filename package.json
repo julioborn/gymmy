@@ -24,6 +24,8 @@
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
+    "devextreme": "^24.1.6",
+    "devextreme-react": "^24.1.6",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",

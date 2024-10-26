@@ -19,6 +19,7 @@ type Pago = {
     _id: string;
     mes: string;
     fechaPago: string;
+    tarifa: number;  // Añadimos la propiedad tarifa
 };
 
 type PlanEntrenamiento = {
@@ -154,6 +155,7 @@ export default function HistorialAlumnoPage() {
         return <p>Cargando...</p>;
     }
 
+    // Ajustamos la creación de eventos para que incluya la tarifa en el título
     const events = [
         ...alumno.asistencia.map((asistencia) => {
             let color = '';
@@ -185,14 +187,19 @@ export default function HistorialAlumnoPage() {
             display: 'block',
             color: '#ff0000', // Rojo para el inicio del plan
             extendedProps: { tipo: 'plan' },
+            
         },
 
         ...alumno.pagos.map((pago) => ({
-            title: `Pago ${pago.mes}`,
+            title: `Pago ${pago.mes}`,   // Este es el título que se mostrará en la primera línea
             start: convertirAFechaLocal(pago.fechaPago),
             display: 'list-item',
             color: '#28a745', // Verde para los pagos
-            extendedProps: { _id: pago._id, tipo: 'pago' },
+            extendedProps: {
+                _id: pago._id,
+                tipo: 'pago',
+                tarifa: pago.tarifa,  // Pasamos la tarifa en extendedProps
+            },
         })),
     ].filter(event => event !== null);
 
@@ -267,8 +274,8 @@ export default function HistorialAlumnoPage() {
                 const { value: fechaHora } = await Swal.fire({
                     title: 'Ingresar Hora',
                     html: `
-                        <input type="time" id="hora-actividad" value="12:00" class="swal2-input">
-                    `,
+                    <input type="time" id="hora-actividad" value="12:00" class="swal2-input">
+                `,
                     focusConfirm: false,
                     preConfirm: () => {
                         const hora = (document.getElementById('hora-actividad') as HTMLInputElement).value;
@@ -306,29 +313,52 @@ export default function HistorialAlumnoPage() {
                 }
             }
         } else if (action === 'pago') {
-            const fechaSeleccionadaLocal = new Date(fechaSeleccionada);
-            fechaSeleccionadaLocal.setMinutes(fechaSeleccionadaLocal.getMinutes() + fechaSeleccionadaLocal.getTimezoneOffset()); // Ajustar la fecha seleccionada a UTC si es necesario
+            const { value: diasMusculacion } = await Swal.fire({
+                title: 'Selecciona los días de musculación por semana',
+                input: 'select',
+                inputOptions: {
+                    1: '1 día por semana',
+                    2: '2 días por semana',
+                    3: '3 días por semana',
+                    4: '4 días por semana',
+                    5: '5 días por semana'
+                },
+                inputPlaceholder: 'Selecciona una opción',
+                showCancelButton: true,
+            });
 
-            const mesActual = fechaSeleccionadaLocal.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
-            const nuevoPago = { mes: mesActual, fechaPago: fechaSeleccionadaLocal }; // Usar la fecha ajustada
+            if (diasMusculacion) {
+                try {
+                    // Obtener la tarifa correspondiente
+                    const responseTarifa = await fetch(`/api/alumnos/${id}/tarifas?dias=${diasMusculacion}`);
+                    const { tarifa } = await responseTarifa.json();
 
-            try {
-                const response = await fetch(`/api/alumnos/pagos`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ alumnoId: id, nuevoPago }), // Enviamos el alumnoId y el nuevo pago
-                });
+                    const mesActual = new Date(fechaSeleccionada).toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+                    const nuevoPago = {
+                        mes: mesActual,
+                        fechaPago: new Date(fechaSeleccionada),
+                        diasMusculacion: Number(diasMusculacion),
+                        tarifa
+                    };
 
-                if (response.ok) {
-                    Swal.fire('Pago registrado', '', 'success');
-                    fetchAlumno(); // Refrescar los datos del alumno
-                } else {
-                    throw new Error('No se pudo registrar el pago');
+                    // Enviar el pago al backend
+                    const response = await fetch(`/api/alumnos/pagos`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ alumnoId: id, nuevoPago }),
+                    });
+
+                    if (response.ok) {
+                        Swal.fire('Pago registrado correctamente', '', 'success');
+                        fetchAlumno(); // Refrescar la lista de alumnos
+                    } else {
+                        throw new Error('Error al registrar el pago');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Ocurrió un problema al registrar el pago', 'error');
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al registrar el pago', 'error');
             }
         }
     };
@@ -350,14 +380,61 @@ export default function HistorialAlumnoPage() {
                 showCancelButton: true,
             });
 
-            if (action === 'eliminar') {
+            if (action === 'editar') {
+                // Obtener la fecha y hora del evento
+                const fechaActual = clickInfo.event.start ? new Date(clickInfo.event.start) : null;
+                const horaActual = fechaActual
+                    ? fechaActual.toLocaleTimeString('es-ES', { hour12: false, hour: '2-digit', minute: '2-digit' })
+                    : '12:00'; // Valor por defecto si no tiene hora
+
+                // Mostrar un modal para editar la fecha y hora
+                const { value: nuevaFechaHora } = await Swal.fire({
+                    title: 'Editar Fecha y Hora',
+                    html: `
+                        <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${fechaActual?.toISOString().split('T')[0]}">
+                        <input type="time" id="nueva-hora-actividad" class="swal2-input" value="${horaActual}" style="width: 150px;">
+                    `,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const nuevaFecha = (document.getElementById('nueva-fecha-actividad') as HTMLInputElement).value;
+                        const nuevaHora = (document.getElementById('nueva-hora-actividad') as HTMLInputElement).value;
+                        if (!nuevaFecha || !nuevaHora) {
+                            Swal.showValidationMessage('La fecha y la hora no pueden estar vacías');
+                        }
+                        return `${nuevaFecha}T${nuevaHora}`;
+                    },
+                    showCancelButton: true,
+                });
+
+                if (nuevaFechaHora) {
+                    try {
+                        const response = await fetch(`/api/asistencias/${eventoId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                fecha: nuevaFechaHora,
+                            }),
+                        });
+
+                        if (response.ok) {
+                            Swal.fire('Actividad actualizada', '', 'success');
+                            fetchAlumno(); // Refrescar la lista de actividades
+                        } else {
+                            Swal.fire('Error', 'No se pudo actualizar la actividad', 'error');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', 'Ocurrió un problema al actualizar la actividad', 'error');
+                    }
+                }
+            } else if (action === 'eliminar') {
                 try {
-                    const response = await fetch(`/api/asistencias/${id}`, {
+                    const response = await fetch(`/api/asistencias/${eventoId}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ asistenciaId: eventoId }),
                     });
 
                     if (response.ok) {
@@ -369,68 +446,13 @@ export default function HistorialAlumnoPage() {
                 } catch (error) {
                     Swal.fire('Error', 'Hubo un problema al eliminar la actividad', 'error');
                 }
-            } else if (action === 'editar') {
-                const { value: nuevaActividad } = await Swal.fire({
-                    title: 'Editar Actividad',
-                    input: 'select',
-                    inputOptions: {
-                        Musculación: 'Musculación',
-                        Intermitente: 'Intermitente',
-                        Otro: 'Otro',
-                    },
-                    inputPlaceholder: 'Selecciona una actividad',
-                    showCancelButton: true,
-                });
-
-                const { value: nuevaFechaHora } = await Swal.fire({
-                    title: 'Editar Fecha y Hora',
-                    html: `
-                        <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${clickInfo.event.startStr.split('T')[0]}">
-                        <input type="time" id="nueva-hora-actividad" class="swal2-input" value="12:00">
-                    `,
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        const fecha = (document.getElementById('nueva-fecha-actividad') as HTMLInputElement).value;
-                        const hora = (document.getElementById('nueva-hora-actividad') as HTMLInputElement).value;
-                        if (!fecha || !hora) {
-                            Swal.showValidationMessage('La fecha y la hora no pueden estar vacías');
-                        }
-                        return `${fecha}T${hora}`;
-                    },
-                    showCancelButton: true,
-                });
-
-                if (nuevaActividad && nuevaFechaHora) {
-                    try {
-                        const response = await fetch(`/api/asistencias/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                asistenciaId: eventoId,
-                                fecha: nuevaFechaHora,
-                                actividad: nuevaActividad,
-                            }),
-                        });
-
-                        if (response.ok) {
-                            Swal.fire('Actividad actualizada', '', 'success');
-                            fetchAlumno();
-                        } else {
-                            Swal.fire('Error', 'No se pudo actualizar la actividad', 'error');
-                        }
-                    } catch (error) {
-                        Swal.fire('Error', 'Hubo un problema al actualizar la actividad', 'error');
-                    }
-                }
             }
         } else if (tipoEvento === 'pago') {
             const { value: action } = await Swal.fire({
                 title: 'Pago',
                 input: 'select',
                 inputOptions: {
-                    // editar: 'Editar Pago',
+                    editar: 'Editar Pago',
                     eliminar: 'Eliminar Pago',
                 },
                 inputPlaceholder: 'Selecciona una acción',
@@ -455,81 +477,178 @@ export default function HistorialAlumnoPage() {
                 } catch (error) {
                     Swal.fire('Error', 'Hubo un problema al eliminar el pago', 'error');
                 }
-            } //else if (action === 'editar') {
-            //     const { value: nuevaFechaPago } = await Swal.fire({
-            //         title: 'Editar Fecha de Pago',
-            //         html: `
-            //             <input type="date" id="nueva-fecha-pago" class="swal2-input" value="${clickInfo.event.startStr.split('T')[0]}">
-            //         `,
-            //         focusConfirm: false,
-            //         preConfirm: () => {
-            //             const nuevaFecha = (document.getElementById('nueva-fecha-pago') as HTMLInputElement).value;
-            //             if (!nuevaFecha) {
-            //                 Swal.showValidationMessage('La fecha no puede estar vacía');
-            //             }
-            //             return nuevaFecha;
-            //         },
-            //         showCancelButton: true,
-            //     });
+            } else if (action === 'editar') {
+                const { value: diasMusculacion } = await Swal.fire({
+                    title: 'Editar días de musculación por semana',
+                    input: 'select',
+                    inputOptions: {
+                        1: '1 día por semana',
+                        2: '2 días por semana',
+                        3: '3 días por semana',
+                        4: '4 días por semana',
+                        5: '5 días por semana',
+                    },
+                    inputPlaceholder: 'Selecciona una opción',
+                    showCancelButton: true,
+                });
 
-            //     if (nuevaFechaPago) {
-            //         try {
-            //             const response = await fetch(`/api/alumnos/${id}/pagos/${eventoId}`, {
-            //                 method: 'PUT',
-            //                 headers: {
-            //                     'Content-Type': 'application/json',
-            //                 },
-            //                 body: JSON.stringify({
-            //                     nuevaFechaPago,
-            //                 }),
-            //             });
+                if (diasMusculacion) {
+                    // Pedir la nueva fecha de pago
+                    const { value: nuevaFechaPago } = await Swal.fire({
+                        title: 'Editar Fecha de Pago',
+                        html: `<input type="date" id="nueva-fecha-pago" class="swal2-input" value="${clickInfo.event.startStr.split('T')[0]}">`,
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const nuevaFecha = (document.getElementById('nueva-fecha-pago') as HTMLInputElement).value;
+                            if (!nuevaFecha) {
+                                Swal.showValidationMessage('La fecha no puede estar vacía');
+                            }
+                            return nuevaFecha;
+                        },
+                        showCancelButton: true,
+                    });
 
-            //             if (response.ok) {
-            //                 Swal.fire('Pago actualizado', '', 'success');
-            //                 fetchAlumno();
-            //             } else {
-            //                 Swal.fire('Error', 'No se pudo actualizar el pago', 'error');
-            //             }
-            //         } catch (error) {
-            //             Swal.fire('Error', 'Hubo un problema al actualizar el pago', 'error');
-            //         }
-            //     }
-            // }
+                    if (nuevaFechaPago) {
+                        try {
+                            // Obtener la tarifa predeterminada basada en los días de musculación
+                            const responseTarifa = await fetch(`/api/alumnos/${id}/tarifas?dias=${diasMusculacion}`);
+                            const { tarifa } = await responseTarifa.json();
+
+                            // Actualizar el pago con los días de musculación y la nueva tarifa y fecha
+                            const response = await fetch(`/api/alumnos/${id}/pagos/${eventoId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    nuevaFechaPago,
+                                    diasMusculacion: Number(diasMusculacion),
+                                    tarifa: tarifa,
+                                }),
+                            });
+
+                            if (response.ok) {
+                                Swal.fire('Pago actualizado correctamente', '', 'success');
+                                fetchAlumno(); // Refrescar los datos del alumno
+                            } else {
+                                Swal.fire('Error', 'No se pudo actualizar el pago', 'error');
+                            }
+                        } catch (error) {
+                            Swal.fire('Error', 'Ocurrió un problema al actualizar el pago', 'error');
+                        }
+                    }
+                }
+            }
         }
     };
 
     return (
         <div className="max-w-6xl mx-auto bg-gray-50 p-8 rounded shadow-md">
-            <div className="flex mb-2">
+            <div className="flex mb-2 justify-center">
                 <h2 className="text-3xl font-light text-gray-800 bg-gray-100 p-1 pl-1.5 pr-1.5 rounded border border-gray-500">
                     {alumno.nombre} {alumno.apellido}
                 </h2>
             </div>
 
             {diasRestantes !== null && (
-                <p className="text-md font-medium mb-4 p-1 flex">
-                    Su plan finaliza en{' '}
+                <p className="text-md font-medium mb-4 p-1 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
+                    Finaliza el plan en
                     <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
                         {diasRestantes}
-                    </span>{' '}
+                    </span>
                     entrenamientos.
                 </p>
             )}
 
             <FullCalendar
                 firstDay={1}
-                plugins={[dayGridPlugin, interactionPlugin, listPlugin]} // Agregar listPlugin aquí
-                initialView={calendarView} // Vista adaptativa
+                plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                initialView={calendarView}
                 events={events as any}
                 locale="es"
-
-                headerToolbar={headerToolbar} // Aplicar el headerToolbar dinámico
-                buttonText={buttonText} // Aplicar el buttonText dinámico
+                headerToolbar={headerToolbar}
+                buttonText={buttonText}
                 height="auto"
                 selectable={true}
                 select={handleDateSelect}
+                aspectRatio={1.5}  // Controla la proporción ancho/alto
                 eventClick={handleEventClick}
+                eventContent={(arg) => {
+                    const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
+
+                    if (tipo === 'plan') {
+                        // Personalización para el evento de inicio del plan
+                        return (
+                            <div
+                                className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words"
+                                style={{ whiteSpace: 'normal' }} // Asegura que el texto se divida en líneas si es necesario
+                            >
+                                <strong>{arg.event.title}</strong> {/* Mostrar el texto centrado */}
+                            </div>
+                        );
+                    }
+
+                    if (tipo === 'pago') {
+                        const pagoMes = arg.event.title;
+                        const tarifa = arg.event.extendedProps.tarifa;
+                        return (
+                            <div className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
+                                <div className="flex items-center">
+                                    <span
+                                        style={{
+                                            backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
+                                            width: '8px',
+                                            height: '8px',
+                                            display: 'inline-block',
+                                            borderRadius: '50%',
+                                            marginRight: '8px',
+                                        }}
+                                    ></span>
+                                    <strong>{pagoMes}</strong> {/* Pago */}
+                                </div>
+                                <div>
+                                    <strong className="text-green-600 mr-1">{`$${tarifa}`}</strong> {/* Tarifa */}
+                                </div>
+                            </div>
+                        );
+                    } else if (tipo === 'actividad') {
+                        const hora = arg.event.start
+                            ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })
+                            : ''; // Verificamos que no sea null
+
+                        return (
+                            <div className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
+                                <div className="flex items-center">
+                                    <span
+                                        style={{
+                                            backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
+                                            width: '8px',
+                                            height: '8px',
+                                            display: 'inline-block',
+                                            borderRadius: '50%',
+                                            marginRight: '8px',
+                                        }}
+                                    ></span>
+                                    <strong>{arg.event.title}</strong> {/* Actividad */}
+                                </div>
+                                <div>
+                                    {hora && <strong className="text-red-600 mr-1">{hora}</strong>} {/* Hora de la actividad */}
+                                </div>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
+                                {arg.event.title}
+                            </div>
+                        );
+                    }
+                }}
             />
+
         </div>
     );
 }
