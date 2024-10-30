@@ -20,6 +20,16 @@ body {
   padding: 0;
 }
 
+/* styles/globals.css */
+.fc-daygrid-day {
+  padding: 4px; /* Reduce el relleno de cada día */
+}
+
+.fc-daygrid-event {
+  font-size: 0.8rem; /* Ajusta el tamaño de fuente de los eventos */
+}
+
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -2,38 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Interfaz para el pago
-interface Pago {
-    mes: string;
-    fechaPago: Date;
-    _id: string;
-}
-
 // Método POST para registrar el pago de un alumno
-// export async function POST(request: Request) {
-//     try {
-//         await connectMongoDB();
-
-//         const { alumnoId, nuevoPago } = await request.json();
-
-//         const alumno = await Alumno.findById(alumnoId);
-
-//         if (!alumno) {
-//             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
-//         }
-
-//         alumno.pagos.push(nuevoPago);
-//         await alumno.save();
-
-//         return NextResponse.json(alumno, { status: 200 });
-//     } catch (error) {
-//         console.error('Error al registrar el pago:', error);
-//         return NextResponse.json({ message: 'Error al registrar el pago' }, { status: 500 });
-//     }
-// }
-// Método POST para registrar el pago de un alumno
-// En el controlador del endpoint de pagos
-
 export async function POST(request: NextRequest) {
     try {
         const { alumnoId, nuevoPago } = await request.json();
