@@ -1,16 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// Interfaz para la tarifa
 interface ITarifa extends Document {
-    diasMusculacion: number;
-    tarifa: number;
+    dias: number; // Representa los días de entrenamiento por semana
+    valor: number; // Valor de la tarifa para esos días
 }
 
 const TarifaSchema: Schema = new Schema({
-    diasMusculacion: { type: Number, required: true, unique: true },
-    tarifa: { type: Number, required: true }
+    dias: { type: Number, required: true, unique: true }, // Debe ser único para cada número de días (1 a 5)
+    valor: { type: Number, required: true }, // Valor de la tarifa para esos días
 });
 
-const Tarifa = mongoose.models.Tarifa || mongoose.model<ITarifa>('Tarifa', TarifaSchema);
-
-export default Tarifa;
+export default mongoose.models.Tarifa || mongoose.model<ITarifa>('Tarifa', TarifaSchema);

@@ -37,6 +37,11 @@ type Alumno = {
     planEntrenamiento: PlanEntrenamiento;
 };
 
+type Tarifa = {
+    dias: number;
+    valor: number;
+};
+
 // Función para ajustar las fechas a la zona horaria local
 const convertirAFechaLocal = (fecha: string) => {
     const fechaUtc = new Date(fecha);
@@ -70,6 +75,78 @@ export default function HistorialAlumnoPage() {
         day: 'Día',
         list: 'Lista',
     });
+    const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+
+    useEffect(() => {
+        fetchTarifas();
+    }, []);
+
+    const fetchTarifas = async () => {
+        try {
+            const response = await fetch('/api/tarifas'); // Asegura que este sea el endpoint correcto
+            const data = await response.json();
+            console.log("Tarifas obtenidas:", data); // Verifica los datos obtenidos
+            setTarifas(data);
+        } catch (error) {
+            console.error("Error al obtener tarifas:", error);
+        }
+    };        
+
+    const handleConfiguracionTarifas = async () => {
+        if (tarifas.length === 0) {
+            await Swal.fire('Error', 'No se encontraron tarifas. Por favor, recarga la página.', 'error');
+            return;
+        }
+    
+        const tarifaInputs = tarifas
+            .map(
+                (tarifa) => `
+                    <div style="margin-top: 8px;">
+                        <label for="tarifa-${tarifa.dias}" style="display: block; font-weight: bold; margin-bottom: 4px; ">
+                            Días ${tarifa.dias}:
+                        </label>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: bold; margin-right: 4px;">$</span>
+                            <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}" style="width: 100%;" />
+                        </div>
+                    </div>
+                `
+            )
+            .join('');
+    
+        const result = await Swal.fire({
+            title: 'Configurar Tarifas',
+            html: `<div>${tarifaInputs}</div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            preConfirm: () => {
+                const updatedTarifas = tarifas.map((tarifa) => {
+                    const valor = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
+                    return { ...tarifa, valor: Number(valor) };
+                });
+                return updatedTarifas;
+            }
+        });
+    
+        const nuevasTarifas = result.value as Tarifa[] | undefined;
+        if (nuevasTarifas) {
+            try {
+                const response = await fetch('/api/tarifas', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevasTarifas),
+                });
+                if (response.ok) {
+                    Swal.fire('Tarifas actualizadas', '', 'success');
+                    setTarifas(nuevasTarifas);
+                } else {
+                    Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
+            }
+        }
+    };        
 
     const adjustCalendarView = () => {
         if (window.innerWidth <= 768) {
@@ -336,45 +413,47 @@ export default function HistorialAlumnoPage() {
                     2: '2 días por semana',
                     3: '3 días por semana',
                     4: '4 días por semana',
-                    5: '5 días por semana'
+                    5: '5 días por semana',
                 },
                 inputPlaceholder: 'Selecciona una opción',
                 showCancelButton: true,
             });
-
+    
             if (diasMusculacion) {
-                try {
-                    const responseTarifa = await fetch(`/api/alumnos/${id}/tarifas?dias=${diasMusculacion}`);
-                    const { tarifa } = await responseTarifa.json();
-
-                    // Extraer el mes correctamente, asegurando que no haya desfase de zona horaria
-                    const [year, month, day] = fechaSeleccionada.split('-');
-                    const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
-                    const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
-
-                    const nuevoPago = {
-                        mes: mesActual,
-                        fechaPago, // Fecha ajustada a la zona horaria
-                        diasMusculacion: Number(diasMusculacion),
-                        tarifa,
-                    };
-
-                    const response = await fetch(`/api/alumnos/pagos`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ alumnoId: id, nuevoPago }),
-                    });
-
-                    if (response.ok) {
-                        Swal.fire('Pago registrado correctamente', '', 'success');
-                        fetchAlumno();
-                    } else {
-                        throw new Error('Error al registrar el pago');
+                // Busca la tarifa en el array de tarifas almacenado en el estado
+                const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
+                
+                if (tarifaSeleccionada) {
+                    try {
+                        // Extraer el mes correctamente
+                        const [year, month, day] = fechaSeleccionada.split('-');
+                        const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
+                        const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
+    
+                        const nuevoPago = {
+                            mes: mesActual,
+                            fechaPago,
+                            diasMusculacion: Number(diasMusculacion),
+                            tarifa: tarifaSeleccionada.valor,
+                        };
+    
+                        const response = await fetch(`/api/alumnos/pagos`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ alumnoId: id, nuevoPago }),
+                        });
+    
+                        if (response.ok) {
+                            Swal.fire('Pago registrado correctamente', '', 'success');
+                            fetchAlumno();
+                        } else {
+                            throw new Error('Error al registrar el pago');
+                        }
+                    } catch (error) {
+                        Swal.fire('Error', 'Ocurrió un problema al registrar el pago', 'error');
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Ocurrió un problema al registrar el pago', 'error');
+                } else {
+                    Swal.fire('Error', 'No se encontró la tarifa para la cantidad de días seleccionada', 'error');
                 }
             }
         }
@@ -586,7 +665,7 @@ export default function HistorialAlumnoPage() {
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
             });
-    
+
             if (action === 'eliminar') {
                 try {
                     const response = await fetch(`/api/alumnos/${id}/plan`, {
@@ -595,7 +674,7 @@ export default function HistorialAlumnoPage() {
                             'Content-Type': 'application/json',
                         },
                     });
-    
+
                     if (response.ok) {
                         Swal.fire('Inicio del plan eliminado', '', 'success');
                         fetchAlumno(); // Refresca los datos del alumno
@@ -626,6 +705,8 @@ export default function HistorialAlumnoPage() {
                     entrenamientos.
                 </p>
             )}
+
+            <button onClick={handleConfiguracionTarifas}>Configurar Tarifas</button>
 
             <FullCalendar
                 firstDay={1}

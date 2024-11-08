@@ -8,6 +8,11 @@ import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 // Configura react-modal para el body
 Modal.setAppElement('body');
 
+type Tarifa = {
+    dias: number;
+    valor: number;
+};
+
 // Función para calcular la edad a partir de la fecha de nacimiento
 function calcularEdad(fechaNacimiento: string): number {
     const hoy = new Date();
@@ -59,6 +64,7 @@ export default function ListaAlumnosPage() {
     const [filtroLetraApellido, setFiltroLetraApellido] = useState('');
     const [filtroPago, setFiltroPago] = useState('');
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
+    const [tarifas, setTarifas] = useState<Tarifa[]>([]); // Tarifa[] para el tipo correcto
     const router = useRouter();
 
     const fetchAlumnos = async () => {
@@ -84,6 +90,21 @@ export default function ListaAlumnosPage() {
     useEffect(() => {
         fetchAlumnos();
     }, []);
+
+    const fetchTarifas = async () => {
+        try {
+            const response = await fetch('/api/tarifas');
+            const data = await response.json();
+            setTarifas(data); // Actualiza el estado con los datos de tarifas
+        } catch (error) {
+            console.error("Error al obtener tarifas:", error);
+        }
+    };
+    
+    useEffect(() => {
+        fetchTarifas(); // Llama a fetchTarifas una vez al montar el componente
+    }, []);
+    
 
     const guardarAlumno = async (id: string, alumnoActualizado: any) => {
         try {
@@ -188,23 +209,17 @@ export default function ListaAlumnosPage() {
     
         if (diasMusculacion) {
             try {
-                const responseTarifa = await fetch(`/api/alumnos/${alumnoId}/tarifas?dias=${diasMusculacion}`);
-                if (!responseTarifa.ok) {
-                    throw new Error('Error al obtener la tarifa');
-                }
-    
-                const { tarifa } = await responseTarifa.json();
-    
-                if (!tarifa) {
-                    throw new Error('No se pudo obtener la tarifa para los días seleccionados.');
+                const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
+                if (!tarifaSeleccionada) {
+                    throw new Error('No se pudo encontrar una tarifa para los días seleccionados.');
                 }
     
                 const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
                 const nuevoPago = {
                     mes: mesActual,
-                    fechaPago: new Date(), // Objeto Date válido
+                    fechaPago: new Date(),
                     diasMusculacion: Number(diasMusculacion),
-                    tarifa
+                    tarifa: tarifaSeleccionada.valor,
                 };
     
                 const response = await fetch(`/api/alumnos/pagos`, {
@@ -230,8 +245,7 @@ export default function ListaAlumnosPage() {
                 });
             }
         }
-    };
-    
+    };    
 
     const handleLetraClick = (letra: string) => {
         setFiltroLetraApellido(letra);
