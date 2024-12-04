@@ -7,12 +7,6 @@ import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import listPlugin from '@fullcalendar/list';
-import { Bar, Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend } from 'chart.js';
-import { CircularProgressBar } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
-
-ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
 type Asistencia = {
     _id: string;
