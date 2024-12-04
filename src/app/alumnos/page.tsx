@@ -100,11 +100,11 @@ export default function ListaAlumnosPage() {
             console.error("Error al obtener tarifas:", error);
         }
     };
-    
+
     useEffect(() => {
         fetchTarifas(); // Llama a fetchTarifas una vez al montar el componente
     }, []);
-    
+
 
     const guardarAlumno = async (id: string, alumnoActualizado: any) => {
         try {
@@ -206,14 +206,14 @@ export default function ListaAlumnosPage() {
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
         });
-    
+
         if (diasMusculacion) {
             try {
                 const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
                 if (!tarifaSeleccionada) {
                     throw new Error('No se pudo encontrar una tarifa para los días seleccionados.');
                 }
-    
+
                 const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
                 const nuevoPago = {
                     mes: mesActual,
@@ -221,7 +221,7 @@ export default function ListaAlumnosPage() {
                     diasMusculacion: Number(diasMusculacion),
                     tarifa: tarifaSeleccionada.valor,
                 };
-    
+
                 const response = await fetch(`/api/alumnos/pagos`, {
                     method: 'POST',
                     headers: {
@@ -229,11 +229,11 @@ export default function ListaAlumnosPage() {
                     },
                     body: JSON.stringify({ alumnoId, nuevoPago }),
                 });
-    
+
                 if (!response.ok) {
                     throw new Error('Error al registrar el pago');
                 }
-    
+
                 Swal.fire('Pago registrado correctamente', '', 'success');
                 fetchAlumnos(); // Refrescar la lista de alumnos
             } catch (error) {
@@ -245,7 +245,7 @@ export default function ListaAlumnosPage() {
                 });
             }
         }
-    };    
+    };
 
     const handleLetraClick = (letra: string) => {
         setFiltroLetraApellido(letra);
@@ -328,7 +328,7 @@ export default function ListaAlumnosPage() {
                 </select>
             </div>
 
-            {/* Filtro por letra del apellido */}
+            {/* Filtro por letra del apellido
             <div className="bg-gray-100 p-3 rounded border border-gray-300 mb-4 mt-2 overflow-x-auto">
                 <h2 className='mb-2'>Apellido</h2>
                 <div className="flex flex-wrap gap-2">
@@ -348,6 +348,22 @@ export default function ListaAlumnosPage() {
                         Limpiar
                     </button>
                 </div>
+            </div> */}
+
+            {/* Botón para limpiar filtros */}
+            <div className="mt-4 flex justify-end">
+                <button
+                    onClick={() => {
+                        setBusqueda('');
+                        setFiltroEdad('');
+                        setFiltroLetraApellido('');
+                        setFiltroPago('');
+                        setOrdenDiasRestantes('');
+                    }}
+                    className="bg-gray-700 text-white px-2 py-2 text-sm rounded hover:bg-gray-800"
+                >
+                    Limpiar Filtros
+                </button>
             </div>
 
             {/* Tabla de alumnos */}
