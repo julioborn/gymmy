@@ -66,6 +66,11 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                             DNI
                         </a>
                     </li>
+                    <li>
+                        <a href="/alumnos/financias" className="block text-white hover:underline py-2">
+                            Financias
+                        </a>
+                    </li>
                 </ul>
             </nav>
 

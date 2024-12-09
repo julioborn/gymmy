@@ -7,6 +7,29 @@ import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import listPlugin from '@fullcalendar/list';
+import { Pie, Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+} from 'chart.js';
+
+ChartJS.register(
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement
+);
 
 type Asistencia = {
     _id: string;
@@ -119,11 +142,14 @@ export default function HistorialAlumnoPage() {
     //         },
     //     }));
     // };
+    const [year, setYear] = useState(new Date().getFullYear()); // Año actual por defecto
+    const [yearFrecuencia, setYearFrecuencia] = useState(new Date().getFullYear());
+    const [yearActividad, setYearActividad] = useState(new Date().getFullYear());
+    const [yearPagos, setYearPagos] = useState(new Date().getFullYear());
 
     useEffect(() => {
         fetchTarifas();
     }, []);
-
     const fetchTarifas = async () => {
         try {
             const response = await fetch('/api/tarifas'); // Asegura que este sea el endpoint correcto
@@ -737,6 +763,25 @@ export default function HistorialAlumnoPage() {
         }
     };
 
+    // Obtener los años disponibles en los datos
+    const availableYears = Array.from(
+        new Set(alumno.pagos.map((pago) => new Date(pago.fechaPago).getFullYear()))
+    ).sort(); // Asegurar que estén en orden ascendente
+
+    // Filtrar y procesar los datos según el año seleccionado
+
+    const pagosPorMes = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ].map((mes) => {
+        const pagoMes = alumno.pagos.find(
+            (pago) =>
+                pago.mes === mes &&
+                new Date(pago.fechaPago).getFullYear() === yearPagos
+        );
+        return pagoMes ? pagoMes.tarifa : 0;
+    });
+
     return (
         <div className="max-w-6xl mx-auto bg-gray-50 p-8 rounded shadow-md">
 
@@ -746,9 +791,10 @@ export default function HistorialAlumnoPage() {
                     {alumno.nombre} {alumno.apellido}
                 </h2>
             </div>
+
             {/* Finalización del plan */}
             {diasRestantes !== null && (
-                <p className="text-md font-medium mb-4 p-1 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
+                <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
                     Finaliza el plan en
                     <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
                         {diasRestantes}
@@ -756,6 +802,7 @@ export default function HistorialAlumnoPage() {
                     entrenamientos.
                 </p>
             )}
+
             {/* Botón de configuración de tarifas */}
             <button
                 className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
@@ -773,8 +820,9 @@ export default function HistorialAlumnoPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
                 </svg>
             </button>
-    
+
             {/* Calendario */}
+            <div className='bg-gray-50 p-4 rounded shadow border'>
             <FullCalendar
                 firstDay={1}
                 plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
@@ -786,176 +834,446 @@ export default function HistorialAlumnoPage() {
                 height="auto"
                 selectable={true}
                 select={handleDateSelect}
-                aspectRatio={1.2}
+                aspectRatio={1.5}  // Controla la proporción ancho/alto
                 eventClick={handleEventClick}
+                eventContent={(arg) => {
+                    const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
+
+                    if (tipo === 'plan') {
+                        // Personalización para el evento de inicio del plan
+                        return (
+                            <div
+                                className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
+                                style={{ whiteSpace: 'normal' }} // Asegura que el texto se divida en líneas si es necesario
+                            >
+                                <strong>{arg.event.title}</strong> {/* Mostrar el texto centrado */}
+                            </div>
+                        );
+                    }
+
+                    if (tipo === 'pago') {
+                        const pagoMes = arg.event.title;
+                        const tarifa = arg.event.extendedProps.tarifa;
+                        return (
+                            <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
+                                <div className="flex items-center break-words"
+                                    style={{ whiteSpace: 'normal' }}>
+                                    <strong>{pagoMes}</strong> {/* Pago */}
+                                </div>
+                                <div>
+                                    <strong className="text-white mr-1">${tarifa}</strong> {/* Tarifa */}
+                                </div>
+                            </div>
+                        );
+                    } else if (tipo === 'actividad') {
+                        const hora = arg.event.start
+                            ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })
+                            : ''; // Verificamos que no sea null
+
+                        return (
+                            <div
+                                className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    textOverflow: 'ellipsis',
+                                }}
+                            >
+                                <div className="flex items-center">
+                                    <span
+                                        style={{
+                                            backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
+                                            width: '8px',
+                                            height: '8px',
+                                            display: 'inline-block',
+                                            borderRadius: '50%',
+                                            marginRight: '8px',
+                                        }}
+                                    ></span>
+                                    <strong className="truncate">{arg.event.title}</strong> {/* Actividad */}
+                                </div>
+                                <div>
+                                    {hora && <strong className="text-red-600 mr-1">{hora}</strong>} {/* Hora de la actividad */}
+                                </div>
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
+                                {arg.event.title}
+                            </div>
+                        );
+                    }
+                }}
             />
-    
+            </div>
+
             {/* Menú inferior */}
-            <div className="flex flex-col lg:flex-row mt-8 gap-4">
+            <div className="flex flex-col mt-8 gap-4">
 
                 {/* Historial */}
-                <div className="flex-1 bg-white p-4 rounded shadow overflow-auto max-h-screen">
-                    <h3 className="text-2xl font-semibold mb-4 text-gray-700">Historial</h3>
-                    <div className="mb-6">
-                        <h4 className="text-xl font-semibold text-orange-600 mb-4">Actividades</h4>
-                        {alumno.asistencia.length > 0 ? (
-                            Object.entries(
-                                alumno.asistencia.reduce((acc: Record<string, Record<string, Asistencia[]>>, asistencia) => {
-                                    const fecha = new Date(asistencia.fecha);
-                                    const year = fecha.getFullYear().toString();
-                                    const month = fecha.toLocaleString('es-ES', { month: 'long' });
-                                    if (!acc[year]) acc[year] = {};
-                                    if (!acc[year][month]) acc[year][month] = [];
-                                    acc[year][month].push(asistencia);
-                                    return acc;
-                                }, {})
-                            ).map(([year, meses]) => (
-                                <div key={year} className="mb-6">
-                                    <h5
-                                        className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
-                                        onClick={() => toggleYearActividades(year)}
-                                    >
-                                        {year}
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className={`w-4 h-4 ml-2 transition-transform ${
-                                                expandedYearsActividades[year] ? 'rotate-180' : ''
-                                            }`}
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
+                <div className="flex-1 bg-gray-50 p-4 rounded shadow border overflow-auto max-h-screen">
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Historial del alumno</h3>
+
+                    {/* Contenedor dividido */}
+                    <div className="flex divide-x divide-gray-300">
+                        {/* Actividades */}
+                        <div className="flex-1 pr-4">
+                            <h4 className="text-xl font-semibold text-orange-600 mb-4">Actividades</h4>
+                            {alumno.asistencia.length > 0 ? (
+                                Object.entries(
+                                    alumno.asistencia.reduce((acc: Record<string, Record<string, Asistencia[]>>, asistencia) => {
+                                        const fecha = new Date(asistencia.fecha);
+                                        const year = fecha.getFullYear().toString();
+                                        const month = fecha.toLocaleString('es-ES', { month: 'long' });
+                                        if (!acc[year]) acc[year] = {};
+                                        if (!acc[year][month]) acc[year][month] = [];
+                                        acc[year][month].push(asistencia);
+                                        return acc;
+                                    }, {})
+                                ).map(([year, meses]) => (
+                                    <div key={year} className="mb-6">
+                                        <h5
+                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
+                                            onClick={() => toggleYearActividades(year)}
                                         >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </h5>
-                                    {expandedYearsActividades[year] &&
-                                        Object.entries(meses).map(([mes, actividades]) => (
-                                            <div key={mes} className="mb-4">
-                                                <h6
-                                                    className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
-                                                    onClick={() => toggleMonthActividades(year, mes)}
-                                                >
-                                                    {mes}
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className={`w-3 h-3 ml-2 transition-transform ${
-                                                            expandedMonthsActividades[year]?.[mes] ? 'rotate-180' : ''
-                                                        }`}
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
+                                            {year}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className={`w-4 h-4 ml-2 transition-transform ${expandedYearsActividades[year] ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </h5>
+                                        {expandedYearsActividades[year] &&
+                                            Object.entries(meses).map(([mes, actividades]) => (
+                                                <div key={mes} className="mb-4">
+                                                    <h6
+                                                        className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
+                                                        onClick={() => toggleMonthActividades(year, mes)}
                                                     >
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </h6>
-                                                {expandedMonthsActividades[year]?.[mes] && (
-                                                    <ul className="list-disc pl-6">
-                                                        {actividades.map((asistencia) => {
-                                                            const fechaHora = new Date(asistencia.fecha).toLocaleString('es-ES', {
-                                                                dateStyle: 'short',
-                                                                timeStyle: 'short',
-                                                            });
-                                                            return (
-                                                                <li key={asistencia._id} className="mb-1">
-                                                                    <span className="font-medium">{asistencia.actividad}</span> - {fechaHora}
-                                                                    {asistencia.presente ? (
-                                                                        <span className="text-green-600 ml-2">Presente</span>
-                                                                    ) : (
-                                                                        <span className="text-red-600 ml-2">Ausente</span>
-                                                                    )}
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                        ))}
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-gray-500">No hay actividades registradas.</p>
-                        )}
-                    </div>
-    
-                    <div className="mb-6">
-                        <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos</h4>
-                        {alumno.pagos.length > 0 ? (
-                            Object.entries(
-                                alumno.pagos.reduce((acc: Record<string, Record<string, Pago[]>>, pago) => {
-                                    const fecha = new Date(pago.fechaPago);
-                                    const year = fecha.getFullYear().toString();
-                                    const month = fecha.toLocaleString('es-ES', { month: 'long' });
-                                    if (!acc[year]) acc[year] = {};
-                                    if (!acc[year][month]) acc[year][month] = [];
-                                    acc[year][month].push(pago);
-                                    return acc;
-                                }, {})
-                            ).map(([year, meses]) => (
-                                <div key={year} className="mb-6">
-                                    <h5
-                                        className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
-                                        onClick={() => toggleYearPagos(year)}
-                                    >
-                                        {year}
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className={`w-4 h-4 ml-2 transition-transform ${
-                                                expandedYearsPagos[year] ? 'rotate-180' : ''
-                                            }`}
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
+                                                        • {mes}
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsActividades[year]?.[mes] ? 'rotate-180' : ''
+                                                                }`}
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </h6>
+                                                    {expandedMonthsActividades[year]?.[mes] && (
+                                                        <ul className="list-disc pl-6">
+                                                            {actividades.map((asistencia) => {
+                                                                const fechaHora = new Date(asistencia.fecha).toLocaleString('es-ES', {
+                                                                    dateStyle: 'short',
+                                                                    timeStyle: 'short',
+                                                                });
+                                                                return (
+                                                                    <li key={asistencia._id} className="mb-1">
+                                                                        <span className="font-medium">{asistencia.actividad}</span> - {fechaHora}
+                                                                        {asistencia.presente ? (
+                                                                            <span className="text-green-600 ml-2">Presente</span>
+                                                                        ) : (
+                                                                            <span className="text-red-600 ml-2">Ausente</span>
+                                                                        )}
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            ))}
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">No hay actividades registradas.</p>
+                            )}
+                        </div>
+
+                        {/* Pagos */}
+                        <div className="flex-1 pl-4">
+                            <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos</h4>
+                            {alumno.pagos.length > 0 ? (
+                                Object.entries(
+                                    alumno.pagos.reduce((acc: Record<string, Record<string, Pago[]>>, pago) => {
+                                        const fecha = new Date(pago.fechaPago);
+                                        const year = fecha.getFullYear().toString();
+                                        const month = fecha.toLocaleString('es-ES', { month: 'long' });
+                                        if (!acc[year]) acc[year] = {};
+                                        if (!acc[year][month]) acc[year][month] = [];
+                                        acc[year][month].push(pago);
+                                        return acc;
+                                    }, {})
+                                ).map(([year, meses]) => (
+                                    <div key={year} className="mb-6">
+                                        <h5
+                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
+                                            onClick={() => toggleYearPagos(year)}
                                         >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </h5>
-                                    {expandedYearsPagos[year] &&
-                                        Object.entries(meses).map(([mes, pagos]) => (
-                                            <div key={mes} className="mb-4">
-                                                <h6
-                                                    className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
-                                                    onClick={() => toggleMonthPagos(year, mes)}
-                                                >
-                                                    {mes}
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className={`w-3 h-3 ml-2 transition-transform ${
-                                                            expandedMonthsPagos[year]?.[mes] ? 'rotate-180' : ''
-                                                        }`}
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
+                                            {year}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className={`w-4 h-4 ml-2 transition-transform ${expandedYearsPagos[year] ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </h5>
+                                        {expandedYearsPagos[year] &&
+                                            Object.entries(meses).map(([mes, pagos]) => (
+                                                <div key={mes} className="mb-4">
+                                                    <h6
+                                                        className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
+                                                        onClick={() => toggleMonthPagos(year, mes)}
                                                     >
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </h6>
-                                                {expandedMonthsPagos[year]?.[mes] && (
-                                                    <ul className="list-disc pl-6">
-                                                        {pagos.map((pago) => {
-                                                            const fechaHora = new Date(pago.fechaPago).toLocaleString('es-ES', {
-                                                                dateStyle: 'short',
-                                                                timeStyle: 'short',
-                                                            });
-                                                            return (
-                                                                <li key={pago._id} className="mb-1">
-                                                                    <span className="font-medium">Pago</span> - {fechaHora} -{' '}
-                                                                    <span className="text-green-700">${pago.tarifa}</span>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-                                                )}
-                                            </div>
-                                        ))}
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-gray-500">No hay pagos registrados.</p>
-                        )}
+                                                        • {mes}
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsPagos[year]?.[mes] ? 'rotate-180' : ''
+                                                                }`}
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </h6>
+                                                    {expandedMonthsPagos[year]?.[mes] && (
+                                                        <ul className="list-disc pl-6">
+                                                            {pagos.map((pago) => {
+                                                                const fechaHora = new Date(pago.fechaPago).toLocaleString('es-ES', {
+                                                                    dateStyle: 'short',
+                                                                    timeStyle: 'short',
+                                                                });
+                                                                return (
+                                                                    <li key={pago._id} className="mb-1">
+                                                                        <span className="font-medium">Pago</span> - {fechaHora} -{' '}
+                                                                        <span className="text-green-700">${pago.tarifa}</span>
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            ))}
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">No hay pagos registrados.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                {/* Estadísticas */}
+                <div className="flex-1 p-4 bg-gray-50 p-4 rounded shadow border">
+                    {/* Gráficos */}
+                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del alumno</h3>
+
+                    {/* Contenedor de gráficos */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        {/* Bar Chart: Frecuencia de Asistencia por Día de la Semana */}
+                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                            <h4 className="text-xl font-semibold text-[#4BC0C0] mb-4">Frecuencia de Asistencias por Día de la Semana</h4>
+                            <div className="mb-4 flex justify-end">
+                                <select
+                                    className="border border-gray-300 rounded px-2 py-1"
+                                    value={yearFrecuencia}
+                                    onChange={(e) => setYearFrecuencia(Number(e.target.value))}
+                                >
+                                    {availableYears.map((availableYear) => (
+                                        <option key={availableYear} value={availableYear}>
+                                            {availableYear}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <Bar
+                                data={{
+                                    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                                    datasets: [
+                                        {
+                                            label: `Porcentaje de Asistencias en ${yearFrecuencia}`,
+                                            data: [0, 0, 0, 0, 0, 0, 0].map((_, index) =>
+                                                (
+                                                    (alumno.asistencia.filter(
+                                                        (a) =>
+                                                            new Date(a.fecha).getFullYear() === yearFrecuencia &&
+                                                            new Date(a.fecha).getDay() === (index === 6 ? 0 : index + 1) &&
+                                                            a.presente
+                                                    ).length /
+                                                        alumno.asistencia.filter(
+                                                            (a) => new Date(a.fecha).getFullYear() === yearFrecuencia && a.presente
+                                                        ).length) *
+                                                    100
+                                                ).toFixed(2)
+                                            ),
+                                            backgroundColor: '#4BC0C0',
+                                            borderColor: 'gray',
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                }}
+                                options={{
+                                    scales: {
+                                        x: {
+                                            title: {
+                                                display: true,
+                                                text: 'Días de la Semana',
+                                            },
+                                        },
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 100,
+                                            title: {
+                                                display: true,
+                                                text: 'Porcentaje',
+                                            },
+                                            ticks: {
+                                                callback: (value) => `${value}%`,
+                                            },
+                                        },
+                                    },
+                                }}
+                            />
+                        </div>
+
+                        {/* Bar Chart: Distribución de Asistencias por Actividad */}
+                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                            <h4 className="text-xl font-semibold text-orange-600 mb-4">Porcentaje de Asistencias por Actividad</h4>
+                            <div className="mb-4 flex justify-end">
+                                <select
+                                    className="border border-gray-300 rounded px-2 py-1"
+                                    value={yearActividad}
+                                    onChange={(e) => setYearActividad(Number(e.target.value))}
+                                >
+                                    {availableYears.map((availableYear) => (
+                                        <option key={availableYear} value={availableYear}>
+                                            {availableYear}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <Bar
+                                data={{
+                                    labels: ['Musculación', 'Intermitente', 'Otro'],
+                                    datasets: [
+                                        {
+                                            label: `Porcentaje de Asistencias en ${yearActividad}`,
+                                            data: [
+                                                (alumno.asistencia.filter(
+                                                    (a) => a.actividad === 'Musculación' && new Date(a.fecha).getFullYear() === yearActividad
+                                                ).length /
+                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
+                                                100 || 0,
+                                                (alumno.asistencia.filter(
+                                                    (a) => a.actividad === 'Intermitente' && new Date(a.fecha).getFullYear() === yearActividad
+                                                ).length /
+                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
+                                                100 || 0,
+                                                (alumno.asistencia.filter(
+                                                    (a) => a.actividad === 'Otro' && new Date(a.fecha).getFullYear() === yearActividad
+                                                ).length /
+                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
+                                                100 || 0,
+                                            ],
+                                            backgroundColor: ['#007bff', '#ff851b', '#f1c40f'],
+                                            borderColor: 'gray',
+                                        },
+                                    ],
+                                }}
+                                options={{
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 100,
+                                            ticks: {
+                                                callback: (value) => `${value}%`,
+                                            },
+                                        },
+                                    },
+                                }}
+                            />
+                        </div>
+
+                        {/* Bar Chart: Pagos Realizados */}
+                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                            <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos Realizados en {yearPagos}</h4>
+                            <div className="mb-4 flex justify-end">
+                                <select
+                                    className="border border-gray-300 rounded px-2 py-1"
+                                    value={yearPagos}
+                                    onChange={(e) => setYearPagos(Number(e.target.value))}
+                                >
+                                    {availableYears.map((availableYear) => (
+                                        <option key={availableYear} value={availableYear}>
+                                            {availableYear}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <Bar
+                                data={{
+                                    labels: [
+                                        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                                    ],
+                                    datasets: [
+                                        {
+                                            label: `Pagos en ${yearPagos}`,
+                                            data: pagosPorMes,
+                                            backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                                            borderColor: '#28a745',
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top',
+                                        },
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            title: {
+                                                display: true,
+                                                text: 'Monto Pagado ($)',
+                                            },
+                                            ticks: {
+                                                stepSize: 500,
+                                            },
+                                        },
+                                        x: {
+                                            title: {
+                                                display: true,
+                                                text: 'Meses',
+                                            },
+                                        },
+                                    },
+                                }}
+                            />
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-    ); 
+    );
 
 }

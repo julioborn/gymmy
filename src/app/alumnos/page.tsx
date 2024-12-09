@@ -422,7 +422,7 @@ export default function ListaAlumnosPage() {
                                         className={`text-white text-sm p-2 rounded ${verificarPagoMesActual(alumno.pagos) ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'}`}
                                         disabled={verificarPagoMesActual(alumno.pagos)}
                                     >
-                                        Marcar Pago
+                                        Cobrar Mes
                                     </button>
                                 </td>
                             </tr>
