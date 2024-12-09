@@ -62,13 +62,13 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         </>
                     )}
                     <li>
-                        <a href="/alumnos/dni" className="block text-white hover:underline py-2">
-                            DNI
+                        <a href="/alumnos/financias" className="block text-white hover:underline py-2">
+                            Financias
                         </a>
                     </li>
                     <li>
-                        <a href="/alumnos/financias" className="block text-white hover:underline py-2">
-                            Financias
+                        <a href="/alumnos/dni" className="block text-white hover:underline py-2">
+                            DNI
                         </a>
                     </li>
                 </ul>

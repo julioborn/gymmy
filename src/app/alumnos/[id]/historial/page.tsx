@@ -823,91 +823,91 @@ export default function HistorialAlumnoPage() {
 
             {/* Calendario */}
             <div className='bg-gray-50 p-4 rounded shadow border'>
-            <FullCalendar
-                firstDay={1}
-                plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
-                initialView={calendarView}
-                events={events as any}
-                locale="es"
-                headerToolbar={headerToolbar}
-                buttonText={buttonText}
-                height="auto"
-                selectable={true}
-                select={handleDateSelect}
-                aspectRatio={1.5}  // Controla la proporción ancho/alto
-                eventClick={handleEventClick}
-                eventContent={(arg) => {
-                    const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
+                <FullCalendar
+                    firstDay={1}
+                    plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                    initialView={calendarView}
+                    events={events as any}
+                    locale="es"
+                    headerToolbar={headerToolbar}
+                    buttonText={buttonText}
+                    height="auto"
+                    selectable={true}
+                    select={handleDateSelect}
+                    aspectRatio={1.5}  // Controla la proporción ancho/alto
+                    eventClick={handleEventClick}
+                    eventContent={(arg) => {
+                        const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
 
-                    if (tipo === 'plan') {
-                        // Personalización para el evento de inicio del plan
-                        return (
-                            <div
-                                className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
-                                style={{ whiteSpace: 'normal' }} // Asegura que el texto se divida en líneas si es necesario
-                            >
-                                <strong>{arg.event.title}</strong> {/* Mostrar el texto centrado */}
-                            </div>
-                        );
-                    }
+                        if (tipo === 'plan') {
+                            // Personalización para el evento de inicio del plan
+                            return (
+                                <div
+                                    className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
+                                    style={{ whiteSpace: 'normal' }} // Asegura que el texto se divida en líneas si es necesario
+                                >
+                                    <strong>{arg.event.title}</strong> {/* Mostrar el texto centrado */}
+                                </div>
+                            );
+                        }
 
-                    if (tipo === 'pago') {
-                        const pagoMes = arg.event.title;
-                        const tarifa = arg.event.extendedProps.tarifa;
-                        return (
-                            <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
-                                <div className="flex items-center break-words"
-                                    style={{ whiteSpace: 'normal' }}>
-                                    <strong>{pagoMes}</strong> {/* Pago */}
+                        if (tipo === 'pago') {
+                            const pagoMes = arg.event.title;
+                            const tarifa = arg.event.extendedProps.tarifa;
+                            return (
+                                <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
+                                    <div className="flex items-center break-words"
+                                        style={{ whiteSpace: 'normal' }}>
+                                        <strong>{pagoMes}</strong> {/* Pago */}
+                                    </div>
+                                    <div>
+                                        <strong className="text-white mr-1">${tarifa}</strong> {/* Tarifa */}
+                                    </div>
                                 </div>
-                                <div>
-                                    <strong className="text-white mr-1">${tarifa}</strong> {/* Tarifa */}
-                                </div>
-                            </div>
-                        );
-                    } else if (tipo === 'actividad') {
-                        const hora = arg.event.start
-                            ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })
-                            : ''; // Verificamos que no sea null
+                            );
+                        } else if (tipo === 'actividad') {
+                            const hora = arg.event.start
+                                ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })
+                                : ''; // Verificamos que no sea null
 
-                        return (
-                            <div
-                                className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    textOverflow: 'ellipsis',
-                                }}
-                            >
-                                <div className="flex items-center">
-                                    <span
-                                        style={{
-                                            backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
-                                            width: '8px',
-                                            height: '8px',
-                                            display: 'inline-block',
-                                            borderRadius: '50%',
-                                            marginRight: '8px',
-                                        }}
-                                    ></span>
-                                    <strong className="truncate">{arg.event.title}</strong> {/* Actividad */}
+                            return (
+                                <div
+                                    className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
+                                    style={{
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                >
+                                    <div className="flex items-center">
+                                        <span
+                                            style={{
+                                                backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
+                                                width: '8px',
+                                                height: '8px',
+                                                display: 'inline-block',
+                                                borderRadius: '50%',
+                                                marginRight: '8px',
+                                            }}
+                                        ></span>
+                                        <strong className="truncate">{arg.event.title}</strong> {/* Actividad */}
+                                    </div>
+                                    <div>
+                                        {hora && <strong className="text-red-600 mr-1">{hora}</strong>} {/* Hora de la actividad */}
+                                    </div>
                                 </div>
-                                <div>
-                                    {hora && <strong className="text-red-600 mr-1">{hora}</strong>} {/* Hora de la actividad */}
+                            );
+                        } else {
+                            return (
+                                <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
+                                    {arg.event.title}
                                 </div>
-                            </div>
-                        );
-                    } else {
-                        return (
-                            <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
-                                {arg.event.title}
-                            </div>
-                        );
-                    }
-                }}
-            />
+                            );
+                        }
+                    }}
+                />
             </div>
 
             {/* Menú inferior */}
@@ -915,13 +915,14 @@ export default function HistorialAlumnoPage() {
 
                 {/* Historial */}
                 <div className="flex-1 bg-gray-50 p-4 rounded shadow border overflow-auto max-h-screen">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Historial del alumno</h3>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Historial del Alumno</h3>
 
                     {/* Contenedor dividido */}
-                    <div className="flex divide-x divide-gray-300">
+                    <div className="flex divide-x divide-gray-200 mt-3 bg-gray-50 p-2 rounded border">
+
                         {/* Actividades */}
                         <div className="flex-1 pr-4">
-                            <h4 className="text-xl font-semibold text-orange-600 mb-4">Actividades</h4>
+                            <h4 className="text-lg text-center font-semibold text-orange-600 mb-2">Actividades</h4>
                             {alumno.asistencia.length > 0 ? (
                                 Object.entries(
                                     alumno.asistencia.reduce((acc: Record<string, Record<string, Asistencia[]>>, asistencia) => {
@@ -936,7 +937,7 @@ export default function HistorialAlumnoPage() {
                                 ).map(([year, meses]) => (
                                     <div key={year} className="mb-6">
                                         <h5
-                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
+                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center bg-gray-50 p-1.5 rounded border"
                                             onClick={() => toggleYearActividades(year)}
                                         >
                                             {year}
@@ -954,10 +955,10 @@ export default function HistorialAlumnoPage() {
                                             Object.entries(meses).map(([mes, actividades]) => (
                                                 <div key={mes} className="mb-4">
                                                     <h6
-                                                        className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
+                                                        className="text-md font-light text-gray-600 pb-1 mb-2 ml-1 cursor-pointer flex items-center"
                                                         onClick={() => toggleMonthActividades(year, mes)}
                                                     >
-                                                        • {mes}
+                                                        {mes}
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsActividades[year]?.[mes] ? 'rotate-180' : ''
@@ -1000,7 +1001,7 @@ export default function HistorialAlumnoPage() {
 
                         {/* Pagos */}
                         <div className="flex-1 pl-4">
-                            <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos</h4>
+                            <h4 className="text-lg font-semibold text-center text-green-600 mb-2">Pagos</h4>
                             {alumno.pagos.length > 0 ? (
                                 Object.entries(
                                     alumno.pagos.reduce((acc: Record<string, Record<string, Pago[]>>, pago) => {
@@ -1015,7 +1016,7 @@ export default function HistorialAlumnoPage() {
                                 ).map(([year, meses]) => (
                                     <div key={year} className="mb-6">
                                         <h5
-                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center"
+                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center bg-gray-50 p-1.5 rounded border"
                                             onClick={() => toggleYearPagos(year)}
                                         >
                                             {year}
@@ -1033,10 +1034,10 @@ export default function HistorialAlumnoPage() {
                                             Object.entries(meses).map(([mes, pagos]) => (
                                                 <div key={mes} className="mb-4">
                                                     <h6
-                                                        className="text-md font-light text-gray-600 border-b pb-1 mb-2 cursor-pointer flex items-center"
+                                                        className="text-md font-light text-gray-600 pb-1 mb-2 ml-1 cursor-pointer flex items-center"
                                                         onClick={() => toggleMonthPagos(year, mes)}
                                                     >
-                                                        • {mes}
+                                                        {mes}
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsPagos[year]?.[mes] ? 'rotate-180' : ''
@@ -1072,13 +1073,14 @@ export default function HistorialAlumnoPage() {
                                 <p className="text-gray-500">No hay pagos registrados.</p>
                             )}
                         </div>
+
                     </div>
                 </div>
 
                 {/* Estadísticas */}
                 <div className="flex-1 bg-gray-50 p-4 rounded shadow border">
                     {/* Gráficos */}
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del alumno</h3>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3>
 
                     {/* Contenedor de gráficos */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1088,7 +1090,7 @@ export default function HistorialAlumnoPage() {
                             <h4 className="text-xl font-semibold text-[#4BC0C0] mb-4">Frecuencia de Asistencias por Día de la Semana</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
-                                    className="border border-gray-300 rounded px-2 py-1"
+                                    className="border border-gray-300 rounded px-2 py-1 bg-gray-50 p-4 shadow"
                                     value={yearFrecuencia}
                                     onChange={(e) => setYearFrecuencia(Number(e.target.value))}
                                 >
@@ -1154,7 +1156,7 @@ export default function HistorialAlumnoPage() {
                             <h4 className="text-xl font-semibold text-orange-600 mb-4">Porcentaje de Asistencias por Actividad</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
-                                    className="border border-gray-300 rounded px-2 py-1"
+                                    className="border border-gray-300 rounded px-2 py-1 bg-gray-50 p-4 shadow"
                                     value={yearActividad}
                                     onChange={(e) => setYearActividad(Number(e.target.value))}
                                 >
@@ -1212,7 +1214,7 @@ export default function HistorialAlumnoPage() {
                             <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos Realizados en {yearPagos}</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
-                                    className="border border-gray-300 rounded px-2 py-1"
+                                    className="border-gray-300 px-2 py-1 bg-gray-50 p-4 rounded shadow border"
                                     value={yearPagos}
                                     onChange={(e) => setYearPagos(Number(e.target.value))}
                                 >
@@ -1273,6 +1275,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
             </div>
+
         </div>
     );
 
