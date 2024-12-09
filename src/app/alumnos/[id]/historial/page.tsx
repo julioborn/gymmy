@@ -1076,7 +1076,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Estadísticas */}
-                <div className="flex-1 p-4 bg-gray-50 p-4 rounded shadow border">
+                <div className="flex-1 bg-gray-50 p-4 rounded shadow border">
                     {/* Gráficos */}
                     <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del alumno</h3>
 
