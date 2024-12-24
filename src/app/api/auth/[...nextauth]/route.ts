@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
@@ -26,7 +26,8 @@ type UserWithRole = {
     role: string;
 };
 
-export const authOptions: NextAuthOptions = {
+// Configuración de NextAuth
+const authOptions = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -70,7 +71,7 @@ export const authOptions: NextAuthOptions = {
         signIn: "/login", // Página de inicio de sesión personalizada
     },
     session: {
-        strategy: "jwt", // Usar JWT para la sesión
+        strategy: "jwt" as const, // Usa "jwt" de forma explícita para cumplir con el tipo
         maxAge: 30 * 24 * 60 * 60, // Sesión válida por 30 días
     },
     callbacks: {
@@ -94,5 +95,7 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET, // Secreto para encriptación de sesiones
 };
 
-export const POST = NextAuth(authOptions);
-export const GET = NextAuth(authOptions);
+// Exportar métodos GET y POST
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
