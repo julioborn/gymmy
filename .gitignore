@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Carpetas a excluir por ahora
+src/app/alumnos/planificacion/
+src/app/api/ejercicios
+src/app/api/planes

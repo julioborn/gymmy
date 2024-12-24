@@ -1,9 +1,11 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import { enviarCorreoPagoCuota } from '@/utils/emailPagoCuota';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Método POST para registrar el pago de un alumno
 export async function POST(request: NextRequest) {
+    await connectMongoDB();
+
     try {
         const { alumnoId, nuevoPago } = await request.json();
         
@@ -21,6 +23,15 @@ export async function POST(request: NextRequest) {
 
         if (!alumnoActualizado) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
+        }
+
+        // Enviar correo al alumno
+        if (alumnoActualizado.email) {
+            await enviarCorreoPagoCuota(
+                alumnoActualizado.email,
+                alumnoActualizado.nombre,
+                nuevoPago
+            );
         }
 
         return NextResponse.json(alumnoActualizado, { status: 200 });

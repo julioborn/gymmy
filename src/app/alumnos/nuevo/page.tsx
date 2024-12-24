@@ -7,6 +7,8 @@ export default function NuevoAlumnoPage() {
     const [apellido, setApellido] = useState('');
     const [fechaNacimiento, setFechaNacimiento] = useState(''); // Cambiado de edad a fechaNacimiento
     const [dni, setDni] = useState('');
+    const [telefono, setTelefono] = useState('');
+    const [email, setEmail] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,7 +18,7 @@ export default function NuevoAlumnoPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ nombre, apellido, fechaNacimiento: new Date(fechaNacimiento), dni }),
+            body: JSON.stringify({ nombre, apellido, fechaNacimiento: new Date(fechaNacimiento), dni, telefono, email }),
         });
         // Mostrar la alerta de SweetAlert2
         Swal.fire({
@@ -30,6 +32,8 @@ export default function NuevoAlumnoPage() {
         setApellido('');
         setFechaNacimiento('');
         setDni('');
+        setTelefono('');
+        setEmail('');
     };
 
     return (
@@ -53,9 +57,18 @@ export default function NuevoAlumnoPage() {
                     required
                 />
                 <input
-                    type="date" // Cambiado a un input de tipo fecha
-                    value={fechaNacimiento}
-                    onChange={(e) => setFechaNacimiento(e.target.value)}
+                    type="text"
+                    placeholder="Teléfono"
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)}
+                    className="border border-gray-300 p-2 w-full"
+                    required
+                />
+                <input
+                    type="text"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="border border-gray-300 p-2 w-full"
                     required
                 />
@@ -64,6 +77,13 @@ export default function NuevoAlumnoPage() {
                     placeholder="DNI"
                     value={dni}
                     onChange={(e) => setDni(e.target.value)}
+                    className="border border-gray-300 p-2 w-full"
+                    required
+                />
+                <input
+                    type="date" // Cambiado a un input de tipo fecha
+                    value={fechaNacimiento}
+                    onChange={(e) => setFechaNacimiento(e.target.value)}
                     className="border border-gray-300 p-2 w-full"
                     required
                 />

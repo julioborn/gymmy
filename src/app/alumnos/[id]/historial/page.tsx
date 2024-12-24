@@ -48,6 +48,8 @@ type Pago = {
 type PlanEntrenamiento = {
     fechaInicio: string;
     duracion: number;
+    diasRestantes: number;
+    terminado: boolean;
 };
 
 type Alumno = {
@@ -150,6 +152,7 @@ export default function HistorialAlumnoPage() {
     useEffect(() => {
         fetchTarifas();
     }, []);
+
     const fetchTarifas = async () => {
         try {
             const response = await fetch('/api/tarifas'); // Asegura que este sea el endpoint correcto
@@ -396,6 +399,7 @@ export default function HistorialAlumnoPage() {
                         body: JSON.stringify({
                             fechaInicio: fechaSeleccionada,
                             duracion: Number(duracion),
+                            terminado: false
                         }),
                     });
 
@@ -787,7 +791,7 @@ export default function HistorialAlumnoPage() {
 
             {/* Nombre alumno */}
             <div className="flex mb-2 justify-center">
-                <h2 className="text-3xl font-light text-gray-800 bg-gray-100 p-1 pl-1.5 pr-1.5 rounded border border-gray-500">
+                <h2 className="text-3xl font-light text-gray-800 p-1 pl-1.5 pr-1.5">
                     {alumno.nombre} {alumno.apellido}
                 </h2>
             </div>
@@ -1078,15 +1082,15 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Estadísticas */}
-                <div className="flex-1 bg-gray-50 p-4 rounded shadow border">
+                {/* <div className="flex-1 bg-gray-50 p-4 rounded shadow border"> */}
                     {/* Gráficos */}
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3>
+                    {/* <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3> */}
 
                     {/* Contenedor de gráficos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
 
                         {/* Bar Chart: Frecuencia de Asistencia por Día de la Semana */}
-                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-[#4BC0C0] mb-4">Frecuencia de Asistencias por Día de la Semana</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1149,10 +1153,10 @@ export default function HistorialAlumnoPage() {
                                     },
                                 }}
                             />
-                        </div>
+                        </div> */}
 
                         {/* Bar Chart: Distribución de Asistencias por Actividad */}
-                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-orange-600 mb-4">Porcentaje de Asistencias por Actividad</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1207,10 +1211,10 @@ export default function HistorialAlumnoPage() {
                                     },
                                 }}
                             />
-                        </div>
+                        </div> */}
 
                         {/* Bar Chart: Pagos Realizados */}
-                        <div className="bg-gray-50 p-4 rounded shadow-md border">
+                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos Realizados en {yearPagos}</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1269,10 +1273,10 @@ export default function HistorialAlumnoPage() {
                                     },
                                 }}
                             />
-                        </div>
+                        </div> */}
 
-                    </div>
-                </div>
+                    {/* </div> */}
+                {/* </div> */}
 
             </div>
 

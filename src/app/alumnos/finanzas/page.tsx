@@ -86,7 +86,7 @@ const ControlFinanciero = () => {
                 </label>
                 <select
                     id="year-selector"
-                    className="border border-gray-300 px-3 py-2 bg-gray-50 p-4 rounded shadow"
+                    className="border border-gray-300 px-3 py-2 bg-gray-50 p-4 rounded shadow cursor-pointer"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(Number(e.target.value))}
                 >

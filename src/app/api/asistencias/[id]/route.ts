@@ -1,5 +1,6 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
 
 // Crear asistencia
 export async function POST(request: Request, { params }: { params: { id: string } }) {
@@ -30,10 +31,37 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
         // Agregar nueva asistencia
         alumno.asistencia.push({ fecha, presente, actividad });
+
+        // Reducir días restantes si la actividad es "Musculación" y está presente
+        if (actividad === 'Musculación' && presente && alumno.planEntrenamiento) {
+            if (alumno.planEntrenamiento.diasRestantes > 0) {
+                alumno.planEntrenamiento.diasRestantes -= 1;
+
+                // Verificar si el plan ha terminado
+                if (alumno.planEntrenamiento.diasRestantes === 0) {
+                    alumno.planEntrenamiento.terminado = true;
+
+                    // Enviar correo al alumno con estadísticas
+                    if (alumno.email) {
+                        await enviarCorreoPlanTerminado(
+                            alumno.email,
+                            alumno.nombre,
+                            alumno.asistencia,
+                            {
+                                fechaInicio: alumno.planEntrenamiento.fechaInicio,
+                                duracion: alumno.planEntrenamiento.duracion,
+                            }
+                        );
+                    }
+                }
+            }
+        }
+
         await alumno.save();
 
         return new Response(JSON.stringify(alumno), { status: 200 });
     } catch (error) {
+        console.error('Error registrando asistencia:', error);
         return new Response('Error registrando asistencia', { status: 500 });
     }
 }

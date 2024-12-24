@@ -3,19 +3,23 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
 
+// Variables de entorno
+const USE_ATLAS = process.env.USE_ATLAS === "true"; // Flag para decidir conexión
+const ATLAS_URI = process.env.ATLAS_URI as string;
 const MONGODB_URI = process.env.MONGODB_URI as string;
 const MONGODB_DB = process.env.MONGODB_DB as string;
 
+// Manejo de conexión con MongoDB
 let clientPromise: Promise<MongoClient>;
 
-if (!MONGODB_URI) {
-    throw new Error("Por favor, define la variable de entorno MONGODB_URI");
+if (!MONGODB_URI || !ATLAS_URI) {
+    throw new Error("Por favor, define las variables de entorno MONGODB_URI y ATLAS_URI");
 }
 
-const client = new MongoClient(MONGODB_URI);
+const client = new MongoClient(USE_ATLAS ? ATLAS_URI : MONGODB_URI);
 clientPromise = client.connect();
 
-// Define el tipo de usuario para añadir los roles
+// Tipo de usuario para las sesiones
 type UserWithRole = {
     id: string;
     username: string;
@@ -33,33 +37,41 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials) {
                 const db = (await clientPromise).db(MONGODB_DB);
                 const collection = db.collection("usuarios");
-
+            
+                console.log("Iniciando sesión para el usuario:", credentials?.username);
+            
+                // Buscar usuario
                 const user = await collection.findOne({ username: credentials?.username });
-
+                console.log("Usuario encontrado:", user);
+            
                 if (!user) {
+                    console.log("Usuario no encontrado");
                     throw new Error("Credenciales inválidas");
                 }
-
+            
+                // Validar la contraseña usando bcrypt
                 const isPasswordValid = await bcrypt.compare(credentials!.password, user.password);
-
+                console.log("¿Contraseña válida?:", isPasswordValid);
+            
                 if (!isPasswordValid) {
+                    console.log("Contraseña incorrecta");
                     throw new Error("Credenciales inválidas");
                 }
-
+            
                 return {
                     id: user._id.toString(),
                     username: user.username,
                     role: user.role,
                 };
-            }
+            }            
         }),
     ],
     pages: {
-        signIn: "/login",
+        signIn: "/login", // Página de inicio de sesión personalizada
     },
     session: {
-        strategy: "jwt", // Usar JWT para mantener la sesión
-        maxAge: 30 * 24 * 60 * 60, // Extiende la duración de la sesión a 30 días si el usuario marca "Recuérdame"
+        strategy: "jwt", // Usar JWT para la sesión
+        maxAge: 30 * 24 * 60 * 60, // Sesión válida por 30 días
     },
     callbacks: {
         async session({ session, token }: { session: any; token: any }) {
@@ -79,7 +91,7 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET, // Secreto para encriptación de sesiones
 };
 
 export const POST = NextAuth(authOptions);

@@ -26,7 +26,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
         // Usar el tipo Pago para definir el array
         alumno.pagos = alumno.pagos.filter((pago: Pago) => pago._id.toString() !== pagoId);
-        console.log(`Pagos después de eliminar: ${JSON.stringify(alumno.pagos)}`);
+        //console.log(`Pagos después de eliminar: ${JSON.stringify(alumno.pagos)}`);
 
         await alumno.save();
         console.log('Pago eliminado y cambios guardados en la base de datos');

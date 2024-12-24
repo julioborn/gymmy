@@ -44,3 +44,31 @@ body {
     text-overflow: ellipsis; /* Si el título es muy largo, se cortará con "..." */
   }
 }
+
+@media print {
+  .no-print {
+      display: none !important;
+  }
+
+  body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: black;
+  }
+
+  table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+
+  th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+  }
+
+  th {
+      background-color: #f2f2f2;
+      text-align: left;
+  }
+}

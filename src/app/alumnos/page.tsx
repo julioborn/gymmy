@@ -70,18 +70,16 @@ export default function ListaAlumnosPage() {
     const fetchAlumnos = async () => {
         try {
             const response = await fetch('/api/alumnos');
-            if (!response.ok) {
-                throw new Error('Error en la solicitud');
-            }
+            if (!response.ok) throw new Error('Error en la solicitud');
 
             const data = await response.json();
-            const alumnosConEdad = data.map((alumno: any) => ({
-                ...alumno,
-                edad: calcularEdad(alumno.fechaNacimiento),
-                diasRestantes: calcularDiasRestantes(alumno.planEntrenamiento, alumno.asistencia) // Calcular días restantes
-            }));
+            const alumnosConDatos = data.map((alumno: any) => {
+                const diasRestantes = calcularDiasRestantes(alumno.planEntrenamiento, alumno.asistencia);
+                const edad = alumno.fechaNacimiento ? calcularEdad(alumno.fechaNacimiento) : null; // Calcula la edad si la fecha de nacimiento está disponible
+                return { ...alumno, diasRestantes, edad };
+            });
 
-            setAlumnos(alumnosConEdad);
+            setAlumnos(alumnosConDatos); // No necesitas await aquí, el cálculo es síncrono
         } catch (error) {
             console.error('Error al obtener alumnos:', error);
         }
@@ -104,7 +102,6 @@ export default function ListaAlumnosPage() {
     useEffect(() => {
         fetchTarifas(); // Llama a fetchTarifas una vez al montar el componente
     }, []);
-
 
     const guardarAlumno = async (id: string, alumnoActualizado: any) => {
         try {
@@ -247,6 +244,50 @@ export default function ListaAlumnosPage() {
         }
     };
 
+    const iniciarPlan = async (alumnoId: string) => {
+        // Obtén la fecha actual en formato ISO (YYYY-MM-DD)
+        const fechaInicio = new Date().toISOString().split('T')[0];
+
+        const { value: duracion } = await Swal.fire({
+            title: 'Definir duración del plan de entrenamiento',
+            input: 'number',
+            inputLabel: 'Cantidad de entrenamientos',
+            inputPlaceholder: 'Ingresar la cantidad',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value || Number(value) <= 0) {
+                    return 'Debes ingresar una duración válida';
+                }
+                return null;
+            },
+        });
+
+        if (duracion) {
+            try {
+                const response = await fetch(`/api/alumnos/${alumnoId}/plan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fechaInicio,
+                        duracion: Number(duracion),
+                        terminado: false,
+                    }),
+                });
+
+                if (response.ok) {
+                    Swal.fire('Plan de entrenamiento iniciado', '', 'success');
+                    fetchAlumnos(); // Refrescar la lista de alumnos
+                } else {
+                    Swal.fire('Error', 'No se pudo iniciar el plan de entrenamiento', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al iniciar el plan', 'error');
+            }
+        }
+    };
+
     const handleLetraClick = (letra: string) => {
         setFiltroLetraApellido(letra);
     };
@@ -276,11 +317,10 @@ export default function ListaAlumnosPage() {
             }
         });
 
-    const letrasAlfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    //const letrasAlfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
     return (
-        <div className="w-full max-w-full lg:max-w-4xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
-
+        <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
 
             {/* Buscador */}
@@ -299,10 +339,10 @@ export default function ListaAlumnosPage() {
                 <select
                     value={filtroEdad}
                     onChange={(e) => setFiltroEdad(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
                 >
                     <option value="">Edad</option>
-                    {[...Array.from(new Set(alumnos.map(alumno => alumno.edad)))].sort((a, b) => a - b).map((edad) => (
+                    {[...Array.from(new Set(alumnos.map((alumno) => alumno.edad)))].sort((a, b) => a - b).map((edad) => (
                         <option key={edad} value={edad}>{edad}</option>
                     ))}
                 </select>
@@ -310,7 +350,7 @@ export default function ListaAlumnosPage() {
                 <select
                     value={filtroPago}
                     onChange={(e) => setFiltroPago(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
                 >
                     <option value="">Pago</option>
                     <option value="pagado">Pagaron</option>
@@ -320,35 +360,13 @@ export default function ListaAlumnosPage() {
                 <select
                     value={ordenDiasRestantes}
                     onChange={(e) => setOrdenDiasRestantes(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-100 w-full"
+                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
                 >
-                    <option value="">Días restantes</option>
-                    <option value="asc">Días restantes (Ascendente)</option>
-                    <option value="desc">Días restantes (Descendente)</option>
+                    <option value="">Días Restantes Plan</option>
+                    <option value="asc">Días Restantes (Ascendente)</option>
+                    <option value="desc">Días Restantes (Descendente)</option>
                 </select>
             </div>
-
-            {/* Filtro por letra del apellido
-            <div className="bg-gray-100 p-3 rounded border border-gray-300 mb-4 mt-2 overflow-x-auto">
-                <h2 className='mb-2'>Apellido</h2>
-                <div className="flex flex-wrap gap-2">
-                    {letrasAlfabeto.map((letra) => (
-                        <button
-                            key={letra}
-                            onClick={() => handleLetraClick(letra)}
-                            className={`p-2 w-10 border border-gray-300 rounded ${filtroLetraApellido === letra ? 'bg-gray-700 text-white' : 'bg-white'}`}
-                        >
-                            {letra}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => setFiltroLetraApellido('')}
-                        className="p-2 border rounded bg-gray-700 hover:bg-gray-600 text-white"
-                    >
-                        Limpiar
-                    </button>
-                </div>
-            </div> */}
 
             {/* Botón para limpiar filtros */}
             <div className="mt-4 flex justify-end">
@@ -366,69 +384,104 @@ export default function ListaAlumnosPage() {
                 </button>
             </div>
 
-            {/* Tabla de alumnos */}
-            <div className="overflow-x-auto">
-                <table className="table-auto w-full text-left">
-                    <thead>
-                        <tr>
-                            <th className="px-4 py-2">Nombre</th>
-                            <th className="px-4 py-2">Edad</th>
-                            <th className="px-4 py-2">DNI</th>
-                            <th className="px-4 py-2 text-center">Pago</th>
-                            <th className="px-4 py-2 text-center">Plan</th>
-                            <th className="px-4 py-2">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {alumnosFiltrados.map((alumno) => (
-                            <tr key={alumno._id} className="border-t">
-                                <td className="px-4 py-2">{alumno.nombre} {alumno.apellido}</td>
-                                <td className="px-4 py-2">{alumno.edad}</td>
-                                <td className="px-4 py-2">{alumno.dni}</td>
+            {/* Tarjetas de alumnos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
+                {alumnosFiltrados.map((alumno) => (
+                    <div
+                        key={alumno._id}
+                        className="bg-gray-200 border border-gray-400 rounded-lg p-4 shadow-md"
+                    >
+                        <h2 className="text-lg font-semibold text-gray-800">{alumno.nombre} {alumno.apellido}</h2>
+                        <p className="text-gray-600 text-md">Edad: {alumno.edad}</p>
+                        <p className="text-gray-600 text-md">DNI: {alumno.dni}</p>
+                        <p className="text-gray-600 text-md">Teléfono: {alumno.telefono}</p>
+                        <p className="text-gray-600 text-md">Email: {alumno.email}</p>
 
-                                <td className="text-center">
-                                    {verificarPagoMesActual(alumno.pagos) ? (
-                                        <FaCheckCircle className="text-green-500 mx-auto" />
-                                    ) : (
-                                        <FaTimesCircle className="text-red-500 mx-auto" />
-                                    )}
-                                </td>
+                        <div className="mt-4 flex justify-between items-center">
+                            <div>
+                                {verificarPagoMesActual(alumno.pagos) ? (
+                                    <div className='flex items-center space-x-1'>
+                                        <p>Pagó</p>
+                                        <FaCheckCircle className="text-green-500 flex " title="Pagado" />
+                                    </div>
+                                ) : (
+                                    <div className='flex items-center space-x-1'>
+                                        <p>No Pagó</p>
+                                        <FaTimesCircle className="text-red-500" title="No Pagado" />
+                                    </div>
+                                )}
+                            </div>
 
-                                <td className={`text-center ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
-                                    {alumno.diasRestantes !== null ? alumno.diasRestantes : 'Sin plan'}
-                                </td>
+                            <div className={`font-bold ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
+                                {alumno.diasRestantes === 0 ? (
+                                    <span className="text-red-500">Plan Terminado</span>
+                                ) : alumno.diasRestantes !== null ? (
+                                    `${alumno.diasRestantes} días restantes de plan`
+                                ) : (
+                                    'Sin plan'
+                                )}
+                            </div>
+                        </div>
 
-                                <td className="px-4 py-2 flex flex-col lg:flex-row lg:space-x-2">
-                                    <button
-                                        onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
-                                        className="bg-gray-700 text-white p-2 rounded text-sm mb-2 lg:mb-0"
-                                    >
-                                        Historial
-                                    </button>
-                                    <button
-                                        onClick={() => setEditandoAlumno(alumno)}
-                                        className="bg-yellow-500 text-white p-2 rounded text-sm mb-2 lg:mb-0"
-                                    >
-                                        Editar
-                                    </button>
-                                    <button
-                                        onClick={() => eliminarAlumno(alumno._id)}
-                                        className="bg-red-500 text-white p-2 rounded text-sm mb-2 lg:mb-0"
-                                    >
-                                        Eliminar
-                                    </button>
-                                    <button
-                                        onClick={() => marcarPagoMes(alumno._id)}
-                                        className={`text-white text-sm p-2 rounded ${verificarPagoMesActual(alumno.pagos) ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'}`}
-                                        disabled={verificarPagoMesActual(alumno.pagos)}
-                                    >
-                                        Cobrar Mes
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        <div className="mt-4 flex flex-wrap gap-1 justify-center">
+                            <button
+                                onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
+                                className="bg-gray-700 text-white px-2 py-2 text-sm rounded"
+                            >
+                                Historial
+                            </button>
+                            <button
+                                onClick={() => iniciarPlan(alumno._id)}
+                                className={`text-white text-sm px-4 py-2 rounded ${alumno.planEntrenamiento &&
+                                    alumno.planEntrenamiento.fechaInicio &&
+                                    alumno.planEntrenamiento.duracion &&
+                                    !alumno.planEntrenamiento.terminado
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-500 hover:bg-orange-600'
+                                    }`}
+                                disabled={
+                                    alumno.planEntrenamiento &&
+                                    alumno.planEntrenamiento.fechaInicio &&
+                                    alumno.planEntrenamiento.duracion &&
+                                    !alumno.planEntrenamiento.terminado
+                                }
+                            >
+                                {alumno.planEntrenamiento &&
+                                    alumno.planEntrenamiento.fechaInicio &&
+                                    alumno.planEntrenamiento.duracion &&
+                                    !alumno.planEntrenamiento.terminado
+                                    ? 'Plan en curso'
+                                    : 'Iniciar Plan'}
+                            </button>
+                            <button
+                                onClick={() => marcarPagoMes(alumno._id)}
+                                className={`text-white text-sm px-4 py-2 rounded ${verificarPagoMesActual(alumno.pagos) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+                                    }`}
+                                disabled={verificarPagoMesActual(alumno.pagos)}
+                            >
+                                {verificarPagoMesActual(alumno.pagos) ? 'Mes Cobrado' : 'Cobrar Mes'}
+                            </button>
+                            <button
+                                onClick={() => setEditandoAlumno(alumno)}
+                                className="bg-yellow-500 text-white px-4 py-2 text-sm rounded"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 26 26" stroke-width="1.5" stroke="currentColor" className="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={() => eliminarAlumno(alumno._id)}
+                                className="bg-red-500 text-white px-4 py-2 text-sm rounded"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 26 26" stroke-width="1.5" stroke="currentColor" className="size-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </div>
+
+
+                    </div>
+                ))}
             </div>
 
             {/* Ventana modal para editar el alumno */}
@@ -436,7 +489,7 @@ export default function ListaAlumnosPage() {
                 <Modal
                     isOpen={Boolean(editandoAlumno)}
                     onRequestClose={() => setEditandoAlumno(null)}
-                    className="bg-white p-8 rounded shadow-md max-w-lg mx-auto"
+                    className="bg-white p-8 rounded shadow-md max-w-lg mx-auto w-[800px]"
                     overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
                 >
                     <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Alumno</h2>
@@ -480,6 +533,30 @@ export default function ListaAlumnosPage() {
                                 required
                             />
                         </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700">Teléfono</label>
+                            <input
+                                type="text"
+                                value={editandoAlumno.telefono}
+                                onChange={(e) =>
+                                    setEditandoAlumno((prev: any) => ({ ...prev, telefono: e.target.value }))
+                                }
+                                className="border border-gray-300 p-2 w-full"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700">Email</label>
+                            <input
+                                type="text"
+                                value={editandoAlumno.email}
+                                onChange={(e) =>
+                                    setEditandoAlumno((prev: any) => ({ ...prev, email: e.target.value }))
+                                }
+                                className="border border-gray-300 p-2 w-full"
+                                required
+                            />
+                        </div>
                         <div className="flex justify-end space-x-2">
                             <button
                                 type="button"
@@ -498,8 +575,8 @@ export default function ListaAlumnosPage() {
                     </form>
                 </Modal>
             )}
-        </div>
 
+        </div>
 
     );
 }

@@ -26,33 +26,36 @@ export async function GET(request: Request) {
     }
 }
 
-
 // Crear alumno
 export async function POST(request: Request) {
     await connectMongoDB();
 
-    const { nombre, apellido, fechaNacimiento, dni } = await request.json();
+    const { nombre, apellido, fechaNacimiento, dni, telefono, email } = await request.json();
 
     try {
-        // Crear nuevo alumno con plan de entrenamiento por defecto
+        // Crear nuevo alumno con un plan de entrenamiento vacío
         const nuevoAlumno = new Alumno({
             nombre,
             apellido,
             fechaNacimiento,
             dni,
+            telefono,
+            email,
             asistencia: [], // No hay asistencias al crear el alumno
             pagos: [], // No hay pagos al crear el alumno
             planEntrenamiento: {
-                fechaInicio: null, // Fecha de inicio predeterminada: hoy
-                duracion: null, // Duración del plan, o valor por defecto 30 si no se proporciona
-            },
-        });
+                fechaInicio: null, // Sin fecha predeterminada
+                duracion: null, // Sin duración predeterminada
+                diasRestantes: null, // Sin días restantes definidos
+                terminado: false, // Estado inicial de no terminado
+            }
+        });        
 
         await nuevoAlumno.save();
         return new Response(JSON.stringify(nuevoAlumno), { status: 201 });
     } catch (error) {
-        console.error(error);
-        return new Response('Error creating alumno', { status: 500 });
+        console.error('Error creando alumno:', error);
+        return new Response('Error creando alumno', { status: 500 });
     }
 }
 
@@ -61,11 +64,11 @@ export async function PUT(request: Request) {
     await connectMongoDB();
 
     try {
-        const { id, nombre, apellido, fechaNacimiento, dni } = await request.json();
+        const { id, nombre, apellido, fechaNacimiento, dni, telefono, email } = await request.json();
 
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             id,
-            { nombre, apellido, fechaNacimiento, dni },
+            { nombre, apellido, fechaNacimiento, dni, telefono, email },
             { new: true } // Retorna el documento actualizado
         );
 
@@ -99,4 +102,3 @@ export async function DELETE(request: Request) {
         return new Response('Error eliminando alumno', { status: 500 });
     }
 }
-

@@ -10,6 +10,8 @@ interface IAlumno extends Document {
     nombre: string;
     apellido: string;
     fechaNacimiento: Date;
+    telefono: string;
+    email: string;
     dni: string;
     asistencia: IAsistencia[];
 }
@@ -25,6 +27,8 @@ const AlumnoSchema: Schema = new Schema({
     apellido: { type: String, required: true },
     fechaNacimiento: { type: Date, required: true },
     dni: { type: String, required: true },
+    telefono: { type: String, required: true },
+    email: { type: String, required: true },
     asistencia: [AsistenciaSchema]
 });
 
