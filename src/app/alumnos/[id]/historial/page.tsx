@@ -826,7 +826,7 @@ export default function HistorialAlumnoPage() {
             </button>
 
             {/* Calendario */}
-            <div className='bg-gray-50 p-4 rounded shadow border'>
+            <div className="hidden sm:block bg-gray-50 p-4 rounded shadow border">
                 <FullCalendar
                     firstDay={1}
                     plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
@@ -838,34 +838,30 @@ export default function HistorialAlumnoPage() {
                     height="auto"
                     selectable={true}
                     select={handleDateSelect}
-                    aspectRatio={1.5}  // Controla la proporción ancho/alto
+                    aspectRatio={1.5} // Controla la proporción ancho/alto
                     eventClick={handleEventClick}
                     eventContent={(arg) => {
                         const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
-
                         if (tipo === 'plan') {
-                            // Personalización para el evento de inicio del plan
                             return (
                                 <div
                                     className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
-                                    style={{ whiteSpace: 'normal' }} // Asegura que el texto se divida en líneas si es necesario
+                                    style={{ whiteSpace: 'normal' }}
                                 >
-                                    <strong>{arg.event.title}</strong> {/* Mostrar el texto centrado */}
+                                    <strong>{arg.event.title}</strong>
                                 </div>
                             );
                         }
-
                         if (tipo === 'pago') {
                             const pagoMes = arg.event.title;
                             const tarifa = arg.event.extendedProps.tarifa;
                             return (
                                 <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
-                                    <div className="flex items-center break-words"
-                                        style={{ whiteSpace: 'normal' }}>
-                                        <strong>{pagoMes}</strong> {/* Pago */}
+                                    <div className="flex items-center break-words" style={{ whiteSpace: 'normal' }}>
+                                        <strong>{pagoMes}</strong>
                                     </div>
                                     <div>
-                                        <strong className="text-white mr-1">${tarifa}</strong> {/* Tarifa */}
+                                        <strong className="text-white mr-1">${tarifa}</strong>
                                     </div>
                                 </div>
                             );
@@ -875,8 +871,7 @@ export default function HistorialAlumnoPage() {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                 })
-                                : ''; // Verificamos que no sea null
-
+                                : '';
                             return (
                                 <div
                                     className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
@@ -888,7 +883,7 @@ export default function HistorialAlumnoPage() {
                                     <div className="flex items-center">
                                         <span
                                             style={{
-                                                backgroundColor: arg.event.backgroundColor, // Usamos el color del evento
+                                                backgroundColor: arg.event.backgroundColor,
                                                 width: '8px',
                                                 height: '8px',
                                                 display: 'inline-block',
@@ -896,10 +891,10 @@ export default function HistorialAlumnoPage() {
                                                 marginRight: '8px',
                                             }}
                                         ></span>
-                                        <strong className="truncate">{arg.event.title}</strong> {/* Actividad */}
+                                        <strong className="truncate">{arg.event.title}</strong>
                                     </div>
                                     <div>
-                                        {hora && <strong className="text-red-600 mr-1">{hora}</strong>} {/* Hora de la actividad */}
+                                        {hora && <strong className="text-red-600 mr-1">{hora}</strong>}
                                     </div>
                                 </div>
                             );
@@ -1077,20 +1072,19 @@ export default function HistorialAlumnoPage() {
                                 <p className="text-gray-500">No hay pagos registrados.</p>
                             )}
                         </div>
-
                     </div>
                 </div>
 
                 {/* Estadísticas */}
                 {/* <div className="flex-1 bg-gray-50 p-4 rounded shadow border"> */}
-                    {/* Gráficos */}
-                    {/* <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3> */}
+                {/* Gráficos */}
+                {/* <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3> */}
 
-                    {/* Contenedor de gráficos */}
-                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
+                {/* Contenedor de gráficos */}
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
 
-                        {/* Bar Chart: Frecuencia de Asistencia por Día de la Semana */}
-                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
+                {/* Bar Chart: Frecuencia de Asistencia por Día de la Semana */}
+                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-[#4BC0C0] mb-4">Frecuencia de Asistencias por Día de la Semana</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1155,8 +1149,8 @@ export default function HistorialAlumnoPage() {
                             />
                         </div> */}
 
-                        {/* Bar Chart: Distribución de Asistencias por Actividad */}
-                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
+                {/* Bar Chart: Distribución de Asistencias por Actividad */}
+                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-orange-600 mb-4">Porcentaje de Asistencias por Actividad</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1213,8 +1207,8 @@ export default function HistorialAlumnoPage() {
                             />
                         </div> */}
 
-                        {/* Bar Chart: Pagos Realizados */}
-                        {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
+                {/* Bar Chart: Pagos Realizados */}
+                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
                             <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos Realizados en {yearPagos}</h4>
                             <div className="mb-4 flex justify-end">
                                 <select
@@ -1275,7 +1269,7 @@ export default function HistorialAlumnoPage() {
                             />
                         </div> */}
 
-                    {/* </div> */}
+                {/* </div> */}
                 {/* </div> */}
 
             </div>

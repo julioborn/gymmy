@@ -100,13 +100,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     type="text"
                     value={dni}
                     onChange={(e) => setDni(e.target.value)}
-                    className="border border-gray-300 p-2 w-full rounded"
+                    className="border border-gray-300 p-2 w-full rounded size-max"
                     placeholder="Ingrese su DNI"
                     required
                 />
 
                 {/* Botones interactivos para seleccionar la actividad */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-2 gap-2 mb-4">
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
@@ -121,13 +121,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     >
                         Intermitente
                     </button>
-                    <button
+                    {/* <button
                         type="button"
                         onClick={() => setActividad('Otro')}
                         className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Otro' ? 'bg-[#f1c40f]' : 'bg-gray-200'}`}
                     >
                         Otro
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Teclado numérico siempre visible */}
