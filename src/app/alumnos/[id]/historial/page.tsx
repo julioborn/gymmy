@@ -5,9 +5,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
-import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
+import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
 import listPlugin from '@fullcalendar/list';
-import { Pie, Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -226,51 +225,95 @@ export default function HistorialAlumnoPage() {
         }
     };
 
+    // Función para ajustar la vista del calendario
     const adjustCalendarView = () => {
+        console.log("Window width:", window.innerWidth);
         if (window.innerWidth <= 768) {
-            setCalendarView('listWeek'); // Vista de lista en pantallas pequeñas
+            console.log("Setting view to listWeek");
+            setCalendarView('listWeek');
             setHeaderToolbar({
                 left: 'prev,next',
                 center: '',
-                right: 'dayGridDay,today', // Agregar también otras vistas
+                right: 'today',
             });
             setButtonText({
                 today: 'Hoy',
                 month: '',
-                week: '', // Puedes dejar vacío si no necesitas esta vista en dispositivos pequeños
-                day: 'Día',
-                list: '', // Texto de la lista en pantallas pequeñas
+                week: '',
+                day: '',
+                list: 'Lista',
             });
         } else {
-            setCalendarView('dayGridMonth'); // Vista mensual para pantallas grandes
+            console.log("Setting view to dayGridMonth");
+            setCalendarView('dayGridMonth');
             setHeaderToolbar({
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,dayGridWeek,dayGridDay', // Mostrar todas las vistas en pantallas grandes
+                right: 'dayGridMonth,dayGridWeek,dayGridDay',
             });
             setButtonText({
                 today: 'Hoy',
                 month: 'Mes',
                 week: 'Semana',
                 day: 'Día',
-                list: 'Lista', // Texto completo para pantallas grandes
+                list: 'Lista',
             });
         }
     };
 
     useEffect(() => {
-        if (id) {
-            fetchAlumno();
-        }
-
-        adjustCalendarView(); // Ajusta la vista cuando el componente se carga
-
+        adjustCalendarView(); // Ajusta la vista al montar
+    
         // Detectar cambios en el tamaño de la pantalla
         window.addEventListener('resize', adjustCalendarView);
-
-        // Limpiar el evento cuando se desmonte el componente
+    
+        // Limpiar el evento al desmontar
         return () => window.removeEventListener('resize', adjustCalendarView);
-    }, [id]);
+    }, []);
+
+
+    useEffect(() => {
+        // Detectar tamaño de la pantalla al cargar
+        const updateCalendarView = () => {
+            if (window.innerWidth <= 768) {
+                setCalendarView('listWeek'); // Vista de lista para móviles
+                setHeaderToolbar({
+                    left: 'prev,next',
+                    center: '',
+                    right: 'today',
+                });
+                setButtonText({
+                    today: 'Hoy',
+                    month: '', // No mostrar botones innecesarios
+                    week: '',
+                    day: '',
+                    list: 'Lista',
+                });
+            } else {
+                setCalendarView('dayGridMonth'); // Vista completa para pantallas grandes
+                setHeaderToolbar({
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay',
+                });
+                setButtonText({
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana',
+                    day: 'Día',
+                    list: 'Lista',
+                });
+            }
+        };
+    
+        updateCalendarView(); // Ajusta la vista al montar
+    
+        // Escuchar cambios de tamaño de la pantalla
+        window.addEventListener('resize', updateCalendarView);
+    
+        // Limpia el evento al desmontar
+        return () => window.removeEventListener('resize', updateCalendarView);
+    }, [])    
 
     // Función para obtener los datos del alumno
     const fetchAlumno = async () => {
@@ -311,7 +354,7 @@ export default function HistorialAlumnoPage() {
     }
 
     // Ajustamos la creación de eventos para que incluya la tarifa en el título
-    const events = [
+    const events: EventInput[] = [
         ...alumno.asistencia.map((asistencia) => {
             let color = '';
             switch (asistencia.actividad) {
@@ -334,17 +377,16 @@ export default function HistorialAlumnoPage() {
                 color,
                 extendedProps: { _id: asistencia._id, tipo: 'actividad' },
             } : null;
-        }).filter(event => event !== null),
-
+        }).filter(event => event !== null), // Filtrar valores nulos o inválidos
+    
         alumno.planEntrenamiento.fechaInicio && {
             title: `Inicio del plan (${alumno.planEntrenamiento.duracion})`,
             start: convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio),
             display: 'block',
             color: '#ff0000', // Rojo para el inicio del plan
             extendedProps: { tipo: 'plan' },
-
         },
-
+    
         ...alumno.pagos.map((pago) => ({
             title: `Pago ${pago.mes}`,   // Este es el título que se mostrará en la primera línea
             start: convertirAFechaLocal(pago.fechaPago),
@@ -356,8 +398,8 @@ export default function HistorialAlumnoPage() {
                 tarifa: pago.tarifa,  // Pasamos la tarifa en extendedProps
             },
         })),
-    ].filter(event => event !== null);
-
+    ].filter(event => event) as EventInput[]; // Asegurarte de que solo queden eventos válidos
+    
     // Seleccionar fecha para agregar o editar una actividad, plan o pago
     const handleDateSelect = async (selectInfo: DateSelectArg) => {
         const fechaSeleccionada = selectInfo.startStr;
@@ -808,30 +850,32 @@ export default function HistorialAlumnoPage() {
             )}
 
             {/* Botón de configuración de tarifas */}
-            <button
-                className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                onClick={handleConfiguracionTarifas}
-            >
-                <span className="text-white">Tarifas</span>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-5 ml-2 text-white"
+            <div className="hidden sm:block">
+                <button
+                    className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                    onClick={handleConfiguracionTarifas}
                 >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-                </svg>
-            </button>
+                    <span className="text-white">Tarifas</span>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-5 ml-2 text-white"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    </svg>
+                </button>
+            </div>
 
             {/* Calendario */}
-            <div className="hidden sm:block bg-gray-50 p-4 rounded shadow border">
+            <div className="sm:block bg-gray-50 p-4 rounded shadow border">
                 <FullCalendar
                     firstDay={1}
                     plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
                     initialView={calendarView}
-                    events={events as any}
+                    events={events}
                     locale="es"
                     headerToolbar={headerToolbar}
                     buttonText={buttonText}
@@ -917,10 +961,10 @@ export default function HistorialAlumnoPage() {
                     <h3 className="text-xl font-semibold text-gray-700 mb-1">Historial del Alumno</h3>
 
                     {/* Contenedor dividido */}
-                    <div className="flex divide-x divide-gray-200 mt-3 bg-gray-50 p-2 rounded border">
+                    <div className="flex flex-col md:flex-row divide-y md:divide-x divide-gray-200 mt-3 bg-gray-50 p-2 rounded border">
 
                         {/* Actividades */}
-                        <div className="flex-1 pr-4">
+                        <div className="flex-1 pb-4 md:pr-4 md:pb-0">
                             <h4 className="text-lg text-center font-semibold text-orange-600 mb-2">Actividades</h4>
                             {alumno.asistencia.length > 0 ? (
                                 Object.entries(
@@ -999,7 +1043,7 @@ export default function HistorialAlumnoPage() {
                         </div>
 
                         {/* Pagos */}
-                        <div className="flex-1 pl-4">
+                        <div className="flex-1 pt-4 md:pl-4 md:pt-0">
                             <h4 className="text-lg font-semibold text-center text-green-600 mb-2">Pagos</h4>
                             {alumno.pagos.length > 0 ? (
                                 Object.entries(

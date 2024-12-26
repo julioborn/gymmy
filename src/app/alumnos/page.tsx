@@ -66,6 +66,7 @@ export default function ListaAlumnosPage() {
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
     const [tarifas, setTarifas] = useState<Tarifa[]>([]); // Tarifa[] para el tipo correcto
     const router = useRouter();
+    const [editandoTarifas, setEditandoTarifas] = useState(false);
 
     const fetchAlumnos = async () => {
         try {
@@ -244,6 +245,24 @@ export default function ListaAlumnosPage() {
         }
     };
 
+    const guardarTarifas = async (nuevasTarifas: Tarifa[]) => {
+        try {
+            const response = await fetch('/api/tarifas', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevasTarifas),
+            });
+
+            if (!response.ok) throw new Error('Error al actualizar tarifas');
+
+            Swal.fire('Tarifas actualizadas', '', 'success');
+            setTarifas(nuevasTarifas); // Actualiza el estado de tarifas
+            setEditandoTarifas(false); // Cierra el modal
+        } catch (error) {
+            Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+        }
+    };
+
     const iniciarPlan = async (alumnoId: string) => {
         // Obtén la fecha actual en formato ISO (YYYY-MM-DD)
         const fechaInicio = new Date().toISOString().split('T')[0];
@@ -368,8 +387,26 @@ export default function ListaAlumnosPage() {
                 </select>
             </div>
 
-            {/* Botón para limpiar filtros */}
-            <div className="mt-4 flex justify-end">
+            <div className="flex justify-between items-center mb-10 mt-4">
+                {/* Botón Configurar Tarifas */}
+                <button
+                    onClick={() => setEditandoTarifas(true)}
+                    className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800 flex"
+                >
+                    <span className="text-white">Tarifas</span>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-5 ml-2 text-white"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    </svg>
+                </button>
+
+                {/* Botón Limpiar Filtros */}
                 <button
                     onClick={() => {
                         setBusqueda('');
@@ -378,7 +415,7 @@ export default function ListaAlumnosPage() {
                         setFiltroPago('');
                         setOrdenDiasRestantes('');
                     }}
-                    className="bg-gray-700 text-white px-2 py-2 text-sm rounded hover:bg-gray-800"
+                    className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800"
                 >
                     Limpiar Filtros
                 </button>
@@ -575,6 +612,58 @@ export default function ListaAlumnosPage() {
                     </form>
                 </Modal>
             )}
+
+            {/* Ventana modal para editar las tarifas */}
+            <Modal
+                isOpen={editandoTarifas}
+                onRequestClose={() => setEditandoTarifas(false)}
+                className="bg-white p-8 rounded shadow-md max-w-lg mx-auto w-[600px]"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            >
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Tarifas</h2>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        guardarTarifas(tarifas); // Guardar las tarifas editadas
+                    }}
+                >
+                    {tarifas.map((tarifa, index) => (
+                        <div key={tarifa.dias} className="mb-4">
+                            <label className="block text-gray-700">
+                                Días {tarifa.dias}:
+                            </label>
+                            <input
+                                type="number"
+                                value={tarifa.valor}
+                                onChange={(e) => {
+                                    const nuevoValor = Number(e.target.value);
+                                    setTarifas((prev) =>
+                                        prev.map((t, i) =>
+                                            i === index ? { ...t, valor: nuevoValor } : t
+                                        )
+                                    );
+                                }}
+                                className="border border-gray-300 p-2 w-full rounded"
+                            />
+                        </div>
+                    ))}
+                    <div className="flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setEditandoTarifas(false)}
+                            className="bg-red-500 text-white px-4 py-2 rounded"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-green-600 text-white px-4 py-2 rounded"
+                        >
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </Modal>
 
         </div>
 

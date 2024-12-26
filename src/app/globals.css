@@ -72,3 +72,8 @@ body {
       text-align: left;
   }
 }
+
+/* Oculta el punto de color predeterminado en la vista de lista */
+.fc-list-event-dot {
+  display: none !important;
+}
