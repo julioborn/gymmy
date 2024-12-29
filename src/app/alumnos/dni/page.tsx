@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
+import './keyboardStyles.css'; // Tu archivo CSS personalizado
+
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
@@ -110,14 +112,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
                     >
                         Musculación
                     </button>
                     <button
                         type="button"
                         onClick={() => setActividad('Intermitente')}
-                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
                     >
                         Intermitente
                     </button>
@@ -135,14 +137,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <Keyboard
                         onChange={handleKeyboardChange}
                         inputName="dni"
-                        theme="hg-theme-default hg-layout-numeric"
+                        theme="hg-theme-default hg-layout-numeric my-custom-keyboard"
                         layout={{
                             default: [
                                 '1 2 3',
                                 '4 5 6',
                                 '7 8 9',
                                 ' 0 {bksp}',
-                            ]
+                            ],
                         }}
                         display={{
                             '{bksp}': '⌫', // Mostrar el botón de borrar
@@ -154,7 +156,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 <div className="flex justify-center">
                     <button
                         type="submit"
-                        className="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 sm:px-6 sm:py-3 rounded"
+                        className="h-16 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 sm:px-6 sm:py-3 rounded"
                         disabled={isLoading}
                     >
                         {isLoading ? 'Buscando...' : 'Registrar Presente'}

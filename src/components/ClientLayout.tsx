@@ -2,6 +2,7 @@
 
 import { SessionProvider, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import {
     Drawer,
     AppBar,
@@ -36,6 +37,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const [isOnline, setIsOnline] = useState(true); // Estado de conexión
     const [reconnecting, setReconnecting] = useState(false); // Estado de reconexión
     const [backOnlineMessage, setBackOnlineMessage] = useState(false); // Mostrar mensaje "De vuelta en línea"
+    const pathname = usePathname(); // Obtener la ruta actual
 
     const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -44,11 +46,14 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         { text: 'Lista de Alumnos', href: '/alumnos' },
         { text: 'Registrar Alumno', href: '/alumnos/nuevo' },
         { text: 'Finanzas', href: '/alumnos/finanzas' },
-        { text: 'Planificación', href: '/alumnos/planificacion' },
         { text: 'DNI', href: '/alumnos/dni' },
     ];
 
-    const menuLinks = session?.user?.role !== 'alumno' ? menuItems : menuItems.slice(-1);
+    const menuLinks = session?.user?.role === 'dueño'
+        ? menuItems // El dueño ve todas las rutas
+        : session?.user?.role === 'profesor'
+            ? menuItems.filter((item) => item.href !== '/alumnos/finanzas') // El profesor no ve Finanzas
+            : menuItems.slice(-1); // El alumno solo ve la ruta DNI
 
     useEffect(() => {
         const updateOnlineStatus = () => {
@@ -76,38 +81,42 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             {/* AppBar */}
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1f2937' }}>
-                <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between' }}>
-                    {/* Botón del menú */}
-                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu} sx={{ mr: 2 }}>
-                        {menuOpen ? <CloseIcon /> : <MenuIcon />}
-                    </IconButton>
+            <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    {/* Botón del menú */}
+    {pathname !== '/' ? (
+        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu} sx={{ mr: 2 }}>
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+        </IconButton>
+    ) : (
+        <Box sx={{ width: 48 /* Espacio reservado para mantener alineación */ }} />
+    )}
 
-                    {/* Logo */}
-                    <Box
-                        component="img"
-                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
-                        alt="Logo"
-                        sx={{
-                            height: 270,
-                            position: 'absolute',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            fontFamily: "'Hammersmith One', sans-serif",
-                            color: '#fff',
-                        }}
-                    />
+    {/* Logo */}
+    <Box
+        component="img"
+        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
+        alt="Logo"
+        sx={{
+            height: 270,
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontFamily: "'Hammersmith One', sans-serif",
+            color: '#fff',
+        }}
+    />
 
-                    {/* Luz indicadora */}
-                    <Box
-                        sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            backgroundColor: isOnline ? 'green' : 'red',
-                            marginRight: 2,
-                        }}
-                    />
-                </Toolbar>
+    {/* Luz indicadora */}
+    <Box
+        sx={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: isOnline ? 'green' : 'red',
+            marginRight: 2,
+        }}
+    />
+</Toolbar>
             </AppBar>
 
             {/* Mensaje de reconexión */}

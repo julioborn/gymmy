@@ -1,0 +1,8 @@
+.my-custom-keyboard .hg-button {
+    height: 80px !important; /* Altura de los botones */
+    font-size: 18px; /* Tamaño del texto dentro de los botones */
+  }
+  
+  .my-custom-keyboard .hg-button:hover {
+    background-color: #f0f0f0; /* Color de fondo al pasar el cursor */
+  }

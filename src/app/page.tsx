@@ -1,29 +1,24 @@
 'use client';
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
 
-  // if (status === "loading") {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <div className="text-gray-600">Cargando...</div>
-  //     </div>
-  //   );
-  // }
-
   if (!session) {
     return (
-      <div className="flex justify-center items-start h-screen">
-        <div className="bg-white p-8 rounded-md shadow-md text-center max-w-md w-full">
-          <h1 className="text-2xl font-bold mb-4">Bienvenido a Gymmy</h1>
-          <p className="text-gray-600 mb-4">La sesión no está activa</p>
+      <div className="flex justify-center items-center mt-10">
+        <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
+          <h1 className="text-4xl font-bold text-gray-800 mb-6">Bienvenido</h1>
+          <p className="text-gray-600 mb-6">
+            Inicia sesión para gestionar tus alumnos.
+          </p>
           <button
             onClick={() => signIn()}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition duration-300"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition duration-300"
           >
-            Iniciar sesión
+            Iniciar Sesión
           </button>
         </div>
       </div>
@@ -31,15 +26,33 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex justify-center items-start h-screen">
-      <div className="bg-white p-8 rounded-md shadow-md text-center max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-4">Hola, {session.user?.username}</h1>
-        <p className="text-gray-600 mb-4 ">La sesión está activa</p>
+    <div className="flex justify-center items-center mt-10">
+      <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">
+          Hola, {session.user?.username || "Usuario"}
+        </h1>
+        <p className="text-gray-600 mb-6">Selecciona una opción para continuar:</p>
+        <div className="flex flex-col space-y-4 pb-4 border-b border-b-slate-300">
+          <div className="flex flex-col space-y-4 justify-center items-center">
+            <Link
+              href="/alumnos"
+              className="px-8 py-4 w-3/4 bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300"
+            >
+              Lista de Alumnos
+            </Link>
+            <Link
+              href="/alumnos/nuevo"
+              className="px-8 py-4 w-3/4 bg-indigo-600 text-white rounded-lg text-md font-semibold hover:bg-indigo-500 transition duration-300"
+            >
+              Registrar Alumno
+            </Link>
+          </div>
+        </div>
         <button
           onClick={() => signOut()}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300"
+          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
         >
-          Cerrar sesión
+          Cerrar Sesión
         </button>
       </div>
     </div>
