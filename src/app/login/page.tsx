@@ -32,7 +32,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen">
+        <div className="flex flex-col items-center justify-start min-h-screen mt-4">
             <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
                 <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">Iniciar Sesión</h1>
                 {error && (

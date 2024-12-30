@@ -1,6 +1,6 @@
 'use client';
 
-import { SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import {
@@ -81,42 +81,42 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             {/* AppBar */}
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1f2937' }}>
-            <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    {/* Botón del menú */}
-    {pathname !== '/' ? (
-        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu} sx={{ mr: 2 }}>
-            {menuOpen ? <CloseIcon /> : <MenuIcon />}
-        </IconButton>
-    ) : (
-        <Box sx={{ width: 48 /* Espacio reservado para mantener alineación */ }} />
-    )}
+                <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Botón del menú */}
+                    {pathname !== '/' && pathname !== '/login' ? (
+                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu} sx={{ mr: 2 }}>
+                            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+                        </IconButton>
+                    ) : (
+                        <Box sx={{ width: 48 /* Espacio reservado para mantener alineación */ }} />
+                    )}
 
-    {/* Logo */}
-    <Box
-        component="img"
-        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
-        alt="Logo"
-        sx={{
-            height: 270,
-            position: 'absolute',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            fontFamily: "'Hammersmith One', sans-serif",
-            color: '#fff',
-        }}
-    />
+                    {/* Logo */}
+                    <Box
+                        component="img"
+                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
+                        alt="Logo"
+                        sx={{
+                            height: 270,
+                            position: 'absolute',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontFamily: "'Hammersmith One', sans-serif",
+                            color: '#fff',
+                        }}
+                    />
 
-    {/* Luz indicadora */}
-    <Box
-        sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            backgroundColor: isOnline ? 'green' : 'red',
-            marginRight: 2,
-        }}
-    />
-</Toolbar>
+                    {/* Luz indicadora */}
+                    <Box
+                        sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: isOnline ? 'green' : 'red',
+                            marginRight: 2,
+                        }}
+                    />
+                </Toolbar>
             </AppBar>
 
             {/* Mensaje de reconexión */}
@@ -187,6 +187,20 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         ))}
                     </List>
                     <Divider />
+                    {/* Cerrar sesión */}
+                    <List>
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                onClick={() => signOut()}
+                                sx={{
+                                    color: 'red',
+                                    '&:hover': { backgroundColor: '#ffe5e5' },
+                                }}
+                            >
+                                <ListItemText primary="Cerrar Sesión" />
+                            </ListItemButton>
+                        </ListItem>
+                    </List>
                 </Box>
             </Drawer>
 
