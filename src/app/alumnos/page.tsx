@@ -191,56 +191,91 @@ export default function ListaAlumnosPage() {
     };
 
     const marcarPagoMes = async (alumnoId: string) => {
+        // Crear las opciones dinámicas basadas en las tarifas
+        const opcionesTarifas = tarifas.reduce((options, tarifa) => {
+            options[tarifa.dias] = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana</span>
+                    <strong>$${tarifa.valor}</strong>
+                </div>`;
+            return options;
+        }, {} as Record<number, string>); // Inicializa el objeto como un Record de números a strings
+
         const { value: diasMusculacion } = await Swal.fire({
             title: 'Selecciona los días de musculación por semana',
             input: 'select',
-            inputOptions: {
-                1: '1 día por semana',
-                2: '2 días por semana',
-                3: '3 días por semana',
-                4: '4 días por semana',
-                5: '5 días por semana'
-            },
+            inputOptions: opcionesTarifas,
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
+            customClass: {
+                popup: 'custom-swal-popup',
+            },
+            didOpen: () => {
+                // Ajustar el estilo de las opciones después de que se renderice
+                const select = Swal.getHtmlContainer()?.querySelector('select');
+                if (select) {
+                    select.style.textAlign = 'left'; // Opciones alineadas a la izquierda
+                    select.style.width = '100%';    // Tamaño completo del select
+                }
+            },
         });
 
         if (diasMusculacion) {
-            try {
-                const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
-                if (!tarifaSeleccionada) {
-                    throw new Error('No se pudo encontrar una tarifa para los días seleccionados.');
-                }
+            const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
 
-                const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
-                const nuevoPago = {
-                    mes: mesActual,
-                    fechaPago: new Date(),
-                    diasMusculacion: Number(diasMusculacion),
-                    tarifa: tarifaSeleccionada.valor,
-                };
-
-                const response = await fetch(`/api/alumnos/pagos`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ alumnoId, nuevoPago }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al registrar el pago');
-                }
-
-                Swal.fire('Pago registrado correctamente', '', 'success');
-                fetchAlumnos(); // Refrescar la lista de alumnos
-            } catch (error) {
-                console.error('Error al registrar el pago:', error);
+            if (!tarifaSeleccionada) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error al registrar el pago',
-                    text: 'Hubo un problema al registrar el pago.',
+                    title: 'Error',
+                    text: 'No se encontró una tarifa para los días seleccionados.',
                 });
+                return;
+            }
+
+            const confirmacion = await Swal.fire({
+                title: 'Confirmar cobro',
+                html: `
+                    <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
+                    <p>Precio: <strong>$${tarifaSeleccionada.valor}</strong></p>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Cobrar',
+                cancelButtonText: 'Cancelar',
+            });
+
+            if (confirmacion.isConfirmed) {
+                try {
+                    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+                    const nuevoPago = {
+                        mes: mesActual,
+                        fechaPago: new Date(),
+                        diasMusculacion: Number(diasMusculacion),
+                        tarifa: tarifaSeleccionada.valor,
+                    };
+
+                    const response = await fetch(`/api/alumnos/pagos`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ alumnoId, nuevoPago }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al registrar el pago');
+                    }
+
+                    Swal.fire('Pago registrado correctamente', '', 'success');
+                    fetchAlumnos(); // Refrescar la lista de alumnos
+                } catch (error) {
+                    console.error('Error al registrar el pago:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al registrar el pago',
+                        text: 'Hubo un problema al registrar el pago.',
+                    });
+                }
             }
         }
     };
@@ -307,10 +342,6 @@ export default function ListaAlumnosPage() {
         }
     };
 
-    const handleLetraClick = (letra: string) => {
-        setFiltroLetraApellido(letra);
-    };
-
     const alumnosFiltrados = alumnos
         .filter((alumno) => {
             const coincideBusqueda = alumno.nombre.toLowerCase().includes(busqueda.toLowerCase()) || alumno.dni.includes(busqueda);
@@ -335,8 +366,6 @@ export default function ListaAlumnosPage() {
                 return a.apellido.localeCompare(b.apellido);
             }
         });
-
-    //const letrasAlfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
     return (
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
@@ -387,6 +416,7 @@ export default function ListaAlumnosPage() {
                 </select>
             </div>
 
+            {/* Tarifas */}
             <div className="flex justify-between items-center mb-10 mt-4">
                 {/* Botón Configurar Tarifas */}
                 <button
@@ -394,15 +424,8 @@ export default function ListaAlumnosPage() {
                     className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800 flex"
                 >
                     <span className="text-white">Tarifas</span>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-5 ml-2 text-white"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className ="size-5 ml-1">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </button>
 
@@ -434,7 +457,7 @@ export default function ListaAlumnosPage() {
                         <p className="text-gray-600 text-md">Teléfono: {alumno.telefono}</p>
                         <p className="text-gray-600 text-md">Email: {alumno.email}</p>
 
-                        <div className="mt-4 flex justify-between items-center">
+                        <div className="mt-4 flex flex-col justify-center items-start">
                             <div>
                                 {verificarPagoMesActual(alumno.pagos) ? (
                                     <div className='flex items-center space-x-1'>

@@ -263,14 +263,13 @@ export default function HistorialAlumnoPage() {
 
     useEffect(() => {
         adjustCalendarView(); // Ajusta la vista al montar
-    
+
         // Detectar cambios en el tamaño de la pantalla
         window.addEventListener('resize', adjustCalendarView);
-    
+
         // Limpiar el evento al desmontar
         return () => window.removeEventListener('resize', adjustCalendarView);
     }, []);
-
 
     useEffect(() => {
         // Detectar tamaño de la pantalla al cargar
@@ -305,15 +304,15 @@ export default function HistorialAlumnoPage() {
                 });
             }
         };
-    
+
         updateCalendarView(); // Ajusta la vista al montar
-    
+
         // Escuchar cambios de tamaño de la pantalla
         window.addEventListener('resize', updateCalendarView);
-    
+
         // Limpia el evento al desmontar
         return () => window.removeEventListener('resize', updateCalendarView);
-    }, [])    
+    }, [])
 
     // Función para obtener los datos del alumno
     const fetchAlumno = async () => {
@@ -378,7 +377,7 @@ export default function HistorialAlumnoPage() {
                 extendedProps: { _id: asistencia._id, tipo: 'actividad' },
             } : null;
         }).filter(event => event !== null), // Filtrar valores nulos o inválidos
-    
+
         alumno.planEntrenamiento.fechaInicio && {
             title: `Inicio del plan (${alumno.planEntrenamiento.duracion})`,
             start: convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio),
@@ -386,7 +385,7 @@ export default function HistorialAlumnoPage() {
             color: '#ff0000', // Rojo para el inicio del plan
             extendedProps: { tipo: 'plan' },
         },
-    
+
         ...alumno.pagos.map((pago) => ({
             title: `Pago ${pago.mes}`,   // Este es el título que se mostrará en la primera línea
             start: convertirAFechaLocal(pago.fechaPago),
@@ -399,7 +398,7 @@ export default function HistorialAlumnoPage() {
             },
         })),
     ].filter(event => event) as EventInput[]; // Asegurarte de que solo queden eventos válidos
-    
+
     // Seleccionar fecha para agregar o editar una actividad, plan o pago
     const handleDateSelect = async (selectInfo: DateSelectArg) => {
         const fechaSeleccionada = selectInfo.startStr;
@@ -526,28 +525,61 @@ export default function HistorialAlumnoPage() {
                 }
             }
         } else if (action === 'pago') {
+            if (!tarifas.length) {
+                Swal.fire('Error', 'No se encontraron tarifas disponibles.', 'error');
+                return;
+            }
+
+            const opcionesTarifas = tarifas.reduce((options, tarifa) => {
+                options[tarifa.dias] = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana</span>
+                        <strong>$${tarifa.valor}</strong>
+                    </div>`;
+                return options;
+            }, {} as Record<number, string>);
+
             const { value: diasMusculacion } = await Swal.fire({
                 title: 'Selecciona los días de musculación por semana',
                 input: 'select',
-                inputOptions: {
-                    1: '1 día por semana',
-                    2: '2 días por semana',
-                    3: '3 días por semana',
-                    4: '4 días por semana',
-                    5: '5 días por semana',
-                },
+                inputOptions: opcionesTarifas,
                 inputPlaceholder: 'Selecciona una opción',
                 showCancelButton: true,
+                customClass: {
+                    popup: 'custom-swal-popup',
+                },
+                didOpen: () => {
+                    const select = Swal.getHtmlContainer()?.querySelector('select');
+                    if (select) {
+                        select.style.textAlign = 'left';
+                        select.style.width = '100%';
+                    }
+                },
             });
 
             if (diasMusculacion) {
-                // Busca la tarifa en el array de tarifas almacenado en el estado
                 const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
 
-                if (tarifaSeleccionada) {
+                if (!tarifaSeleccionada) {
+                    Swal.fire('Error', 'No se encontró la tarifa para los días seleccionados.', 'error');
+                    return;
+                }
+
+                const confirmacion = await Swal.fire({
+                    title: 'Confirmar cobro',
+                    html: `
+                        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
+                        <p>Precio: <strong>$${tarifaSeleccionada.valor}</strong></p>
+                    `,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Cobrar',
+                    cancelButtonText: 'Cancelar',
+                });
+
+                if (confirmacion.isConfirmed) {
                     try {
-                        // Extraer el mes correctamente
-                        const [year, month, day] = fechaSeleccionada.split('-');
+                        const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada
                         const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
                         const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
 
@@ -560,25 +592,30 @@ export default function HistorialAlumnoPage() {
 
                         const response = await fetch(`/api/alumnos/pagos`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                             body: JSON.stringify({ alumnoId: id, nuevoPago }),
                         });
 
-                        if (response.ok) {
-                            Swal.fire('Pago registrado correctamente', '', 'success');
-                            fetchAlumno();
-                        } else {
+                        if (!response.ok) {
                             throw new Error('Error al registrar el pago');
                         }
+
+                        Swal.fire('Pago registrado correctamente', '', 'success');
+                        fetchAlumno(); // Refrescar el historial de pagos
                     } catch (error) {
-                        Swal.fire('Error', 'Ocurrió un problema al registrar el pago', 'error');
+                        console.error('Error al registrar el pago:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al registrar el pago',
+                            text: 'Hubo un problema al registrar el pago.',
+                        });
                     }
-                } else {
-                    Swal.fire('Error', 'No se encontró la tarifa para la cantidad de días seleccionada', 'error');
                 }
             }
         }
-    };
+    }
 
     // Editar o eliminar una actividad o un pago existente
     const handleEventClick = async (clickInfo: EventClickArg) => {
@@ -856,15 +893,8 @@ export default function HistorialAlumnoPage() {
                     onClick={handleConfiguracionTarifas}
                 >
                     <span className="text-white">Tarifas</span>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-5 ml-2 text-white"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="size-5 ml-1">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </button>
             </div>
@@ -1040,6 +1070,104 @@ export default function HistorialAlumnoPage() {
                             ) : (
                                 <p className="text-gray-500">No hay actividades registradas.</p>
                             )}
+
+                            <div className="flex justify-center mt-4 sm:hidden">
+                                <button
+                                    onClick={async () => {
+                                        const { value: actividad } = await Swal.fire({
+                                            title: 'Ingresar Actividad',
+                                            input: 'select',
+                                            inputOptions: {
+                                                Musculación: 'Musculación',
+                                                Intermitente: 'Intermitente',
+                                                Otro: 'Otro',
+                                            },
+                                            inputPlaceholder: 'Selecciona una actividad',
+                                            showCancelButton: true,
+                                        });
+
+                                        if (actividad) {
+                                            const { value: fecha } = await Swal.fire({
+                                                title: 'Seleccionar Fecha',
+                                                html: `<input type="date" id="fecha-actividad" class="swal2-input">`,
+                                                focusConfirm: false,
+                                                showCancelButton: true,
+                                                preConfirm: () => {
+                                                    const fecha = (document.getElementById('fecha-actividad') as HTMLInputElement).value;
+                                                    if (!fecha) {
+                                                        Swal.showValidationMessage('La fecha no puede estar vacía');
+                                                    }
+                                                    return fecha;
+                                                },
+                                            });
+
+                                            if (fecha) {
+                                                const { value: hora } = await Swal.fire({
+                                                    title: 'Seleccionar Hora',
+                                                    html: `<input type="time" id="hora-actividad" class="swal2-input" value="12:00">`,
+                                                    focusConfirm: false,
+                                                    showCancelButton: true,
+                                                    preConfirm: () => {
+                                                        const hora = (document.getElementById('hora-actividad') as HTMLInputElement).value;
+                                                        if (!hora) {
+                                                            Swal.showValidationMessage('La hora no puede estar vacía');
+                                                        }
+                                                        return hora;
+                                                    },
+                                                });
+
+                                                if (hora) {
+                                                    try {
+                                                        const fechaHora = `${fecha}T${hora}`;
+
+                                                        const actividadDuplicada = alumno?.asistencia.some(
+                                                            (asistencia: Asistencia) =>
+                                                                asistencia.fecha.startsWith(fecha) &&
+                                                                asistencia.actividad === actividad &&
+                                                                asistencia.presente
+                                                        );
+
+                                                        if (actividadDuplicada) {
+                                                            Swal.fire({
+                                                                icon: 'info',
+                                                                title: 'Actividad duplicada',
+                                                                text: `Ya tienes registrada la actividad "${actividad}" para esta fecha. No es posible registrarla nuevamente.`,
+                                                            });
+                                                            return;
+                                                        }
+
+                                                        const response = await fetch(`/api/asistencias/${id}`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify({
+                                                                fecha: fechaHora,
+                                                                actividad,
+                                                                presente: true,
+                                                            }),
+                                                        });
+
+                                                        if (response.ok) {
+                                                            Swal.fire('Actividad registrada', '', 'success');
+                                                            fetchAlumno(); // Refresca los datos del alumno
+                                                        } else {
+                                                            Swal.fire('Error', 'No se pudo registrar la actividad', 'error');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error al registrar actividad:', error);
+                                                        Swal.fire('Error', 'Ocurrió un problema al registrar la actividad', 'error');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }}
+                                    className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+                                >
+                                    Registrar Actividad
+                                </button>
+                            </div>
+
                         </div>
 
                         {/* Pagos */}
@@ -1115,7 +1243,89 @@ export default function HistorialAlumnoPage() {
                             ) : (
                                 <p className="text-gray-500">No hay pagos registrados.</p>
                             )}
+
+                            {/* Botón para registrar un nuevo pago */}
+                            <div className="flex justify-center mt-4 sm:hidden">
+                                <button
+                                    onClick={async () => {
+                                        if (!tarifas.length) {
+                                            Swal.fire('Error', 'No se encontraron tarifas disponibles.', 'error');
+                                            return;
+                                        }
+
+                                        const opcionesTarifas = tarifas.reduce((options, tarifa) => {
+                                            options[tarifa.dias] = `${tarifa.dias} días por semana - $${tarifa.valor}`;
+                                            return options;
+                                        }, {} as Record<number, string>);
+
+                                        const { value: diasMusculacion } = await Swal.fire({
+                                            title: 'Selecciona los días de musculación',
+                                            input: 'select',
+                                            inputOptions: opcionesTarifas,
+                                            inputPlaceholder: 'Selecciona una opción',
+                                            showCancelButton: true,
+                                        });
+
+                                        if (diasMusculacion) {
+                                            const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
+
+                                            if (!tarifaSeleccionada) {
+                                                Swal.fire('Error', 'No se encontró la tarifa seleccionada.', 'error');
+                                                return;
+                                            }
+
+                                            const { value: fechaPago } = await Swal.fire({
+                                                title: 'Selecciona la fecha del pago',
+                                                html: `<input type="date" id="fecha-pago" class="swal2-input">`,
+                                                focusConfirm: false,
+                                                showCancelButton: true,
+                                                preConfirm: () => {
+                                                    const fecha = (document.getElementById('fecha-pago') as HTMLInputElement).value;
+                                                    if (!fecha) {
+                                                        Swal.showValidationMessage('Debes seleccionar una fecha válida');
+                                                    }
+                                                    return fecha;
+                                                },
+                                            });
+
+                                            if (fechaPago) {
+                                                try {
+                                                    const response = await fetch(`/api/alumnos/pagos`, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                        },
+                                                        body: JSON.stringify({
+                                                            alumnoId: alumno._id, // ID del alumno
+                                                            nuevoPago: {
+                                                                mes: new Date(fechaPago).toLocaleString('es-ES', { month: 'long' }).toLowerCase(), // Mes en formato texto
+                                                                fechaPago: fechaPago, // Aquí usamos la fecha seleccionada
+                                                                tarifa: tarifaSeleccionada.valor, // Tarifa seleccionada
+                                                                diasMusculacion: Number(diasMusculacion), // Días de musculación seleccionados
+                                                            },
+                                                        }),
+                                                    });
+
+                                                    if (!response.ok) {
+                                                        throw new Error('Error al registrar el pago');
+                                                    }
+
+                                                    Swal.fire('Pago registrado correctamente', '', 'success');
+                                                    fetchAlumno(); // Refrescar los datos del alumno después del registro
+                                                } catch (error) {
+                                                    console.error('Error al registrar el pago:', error);
+                                                    Swal.fire('Error al registrar el pago', 'Por favor intenta de nuevo.', 'error');
+                                                }
+                                            }
+                                        }
+                                    }}
+                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                >
+                                    Registrar Pago
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
