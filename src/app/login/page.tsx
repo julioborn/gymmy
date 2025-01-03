@@ -1,33 +1,50 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const [rememberMe, setRememberMe] = useState(false); // Nuevo estado para "Recuérdame"
+    const [rememberMe, setRememberMe] = useState(false); // Estado para "Recuérdame"
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
+        // Autenticar al usuario
         const res = await signIn("credentials", {
-            redirect: true,
+            redirect: false, // Evitamos la redirección automática
             username,
             password,
-            callbackUrl: "/", // Redirige al inicio después del login
         });
 
         if (res?.error) {
             setError("Usuario o contraseña incorrectos.");
+            return;
         }
 
-        // Si el usuario quiere ser recordado, almacena la información en localStorage
-        if (rememberMe) {
-            localStorage.setItem("rememberMe", "true");
-        } else {
-            localStorage.removeItem("rememberMe");
+        try {
+            // Obtener la sesión para verificar el rol del usuario
+            const sessionResponse = await fetch("/api/auth/session");
+            const session = await sessionResponse.json();
+
+            if (session?.user?.role === "alumno") {
+                router.push("/alumnos/dni"); // Redirigir a la página de DNI si el rol es "alumno"
+            } else {
+                router.push("/"); // Redirigir al inicio si no es "alumno"
+            }
+
+            // Almacenar la preferencia de "Recuérdame" en localStorage
+            if (rememberMe) {
+                localStorage.setItem("rememberMe", "true");
+            } else {
+                localStorage.removeItem("rememberMe");
+            }
+        } catch (error) {
+            console.error("Error al obtener la sesión:", error);
         }
     };
 

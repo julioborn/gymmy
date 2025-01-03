@@ -62,7 +62,7 @@ export default function NuevoAlumnoPage() {
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                     className="border border-gray-300 p-2 w-full"
-                    required
+                    //required
                 />
                 <input
                     type="text"
@@ -70,7 +70,7 @@ export default function NuevoAlumnoPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="border border-gray-300 p-2 w-full"
-                    required
+                    //required
                 />
                 <input
                     type="text"

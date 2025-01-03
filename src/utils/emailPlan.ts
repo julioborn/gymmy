@@ -54,20 +54,21 @@ const calcularEstadisticasAlumno = (asistencia: Asistencia[], fechaInicioPlan: s
 
 // Función para enviar correo
 export const enviarCorreoPlanTerminado = async (
-    email: string,
+    email: string | null,
     nombre: string,
     asistencia: Asistencia[],
     plan: { fechaInicio: string; duracion: number }
 ) => {
-    // Calcular estadísticas solo desde el inicio del plan
-    const estadisticas = calcularEstadisticasAlumno(asistencia, plan.fechaInicio);
+    if (!email) {
+        console.log('No se envió el correo porque el email no está definido.');
+        return;
+    }
 
-    // Calcular la fecha de finalización del plan
+    const estadisticas = calcularEstadisticasAlumno(asistencia, plan.fechaInicio);
     const fechaInicio = new Date(plan.fechaInicio);
     const fechaTermino = new Date(fechaInicio);
     fechaTermino.setDate(fechaInicio.getDate() + plan.duracion);
 
-    // Generar el correo con estilos mejorados
     const mailOptions = {
         from: 'SPORT-TIME',
         to: email,
@@ -125,3 +126,4 @@ export const enviarCorreoPlanTerminado = async (
         console.error('Error enviando correo:', error);
     }
 };
+

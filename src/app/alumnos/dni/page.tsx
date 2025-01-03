@@ -1,10 +1,9 @@
-'use client';
+'use client'
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css'; // Tu archivo CSS personalizado
-
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
@@ -77,7 +76,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 showConfirmButton: false,
                 timer: 4000,
             });
-
         } catch (error) {
             console.error(error);
             Swal.fire({
@@ -95,7 +93,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     return (
-        <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8">
+        <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8 relative">
+            {/* Loader */}
+            {isLoading && (
+                <div className="absolute inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-10">
+                    <div className="loader" />
+                </div>
+            )}
+
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
@@ -105,6 +110,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     className="border border-gray-300 p-2 w-full rounded size-max"
                     placeholder="Ingrese su DNI"
                     required
+                    disabled={isLoading}
                 />
 
                 {/* Botones interactivos para seleccionar la actividad */}
@@ -113,6 +119,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         type="button"
                         onClick={() => setActividad('Musculación')}
                         className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
+                        disabled={isLoading}
                     >
                         Musculación
                     </button>
@@ -120,16 +127,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         type="button"
                         onClick={() => setActividad('Intermitente')}
                         className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
+                        disabled={isLoading}
                     >
                         Intermitente
                     </button>
-                    {/* <button
-                        type="button"
-                        onClick={() => setActividad('Otro')}
-                        className={`p-2 sm:p-4 text-sm sm:text-base rounded ${actividad === 'Otro' ? 'bg-[#f1c40f]' : 'bg-gray-200'}`}
-                    >
-                        Otro
-                    </button> */}
                 </div>
 
                 {/* Teclado numérico siempre visible */}
@@ -163,6 +164,27 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     </button>
                 </div>
             </form>
+
+            {/* CSS para el loader */}
+            <style jsx>{`
+                .loader {
+                    border: 8px solid #f3f3f3;
+                    border-top: 8px solid #3498db;
+                    border-radius: 50%;
+                    width: 50px;
+                    height: 50px;
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                    0% {
+                        transform: rotate(0deg);
+                    }
+                    100% {
+                        transform: rotate(360deg);
+                    }
+                }
+            `}</style>
         </div>
     );
 }

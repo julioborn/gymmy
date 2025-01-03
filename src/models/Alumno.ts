@@ -29,8 +29,8 @@ interface IAlumno extends Document {
     apellido: string;
     fechaNacimiento: Date;
     dni: string;
-    telefono: string;
-    email: string;
+    telefono?: string; // Ahora es opcional
+    email?: string; // Ahora es opcional
     asistencia: IAsistencia[];
     pagos: IPago[];
     planEntrenamiento: IPlanEntrenamiento;
@@ -56,8 +56,8 @@ const AlumnoSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
     dni: { type: String, required: true },
-    telefono: { type: String, required: true },
-    email: { type: String, required: true },
+    telefono: { type: String, required: false, default: null }, // Ahora es opcional
+    email: { type: String, required: false, default: null }, // Ahora es opcional
     fechaNacimiento: { type: Date, required: true },
     asistencia: [AsistenciaSchema],
     pagos: [

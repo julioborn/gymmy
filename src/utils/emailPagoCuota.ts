@@ -3,6 +3,11 @@ import transporter from './email';
 //const EMAIL_USER = process.env.EMAIL_USER as string;
 
 export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago: any) => {
+    if (!email) {
+        console.log('No se envió el correo porque el email no está definido.');
+        return;
+    }
+    
     const mailOptions = {
         from: 'SPORT-TIME',
         to: email,
