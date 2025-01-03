@@ -1,34 +1,39 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
-import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import {
-    Chart as ChartJS,
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    BarElement,
-} from 'chart.js';
+import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+// import {
+//     Chart as ChartJS,
+//     ArcElement,
+//     Tooltip,
+//     Legend,
+//     CategoryScale,
+//     LinearScale,
+//     PointElement,
+//     LineElement,
+//     BarElement,
+// } from 'chart.js';
+import dynamic from 'next/dynamic';
 
-ChartJS.register(
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    BarElement
-);
+const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
+    ssr: false, // Esto asegura que el componente no se cargue en el servidor.
+    loading: () => <p>Cargando calendario...</p>, // Mensaje de carga mientras el componente se carga dinámicamente.
+});
+
+// ChartJS.register(
+//     ArcElement,
+//     Tooltip,
+//     Legend,
+//     CategoryScale,
+//     LinearScale,
+//     PointElement,
+//     LineElement,
+//     BarElement
+// );
 
 type Asistencia = {
     _id: string;
@@ -104,8 +109,6 @@ export default function HistorialAlumnoPage() {
     const [expandedMonthsActividades, setExpandedMonthsActividades] = useState<Record<string, Record<string, boolean>>>({});
     const [expandedYearsPagos, setExpandedYearsPagos] = useState<Record<string, boolean>>({});
     const [expandedMonthsPagos, setExpandedMonthsPagos] = useState<Record<string, Record<string, boolean>>>({});
-    // const [expandedYearsPlanes, setExpandedYearsPlanes] = useState<Record<string, boolean>>({});
-    // const [expandedMonthsPlanes, setExpandedMonthsPlanes] = useState<Record<string, boolean>>({});
     const toggleYearActividades = (year: string) => {
         setExpandedYearsActividades((prev) => ({ ...prev, [year]: !prev[year] }));
     };
@@ -130,22 +133,7 @@ export default function HistorialAlumnoPage() {
             },
         }));
     };
-    // const toggleYearPlanes = (year: string) => {
-    //     setExpandedYearsPlanes((prev) => ({ ...prev, [year]: !prev[year] }));
-    // };
-
-    // const toggleMonthPlanes = (year: string, month: string) => {
-    //     setExpandedMonthsPlanes((prev) => ({
-    //         ...prev,
-    //         [year]: {
-    //             ...prev[year],
-    //             [month]: !prev[year]?.[month],
-    //         },
-    //     }));
-    // };
     const [year, setYear] = useState(new Date().getFullYear()); // Año actual por defecto
-    const [yearFrecuencia, setYearFrecuencia] = useState(new Date().getFullYear());
-    const [yearActividad, setYearActividad] = useState(new Date().getFullYear());
     const [yearPagos, setYearPagos] = useState(new Date().getFullYear());
 
     useEffect(() => {
@@ -224,52 +212,6 @@ export default function HistorialAlumnoPage() {
             }
         }
     };
-
-    // Función para ajustar la vista del calendario
-    const adjustCalendarView = () => {
-        console.log("Window width:", window.innerWidth);
-        if (window.innerWidth <= 768) {
-            console.log("Setting view to listWeek");
-            setCalendarView('listWeek');
-            setHeaderToolbar({
-                left: 'prev,next',
-                center: '',
-                right: 'today',
-            });
-            setButtonText({
-                today: 'Hoy',
-                month: '',
-                week: '',
-                day: '',
-                list: 'Lista',
-            });
-        } else {
-            console.log("Setting view to dayGridMonth");
-            setCalendarView('dayGridMonth');
-            setHeaderToolbar({
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,dayGridWeek,dayGridDay',
-            });
-            setButtonText({
-                today: 'Hoy',
-                month: 'Mes',
-                week: 'Semana',
-                day: 'Día',
-                list: 'Lista',
-            });
-        }
-    };
-
-    useEffect(() => {
-        adjustCalendarView(); // Ajusta la vista al montar
-
-        // Detectar cambios en el tamaño de la pantalla
-        window.addEventListener('resize', adjustCalendarView);
-
-        // Limpiar el evento al desmontar
-        return () => window.removeEventListener('resize', adjustCalendarView);
-    }, []);
 
     useEffect(() => {
         // Detectar tamaño de la pantalla al cargar
@@ -876,13 +818,17 @@ export default function HistorialAlumnoPage() {
             </div>
 
             {/* Finalización del plan */}
-            {diasRestantes !== null && (
+            {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio ? (
                 <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
                     Finaliza el plan en
                     <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
                         {diasRestantes}
                     </span>
                     entrenamientos.
+                </p>
+            ) : (
+                <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
+                    Sin plan definido.
                 </p>
             )}
 
@@ -893,7 +839,7 @@ export default function HistorialAlumnoPage() {
                     onClick={handleConfiguracionTarifas}
                 >
                     <span className="text-white">Tarifas</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="size-5 ml-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="size-5 ml-1">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </button>
@@ -901,86 +847,88 @@ export default function HistorialAlumnoPage() {
 
             {/* Calendario */}
             <div className="sm:block bg-gray-50 p-4 rounded shadow border">
-                <FullCalendar
-                    firstDay={1}
-                    plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
-                    initialView={calendarView}
-                    events={events}
-                    locale="es"
-                    headerToolbar={headerToolbar}
-                    buttonText={buttonText}
-                    height="auto"
-                    selectable={true}
-                    select={handleDateSelect}
-                    aspectRatio={1.5} // Controla la proporción ancho/alto
-                    eventClick={handleEventClick}
-                    eventContent={(arg) => {
-                        const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
-                        if (tipo === 'plan') {
-                            return (
-                                <div
-                                    className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
-                                    style={{ whiteSpace: 'normal' }}
-                                >
-                                    <strong>{arg.event.title}</strong>
-                                </div>
-                            );
-                        }
-                        if (tipo === 'pago') {
-                            const pagoMes = arg.event.title;
-                            const tarifa = arg.event.extendedProps.tarifa;
-                            return (
-                                <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
-                                    <div className="flex items-center break-words" style={{ whiteSpace: 'normal' }}>
-                                        <strong>{pagoMes}</strong>
+                <Suspense fallback={<p>Cargando calendario...</p>}>
+                    <FullCalendar
+                        firstDay={1}
+                        plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                        initialView={calendarView}
+                        events={events}
+                        locale="es"
+                        headerToolbar={headerToolbar}
+                        buttonText={buttonText}
+                        height="auto"
+                        selectable={true}
+                        select={handleDateSelect}
+                        aspectRatio={1.5} // Controla la proporción ancho/alto
+                        eventClick={handleEventClick}
+                        eventContent={(arg) => {
+                            const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
+                            if (tipo === 'plan') {
+                                return (
+                                    <div
+                                        className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
+                                        style={{ whiteSpace: 'normal' }}
+                                    >
+                                        <strong>{arg.event.title}</strong>
                                     </div>
-                                    <div>
-                                        <strong className="text-white mr-1">${tarifa}</strong>
+                                );
+                            }
+                            if (tipo === 'pago') {
+                                const pagoMes = arg.event.title;
+                                const tarifa = arg.event.extendedProps.tarifa;
+                                return (
+                                    <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
+                                        <div className="flex items-center break-words" style={{ whiteSpace: 'normal' }}>
+                                            <strong>{pagoMes}</strong>
+                                        </div>
+                                        <div>
+                                            <strong className="text-white mr-1">${tarifa}</strong>
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        } else if (tipo === 'actividad') {
-                            const hora = arg.event.start
-                                ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })
-                                : '';
-                            return (
-                                <div
-                                    className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
-                                    style={{
-                                        whiteSpace: 'nowrap',
-                                        textOverflow: 'ellipsis',
-                                    }}
-                                >
-                                    <div className="flex items-center">
-                                        <span
-                                            style={{
-                                                backgroundColor: arg.event.backgroundColor,
-                                                width: '8px',
-                                                height: '8px',
-                                                display: 'inline-block',
-                                                borderRadius: '50%',
-                                                marginRight: '8px',
-                                            }}
-                                        ></span>
-                                        <strong className="truncate">{arg.event.title}</strong>
+                                );
+                            } else if (tipo === 'actividad') {
+                                const hora = arg.event.start
+                                    ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })
+                                    : '';
+                                return (
+                                    <div
+                                        className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
+                                        style={{
+                                            whiteSpace: 'nowrap',
+                                            textOverflow: 'ellipsis',
+                                        }}
+                                    >
+                                        <div className="flex items-center">
+                                            <span
+                                                style={{
+                                                    backgroundColor: arg.event.backgroundColor,
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    display: 'inline-block',
+                                                    borderRadius: '50%',
+                                                    marginRight: '8px',
+                                                }}
+                                            ></span>
+                                            <strong className="truncate">{arg.event.title}</strong>
+                                        </div>
+                                        <div>
+                                            {hora && <strong className="text-red-600 mr-1">{hora}</strong>}
+                                        </div>
                                     </div>
-                                    <div>
-                                        {hora && <strong className="text-red-600 mr-1">{hora}</strong>}
+                                );
+                            } else {
+                                return (
+                                    <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
+                                        {arg.event.title}
                                     </div>
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
-                                    {arg.event.title}
-                                </div>
-                            );
-                        }
-                    }}
-                />
+                                );
+                            }
+                        }}
+                    />
+                </Suspense>
             </div>
 
             {/* Menú inferior */}

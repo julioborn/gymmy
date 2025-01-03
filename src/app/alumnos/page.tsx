@@ -1,9 +1,15 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import Modal from 'react-modal';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import AlumnoActions from '@/components/AlumnoActions';
+import clsx from 'clsx';
+
+// Lazy loading de componentes
+const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
+const ModalEditAlumno = React.lazy(() => import('@/components/ModalEditAlumno'));
+const ModalEditTarifas = React.lazy(() => import('@/components/ModalEditTarifas'));
 
 // Configura react-modal para el body
 Modal.setAppElement('body');
@@ -46,14 +52,6 @@ function calcularDiasRestantes(plan: any, asistencias: any[]): number | null {
 function verificarPagoMesActual(pagos: any[]): boolean {
     const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
     return pagos.some(pago => pago.mes.toLowerCase() === mesActual);
-}
-
-// Función para determinar el color según los días restantes (semáforo)
-function obtenerColorSemaforo(diasRestantes: number | null): string {
-    if (diasRestantes === null) return ''; // Si no hay plan o no se ha iniciado
-    if (diasRestantes > 10) return 'text-green-500';  // Verde
-    if (diasRestantes > 5) return 'text-yellow-500';  // Amarillo
-    return 'text-red-500';                           // Rojo
 }
 
 export default function ListaAlumnosPage() {
@@ -343,6 +341,7 @@ export default function ListaAlumnosPage() {
     };
 
     const alumnosFiltrados = alumnos
+
         .filter((alumno) => {
             const coincideBusqueda = alumno.nombre.toLowerCase().includes(busqueda.toLowerCase()) || alumno.dni.includes(busqueda);
             const coincideEdad = filtroEdad ? alumno.edad === parseInt(filtroEdad) : true;
@@ -367,328 +366,94 @@ export default function ListaAlumnosPage() {
             }
         });
 
+    const Loader = () => (
+        <div className="flex justify-center items-center h-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-700"></div>
+        </div>
+    );
+
     return (
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
 
-            {/* Buscador */}
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o documento"
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="border border-gray-300 p-2 w-full mb-2 rounded"
-                />
-            </div>
-
             {/* Filtros select */}
-            <div className="space-y-2 lg:space-x-2 lg:space-y-0 flex flex-col lg:flex-row">
-                <select
-                    value={filtroEdad}
-                    onChange={(e) => setFiltroEdad(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
-                >
-                    <option value="">Edad</option>
-                    {[...Array.from(new Set(alumnos.map((alumno) => alumno.edad)))].sort((a, b) => a - b).map((edad) => (
-                        <option key={edad} value={edad}>{edad}</option>
-                    ))}
-                </select>
-
-                <select
-                    value={filtroPago}
-                    onChange={(e) => setFiltroPago(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
-                >
-                    <option value="">Pago</option>
-                    <option value="pagado">Pagaron</option>
-                    <option value="no-pagado">No pagaron</option>
-                </select>
-
-                <select
-                    value={ordenDiasRestantes}
-                    onChange={(e) => setOrdenDiasRestantes(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
-                >
-                    <option value="">Días Restantes Plan</option>
-                    <option value="asc">Días Restantes (Ascendente)</option>
-                    <option value="desc">Días Restantes (Descendente)</option>
-                </select>
-            </div>
+            <Suspense fallback={<Loader />}>
+                <FiltrosAlumnos
+                    busqueda={busqueda}
+                    setBusqueda={setBusqueda}
+                    filtroEdad={filtroEdad}
+                    setFiltroEdad={setFiltroEdad}
+                    filtroPago={filtroPago}
+                    setFiltroPago={setFiltroPago}
+                    ordenDiasRestantes={ordenDiasRestantes}
+                    setOrdenDiasRestantes={setOrdenDiasRestantes}
+                    edades={[...Array.from(new Set(alumnos.map((alumno) => alumno.edad)))].sort((a, b) => a - b)}
+                    limpiarFiltros={() => {
+                        setBusqueda('');
+                        setFiltroEdad('');
+                        setFiltroPago('');
+                        setOrdenDiasRestantes('');
+                    }}
+                />
+            </Suspense>
 
             {/* Tarifas */}
             <div className="flex justify-between items-center mb-10 mt-4">
                 {/* Botón Configurar Tarifas */}
                 <button
                     onClick={() => setEditandoTarifas(true)}
-                    className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800 flex"
+                    className={clsx(
+                        'bg-gray-700 text-white px-4 py-2 text-sm rounded flex',
+                        'hover:bg-gray-800'
+                    )}
                 >
                     <span className="text-white">Tarifas</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className ="size-5 ml-1">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5 ml-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
-                </button>
-
-                {/* Botón Limpiar Filtros */}
-                <button
-                    onClick={() => {
-                        setBusqueda('');
-                        setFiltroEdad('');
-                        setFiltroLetraApellido('');
-                        setFiltroPago('');
-                        setOrdenDiasRestantes('');
-                    }}
-                    className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800"
-                >
-                    Limpiar Filtros
                 </button>
             </div>
 
             {/* Tarjetas de alumnos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
-                {alumnosFiltrados.map((alumno) => (
-                    <div
-                        key={alumno._id}
-                        className="bg-gray-200 border border-gray-400 rounded-lg p-4 shadow-md"
-                    >
-                        <h2 className="text-lg font-semibold text-gray-800">{alumno.nombre} {alumno.apellido}</h2>
-                        <p className="text-gray-600 text-md">Edad: {alumno.edad}</p>
-                        <p className="text-gray-600 text-md">DNI: {alumno.dni}</p>
-                        <p className="text-gray-600 text-md">Teléfono: {alumno.telefono}</p>
-                        <p className="text-gray-600 text-md">Email: {alumno.email}</p>
-
-                        <div className="mt-4 flex flex-col justify-center items-start">
-                            <div>
-                                {verificarPagoMesActual(alumno.pagos) ? (
-                                    <div className='flex items-center space-x-1'>
-                                        <p>Pagó</p>
-                                        <FaCheckCircle className="text-green-500 flex " title="Pagado" />
-                                    </div>
-                                ) : (
-                                    <div className='flex items-center space-x-1'>
-                                        <p>No Pagó</p>
-                                        <FaTimesCircle className="text-red-500" title="No Pagado" />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className={`font-bold ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
-                                {alumno.diasRestantes === 0 ? (
-                                    <span className="text-red-500">Plan Terminado</span>
-                                ) : alumno.diasRestantes !== null ? (
-                                    `${alumno.diasRestantes} días restantes de plan`
-                                ) : (
-                                    'Sin plan'
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="mt-4 flex flex-wrap gap-1 justify-center">
-                            <button
-                                onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
-                                className="bg-gray-700 text-white px-2 py-2 text-sm rounded"
-                            >
-                                Historial
-                            </button>
-                            <button
-                                onClick={() => iniciarPlan(alumno._id)}
-                                className={`text-white text-sm px-4 py-2 rounded ${alumno.planEntrenamiento &&
-                                    alumno.planEntrenamiento.fechaInicio &&
-                                    alumno.planEntrenamiento.duracion &&
-                                    !alumno.planEntrenamiento.terminado
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-orange-500 hover:bg-orange-600'
-                                    }`}
-                                disabled={
-                                    alumno.planEntrenamiento &&
-                                    alumno.planEntrenamiento.fechaInicio &&
-                                    alumno.planEntrenamiento.duracion &&
-                                    !alumno.planEntrenamiento.terminado
-                                }
-                            >
-                                {alumno.planEntrenamiento &&
-                                    alumno.planEntrenamiento.fechaInicio &&
-                                    alumno.planEntrenamiento.duracion &&
-                                    !alumno.planEntrenamiento.terminado
-                                    ? 'Plan en curso'
-                                    : 'Iniciar Plan'}
-                            </button>
-                            <button
-                                onClick={() => marcarPagoMes(alumno._id)}
-                                className={`text-white text-sm px-4 py-2 rounded ${verificarPagoMesActual(alumno.pagos) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
-                                    }`}
-                                disabled={verificarPagoMesActual(alumno.pagos)}
-                            >
-                                {verificarPagoMesActual(alumno.pagos) ? 'Mes Cobrado' : 'Cobrar Mes'}
-                            </button>
-                            <button
-                                onClick={() => setEditandoAlumno(alumno)}
-                                className="bg-yellow-500 text-white px-4 py-2 text-sm rounded"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 26 26" stroke-width="1.5" stroke="currentColor" className="size-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={() => eliminarAlumno(alumno._id)}
-                                className="bg-red-500 text-white px-4 py-2 text-sm rounded"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 26 26" stroke-width="1.5" stroke="currentColor" className="size-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                </svg>
-                            </button>
-                        </div>
-
-
-                    </div>
-                ))}
-            </div>
+            <Suspense fallback={<Loader />}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
+                    {alumnosFiltrados.map((alumno) => (
+                        <AlumnoActions
+                            key={alumno._id}
+                            alumno={alumno}
+                            router={router}
+                            onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
+                            onEditar={(alumno) => setEditandoAlumno(alumno)}
+                            onEliminar={(id) => eliminarAlumno(id)}
+                            onIniciarPlan={(id) => iniciarPlan(id)}
+                            onMarcarPago={(id) => marcarPagoMes(id)}
+                        />
+                    ))}
+                </div>
+            </Suspense>
 
             {/* Ventana modal para editar el alumno */}
             {editandoAlumno && (
-                <Modal
-                    isOpen={Boolean(editandoAlumno)}
-                    onRequestClose={() => setEditandoAlumno(null)}
-                    className="bg-white p-8 rounded shadow-md max-w-lg mx-auto w-[800px]"
-                    overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-                >
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Alumno</h2>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        guardarAlumno(editandoAlumno._id, editandoAlumno); // Actualizar alumno
-                    }}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Nombre</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.nombre}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, nombre: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Apellido</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.apellido}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, apellido: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">DNI</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.dni}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, dni: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Teléfono</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.telefono}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, telefono: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Email</label>
-                            <input
-                                type="text"
-                                value={editandoAlumno.email}
-                                onChange={(e) =>
-                                    setEditandoAlumno((prev: any) => ({ ...prev, email: e.target.value }))
-                                }
-                                className="border border-gray-300 p-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                            <button
-                                type="button"
-                                onClick={() => setEditandoAlumno(null)}
-                                className="bg-red-500 text-white px-4 py-2 rounded"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className="bg-green-600 text-white px-4 py-2 rounded"
-                            >
-                                Guardar
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
+                <Suspense fallback={<Loader />}>
+                    <ModalEditAlumno
+                        alumno={editandoAlumno}
+                        onClose={() => setEditandoAlumno(null)}
+                        onSave={guardarAlumno}
+                    />
+                </Suspense>
             )}
 
             {/* Ventana modal para editar las tarifas */}
-            <Modal
-                isOpen={editandoTarifas}
-                onRequestClose={() => setEditandoTarifas(false)}
-                className="bg-white p-8 rounded shadow-md max-w-lg mx-auto w-[600px]"
-                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
-            >
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Editar Tarifas</h2>
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        guardarTarifas(tarifas); // Guardar las tarifas editadas
-                    }}
-                >
-                    {tarifas.map((tarifa, index) => (
-                        <div key={tarifa.dias} className="mb-4">
-                            <label className="block text-gray-700">
-                                Días {tarifa.dias}:
-                            </label>
-                            <input
-                                type="number"
-                                value={tarifa.valor}
-                                onChange={(e) => {
-                                    const nuevoValor = Number(e.target.value);
-                                    setTarifas((prev) =>
-                                        prev.map((t, i) =>
-                                            i === index ? { ...t, valor: nuevoValor } : t
-                                        )
-                                    );
-                                }}
-                                className="border border-gray-300 p-2 w-full rounded"
-                            />
-                        </div>
-                    ))}
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            onClick={() => setEditandoTarifas(false)}
-                            className="bg-red-500 text-white px-4 py-2 rounded"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="bg-green-600 text-white px-4 py-2 rounded"
-                        >
-                            Guardar
-                        </button>
-                    </div>
-                </form>
-            </Modal>
+            {editandoTarifas && (
+                <Suspense fallback={<Loader />}>
+                    <ModalEditTarifas
+                        tarifas={tarifas}
+                        onClose={() => setEditandoTarifas(false)}
+                        onSave={guardarTarifas}
+                    />
+                </Suspense>
+            )}
 
         </div>
-
     );
 }
