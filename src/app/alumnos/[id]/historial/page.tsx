@@ -105,6 +105,7 @@ export default function HistorialAlumnoPage() {
         list: 'Lista',
     });
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+    const [recargo, setRecargo] = useState<number | null>(null);
     const [expandedYearsActividades, setExpandedYearsActividades] = useState<Record<string, boolean>>({});
     const [expandedMonthsActividades, setExpandedMonthsActividades] = useState<Record<string, Record<string, boolean>>>({});
     const [expandedYearsPagos, setExpandedYearsPagos] = useState<Record<string, boolean>>({});
@@ -148,6 +149,20 @@ export default function HistorialAlumnoPage() {
             setTarifas(data);
         } catch (error) {
             console.error("Error al obtener tarifas:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchRecargo();
+    }, []);
+
+    const fetchRecargo = async () => {
+        try {
+            const response = await fetch('/api/recargo'); // Endpoint de recargo
+            const data = await response.json();
+            setRecargo(data.monto || 0); // Asigna el valor del recargo al estado
+        } catch (error) {
+            console.error('Error al obtener recargo:', error);
         }
     };
 
@@ -214,48 +229,49 @@ export default function HistorialAlumnoPage() {
     };
 
     const handleConfiguracionRecargos = async () => {
-        try {
-            // Obtener el valor actual del recargo desde la base de datos
-            const response = await fetch('/api/recargo'); // Ajusta el endpoint según tu backend
-            const recargoData = await response.json();
+        if (recargo === null) {
+            await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
+            return;
+        }
 
-            const { value: nuevoMonto } = await Swal.fire({
-                title: 'Configurar Recargo',
-                input: 'number',
-                inputLabel: 'Monto del recargo ($)',
-                inputValue: recargoData.monto || 0,
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value || Number(value) <= 0) {
-                        return 'El monto debe ser un número mayor a 0';
-                    }
-                    return null;
-                },
-                confirmButtonText: 'Aceptar',
-                cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                },
-                buttonsStyling: false,
-            });
+        const { value: nuevoMonto } = await Swal.fire({
+            title: 'Configurar Recargo',
+            input: 'number',
+            inputLabel: 'Monto del recargo ($)',
+            inputValue: recargo,
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value || Number(value) <= 0) {
+                    return 'El monto debe ser un número mayor a 0';
+                }
+                return null;
+            },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
+        });
 
-            if (nuevoMonto) {
-                // Actualizar el valor del recargo en la base de datos
-                const updateResponse = await fetch('/api/recargo', {
+        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+            try {
+                const response = await fetch('/api/recargo', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ monto: Number(nuevoMonto) }),
                 });
 
-                if (updateResponse.ok) {
+                if (response.ok) {
                     Swal.fire('Recargo actualizado', '', 'success');
+                    setRecargo(Number(nuevoMonto)); // Actualiza el estado con el nuevo valor
                 } else {
                     Swal.fire('Error', 'No se pudo actualizar el recargo', 'error');
                 }
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
             }
-        } catch (error) {
-            Swal.fire('Error', 'Ocurrió un problema al configurar el recargo', 'error');
         }
     };
 
@@ -927,7 +943,6 @@ export default function HistorialAlumnoPage() {
     ).sort(); // Asegurar que estén en orden ascendente
 
     // Filtrar y procesar los datos según el año seleccionado
-
     const pagosPorMes = [
         'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
         'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
