@@ -153,7 +153,7 @@ export default function HistorialAlumnoPage() {
 
     const handleConfiguracionTarifas = async () => {
         if (tarifas.length === 0) {
-            await Swal.fire('Error', 'No se encontraron tarifas. Por favor, recarga la página.', 'error');
+            await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
             return;
         }
 
@@ -173,7 +173,7 @@ export default function HistorialAlumnoPage() {
             .join('');
 
         const result = await Swal.fire({
-            title: 'Configurar Tarifas $',
+            title: 'Configurar Cuotas',
             html: `<div>${tarifaInputs}</div>`,
             focusConfirm: false,
             showCancelButton: true,
@@ -184,13 +184,13 @@ export default function HistorialAlumnoPage() {
                 });
                 return updatedTarifas;
             },
-            confirmButtonText: 'Aceptar', // Cambia el texto del botón de confirmación
-            cancelButtonText: 'Cancelar', // Cambia el texto del botón de cancelar
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
             customClass: {
                 confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
                 cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
             },
-            buttonsStyling: false, // Esto permite aplicar las clases personalizadas
+            buttonsStyling: false,
         });
 
         const nuevasTarifas = result.value as Tarifa[] | undefined;
@@ -210,6 +210,52 @@ export default function HistorialAlumnoPage() {
             } catch (error) {
                 Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
             }
+        }
+    };
+
+    const handleConfiguracionRecargos = async () => {
+        try {
+            // Obtener el valor actual del recargo desde la base de datos
+            const response = await fetch('/api/recargo'); // Ajusta el endpoint según tu backend
+            const recargoData = await response.json();
+
+            const { value: nuevoMonto } = await Swal.fire({
+                title: 'Configurar Recargo',
+                input: 'number',
+                inputLabel: 'Monto del recargo ($)',
+                inputValue: recargoData.monto || 0,
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value || Number(value) <= 0) {
+                        return 'El monto debe ser un número mayor a 0';
+                    }
+                    return null;
+                },
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                },
+                buttonsStyling: false,
+            });
+
+            if (nuevoMonto) {
+                // Actualizar el valor del recargo en la base de datos
+                const updateResponse = await fetch('/api/recargo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
+                });
+
+                if (updateResponse.ok) {
+                    Swal.fire('Recargo actualizado', '', 'success');
+                } else {
+                    Swal.fire('Error', 'No se pudo actualizar el recargo', 'error');
+                }
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Ocurrió un problema al configurar el recargo', 'error');
         }
     };
 
@@ -355,6 +401,13 @@ export default function HistorialAlumnoPage() {
             },
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
         });
 
         if (action === 'plan') {
@@ -369,7 +422,14 @@ export default function HistorialAlumnoPage() {
                         return 'Debes ingresar una duración válida';
                     }
                     return null;
-                }
+                },
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                },
+                buttonsStyling: false,
             });
 
             if (duracion) {
@@ -407,6 +467,13 @@ export default function HistorialAlumnoPage() {
                 },
                 inputPlaceholder: 'Selecciona una actividad',
                 showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                },
+                buttonsStyling: false,
             });
 
             if (actividad) {
@@ -439,6 +506,13 @@ export default function HistorialAlumnoPage() {
                         return `${fechaSeleccionada}T${hora}`;
                     },
                     showCancelButton: true,
+                    confirmButtonText: 'Aceptar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    },
+                    buttonsStyling: false,
                 });
 
                 if (fechaHora) {
@@ -487,9 +561,6 @@ export default function HistorialAlumnoPage() {
                 inputOptions: opcionesTarifas,
                 inputPlaceholder: 'Selecciona una opción',
                 showCancelButton: true,
-                customClass: {
-                    popup: 'custom-swal-popup',
-                },
                 didOpen: () => {
                     const select = Swal.getHtmlContainer()?.querySelector('select');
                     if (select) {
@@ -497,6 +568,14 @@ export default function HistorialAlumnoPage() {
                         select.style.width = '100%';
                     }
                 },
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    popup: 'custom-swal-popup',
+                },
+                buttonsStyling: false,
             });
 
             if (diasMusculacion) {
@@ -517,6 +596,12 @@ export default function HistorialAlumnoPage() {
                     showCancelButton: true,
                     confirmButtonText: 'Cobrar',
                     cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                        popup: 'custom-swal-popup',
+                    },
+                    buttonsStyling: false,
                 });
 
                 if (confirmacion.isConfirmed) {
@@ -574,6 +659,14 @@ export default function HistorialAlumnoPage() {
                 },
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    popup: 'custom-swal-popup',
+                },
+                buttonsStyling: false,
             });
 
             if (action === 'editar') {
@@ -615,6 +708,14 @@ export default function HistorialAlumnoPage() {
                         return { nuevaActividad, nuevaFechaHora: `${nuevaFecha}T${nuevaHora}` };
                     },
                     showCancelButton: true,
+                    confirmButtonText: 'Aceptar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                        popup: 'custom-swal-popup',
+                    },
+                    buttonsStyling: false,
                 });
 
                 if (formData) {
@@ -673,6 +774,14 @@ export default function HistorialAlumnoPage() {
                 },
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    popup: 'custom-swal-popup',
+                },
+                buttonsStyling: false,
             });
 
             if (action === 'eliminar') {
@@ -706,6 +815,14 @@ export default function HistorialAlumnoPage() {
                     },
                     inputPlaceholder: 'Selecciona una opción',
                     showCancelButton: true,
+                    confirmButtonText: 'Aceptar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                        popup: 'custom-swal-popup',
+                    },
+                    buttonsStyling: false,
                 });
 
                 if (diasMusculacion) {
@@ -722,6 +839,14 @@ export default function HistorialAlumnoPage() {
                             return nuevaFecha;
                         },
                         showCancelButton: true,
+                        confirmButtonText: 'Aceptar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                            cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                            popup: 'custom-swal-popup',
+                        },
+                        buttonsStyling: false,
                     });
 
                     if (nuevaFechaPago) {
@@ -764,6 +889,14 @@ export default function HistorialAlumnoPage() {
                 },
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    popup: 'custom-swal-popup',
+                },
+                buttonsStyling: false,
             });
 
             if (action === 'eliminar') {
@@ -812,9 +945,9 @@ export default function HistorialAlumnoPage() {
 
             {/* Nombre alumno */}
             <div className="flex mb-2 justify-center">
-                <h2 className="text-3xl font-light text-gray-800 p-1 pl-1.5 pr-1.5">
+                <h1 className="text-4xl font-light text-gray-800 p-1 pl-1.5 pr-1.5">
                     {alumno.nombre} {alumno.apellido}
-                </h2>
+                </h1>
             </div>
 
             {/* Finalización del plan */}
@@ -828,21 +961,31 @@ export default function HistorialAlumnoPage() {
                 </p>
             ) : (
                 <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
-                    Sin plan definido.
+                    Sin plan
                 </p>
             )}
 
-            {/* Botón de configuración de tarifas */}
-            <div className="hidden sm:block">
-                <button
-                    className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                    onClick={handleConfiguracionTarifas}
-                >
-                    <span className="text-white">Tarifas</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="size-5 ml-1">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </button>
+            {/* Botones superiores */}
+            <div className='flex justify-center sm:justify-start'>
+                {/* Botón de configuración de tarifas */}
+                <div className="sm:block sm:pl-4 pl-0">
+                    <button
+                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                        onClick={handleConfiguracionTarifas}
+                    >
+                        <span className="text-white">Cuotas</span>
+                    </button>
+                </div>
+
+                {/* Botón de configuración de recargos */}
+                <div className="sm:block">
+                    <button
+                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                        onClick={handleConfiguracionRecargos}
+                    >
+                        <span className="text-white">Recargo</span>
+                    </button>
+                </div>
             </div>
 
             {/* Calendario */}
@@ -1032,6 +1175,14 @@ export default function HistorialAlumnoPage() {
                                             },
                                             inputPlaceholder: 'Selecciona una actividad',
                                             showCancelButton: true,
+                                            confirmButtonText: 'Aceptar',
+                                            cancelButtonText: 'Cancelar',
+                                            customClass: {
+                                                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                                                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                                                popup: 'custom-swal-popup',
+                                            },
+                                            buttonsStyling: false,
                                         });
 
                                         if (actividad) {
@@ -1047,6 +1198,14 @@ export default function HistorialAlumnoPage() {
                                                     }
                                                     return fecha;
                                                 },
+                                                confirmButtonText: 'Aceptar',
+                                                cancelButtonText: 'Cancelar',
+                                                customClass: {
+                                                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                                                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                                                    popup: 'custom-swal-popup',
+                                                },
+                                                buttonsStyling: false,
                                             });
 
                                             if (fecha) {
@@ -1062,6 +1221,14 @@ export default function HistorialAlumnoPage() {
                                                         }
                                                         return hora;
                                                     },
+                                                    confirmButtonText: 'Aceptar',
+                                                    cancelButtonText: 'Cancelar',
+                                                    customClass: {
+                                                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                                                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                                                        popup: 'custom-swal-popup',
+                                                    },
+                                                    buttonsStyling: false,
                                                 });
 
                                                 if (hora) {
@@ -1171,13 +1338,12 @@ export default function HistorialAlumnoPage() {
                                                     {expandedMonthsPagos[year]?.[mes] && (
                                                         <ul className="list-disc pl-6">
                                                             {pagos.map((pago) => {
-                                                                const fechaHora = new Date(pago.fechaPago).toLocaleString('es-ES', {
+                                                                const fecha = new Date(pago.fechaPago).toLocaleDateString('es-ES', {
                                                                     dateStyle: 'short',
-                                                                    timeStyle: 'short',
                                                                 });
                                                                 return (
                                                                     <li key={pago._id} className="mb-1">
-                                                                        <span className="font-medium">Pago</span> - {fechaHora} -{' '}
+                                                                        <span className="font-medium">Pago</span> - {fecha} -{' '}
                                                                         <span className="text-green-700">${pago.tarifa}</span>
                                                                     </li>
                                                                 );
@@ -1212,6 +1378,14 @@ export default function HistorialAlumnoPage() {
                                             inputOptions: opcionesTarifas,
                                             inputPlaceholder: 'Selecciona una opción',
                                             showCancelButton: true,
+                                            confirmButtonText: 'Aceptar',
+                                            cancelButtonText: 'Cancelar',
+                                            customClass: {
+                                                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                                                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                                                popup: 'custom-swal-popup',
+                                            },
+                                            buttonsStyling: false,
                                         });
 
                                         if (diasMusculacion) {
@@ -1234,6 +1408,14 @@ export default function HistorialAlumnoPage() {
                                                     }
                                                     return fecha;
                                                 },
+                                                confirmButtonText: 'Aceptar',
+                                                cancelButtonText: 'Cancelar',
+                                                customClass: {
+                                                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                                                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                                                    popup: 'custom-swal-popup',
+                                                },
+                                                buttonsStyling: false,
                                             });
 
                                             if (fechaPago) {

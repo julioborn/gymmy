@@ -1,23 +1,52 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import Recargo from '@/models/Recargo';
 import { enviarCorreoPagoCuota } from '@/utils/emailPagoCuota';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-    await connectMongoDB();
+    await connectMongoDB(); // Asegúrate de que la conexión a la base de datos esté activa.
 
     try {
         const { alumnoId, nuevoPago } = await request.json();
-        
-        // Validar que todos los campos requeridos estén presentes
+
+        // Validar campos requeridos
         if (!nuevoPago.mes || !nuevoPago.fechaPago || !nuevoPago.tarifa || nuevoPago.diasMusculacion === undefined) {
             return NextResponse.json({ message: 'Faltan campos requeridos para registrar el pago' }, { status: 400 });
         }
 
-        // Actualizar el alumno para agregar el nuevo pago
+        // Convertir la fecha de pago
+        const fechaPago = new Date(nuevoPago.fechaPago);
+        const diaPago = fechaPago.getDate();
+
+        let tarifaFinal = nuevoPago.tarifa;
+
+        if (diaPago >= 10) {
+            // Buscar el recargo en la base de datos
+            const recargo = await Recargo.findOne();
+            console.log("Recargo: " + recargo);
+            if (recargo) {
+                tarifaFinal += recargo.monto; // Sumar el recargo a la tarifa
+                console.log(`Recargo aplicado: ${recargo.monto}, Tarifa final: ${tarifaFinal}`);
+            } else {
+                console.error('Recargo no configurado en la base de datos');
+                return NextResponse.json({ message: 'Recargo no configurado en la base de datos' }, { status: 500 });
+            }
+        } else {
+            console.log(`Día de pago ${diaPago} < 10, no se aplica recargo`);
+        }
+
+        // Actualizar el alumno con el nuevo pago
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             alumnoId,
-            { $push: { pagos: nuevoPago } },
+            {
+                $push: {
+                    pagos: {
+                        ...nuevoPago,
+                        tarifa: tarifaFinal, // Tarifa con el recargo si aplica
+                    },
+                },
+            },
             { new: true, runValidators: true }
         );
 
@@ -25,12 +54,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        // Enviar correo al alumno
+        // Opcional: Enviar un correo confirmando el pago
         if (alumnoActualizado.email) {
             await enviarCorreoPagoCuota(
                 alumnoActualizado.email,
                 alumnoActualizado.nombre,
-                nuevoPago
+                { ...nuevoPago, tarifa: tarifaFinal } // Enviar la tarifa final
             );
         }
 

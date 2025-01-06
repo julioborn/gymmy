@@ -205,9 +205,6 @@ export default function ListaAlumnosPage() {
             inputOptions: opcionesTarifas,
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
-            customClass: {
-                popup: 'custom-swal-popup',
-            },
             didOpen: () => {
                 // Ajustar el estilo de las opciones después de que se renderice
                 const select = Swal.getHtmlContainer()?.querySelector('select');
@@ -216,6 +213,14 @@ export default function ListaAlumnosPage() {
                     select.style.width = '100%';    // Tamaño completo del select
                 }
             },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                popup: 'custom-swal-popup',
+            },
+            buttonsStyling: false,
         });
 
         if (diasMusculacion) {
@@ -240,6 +245,12 @@ export default function ListaAlumnosPage() {
                 showCancelButton: true,
                 confirmButtonText: 'Cobrar',
                 cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    popup: 'custom-swal-popup',
+                },
+                buttonsStyling: false,
             });
 
             if (confirmacion.isConfirmed) {
@@ -312,6 +323,14 @@ export default function ListaAlumnosPage() {
                 }
                 return null;
             },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                popup: 'custom-swal-popup',
+            },
+            buttonsStyling: false,
         });
 
         if (duracion) {
