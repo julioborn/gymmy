@@ -62,7 +62,8 @@ export default function ListaAlumnosPage() {
     const [filtroLetraApellido, setFiltroLetraApellido] = useState('');
     const [filtroPago, setFiltroPago] = useState('');
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
-    const [tarifas, setTarifas] = useState<Tarifa[]>([]); // Tarifa[] para el tipo correcto
+    const [tarifas, setTarifas] = useState<Tarifa[]>([]); 
+    const [recargo, setRecargo] = useState<number | null>(null);
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
 
@@ -97,6 +98,68 @@ export default function ListaAlumnosPage() {
             console.error("Error al obtener tarifas:", error);
         }
     };
+
+    const handleConfiguracionTarifas = async () => {
+            if (tarifas.length === 0) {
+                await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
+                return;
+            }
+    
+            const tarifaInputs = tarifas
+                .map(
+                    (tarifa) => `
+                        <div style="display: flex; justify-content: center; margin-top: 4px; font-size: 16px;">
+                            <label for="tarifa-${tarifa.dias}" style="display: flex; justify-content: center; align-items: center; font-weight: bold; margin-top: 14px; ">
+                                Días ${tarifa.dias}:
+                            </label>
+                            <div style="display: flex; align-items: center;">
+                                <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}" style="width: 100%;" />
+                            </div>
+                        </div>
+                    `
+                )
+                .join('');
+    
+            const result = await Swal.fire({
+                title: 'Configurar Cuotas',
+                html: `<div>${tarifaInputs}</div>`,
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    const updatedTarifas = tarifas.map((tarifa) => {
+                        const valor = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
+                        return { ...tarifa, valor: Number(valor) };
+                    });
+                    return updatedTarifas;
+                },
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                },
+                buttonsStyling: false,
+            });
+    
+            const nuevasTarifas = result.value as Tarifa[] | undefined;
+            if (nuevasTarifas) {
+                try {
+                    const response = await fetch('/api/tarifas', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(nuevasTarifas),
+                    });
+                    if (response.ok) {
+                        Swal.fire('Tarifas actualizadas', '', 'success');
+                        setTarifas(nuevasTarifas);
+                    } else {
+                        Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
+                }
+            }
+        };
 
     useEffect(() => {
         fetchTarifas(); // Llama a fetchTarifas una vez al montar el componente
@@ -391,6 +454,68 @@ export default function ListaAlumnosPage() {
         </div>
     );
 
+    useEffect(() => {
+        fetchRecargo();
+    }, []);
+    
+    const fetchRecargo = async () => {
+        try {
+            const response = await fetch('/api/recargo'); // Endpoint de recargo
+            const data = await response.json();
+            setRecargo(data.monto || 0); // Asigna el valor del recargo al estado
+        } catch (error) {
+            console.error('Error al obtener recargo:', error);
+        }
+    };
+    
+
+    const handleConfiguracionRecargos = async () => {
+        if (recargo === null) {
+            await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
+            return;
+        }
+    
+        const { value: nuevoMonto } = await Swal.fire({
+            title: 'Configurar Recargo',
+            input: 'number',
+            inputLabel: 'Monto del recargo ($)',
+            inputValue: recargo,
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value || Number(value) <= 0) {
+                    return 'El monto debe ser un número mayor a 0';
+                }
+                return null;
+            },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
+        });
+    
+        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+            try {
+                const response = await fetch('/api/recargo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
+                });
+    
+                if (response.ok) {
+                    Swal.fire('Recargo actualizado', '', 'success');
+                    setRecargo(Number(nuevoMonto)); // Actualiza el estado con el nuevo valor
+                } else {
+                    Swal.fire('Error', 'No se pudo actualizar el recargo', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
+            }
+        }
+    };    
+
     return (
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
@@ -416,21 +541,27 @@ export default function ListaAlumnosPage() {
                 />
             </Suspense>
 
-            {/* Tarifas */}
-            <div className="flex justify-between items-center mb-10 mt-4">
-                {/* Botón Configurar Tarifas */}
-                <button
-                    onClick={() => setEditandoTarifas(true)}
-                    className={clsx(
-                        'bg-gray-700 text-white px-4 py-2 text-sm rounded flex',
-                        'hover:bg-gray-800'
-                    )}
-                >
-                    <span className="text-white">Tarifas</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5 ml-1">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </button>
+            {/* Botones superiores */}
+            <div className='flex justify-start'>
+                {/* Botón de configuración de tarifas */}
+                <div className="sm:block">
+                    <button
+                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                        onClick={handleConfiguracionTarifas}
+                    >
+                        <span className="text-white">Cuotas</span>
+                    </button>
+                </div>
+
+                {/* Botón de configuración de recargos */}
+                <div className="sm:block">
+                    <button
+                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                        onClick={handleConfiguracionRecargos}
+                    >
+                        <span className="text-white">Recargo</span>
+                    </button>
+                </div>
             </div>
 
             {/* Tarjetas de alumnos */}

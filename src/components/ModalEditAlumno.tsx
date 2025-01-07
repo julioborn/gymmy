@@ -20,7 +20,15 @@ export default function ModalEditAlumno({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(alumno._id, formData);
+
+        // Opcional: Validación adicional si necesitas verificar algo antes de guardar
+        const updatedAlumno = {
+            ...formData,
+            telefono: formData.telefono.trim() === '' ? null : formData.telefono,
+            email: formData.email.trim() === '' ? null : formData.email,
+        };
+
+        onSave(alumno._id, updatedAlumno);
     };
 
     return (
@@ -66,35 +74,33 @@ export default function ModalEditAlumno({
                     <label className="block text-gray-700">Teléfono</label>
                     <input
                         type="text"
-                        value={formData.telefono}
+                        value={formData.telefono || ''}
                         onChange={(e) => handleInputChange('telefono', e.target.value)}
                         className="border border-gray-300 p-2 w-full"
-                        required
                     />
                 </div>
                 <div className="mb-4">
                     <label className="block text-gray-700">Email</label>
                     <input
                         type="text"
-                        value={formData.email}
+                        value={formData.email || ''}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className="border border-gray-300 p-2 w-full"
-                        required
                     />
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-center space-x-2">
+                    <button
+                        type="submit"
+                        className="bg-green-600 text-white px-4 py-2 rounded"
+                    >
+                        Guardar
+                    </button>
                     <button
                         type="button"
                         onClick={onClose}
                         className="bg-red-500 text-white px-4 py-2 rounded"
                     >
                         Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        className="bg-green-600 text-white px-4 py-2 rounded"
-                    >
-                        Guardar
                     </button>
                 </div>
             </form>
