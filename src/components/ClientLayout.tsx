@@ -120,7 +120,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             </AppBar>
 
             {/* Mensaje de reconexión */}
-            {!isOnline && (
+            {!isOnline && pathname !== '/alumnos/dni' && (
                 <Box
                     sx={{
                         position: 'fixed',
@@ -143,7 +143,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             )}
 
             {/* Mensaje "De vuelta en línea" */}
-            {backOnlineMessage && (
+            {backOnlineMessage && pathname !== '/alumnos/dni' && (
                 <Box
                     sx={{
                         position: 'fixed',

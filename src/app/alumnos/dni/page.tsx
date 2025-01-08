@@ -1,92 +1,133 @@
-'use client'
-import React, { useState } from 'react';
+'use client';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
-import './keyboardStyles.css'; // Tu archivo CSS personalizado
+import './keyboardStyles.css';
+import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
     const [actividad, setActividad] = useState('Musculación'); // Valor predeterminado
     const [isLoading, setIsLoading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!/^\d+$/.test(dni)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'DNI inválido',
+                text: 'El DNI debe contener solo números.',
+            });
+            return;
+        }
+
         setIsLoading(true);
+        const fecha = new Date().toISOString(); // Fecha y hora actual
 
         try {
             // Buscar al alumno por DNI
             const response = await fetch(`/api/alumnos?dni=${dni}`);
-            if (!response.ok) {
-                throw new Error('Error al buscar alumno');
-            }
+            if (!response.ok) throw new Error('Error al buscar alumno');
 
             const alumno = await response.json();
 
-            if (!alumno) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Alumno no encontrado',
-                    text: 'No se encontró un alumno con el DNI proporcionado.',
-                });
-                setIsLoading(false);
-                return;
-            }
+            const ingreso = {
+                dni,
+                actividad,
+                fecha,
+                presente: true,
+                nombre: alumno.nombre, // Agregar nombre del alumno
+            };
 
-            // Obtener la fecha de hoy sin la hora
-            const hoy = new Date();
-            const fechaHoy = hoy.toISOString().split('T')[0];
-
-            // Verificar si ya se ha registrado esta actividad hoy
-            const actividadHoy = alumno.asistencia.some((asistencia: any) =>
-                asistencia.fecha.startsWith(fechaHoy) && asistencia.actividad === actividad && asistencia.presente
-            );
-
-            if (actividadHoy) {
-                Swal.fire({
-                    icon: 'info',
-                    title: `Hola, ${alumno.nombre}...`,
-                    text: `Ya tienes registrada la actividad "${actividad}" para el día de hoy. No es posible registrar esta actividad nuevamente.`,
-                });
-                setIsLoading(false);
-                return;
-            }
-
-            // Registrar la asistencia para la actividad seleccionada
-            const fecha = new Date();  // Generar la fecha y hora actual
-            const presente = true;  // El alumno está presente
-
+            // Registrar asistencia en el servidor
             const asistenciaResponse = await fetch(`/api/asistencias/${alumno._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ fecha, presente, actividad }),  // Enviar la fecha, actividad y el estado de asistencia
+                body: JSON.stringify(ingreso),
             });
 
-            if (!asistenciaResponse.ok) {
-                throw new Error('Error al registrar asistencia');
-            }
+            if (!asistenciaResponse.ok) throw new Error('Error al registrar asistencia');
 
-            // Mostrar alerta de éxito
             Swal.fire({
                 icon: 'success',
                 title: `¡Hola ${alumno.nombre}!`,
-                text: `Tu asistencia del día de hoy para la actividad "${actividad}" ha sido registrada.`,
+                text: `Tu asistencia para "${actividad}" ha sido registrada.`,
                 showConfirmButton: false,
                 timer: 4000,
             });
+
+            setDni(''); // Limpiar el campo DNI
         } catch (error) {
-            console.error(error);
+            console.error('Error de conexión. Guardando localmente:', error);
+
+            const ingreso = {
+                dni,
+                actividad,
+                fecha,
+                presente: true,
+                nombre: 'Alumno', // Nombre genérico si no se puede obtener el nombre del servidor
+            };
+
+            // Guardar el ingreso localmente
+            await addIngreso(ingreso);
+
             Swal.fire({
-                icon: 'error',
-                title: 'Error al registrar asistencia',
-                text: 'Hubo un problema al registrar la asistencia.',
+                icon: 'info',
+                title: `¡Hola!`,
+                text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
             });
+
+            setDni(''); // Limpiar el campo DNI
         } finally {
             setIsLoading(false);
         }
     };
+
+    const syncIngresosPendientes = async () => {
+        setIsSyncing(true);
+        const ingresosPendientes = await getIngresosPendientes();
+
+        for (const ingreso of ingresosPendientes) {
+            try {
+                const responseAlumno = await fetch(`/api/alumnos?dni=${ingreso.dni}`);
+                if (!responseAlumno.ok) continue;
+
+                const alumno = await responseAlumno.json();
+                const response = await fetch(`/api/asistencias/${alumno._id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ingreso),
+                });
+
+                if (response.ok) {
+                    await deleteIngreso(ingreso.id);
+                }
+            } catch (error) {
+                console.error('Error al sincronizar ingreso:', error);
+            }
+        }
+        setIsSyncing(false);
+    };
+
+    useEffect(() => {
+        syncIngresosPendientes();
+
+        const handleOnline = () => {
+            console.log('Conexión reestablecida. Iniciando sincronización...');
+            syncIngresosPendientes();
+        };
+
+        window.addEventListener('online', handleOnline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+        };
+    }, []);
 
     const handleKeyboardChange = (input: string) => {
         setDni(input); // Actualiza el estado del DNI con el valor del teclado virtual
@@ -94,7 +135,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     return (
         <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8 relative">
-            {/* Loader */}
             {isLoading && (
                 <div className="absolute inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-10">
                     <div className="loader" />
@@ -102,6 +142,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
             )}
 
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
+
+            {isSyncing && (
+                <p className="text-center text-sm text-gray-500">Sincronizando ingresos pendientes...</p>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     type="text"
@@ -113,7 +158,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     disabled={isLoading}
                 />
 
-                {/* Botones interactivos para seleccionar la actividad */}
                 <div className="grid grid-cols-2 gap-2 mb-4">
                     <button
                         type="button"
@@ -133,7 +177,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     </button>
                 </div>
 
-                {/* Teclado numérico siempre visible */}
                 <div className="mt-2 mb-4">
                     <Keyboard
                         onChange={handleKeyboardChange}
@@ -148,12 +191,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             ],
                         }}
                         display={{
-                            '{bksp}': '⌫', // Mostrar el botón de borrar
+                            '{bksp}': '⌫',
                         }}
                     />
                 </div>
 
-                {/* Botón centrado */}
                 <div className="flex justify-center">
                     <button
                         type="submit"
@@ -164,27 +206,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     </button>
                 </div>
             </form>
-
-            {/* CSS para el loader */}
-            <style jsx>{`
-                .loader {
-                    border: 8px solid #f3f3f3;
-                    border-top: 8px solid #3498db;
-                    border-radius: 50%;
-                    width: 50px;
-                    height: 50px;
-                    animation: spin 1s linear infinite;
-                }
-
-                @keyframes spin {
-                    0% {
-                        transform: rotate(0deg);
-                    }
-                    100% {
-                        transform: rotate(360deg);
-                    }
-                }
-            `}</style>
         </div>
     );
 }
