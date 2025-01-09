@@ -68,7 +68,7 @@ export default function FiltrosAlumnos({
                 </select>
             </div>
 
-            <div className="flex justify-between items-center mb-10 mt-4">
+            <div className="flex justify-end items-center mb-10 mt-4">
                 <button
                     onClick={limpiarFiltros}
                     className="bg-gray-700 text-white px-4 py-2 text-sm rounded hover:bg-gray-800"

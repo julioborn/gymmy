@@ -1,4 +1,4 @@
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaHistory, FaTrashAlt, FaEdit, FaMoneyBillWave, FaPlay } from 'react-icons/fa';
 
 type AlumnoCardProps = {
     alumno: any;
@@ -30,7 +30,7 @@ export default function AlumnoCard({
     };
 
     return (
-        <div className="bg-gray-200 border border-gray-400 rounded-lg p-4 shadow-md">
+        <div className="bg-gray-200 border border-gray-400 rounded-md p-4 shadow-md">
             <h2 className="text-lg font-semibold text-gray-800">{alumno.nombre} {alumno.apellido}</h2>
             <p className="text-gray-600 text-md">Edad: {alumno.edad}</p>
             <p className="text-gray-600 text-md">DNI: {alumno.dni}</p>
@@ -62,16 +62,17 @@ export default function AlumnoCard({
                 </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-1 justify-center">
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
                 <button
                     onClick={() => onHistorial(alumno._id)}
-                    className="bg-gray-700 text-white px-2 py-2 text-sm rounded"
+                    className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2 text-sm rounded"
                 >
+                    <FaHistory />
                     Historial
                 </button>
                 <button
                     onClick={() => onIniciarPlan(alumno._id)}
-                    className={`text-white text-sm px-4 py-2 rounded ${
+                    className={`flex items-center gap-2 text-white text-sm px-4 py-2 rounded ${
                         alumno.planEntrenamiento?.fechaInicio &&
                         alumno.planEntrenamiento?.duracion &&
                         !alumno.planEntrenamiento?.terminado
@@ -84,6 +85,7 @@ export default function AlumnoCard({
                         !alumno.planEntrenamiento?.terminado
                     }
                 >
+                    <FaPlay />
                     {alumno.planEntrenamiento?.fechaInicio &&
                     alumno.planEntrenamiento?.duracion &&
                     !alumno.planEntrenamiento?.terminado
@@ -92,24 +94,29 @@ export default function AlumnoCard({
                 </button>
                 <button
                     onClick={() => onMarcarPago(alumno._id)}
-                    className={`text-white text-sm px-4 py-2 rounded ${
-                        verificarPagoMesActual(alumno.pagos) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+                    className={`flex items-center gap-2 text-white text-sm px-4 py-2 rounded ${
+                        verificarPagoMesActual(alumno.pagos)
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-green-500 hover:bg-green-600'
                     }`}
                     disabled={verificarPagoMesActual(alumno.pagos)}
                 >
+                    <FaMoneyBillWave />
                     {verificarPagoMesActual(alumno.pagos) ? 'Mes Cobrado' : 'Cobrar Mes'}
                 </button>
                 <button
                     onClick={() => onEditar(alumno)}
-                    className="bg-yellow-500 text-white px-4 py-2 text-sm rounded"
+                    className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 text-sm rounded hover:bg-yellow-600"
                 >
-                    Editar
+                    <FaEdit />
+                    {/* Editar */}
                 </button>
                 <button
                     onClick={() => onEliminar(alumno._id)}
-                    className="bg-red-500 text-white px-4 py-2 text-sm rounded"
+                    className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 text-sm rounded hover:bg-red-600"
                 >
-                    Eliminar
+                    <FaTrashAlt />
+                    {/* Eliminar */}
                 </button>
             </div>
         </div>
