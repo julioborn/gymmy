@@ -46,7 +46,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         { text: 'Lista de Alumnos', href: '/alumnos' },
         { text: 'Registrar Alumno', href: '/alumnos/nuevo' },
         { text: 'Finanzas', href: '/alumnos/finanzas' },
-        { text: 'DNI', href: '/alumnos/dni' },
+        // { text: 'DNI', href: '/alumnos/dni' },
     ];
 
     const menuLinks = session?.user?.role === 'dueño'

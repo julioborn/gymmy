@@ -1,8 +1,65 @@
+/* Estilo general para el teclado */
 .my-custom-keyboard .hg-button {
-    height: 80px !important; /* Altura de los botones */
-    font-size: 18px; /* Tamaño del texto dentro de los botones */
+  height: 80px !important; /* Altura de los botones */
+  font-size: 18px; /* Tamaño del texto dentro de los botones */
+}
+
+.my-custom-keyboard .hg-button:hover {
+  background-color: #f0f0f0; /* Color de fondo al pasar el cursor */
+}
+
+/* Estilo específico para tablets en orientación vertical */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  /* Ajustar el tamaño del contenedor principal */
+
+  body {
+    overflow: hidden; /* Evita el scroll en el cuerpo */
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
   }
-  
-  .my-custom-keyboard .hg-button:hover {
-    background-color: #f0f0f0; /* Color de fondo al pasar el cursor */
+
+  html {
+    overflow: hidden;
+    height: 100%; /* Asegura que ocupe toda la altura de la ventana */
   }
+  .max-w-lg {
+      max-width: 90%; /* Más ancho */
+      padding: 20px; /* Más espacio interno */
+  }
+
+  /* Ajustar el tamaño del texto principal */
+  .text-xl {
+      font-size: 2rem !important; /* Texto más grande */
+  }
+
+  .text-2xl {
+      font-size: 2.5rem !important;
+  }
+
+  /* Ajustar el tamaño de los botones */
+  .my-custom-keyboard .hg-button {
+      height: 120px !important; /* Más altura */
+      font-size: 24px !important; /* Texto más grande */
+  }
+
+  /* Ajustar el tamaño del botón "Registrar Presente" */
+  .h-16 {
+      height: 80px !important;
+  }
+
+  .bg-gray-600 {
+      font-size: 20px !important; /* Texto más grande */
+      padding: 16px !important; /* Más espacio interno */
+  }
+
+  /* Ajustar el tamaño del selector de actividad */
+  .grid-cols-2 button {
+      font-size: 22px !important;
+      height: 80px !important;
+  }
+
+  /* Ajustar el tamaño del display del DNI */
+  .tracking-widest {
+      font-size: 3.5rem !important; /* Más grande */
+      padding: 20px !important; /* Más espacio interno */
+  }
+}
