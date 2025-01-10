@@ -49,11 +49,19 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         // { text: 'DNI', href: '/alumnos/dni' },
     ];
 
-    const menuLinks = session?.user?.role === 'dueño'
-        ? menuItems // El dueño ve todas las rutas
-        : session?.user?.role === 'profesor'
-            ? menuItems.filter((item) => item.href !== '/alumnos/finanzas') // El profesor no ve Finanzas
-            : menuItems.slice(-1); // El alumno solo ve la ruta DNI
+    const menuLinks = (() => {
+        console.log('Rol del usuario:', session?.user?.role); // Para depuración
+    
+        if (session?.user?.role === 'dueño') {
+            return menuItems; // El dueño ve todas las rutas
+        } else if (session?.user?.role === 'profesor') {
+            return menuItems.filter((item) => item.href !== '/alumnos/finanzas'); // El profesor no ve Finanzas
+        } else if (session?.user?.role === 'alumno') {
+            return []; // Los alumnos no ven ninguna ruta, solo "Cerrar Sesión"
+        }
+    
+        return []; // En caso de rol indefinido, no mostrar nada
+    })();    
 
     useEffect(() => {
         const updateOnlineStatus = () => {
