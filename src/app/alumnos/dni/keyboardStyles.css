@@ -1,12 +1,13 @@
 /* Estilo general para el teclado */
-.my-custom-keyboard .hg-button {
-  height: 80px !important; /* Altura de los botones */
-  font-size: 18px; /* Tamaño del texto dentro de los botones */
+.my-custom-keyboard .hg-button[data-skbtn="{submit}"] {
+  background-color: #1f2937; /* Color de fondo */
+  color: white; /* Color del texto */
 }
 
-.my-custom-keyboard .hg-button:hover {
-  background-color: #f0f0f0; /* Color de fondo al pasar el cursor */
+.my-custom-keyboard .hg-button[data-skbtn="{submit}"]:hover {
+  background-color: #374151; /* Color al pasar el cursor */
 }
+
 
 /* Estilo específico para tablets en orientación vertical */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
@@ -21,6 +22,7 @@
     overflow: hidden;
     height: 100%; /* Asegura que ocupe toda la altura de la ventana */
   }
+
   .max-w-lg {
       max-width: 90%; /* Más ancho */
       padding: 20px; /* Más espacio interno */
@@ -37,7 +39,7 @@
 
   /* Ajustar el tamaño de los botones */
   .my-custom-keyboard .hg-button {
-      height: 120px !important; /* Más altura */
+      height: 115px !important; /* Más altura */
       font-size: 24px !important; /* Texto más grande */
   }
 

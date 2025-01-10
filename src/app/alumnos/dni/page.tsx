@@ -145,23 +145,29 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <Keyboard
                         keyboardRef={(r) => setKeyboard(r)} // Referencia al teclado virtual
                         onChange={handleKeyboardChange}
+                        onKeyPress={(button) => {
+                            if (button === "{submit}") {
+                                handleSubmit(new Event("submit") as unknown as React.FormEvent);
+                            }
+                        }}
                         inputName="dni"
                         theme="hg-theme-default hg-layout-numeric my-custom-keyboard"
                         layout={{
                             default: [
-                                '1 2 3',
-                                '4 5 6',
-                                '7 8 9',
-                                ' 0 {bksp}',
+                                "1 2 3",
+                                "4 5 6",
+                                "7 8 9",
+                                "{bksp} 0 {submit}",
                             ],
                         }}
                         display={{
-                            '{bksp}': '⌫',
+                            "{bksp}": "⌫",
+                            "{submit}": "Registrar",
                         }}
                     />
                 </div>
 
-                <div className="flex justify-center">
+                {/* <div className="flex justify-center">
                     <button
                         type="submit"
                         className="h-16 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 sm:px-6 sm:py-3 rounded"
@@ -169,7 +175,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     >
                         {isLoading ? 'Buscando...' : 'Registrar Presente'}
                     </button>
-                </div>
+                </div> */}
             </form>
         </div>
     );
