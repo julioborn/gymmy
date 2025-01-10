@@ -117,7 +117,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     className="border border-gray-400 bg-gray-100 rounded-md py-4 px-6 text-3xl font-bold text-gray-800 tracking-widest shadow-md"
                     style={{ fontFamily: "'Courier New', monospace" }}
                 >
-                    {dni || '---- ----'}
+                    {dni || '‎'}
                 </div>
             </div>
 
