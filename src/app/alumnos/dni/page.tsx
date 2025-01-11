@@ -155,10 +155,15 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
             <div className="mb-6 text-center">
                 <div
-                    className="border border-gray-400 bg-gray-100 rounded-md py-4 px-6 text-3xl font-bold text-gray-800 tracking-widest shadow-md"
-                    style={{ fontFamily: "'Courier New', monospace" }}
+                    className="border border-gray-400 bg-gray-100 rounded-md py-4 px-6 text-3xl font-bold text-gray-800 tracking-widest shadow-md min-h-[56px]"
+                    style={{
+                        fontFamily: "'Courier New', monospace",
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
                 >
-                    {dni || '‎'}
+                    {dni || <span className="invisible">XX.XXX.XXX</span>}
                 </div>
             </div>
 
