@@ -8,15 +8,36 @@ import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexe
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
-    const [actividad, setActividad] = useState('Musculación'); // Valor predeterminado
+    const [actividad, setActividad] = useState('Musculación');
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [keyboard, setKeyboard] = useState<any>(null); // Referencia al teclado virtual
+    const [keyboard, setKeyboard] = useState<any>(null);
+
+    // Formatear el DNI para los casos X.XXX.XXX y XX.XXX.XXX
+    const formatDNIWithDots = (input: string): string => {
+        const cleanInput = input.replace(/\./g, ''); // Eliminar puntos existentes
+        if (cleanInput.length <= 7) {
+            // Caso X.XXX.XXX
+            return cleanInput.replace(/(\d{1})(\d{3})(\d{3})/, '$1.$2.$3');
+        } else if (cleanInput.length === 8) {
+            // Caso XX.XXX.XXX
+            return cleanInput.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
+        }
+        return cleanInput; // Retornar sin cambios si excede los 8 dígitos
+    };
+
+    const handleKeyboardChange = (input: string) => {
+        const formattedInput = formatDNIWithDots(input); // Formatear el input con puntos
+        setDni(formattedInput); // Actualizar el estado con el DNI formateado
+        if (keyboard) keyboard.setInput(formattedInput); // Actualizar el valor en el teclado virtual
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!/^\d+$/.test(dni)) {
+        const cleanDNI = dni.replace(/\./g, ''); // Eliminar puntos antes de enviar
+
+        if (!/^\d+$/.test(cleanDNI)) {
             Swal.fire({
                 icon: 'error',
                 title: 'DNI inválido',
@@ -26,24 +47,22 @@ export default function RegistrarAsistenciaPorDNIPage() {
         }
 
         setIsLoading(true);
-        const fecha = new Date().toISOString(); // Fecha y hora actual
+        const fecha = new Date().toISOString();
 
         try {
-            // Buscar al alumno por DNI
-            const response = await fetch(`/api/alumnos?dni=${dni}`);
+            const response = await fetch(`/api/alumnos?dni=${cleanDNI}`);
             if (!response.ok) throw new Error('Error al buscar alumno');
 
             const alumno = await response.json();
 
             const ingreso = {
-                dni,
+                dni: cleanDNI,
                 actividad,
                 fecha,
                 presente: true,
-                nombre: alumno.nombre, // Agregar nombre del alumno
+                nombre: alumno.nombre,
             };
 
-            // Registrar asistencia en el servidor
             const asistenciaResponse = await fetch(`/api/asistencias/${alumno._id}`, {
                 method: 'POST',
                 headers: {
@@ -63,18 +82,18 @@ export default function RegistrarAsistenciaPorDNIPage() {
             });
 
             setDni(''); // Limpiar el campo DNI
+            if (keyboard) keyboard.setInput(''); // Limpia el teclado virtual
         } catch (error) {
             console.error('Error de conexión. Guardando localmente:', error);
 
             const ingreso = {
-                dni,
+                dni: cleanDNI,
                 actividad,
                 fecha,
                 presente: true,
-                nombre: 'Alumno', // Nombre genérico si no se puede obtener el nombre del servidor
+                nombre: 'Alumno',
             };
 
-            // Guardar el ingreso localmente
             await addIngreso(ingreso);
 
             Swal.fire({
@@ -83,7 +102,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
             });
 
-            setDni(''); // Limpiar el campo DNI
+            setDni('');
+            if (keyboard) keyboard.setInput('');
         } finally {
             setIsLoading(false);
         }
@@ -119,7 +139,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
         syncIngresosPendientes();
 
         const handleOnline = () => {
-            console.log('Conexión reestablecida. Iniciando sincronización...');
             syncIngresosPendientes();
         };
 
@@ -130,18 +149,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
         };
     }, []);
 
-    const handleKeyboardChange = (input: string) => {
-        setDni(input); // Actualiza el estado del DNI con el valor del teclado virtual
-    };
-
     return (
         <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8 relative">
-            {isLoading && (
-                <div className="absolute inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-10">
-                    <div className="loader" />
-                </div>
-            )}
-
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
 
             <div className="mb-6 text-center">
@@ -175,7 +184,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
                 <div className="mt-2 mb-4">
                     <Keyboard
-                        keyboardRef={(r) => setKeyboard(r)} // Referencia al teclado virtual
+                        keyboardRef={(r) => setKeyboard(r)}
                         onChange={handleKeyboardChange}
                         onKeyPress={(button) => {
                             if (button === "{submit}") {
@@ -194,20 +203,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         }}
                         display={{
                             "{bksp}": "⌫",
-                            "{submit}": "Registrar",
+                            "{submit}": isLoading ? 'Cargando...' : 'Registrar',
                         }}
                     />
                 </div>
-
-                {/* <div className="flex justify-center">
-                    <button
-                        type="submit"
-                        className="h-16 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 sm:px-6 sm:py-3 rounded"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Buscando...' : 'Registrar Presente'}
-                    </button>
-                </div> */}
             </form>
         </div>
     );
