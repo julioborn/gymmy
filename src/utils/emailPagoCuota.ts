@@ -1,6 +1,6 @@
 import transporter from './email';
 
-//const EMAIL_USER = process.env.EMAIL_USER as string;
+const EMAIL_USER = process.env.EMAIL_USER as string;
 
 export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago: any) => {
     if (!email) {
@@ -9,7 +9,7 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
     }
     
     const mailOptions = {
-        from: 'SPORT-TIME',
+        from: EMAIL_USER,
         to: email,
         subject: 'PAGO DE CUOTA',
         html: `
@@ -34,6 +34,9 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
                         </li>
                         <li style="margin-bottom: 10px; font-size: 14px;">
                             <strong style="color: #000000;">Días de musculación:</strong> ${pago.diasMusculacion} días por semana
+                        </li>
+                        <li style="margin-bottom: 10px; font-size: 14px;">
+                            <strong style="color: #000000;">Método de pago:</strong> ${pago.metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}
                         </li>
                     </ul>
 

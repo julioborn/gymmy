@@ -62,7 +62,7 @@ export default function ListaAlumnosPage() {
     const [filtroLetraApellido, setFiltroLetraApellido] = useState('');
     const [filtroPago, setFiltroPago] = useState('');
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
-    const [tarifas, setTarifas] = useState<Tarifa[]>([]); 
+    const [tarifas, setTarifas] = useState<Tarifa[]>([]);
     const [recargo, setRecargo] = useState<number | null>(null);
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
@@ -100,14 +100,14 @@ export default function ListaAlumnosPage() {
     };
 
     const handleConfiguracionTarifas = async () => {
-            if (tarifas.length === 0) {
-                await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
-                return;
-            }
-    
-            const tarifaInputs = tarifas
-                .map(
-                    (tarifa) => `
+        if (tarifas.length === 0) {
+            await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
+            return;
+        }
+
+        const tarifaInputs = tarifas
+            .map(
+                (tarifa) => `
                         <div style="display: flex; justify-content: center; margin-top: 4px; font-size: 16px;">
                             <label for="tarifa-${tarifa.dias}" style="display: flex; justify-content: center; align-items: center; font-weight: bold; margin-top: 14px; ">
                                 Días ${tarifa.dias}:
@@ -117,49 +117,49 @@ export default function ListaAlumnosPage() {
                             </div>
                         </div>
                     `
-                )
-                .join('');
-    
-            const result = await Swal.fire({
-                title: 'Configurar Cuotas',
-                html: `<div>${tarifaInputs}</div>`,
-                focusConfirm: false,
-                showCancelButton: true,
-                preConfirm: () => {
-                    const updatedTarifas = tarifas.map((tarifa) => {
-                        const valor = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
-                        return { ...tarifa, valor: Number(valor) };
-                    });
-                    return updatedTarifas;
-                },
-                confirmButtonText: 'Aceptar',
-                cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                },
-                buttonsStyling: false,
-            });
-    
-            const nuevasTarifas = result.value as Tarifa[] | undefined;
-            if (nuevasTarifas) {
-                try {
-                    const response = await fetch('/api/tarifas', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(nuevasTarifas),
-                    });
-                    if (response.ok) {
-                        Swal.fire('Tarifas actualizadas', '', 'success');
-                        setTarifas(nuevasTarifas);
-                    } else {
-                        Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
-                    }
-                } catch (error) {
-                    Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
+            )
+            .join('');
+
+        const result = await Swal.fire({
+            title: 'Configurar Cuotas',
+            html: `<div>${tarifaInputs}</div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            preConfirm: () => {
+                const updatedTarifas = tarifas.map((tarifa) => {
+                    const valor = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
+                    return { ...tarifa, valor: Number(valor) };
+                });
+                return updatedTarifas;
+            },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
+        });
+
+        const nuevasTarifas = result.value as Tarifa[] | undefined;
+        if (nuevasTarifas) {
+            try {
+                const response = await fetch('/api/tarifas', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevasTarifas),
+                });
+                if (response.ok) {
+                    Swal.fire('Tarifas actualizadas', '', 'success');
+                    setTarifas(nuevasTarifas);
+                } else {
+                    Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
                 }
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
             }
-        };
+        }
+    };
 
     useEffect(() => {
         fetchTarifas(); // Llama a fetchTarifas una vez al montar el componente
@@ -260,7 +260,7 @@ export default function ListaAlumnosPage() {
                     <strong>$${tarifa.valor}</strong>
                 </div>`;
             return options;
-        }, {} as Record<number, string>); // Inicializa el objeto como un Record de números a strings
+        }, {} as Record<number, string>);
 
         const { value: diasMusculacion } = await Swal.fire({
             title: 'Selecciona los días de musculación por semana',
@@ -268,26 +268,14 @@ export default function ListaAlumnosPage() {
             inputOptions: opcionesTarifas,
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
-            didOpen: () => {
-                // Ajustar el estilo de las opciones después de que se renderice
-                const select = Swal.getHtmlContainer()?.querySelector('select');
-                if (select) {
-                    select.style.textAlign = 'left'; // Opciones alineadas a la izquierda
-                    select.style.width = '100%';    // Tamaño completo del select
-                }
-            },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                popup: 'custom-swal-popup',
-            },
-            buttonsStyling: false,
         });
 
         if (diasMusculacion) {
-            const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
+            const tarifaSeleccionada = tarifas.find(
+                (tarifa) => tarifa.dias === Number(diasMusculacion)
+            );
 
             if (!tarifaSeleccionada) {
                 Swal.fire({
@@ -298,12 +286,37 @@ export default function ListaAlumnosPage() {
                 return;
             }
 
+            const { value: metodoPago } = await Swal.fire({
+                title: 'Selecciona el método de pago',
+                input: 'radio',
+                inputOptions: {
+                    efectivo: 'Efectivo',
+                    transferencia: 'Transferencia',
+                },
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Debes seleccionar un método de pago';
+                    }
+                    return null; // Retorna null en lugar de undefined
+                },
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+            });
+
+            if (!metodoPago) return; // Cancelado
+
             const confirmacion = await Swal.fire({
                 title: 'Confirmar cobro',
                 html: `
-                    <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-                    <p>Precio: <strong>$${tarifaSeleccionada.valor}</strong></p>
-                `,
+                                    <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
+                                    <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
+                                    <p>Precio: $${tarifaSeleccionada.valor}</p>
+                                    ${recargo
+                        ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
+                        : ''
+                    }
+                                    <p>Total a pagar: <strong>$${(tarifaSeleccionada.valor + (recargo || 0)).toFixed(2)}</strong></p> <!-- Total -->
+                                `,
                 icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Cobrar',
@@ -318,12 +331,15 @@ export default function ListaAlumnosPage() {
 
             if (confirmacion.isConfirmed) {
                 try {
-                    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+                    const mesActual = new Date()
+                        .toLocaleString('es-ES', { month: 'long' })
+                        .toLowerCase();
                     const nuevoPago = {
                         mes: mesActual,
                         fechaPago: new Date(),
                         diasMusculacion: Number(diasMusculacion),
                         tarifa: tarifaSeleccionada.valor,
+                        metodoPago,
                     };
 
                     const response = await fetch(`/api/alumnos/pagos`, {
@@ -457,7 +473,7 @@ export default function ListaAlumnosPage() {
     useEffect(() => {
         fetchRecargo();
     }, []);
-    
+
     const fetchRecargo = async () => {
         try {
             const response = await fetch('/api/recargo'); // Endpoint de recargo
@@ -467,14 +483,14 @@ export default function ListaAlumnosPage() {
             console.error('Error al obtener recargo:', error);
         }
     };
-    
+
 
     const handleConfiguracionRecargos = async () => {
         if (recargo === null) {
             await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
             return;
         }
-    
+
         const { value: nuevoMonto } = await Swal.fire({
             title: 'Configurar Recargo',
             input: 'number',
@@ -495,7 +511,7 @@ export default function ListaAlumnosPage() {
             },
             buttonsStyling: false,
         });
-    
+
         if (nuevoMonto && Number(nuevoMonto) !== recargo) {
             try {
                 const response = await fetch('/api/recargo', {
@@ -503,7 +519,7 @@ export default function ListaAlumnosPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ monto: Number(nuevoMonto) }),
                 });
-    
+
                 if (response.ok) {
                     Swal.fire('Recargo actualizado', '', 'success');
                     setRecargo(Number(nuevoMonto)); // Actualiza el estado con el nuevo valor
@@ -514,7 +530,7 @@ export default function ListaAlumnosPage() {
                 Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
             }
         }
-    };    
+    };
 
     return (
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">

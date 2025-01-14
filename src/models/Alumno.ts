@@ -6,6 +6,7 @@ interface IPago {
     fechaPago: Date;
     tarifa: number; // Tarifa asignada
     diasMusculacion: number; // Días de musculación por semana
+    metodoPago: 'efectivo' | 'transferencia'; // Método de pago
 }
 
 // Interfaz para la asistencia
@@ -66,8 +67,9 @@ const AlumnoSchema = new mongoose.Schema({
             fechaPago: { type: Date, required: true },
             tarifa: { type: Number, required: true },
             diasMusculacion: { type: Number, required: true },
+            metodoPago: { type: String, required: true, enum: ['efectivo', 'transferencia'] }, // Método de pago
         },
-    ],
+    ],    
     planEntrenamiento: {
         type: PlanEntrenamientoSchema,
         default: { fechaInicio: null, duracion: null, diasRestantes: null, terminado: false },

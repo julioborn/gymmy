@@ -51,6 +51,15 @@ export default function HomePage() {
             >
               Registrar Alumno
             </Link>
+            {/* Botón de Estadísticas visible solo para el dueño */}
+            {session.user?.role === 'dueño' && (
+              <Link
+                href="/alumnos/finanzas"
+                className="px-8 py-4 w-3/4 bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
+              >
+                Finanzas
+              </Link>
+            )}
           </div>
         </div>
         <button

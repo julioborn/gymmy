@@ -1,6 +1,6 @@
 import transporter from './email';
 
-//const EMAIL_USER = process.env.EMAIL_USER as string;
+const EMAIL_USER = process.env.EMAIL_USER as string;
 
 // Define el tipo para las asistencias
 type Asistencia = {
@@ -70,7 +70,7 @@ export const enviarCorreoPlanTerminado = async (
     fechaTermino.setDate(fechaInicio.getDate() + plan.duracion);
 
     const mailOptions = {
-        from: 'SPORT-TIME',
+        from: EMAIL_USER,
         to: email,
         subject: 'TU PLAN DE ENTRENAMIENTO HA TERMINADO',
         html: `

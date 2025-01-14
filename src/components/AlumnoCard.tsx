@@ -51,11 +51,11 @@ export default function AlumnoCard({
                         </div>
                     )}
                 </div>
-                <div className={`font-bold ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
+                <div className={`font-semibold ${obtenerColorSemaforo(alumno.diasRestantes)}`}>
                     {alumno.diasRestantes === 0 ? (
                         <span className="text-red-500">Plan Terminado</span>
                     ) : alumno.diasRestantes !== null ? (
-                        `${alumno.diasRestantes} días restantes de plan`
+                        `${alumno.diasRestantes} entrenamientos restantes`
                     ) : (
                         'Sin plan'
                     )}

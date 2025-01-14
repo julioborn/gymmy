@@ -19,9 +19,16 @@ import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
 // } from 'chart.js';
 import dynamic from 'next/dynamic';
 
+// Loader giratorio
+const Loader = () => (
+    <div className="flex justify-center items-center h-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-700"></div>
+    </div>
+);
+
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
     ssr: false, // Esto asegura que el componente no se cargue en el servidor.
-    loading: () => <p>Cargando calendario...</p>, // Mensaje de carga mientras el componente se carga dinámicamente.
+    loading: () => <Loader />, // Mensaje de carga mientras el componente se carga dinámicamente.
 });
 
 // ChartJS.register(
@@ -353,7 +360,7 @@ export default function HistorialAlumnoPage() {
     }, [id]);
 
     if (!alumno) {
-        return <p>Cargando...</p>;
+        return <Loader />;
     }
 
     // Ajustamos la creación de eventos para que incluya la tarifa en el título
@@ -602,11 +609,41 @@ export default function HistorialAlumnoPage() {
                     return;
                 }
 
+                const { value: metodoPago } = await Swal.fire({
+                    title: 'Selecciona el método de pago',
+                    input: 'select',
+                    inputOptions: {
+                        efectivo: 'Efectivo',
+                        transferencia: 'Transferencia',
+                    },
+                    inputPlaceholder: 'Selecciona un método',
+                    showCancelButton: true,
+                    confirmButtonText: 'Aceptar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                    },
+                    buttonsStyling: false,
+                });
+
+                if (!metodoPago) {
+                    Swal.fire('Error', 'Debes seleccionar un método de pago.', 'error');
+                    return;
+                }
+
                 const confirmacion = await Swal.fire({
                     title: 'Confirmar cobro',
                     html: `
                         <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-                        <p>Precio: <strong>$${tarifaSeleccionada.valor}</strong></p>
+                        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
+                        <p>Precio: $${tarifaSeleccionada.valor}</p>
+                        ${
+                            recargo
+                                ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
+                                : ''
+                        }
+                        <p>Total a pagar: <strong>$${(tarifaSeleccionada.valor + (recargo || 0)).toFixed(2)}</strong></p> <!-- Total -->
                     `,
                     icon: 'info',
                     showCancelButton: true,
@@ -619,7 +656,7 @@ export default function HistorialAlumnoPage() {
                     },
                     buttonsStyling: false,
                 });
-
+                
                 if (confirmacion.isConfirmed) {
                     try {
                         const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada
@@ -631,6 +668,7 @@ export default function HistorialAlumnoPage() {
                             fechaPago,
                             diasMusculacion: Number(diasMusculacion),
                             tarifa: tarifaSeleccionada.valor,
+                            metodoPago, // Incluye el método de pago aquí
                         };
 
                         const response = await fetch(`/api/alumnos/pagos`, {
