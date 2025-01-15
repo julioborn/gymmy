@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import Modal from 'react-modal';
 import AlumnoActions from '@/components/AlumnoActions';
-import './paginationCss.css';
 import { Pagination } from '@mui/material';
 
 // Lazy loading de componentes
@@ -628,11 +627,12 @@ export default function ListaAlumnosPage() {
                         </div>
                     </Suspense>
                     {/* Componente de paginación */}
-                    <div className="flex justify-center mt-6 custom-pagination">
+                    <div className="flex justify-center mt-6">
                         <Pagination
                             count={Math.ceil(alumnos.length / itemsPerPage)} // Calcula el número total de páginas
                             page={page}
                             onChange={handlePageChange}
+                            color="primary"
                         />
                     </div> 
                 </>

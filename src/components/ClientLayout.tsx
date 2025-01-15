@@ -16,6 +16,9 @@ import {
     Box,
     CircularProgress,
     Typography,
+    createTheme,
+    CssBaseline,
+    ThemeProvider,
 } from '@mui/material';
 import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
 
@@ -23,10 +26,25 @@ interface ClientLayoutProps {
     children: React.ReactNode;
 }
 
+// Define el tema de Material-UI
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#111827', // Tu color primario
+        },
+        secondary: {
+            main: '#d32f2f', // Opcional: color secundario
+        },
+    },
+});
+
 export default function ClientLayout({ children }: ClientLayoutProps) {
     return (
         <SessionProvider>
-            <LayoutWithSession>{children}</LayoutWithSession>
+            <ThemeProvider theme={theme}>
+                <CssBaseline /> {/* Resetea el estilo base */}
+                <LayoutWithSession>{children}</LayoutWithSession>
+            </ThemeProvider>
         </SessionProvider>
     );
 }
