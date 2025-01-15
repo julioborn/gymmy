@@ -14,19 +14,20 @@ export default function ModalEditAlumno({
 }: ModalEditAlumnoProps) {
     const [formData, setFormData] = useState(alumno);
 
-    const handleInputChange = (field: string, value: string) => {
+    const handleInputChange = (field: string, value: string | number) => {
         setFormData((prev: any) => ({ ...prev, [field]: value }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Opcional: Validación adicional si necesitas verificar algo antes de guardar
+        // Validación adicional si es necesario
         const updatedAlumno = {
             ...formData,
-            telefono: formData.telefono.trim() === '' ? null : formData.telefono,
-            email: formData.email.trim() === '' ? null : formData.email,
-        };
+            telefono: formData.telefono?.trim() === '' ? null : formData.telefono?.trim(),
+            email: formData.email?.trim() === '' ? null : formData.email?.trim(),
+            diasEntrenaSemana: formData.diasEntrenaSemana || null, // Asegura que si está vacío, se guarde como null
+        };        
 
         onSave(alumno._id, updatedAlumno);
     };
@@ -86,6 +87,18 @@ export default function ModalEditAlumno({
                         value={formData.email || ''}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className="border border-gray-300 p-2 w-full"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700">Días de entrenamiento por semana</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="7"
+                        value={formData.diasEntrenaSemana || ''}
+                        onChange={(e) => handleInputChange('diasEntrenaSemana', e.target.value ? Number(e.target.value) : '')}
+                        className="border border-gray-300 p-2 w-full"
+                        placeholder=""
                     />
                 </div>
                 <div className="flex justify-center space-x-2">

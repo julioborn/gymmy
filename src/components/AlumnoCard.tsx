@@ -32,10 +32,11 @@ export default function AlumnoCard({
     return (
         <div className="bg-gray-200 border border-gray-400 rounded-md p-4 shadow-md">
             <h2 className="text-lg font-semibold text-gray-800">{alumno.nombre} {alumno.apellido}</h2>
-            <p className="text-gray-600 text-md">Edad: {alumno.edad}</p>
-            <p className="text-gray-600 text-md">DNI: {alumno.dni}</p>
-            <p className="text-gray-600 text-md">Teléfono: {alumno.telefono}</p>
-            <p className="text-gray-600 text-md">Email: {alumno.email}</p>
+            <p className="text-gray-600 text-md"><span className='text-gray-900'>Edad:</span> {alumno.edad}</p>
+            <p className="text-gray-600 text-md"><span className='text-gray-900'>DNI:</span> {alumno.dni}</p>
+            <p className="text-gray-600 text-md"><span className='text-gray-900'>Teléfono:</span> {alumno.telefono || '-'}</p>
+            <p className="text-gray-600 text-md"><span className='text-gray-900'>Email:</span> {alumno.email || '-'}</p>
+            <p className="text-gray-600 text-md"><span className='text-gray-900'>Días por semana:</span> {alumno.diasEntrenaSemana || '-'}</p>
 
             <div className="mt-4 flex flex-col justify-center items-start">
                 <div>

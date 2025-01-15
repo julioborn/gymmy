@@ -33,6 +33,7 @@ interface IAlumno extends Document {
     telefono?: string; // Ahora es opcional
     email?: string; // Ahora es opcional
     asistencia: IAsistencia[];
+    diasEntrenaSemana?: number | null; // Nueva propiedad (opcional)
     pagos: IPago[];
     planEntrenamiento: IPlanEntrenamiento;
 }
@@ -59,6 +60,7 @@ const AlumnoSchema = new mongoose.Schema({
     dni: { type: String, required: true },
     telefono: { type: String, required: false, default: null }, // Ahora es opcional
     email: { type: String, required: false, default: null }, // Ahora es opcional
+    diasEntrenaSemana: { type: Number, required: false, default: null }, // Nueva propiedad
     fechaNacimiento: { type: Date, required: true },
     asistencia: [AsistenciaSchema],
     pagos: [
@@ -69,7 +71,7 @@ const AlumnoSchema = new mongoose.Schema({
             diasMusculacion: { type: Number, required: true },
             metodoPago: { type: String, required: true, enum: ['efectivo', 'transferencia'] }, // Método de pago
         },
-    ],    
+    ],
     planEntrenamiento: {
         type: PlanEntrenamientoSchema,
         default: { fechaInicio: null, duracion: null, diasRestantes: null, terminado: false },

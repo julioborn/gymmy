@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     await connectMongoDB();
 
-    const { nombre, apellido, fechaNacimiento, dni, telefono, email } = await request.json();
+    const { nombre, apellido, fechaNacimiento, dni, telefono, email, diasEntrenaSemana } = await request.json();
 
     try {
         // Crear nuevo alumno con un plan de entrenamiento vacío
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
             dni,
             telefono,
             email,
+            diasEntrenaSemana: diasEntrenaSemana || null, // Asegurarse de que sea opcional
             asistencia: [], // No hay asistencias al crear el alumno
             pagos: [], // No hay pagos al crear el alumno
             planEntrenamiento: {
@@ -48,8 +49,8 @@ export async function POST(request: Request) {
                 duracion: null, // Sin duración predeterminada
                 diasRestantes: null, // Sin días restantes definidos
                 terminado: false, // Estado inicial de no terminado
-            }
-        });        
+            },
+        });
 
         await nuevoAlumno.save();
         return new Response(JSON.stringify(nuevoAlumno), { status: 201 });
@@ -64,11 +65,11 @@ export async function PUT(request: Request) {
     await connectMongoDB();
 
     try {
-        const { id, nombre, apellido, fechaNacimiento, dni, telefono, email } = await request.json();
+        const { id, nombre, apellido, fechaNacimiento, dni, telefono, email, diasEntrenaSemana } = await request.json();
 
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             id,
-            { nombre, apellido, fechaNacimiento, dni, telefono, email },
+            { nombre, apellido, fechaNacimiento, dni, telefono, email, diasEntrenaSemana },
             { new: true } // Retorna el documento actualizado
         );
 
