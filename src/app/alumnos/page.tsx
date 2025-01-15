@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import Modal from 'react-modal';
 import AlumnoActions from '@/components/AlumnoActions';
-import clsx from 'clsx';
+import './paginationCss.css';
+import { Pagination } from '@mui/material';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -67,6 +68,8 @@ export default function ListaAlumnosPage() {
     const [recargo, setRecargo] = useState<number | null>(null);
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
+    const [page, setPage] = useState(1); // Página actual
+    const [itemsPerPage] = useState(4); // Cantidad de elementos por página
 
     const fetchAlumnos = async () => {
         setIsLoading(true); // Inicia la carga
@@ -497,7 +500,6 @@ export default function ListaAlumnosPage() {
         }
     };
 
-
     const handleConfiguracionRecargos = async () => {
         if (recargo === null) {
             await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
@@ -543,6 +545,17 @@ export default function ListaAlumnosPage() {
                 Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
             }
         }
+    };
+
+    // Función para calcular los alumnos que se mostrarán en la página actual
+    const paginatedAlumnos = alumnos.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+    );
+
+    // Cambiar la página al interactuar con el componente Pagination
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
     };
 
     return (
@@ -597,22 +610,32 @@ export default function ListaAlumnosPage() {
             {isLoading ? ( // Si los datos están cargando, muestra el Loader
                 <Loader />
             ) : (
-                <Suspense fallback={<Loader />}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
-                        {alumnosFiltrados.map((alumno) => (
-                            <AlumnoActions
-                                key={alumno._id}
-                                alumno={alumno}
-                                router={router}
-                                onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
-                                onEditar={(alumno) => setEditandoAlumno(alumno)}
-                                onEliminar={(id) => eliminarAlumno(id)}
-                                onIniciarPlan={(id) => iniciarPlan(id)}
-                                onMarcarPago={(id) => marcarPagoMes(id)}
-                            />
-                        ))}
-                    </div>
-                </Suspense>
+                <>
+                    <Suspense fallback={<Loader />}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
+                            {paginatedAlumnos.map((alumno) => (
+                                <AlumnoActions
+                                    key={alumno._id}
+                                    alumno={alumno}
+                                    router={router}
+                                    onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
+                                    onEditar={(alumno) => setEditandoAlumno(alumno)}
+                                    onEliminar={(id) => eliminarAlumno(id)}
+                                    onIniciarPlan={(id) => iniciarPlan(id)}
+                                    onMarcarPago={(id) => marcarPagoMes(id)}
+                                />
+                            ))}
+                        </div>
+                    </Suspense>
+                    {/* Componente de paginación */}
+                    <div className="flex justify-center mt-6 custom-pagination">
+                        <Pagination
+                            count={Math.ceil(alumnos.length / itemsPerPage)} // Calcula el número total de páginas
+                            page={page}
+                            onChange={handlePageChange}
+                        />
+                    </div> 
+                </>
             )}
 
             {/* Ventana modal para editar el alumno */}
