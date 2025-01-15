@@ -274,6 +274,11 @@ export default function ListaAlumnosPage() {
             showCancelButton: true,
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
         });
 
         if (diasMusculacion) {
@@ -305,6 +310,11 @@ export default function ListaAlumnosPage() {
                 },
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+                },
+                buttonsStyling: false
             });
 
             if (!metodoPago) return; // Cancelado

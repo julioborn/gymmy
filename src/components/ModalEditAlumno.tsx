@@ -27,7 +27,7 @@ export default function ModalEditAlumno({
             telefono: formData.telefono?.trim() === '' ? null : formData.telefono?.trim(),
             email: formData.email?.trim() === '' ? null : formData.email?.trim(),
             diasEntrenaSemana: formData.diasEntrenaSemana || null, // Asegura que si está vacío, se guarde como null
-        };        
+        };
 
         onSave(alumno._id, updatedAlumno);
     };
@@ -104,14 +104,14 @@ export default function ModalEditAlumno({
                 <div className="flex justify-center space-x-2">
                     <button
                         type="submit"
-                        className="bg-green-600 text-white px-4 py-2 rounded"
+                        className="bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded"
                     >
                         Guardar
                     </button>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="bg-red-500 text-white px-4 py-2 rounded"
+                        className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
                     >
                         Cancelar
                     </button>

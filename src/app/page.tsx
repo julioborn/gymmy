@@ -64,7 +64,7 @@ export default function HomePage() {
         </div>
         <button
           onClick={() => signOut()}
-          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
+          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg text-md hover:bg-red-600 transition duration-300"
         >
           Cerrar Sesión
         </button>
