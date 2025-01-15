@@ -61,6 +61,7 @@ export default function ListaAlumnosPage() {
     const [filtroEdad, setFiltroEdad] = useState('');
     const [filtroLetraApellido, setFiltroLetraApellido] = useState('');
     const [filtroPago, setFiltroPago] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
     const [recargo, setRecargo] = useState<number | null>(null);
@@ -68,6 +69,7 @@ export default function ListaAlumnosPage() {
     const [editandoTarifas, setEditandoTarifas] = useState(false);
 
     const fetchAlumnos = async () => {
+        setIsLoading(true); // Inicia la carga
         try {
             const response = await fetch('/api/alumnos');
             if (!response.ok) throw new Error('Error en la solicitud');
@@ -82,6 +84,8 @@ export default function ListaAlumnosPage() {
             setAlumnos(alumnosConDatos); // No necesitas await aquí, el cálculo es síncrono
         } catch (error) {
             console.error('Error al obtener alumnos:', error);
+        } finally {
+            setIsLoading(false); // Finaliza la carga
         }
     };
 
@@ -439,7 +443,6 @@ export default function ListaAlumnosPage() {
     };
 
     const alumnosFiltrados = alumnos
-
         .filter((alumno) => {
             const coincideBusqueda = alumno.nombre.toLowerCase().includes(busqueda.toLowerCase()) || alumno.dni.includes(busqueda);
             const coincideEdad = filtroEdad ? alumno.edad === parseInt(filtroEdad) : true;
@@ -581,22 +584,26 @@ export default function ListaAlumnosPage() {
             </div>
 
             {/* Tarjetas de alumnos */}
-            <Suspense fallback={<Loader />}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
-                    {alumnosFiltrados.map((alumno) => (
-                        <AlumnoActions
-                            key={alumno._id}
-                            alumno={alumno}
-                            router={router}
-                            onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
-                            onEditar={(alumno) => setEditandoAlumno(alumno)}
-                            onEliminar={(id) => eliminarAlumno(id)}
-                            onIniciarPlan={(id) => iniciarPlan(id)}
-                            onMarcarPago={(id) => marcarPagoMes(id)}
-                        />
-                    ))}
-                </div>
-            </Suspense>
+            {isLoading ? ( // Si los datos están cargando, muestra el Loader
+                <Loader />
+            ) : (
+                <Suspense fallback={<Loader />}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
+                        {alumnosFiltrados.map((alumno) => (
+                            <AlumnoActions
+                                key={alumno._id}
+                                alumno={alumno}
+                                router={router}
+                                onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
+                                onEditar={(alumno) => setEditandoAlumno(alumno)}
+                                onEliminar={(id) => eliminarAlumno(id)}
+                                onIniciarPlan={(id) => iniciarPlan(id)}
+                                onMarcarPago={(id) => marcarPagoMes(id)}
+                            />
+                        ))}
+                    </div>
+                </Suspense>
+            )}
 
             {/* Ventana modal para editar el alumno */}
             {editandoAlumno && (
