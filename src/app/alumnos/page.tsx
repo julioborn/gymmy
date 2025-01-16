@@ -5,6 +5,8 @@ import Swal from 'sweetalert2';
 import Modal from 'react-modal';
 import AlumnoActions from '@/components/AlumnoActions';
 import { Pagination } from '@mui/material';
+import * as XLSX from 'xlsx';
+import { useSession } from 'next-auth/react';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -55,6 +57,7 @@ function verificarPagoMesActual(pagos: any[]): boolean {
 }
 
 export default function ListaAlumnosPage() {
+    const { data: session } = useSession(); // Obtener la sesión
     const [alumnos, setAlumnos] = useState<any[]>([]);
     const [editandoAlumno, setEditandoAlumno] = useState<any | null>(null);
     const [busqueda, setBusqueda] = useState('');
@@ -557,6 +560,83 @@ export default function ListaAlumnosPage() {
         setPage(value);
     };
 
+    const handleGenerateExcel = () => {
+        // Función para calcular la franja horaria
+        const categorizarFranjaHoraria = (horario: string) => {
+            const [hora] = horario.split(':').map(Number); // Obtener la hora como número
+            if (hora >= 7 && hora < 12) return 'Mañana';
+            if (hora >= 12 && hora < 16) return 'Siesta';
+            if (hora >= 16 && hora < 24) return 'Tarde';
+            return '-'; // En caso de horarios fuera de rango
+        };
+
+        // Función para calcular el horario más frecuente del mes actual
+        const calcularHorarioMasFrecuenteDelMes = (asistencias: any[]) => {
+            const mesActual = new Date().getMonth(); // Mes actual (0 = enero, 1 = febrero, ...)
+            const añoActual = new Date().getFullYear(); // Año actual
+
+            const horarios = asistencias
+                .filter((asistencia: { fecha: string | number | Date; actividad: string }) => {
+                    const fechaAsistencia = new Date(asistencia.fecha);
+                    return (
+                        asistencia.actividad === 'Musculación' &&
+                        fechaAsistencia.getMonth() === mesActual &&
+                        fechaAsistencia.getFullYear() === añoActual
+                    );
+                })
+                .map((asistencia: { fecha: string | number | Date }) =>
+                    new Date(asistencia.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                );
+
+            if (horarios.length === 0) return '-'; // Si no hay asistencias, devolver '-'
+
+            // Calcular frecuencia de cada horario
+            const frecuencia = horarios.reduce((acc: { [x: string]: any }, horario: string | number) => {
+                acc[horario] = (acc[horario] || 0) + 1;
+                return acc;
+            }, {});
+
+            // Determinar el horario más frecuente
+            const horarioMasFrecuente = Object.keys(frecuencia).reduce((a, b) => (frecuencia[a] > frecuencia[b] ? a : b));
+
+            // Categorizar el horario más frecuente en una franja horaria
+            return categorizarFranjaHoraria(horarioMasFrecuente);
+        };
+
+        // Formatear los datos para el archivo Excel
+        const formattedData = alumnos.map((alumno) => {
+            const pagoMesActual = alumno.pagos.find(
+                (pago: { mes: string }) =>
+                    pago.mes.toLowerCase() ===
+                    new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase()
+            );
+
+            // Calcular el horario más frecuente del mes
+            const horarioMasFrecuenteDelMes = calcularHorarioMasFrecuenteDelMes(alumno.asistencia || []);
+
+            return {
+                Apellido: alumno.apellido,
+                Nombre: alumno.nombre,
+                Pago: pagoMesActual ? `$${pagoMesActual.tarifa}` : 'No pagó',
+                'Fecha de Pago': pagoMesActual
+                    ? new Date(pagoMesActual.fechaPago).toLocaleDateString('es-ES')
+                    : '-',
+                Adeuda: pagoMesActual ? 'No' : 'Sí',
+                'Días que asiste': alumno.diasEntrenaSemana || '-', // Mostrar los días que entrena por semana
+                Horario: horarioMasFrecuenteDelMes, // Franja horaria más frecuente
+                Mes: new Date().toLocaleString('es-ES', { month: 'long' }),
+            };
+        });
+
+        // Crear el libro y la hoja de trabajo
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Balance Mensual');
+
+        // Generar el archivo Excel
+        XLSX.writeFile(workbook, `Balance_Mensual_${new Date().toLocaleDateString('es-ES')}.xlsx`);
+    };
+
     return (
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
@@ -583,26 +663,54 @@ export default function ListaAlumnosPage() {
             </Suspense>
 
             {/* Botones superiores */}
-            <div className='flex justify-start'>
-                {/* Botón de configuración de tarifas */}
-                <div className="sm:block">
-                    <button
-                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                        onClick={handleConfiguracionTarifas}
-                    >
-                        <span className="text-white">Cuotas</span>
-                    </button>
+            <div className='flex justify-between'>
+                <div className='flex'>
+                    {/* Botón de configuración de tarifas */}
+                    <div className="sm:block">
+                        <button
+                            className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                            onClick={handleConfiguracionTarifas}
+                        >
+                            <span className="text-white">Cuotas</span>
+                        </button>
+                    </div>
+
+                    {/* Botón de configuración de recargos */}
+                    <div className="sm:block">
+                        <button
+                            className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
+                            onClick={handleConfiguracionRecargos}
+                        >
+                            <span className="text-white">Recargo</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* Botón de configuración de recargos */}
-                <div className="sm:block">
-                    <button
-                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                        onClick={handleConfiguracionRecargos}
-                    >
-                        <span className="text-white">Recargo</span>
-                    </button>
-                </div>
+                {/* Botón para generar el balance */}
+                {session?.user?.role === 'dueño' && (
+                    <div className="mb-4 flex justify-end">
+                        <button
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
+                            onClick={handleGenerateExcel}
+                        >
+                            <span className="mr-2">Generar Balance</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 48 48">
+                                <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
+                                <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
+                                <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
+                                <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
+                                <g>
+                                    <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
+                                    <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
+                                    <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
+                                    <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
+                                </g>
+                                <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
+                                <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Tarjetas de alumnos */}
@@ -634,7 +742,7 @@ export default function ListaAlumnosPage() {
                             onChange={handlePageChange}
                             color="primary"
                         />
-                    </div> 
+                    </div>
                 </>
             )}
 

@@ -41,7 +41,7 @@ export default function HomePage() {
           <div className="flex flex-col space-y-4 justify-center items-center">
             <Link
               href="/alumnos"
-              className="px-8 py-4 w-3/4 bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300"
+              className="block px-8 py-4 w-3/4 bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300 text-center"
             >
               Lista de Alumnos
             </Link>

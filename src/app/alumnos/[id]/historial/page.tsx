@@ -638,10 +638,9 @@ export default function HistorialAlumnoPage() {
                         <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
                         <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
                         <p>Precio: $${tarifaSeleccionada.valor}</p>
-                        ${
-                            recargo
-                                ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
-                                : ''
+                        ${recargo
+                            ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
+                            : ''
                         }
                         <p>Total a pagar: <strong>$${(tarifaSeleccionada.valor + (recargo || 0)).toFixed(2)}</strong></p> <!-- Total -->
                     `,
@@ -656,7 +655,7 @@ export default function HistorialAlumnoPage() {
                     },
                     buttonsStyling: false,
                 });
-                
+
                 if (confirmacion.isConfirmed) {
                     try {
                         const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada
@@ -733,16 +732,35 @@ export default function HistorialAlumnoPage() {
                 const { value: formData } = await Swal.fire({
                     title: 'Editar Actividad',
                     html: `
-                        <label for="nueva-actividad">Actividad:</label>
-                        <select id="nueva-actividad" class="swal2-input">
-                            <option value="Musculación" ${clickInfo.event.title === 'Musculación' ? 'selected' : ''}>Musculación</option>
-                            <option value="Intermitente" ${clickInfo.event.title === 'Intermitente' ? 'selected' : ''}>Intermitente</option>
-                            <option value="Otro" ${clickInfo.event.title === 'Otro' ? 'selected' : ''}>Otro</option>
-                        </select>
-                        <label for="nueva-fecha-actividad">Fecha:</label>
-                        <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${fechaActual?.toISOString().split('T')[0]}">
-                        <label for="nueva-hora-actividad">Hora:</label>
-                        <input type="time" id="nueva-hora-actividad" class="swal2-input" value="${horaActual}">
+                        <div style="
+                            display: flex; 
+                            flex-direction: column; 
+                            align-items: center; 
+                            gap: 1rem; 
+                            text-align: left; 
+                            width: 100%; 
+                            max-width: 100%; 
+                            padding: 1rem; 
+                            box-sizing: border-box; 
+                            overflow-x: hidden;
+                        ">
+                            <div style="width: 100%; max-width: 300px;">
+                                <label for="nueva-actividad" style="display: block; margin-bottom: 0.5rem;">Actividad:</label>
+                                <select id="nueva-actividad" class="swal2-input" style="width: 100%;">
+                                    <option value="Musculación" ${clickInfo.event.title === 'Musculación' ? 'selected' : ''}>Musculación</option>
+                                    <option value="Intermitente" ${clickInfo.event.title === 'Intermitente' ? 'selected' : ''}>Intermitente</option>
+                                    <option value="Otro" ${clickInfo.event.title === 'Otro' ? 'selected' : ''}>Otro</option>
+                                </select>
+                            </div>
+                            <div style="width: 100%; max-width: 300px;">
+                                <label for="nueva-fecha-actividad" style="display: block; margin-bottom: 0.5rem;">Fecha:</label>
+                                <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${fechaActual?.toISOString().split('T')[0]}" style="width: 100%;">
+                            </div>
+                            <div style="width: 100%; max-width: 300px;">
+                                <label for="nueva-hora-actividad" style="display: block; margin-bottom: 0.5rem;">Hora:</label>
+                                <input type="time" id="nueva-hora-actividad" class="swal2-input" value="${horaActual}" style="width: 100%;">
+                            </div>
+                        </div>
                     `,
                     preConfirm: () => {
                         const nuevaActividad = (document.getElementById('nueva-actividad') as HTMLSelectElement).value;

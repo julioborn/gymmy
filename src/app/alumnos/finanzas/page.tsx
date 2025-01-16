@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
@@ -21,14 +23,19 @@ type Alumno = {
 };
 
 const ControlFinanciero = () => {
+    const { data: session } = useSession();
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [ingresosPorMes, setIngresosPorMes] = useState<number[]>([]);
-    const [totalIngresos, setTotalIngresos] = useState<number>(0); // Total de ingresos anuales
+    const [totalIngresos, setTotalIngresos] = useState<number>(0);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [availableYears, setAvailableYears] = useState<number[]>([]);
 
+    if (session && session.user?.role !== 'dueño') {
+        redirect('/');
+    }
+
     useEffect(() => {
-        fetch('/api/alumnos') // Asegúrate de que esta ruta sea correcta
+        fetch('/api/alumnos')
             .then((res) => res.json())
             .then((data) => {
                 setAlumnos(data);
@@ -70,7 +77,6 @@ const ControlFinanciero = () => {
 
         setIngresosPorMes(ingresos);
 
-        // Calcular el total anual
         const total = ingresos.reduce((acc, ingreso) => acc + ingreso, 0);
         setTotalIngresos(total);
     };
@@ -79,7 +85,6 @@ const ControlFinanciero = () => {
         <div className="bg-white p-6 rounded shadow-md max-w-4xl mx-auto">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">Control Financiero</h2>
 
-            {/* Selector de año */}
             <div className="mb-6">
                 <label htmlFor="year-selector" className="block text-gray-700 font-medium mb-2">
                     Selecciona el Año:
@@ -98,9 +103,8 @@ const ControlFinanciero = () => {
                 </select>
             </div>
 
-            {/* Reporte Anual */}
             <div className="bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Reporte Anual - 2024</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Reporte Anual - {selectedYear}</h3>
                 <p className="text-gray-700">
                     <span className="font-bold text-green-600">
                         ${totalIngresos.toLocaleString('es-ES')}
@@ -108,117 +112,69 @@ const ControlFinanciero = () => {
                 </p>
             </div>
 
-            {/* Gráfico de ingresos mensuales */}
+            {/* Gráfico responsivo de barras */}
             <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
                 <h3 className="text-xl font-semibold text-gray-700 mb-4">Ingresos Mensuales - {selectedYear}</h3>
-                <Bar
-                    data={{
-                        labels: [
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-                        ],
-                        datasets: [
-                            {
-                                label: `Ingresos (${selectedYear})`,
-                                data: ingresosPorMes,
-                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                            },
-                        ],
-                    }}
-                    options={{
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                            },
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
+                <div className="relative w-full" style={{ maxWidth: '100%' }}>
+                    <Bar
+                        data={{
+                            labels: [
+                                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                            ],
+                            datasets: [
+                                {
+                                    label: `Ingresos (${selectedYear})`,
+                                    data: ingresosPorMes,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                },
+                            ],
+                        }}
+                        options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
                                     display: true,
-                                    text: 'Monto ($)',
+                                    position: 'top',
                                 },
                             },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Meses',
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Monto ($)',
+                                    },
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Meses',
+                                    },
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 0,
+                                        font: {
+                                            size: 10,
+                                        },
+                                        callback: function (value, index) {
+                                            const monthLabels = [
+                                                'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                                                'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+                                            ];
+                                            return monthLabels[Number(value)] || '';
+                                        },
+                                    },
                                 },
                             },
-                        },
-                    }}
-                />
+                        }}
+                        style={{ minHeight: '300px', maxHeight: '500px' }}
+                    />
+                </div>
             </div>
-
-            {/* Lista de cuentas por cobrar
-            <div className="bg-gray-100 p-4 rounded">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Cuentas por Cobrar - {selectedYear}</h3>
-                <ul className="divide-y divide-gray-300">
-                    {alumnos
-                        .filter((alumno) => {
-                            const mesesPagados = alumno.pagos
-                                .filter((pago) => new Date(pago.fechaPago).getFullYear() === selectedYear)
-                                .map((pago) => pago.mes);
-                            const mesActual = new Date().toLocaleString('es-ES', { month: 'long' });
-                            return !mesesPagados.includes(mesActual.toLowerCase());
-                        })
-                        .map((alumno) => {
-                            const mesesAdeudados = [
-                                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-                            ].filter((mes) => {
-                                return !alumno.pagos.some(
-                                    (pago) => pago.mes === mes && new Date(pago.fechaPago).getFullYear() === selectedYear
-                                );
-                            });
-
-                            return (
-                                <li key={alumno._id} className="py-2">
-                                    <details>
-                                        <summary className="flex justify-between items-center cursor-pointer">
-                                            <div className="flex items-center">
-                                                <span className="font-semibold text-gray-800">
-                                                    {alumno.nombre} {alumno.apellido}
-                                                </span>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-4 h-4 ml-2 transition-transform details-summary-toggle-icon"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </div>
-                                            <span className="text-red-500 font-medium">Pagos Pendientes</span>
-                                        </summary>
-                                        <ul className="ml-4 mt-2 list-disc text-gray-700">
-                                            {mesesAdeudados.map((mes) => (
-                                                <li key={mes}>
-                                                    <span className="capitalize">{mes}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </details>
-                                </li>
-                            );
-                        })}
-                </ul>
-                {alumnos.filter((alumno) => {
-                    const mesesPagados = alumno.pagos
-                        .filter((pago) => new Date(pago.fechaPago).getFullYear() === selectedYear)
-                        .map((pago) => pago.mes);
-                    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' });
-                    return !mesesPagados.includes(mesActual.toLowerCase());
-                }).length === 0 && (
-                        <p className="text-gray-500 text-center">Todos los alumnos están al día con sus pagos.</p>
-                    )}
-            </div> */}
-
         </div>
     );
 };
