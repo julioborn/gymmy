@@ -151,6 +151,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     return (
         <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8 relative">
+            {isLoading && (
+                <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10">
+                    <div className="loader border-t-4 border-gray-800 rounded-full w-12 h-12 animate-spin"></div>
+                </div>
+            )}
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
 
             <div className="mb-6 text-center">

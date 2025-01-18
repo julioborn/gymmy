@@ -15,11 +15,18 @@ type Pago = {
     diasMusculacion: number;
 };
 
+type Asistencia = {
+    fecha: string;
+    actividad: string;
+    presente: boolean;
+};
+
 type Alumno = {
     _id: string;
     nombre: string;
     apellido: string;
     pagos: Pago[];
+    asistencia: Asistencia[];
 };
 
 const ControlFinanciero = () => {
@@ -29,6 +36,7 @@ const ControlFinanciero = () => {
     const [totalIngresos, setTotalIngresos] = useState<number>(0);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [availableYears, setAvailableYears] = useState<number[]>([]);
+    const [topHorarios, setTopHorarios] = useState<{ hora: string; frecuencia: number }[]>([]);
 
     if (session && session.user?.role !== 'dueño') {
         redirect('/');
@@ -41,6 +49,7 @@ const ControlFinanciero = () => {
                 setAlumnos(data);
                 calcularAñosDisponibles(data);
                 calcularIngresosPorMes(data, selectedYear);
+                calcularTopHorarios(data);
             })
             .catch((error) => console.error('Error al cargar alumnos:', error));
     }, []);
@@ -81,6 +90,41 @@ const ControlFinanciero = () => {
         setTotalIngresos(total);
     };
 
+    const calcularTopHorarios = (alumnos: Alumno[]) => {
+        const horarioFrecuencia: { [hora: string]: number } = {};
+    
+        alumnos.forEach((alumno) => {
+            alumno.asistencia
+                .filter((asistencia) => asistencia.actividad === 'Musculación' && asistencia.presente)
+                .forEach((asistencia) => {
+                    const fecha = new Date(asistencia.fecha);
+                    const horas = fecha.getHours();
+                    const minutos = fecha.getMinutes();
+    
+                    // Redondear el horario
+                    let horarioRedondeado: string;
+                    if (minutos < 15) {
+                        horarioRedondeado = `${horas.toString().padStart(2, '0')}:00`;
+                    } else if (minutos < 45) {
+                        horarioRedondeado = `${horas.toString().padStart(2, '0')}:30`;
+                    } else {
+                        horarioRedondeado = `${(horas + 1).toString().padStart(2, '0')}:00`;
+                    }
+    
+                    // Contar la frecuencia
+                    horarioFrecuencia[horarioRedondeado] = (horarioFrecuencia[horarioRedondeado] || 0) + 1;
+                });
+        });
+    
+        // Obtener el top 3 horarios más frecuentes
+        const top3 = Object.entries(horarioFrecuencia)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 3)
+            .map(([hora, frecuencia]) => ({ hora, frecuencia }));
+    
+        setTopHorarios(top3);
+    };    
+
     return (
         <div className="bg-white p-6 rounded shadow-md max-w-4xl mx-auto">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">Control Financiero</h2>
@@ -112,68 +156,77 @@ const ControlFinanciero = () => {
                 </p>
             </div>
 
-            {/* Gráfico responsivo de barras */}
+            {/* Gráfico de ingresos mensuales */}
             <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
                 <h3 className="text-xl font-semibold text-gray-700 mb-4">Ingresos Mensuales - {selectedYear}</h3>
-                <div className="relative w-full" style={{ maxWidth: '100%' }}>
-                    <Bar
-                        data={{
-                            labels: [
-                                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-                            ],
-                            datasets: [
-                                {
-                                    label: `Ingresos (${selectedYear})`,
-                                    data: ingresosPorMes,
-                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1,
-                                },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
+                <Bar
+                    data={{
+                        labels: [
+                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+                        ],
+                        datasets: [
+                            {
+                                label: `Ingresos (${selectedYear})`,
+                                data: ingresosPorMes,
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1,
+                            },
+                        ],
+                    }}
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                    }}
+                    style={{ maxHeight: '400px', overflow: 'hidden' }}
+                />
+            </div>
+
+            {/* Gráfico de horarios más frecuentes */}
+            <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                    Horarios más frecuentes
+                </h3>
+                <Bar
+                    data={{
+                        labels: topHorarios.map((h) => h.hora),
+                        datasets: [
+                            {
+                                label: 'Frecuencia',
+                                data: topHorarios.map((h) => h.frecuencia),
+                                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                borderWidth: 1,
+                            },
+                        ],
+                    }}
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
                                     display: true,
-                                    position: 'top',
+                                    text: 'Frecuencia',
                                 },
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Monto ($)',
-                                    },
-                                },
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Meses',
-                                    },
-                                    ticks: {
-                                        maxRotation: 45,
-                                        minRotation: 0,
-                                        font: {
-                                            size: 10,
-                                        },
-                                        callback: function (value, index) {
-                                            const monthLabels = [
-                                                'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-                                                'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-                                            ];
-                                            return monthLabels[Number(value)] || '';
-                                        },
-                                    },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Horarios',
                                 },
                             },
-                        }}
-                        style={{ minHeight: '300px', maxHeight: '500px' }}
-                    />
-                </div>
+                        },
+                    }}
+                    style={{ maxHeight: '400px' }}
+                />
             </div>
         </div>
     );
