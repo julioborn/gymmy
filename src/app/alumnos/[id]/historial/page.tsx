@@ -331,27 +331,41 @@ export default function HistorialAlumnoPage() {
         if (response.ok) {
             const data = await response.json();
             setAlumno(data);
-
+    
             // Calcular los días restantes del plan de entrenamiento
             if (data.planEntrenamiento) {
                 const fechaInicio = new Date(data.planEntrenamiento.fechaInicio);
                 const duracion = data.planEntrenamiento.duracion;
-
-                // Solo contar asistencias de musculación desde la fecha de inicio del plan
+    
                 const asistenciasMusculacion = data.asistencia.filter(
                     (asistencia: Asistencia) =>
                         asistencia.actividad === 'Musculación' &&
                         asistencia.presente &&
                         new Date(asistencia.fecha) >= fechaInicio
                 ).length;
-
+    
                 const diasRestantes = duracion - asistenciasMusculacion;
-                setDiasRestantes(diasRestantes > 0 ? diasRestantes : 0);
+    
+                if (diasRestantes <= 0) {
+                    // Eliminar el inicio del plan automáticamente
+                    await fetch(`/api/alumnos/${id}/plan`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+    
+                    setDiasRestantes(null); // Sin plan
+                } else {
+                    setDiasRestantes(diasRestantes);
+                }
+            } else {
+                setDiasRestantes(null); // Sin plan
             }
         } else {
             console.error('Error fetching alumno');
         }
-    };
+    };    
 
     useEffect(() => {
         if (id) {
@@ -1022,14 +1036,20 @@ export default function HistorialAlumnoPage() {
             </div>
 
             {/* Finalización del plan */}
-            {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio ? (
-                <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
-                    Finaliza el plan en
-                    <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
-                        {diasRestantes}
-                    </span>
-                    entrenamientos.
-                </p>
+            {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio && diasRestantes !== null ? (
+                diasRestantes > 0 ? (
+                    <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
+                        Finaliza el plan en
+                        <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
+                            {diasRestantes}
+                        </span>
+                        entrenamientos.
+                    </p>
+                ) : (
+                    <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
+                        Sin plan
+                    </p>
+                )
             ) : (
                 <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
                     Sin plan
