@@ -482,6 +482,12 @@ export default function ListaAlumnosPage() {
             }
         });
 
+    // Paginación aplicada sobre los alumnos filtrados
+    const paginatedAlumnos = alumnosFiltrados.slice(
+        (page - 1) * itemsPerPage,
+        page * itemsPerPage
+    );
+
     const Loader = () => (
         <div className="flex justify-center items-center h-16">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-700"></div>
@@ -548,12 +554,6 @@ export default function ListaAlumnosPage() {
             }
         }
     };
-
-    // Función para calcular los alumnos que se mostrarán en la página actual
-    const paginatedAlumnos = alumnos.slice(
-        (page - 1) * itemsPerPage,
-        page * itemsPerPage
-    );
 
     // Cambiar la página al interactuar con el componente Pagination
     const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
