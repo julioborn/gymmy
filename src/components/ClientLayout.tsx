@@ -129,6 +129,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                             transform: 'translateX(-50%)',
                             fontFamily: "'Hammersmith One', sans-serif",
                             color: '#fff',
+                            pointerEvents: 'none', // Deshabilita la interacción del logo
                         }}
                     />
 

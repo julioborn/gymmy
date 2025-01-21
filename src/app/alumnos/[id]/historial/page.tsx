@@ -1085,6 +1085,7 @@ export default function HistorialAlumnoPage() {
                     <FullCalendar
                         firstDay={1}
                         plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                        timeZone='local'
                         initialView={calendarView}
                         events={events}
                         locale="es"
@@ -1095,7 +1096,7 @@ export default function HistorialAlumnoPage() {
                         select={handleDateSelect}
                         aspectRatio={1.5} // Controla la proporción ancho/alto
                         eventClick={handleEventClick}
-                        noEventsText="No hubo actividades hoy" // Traducción al español
+                        noEventsText="No hay actividades" // Traducción al español
                         eventContent={(arg) => {
                             const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
                             if (tipo === 'plan') {
