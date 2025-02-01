@@ -32,7 +32,14 @@ type Alumno = {
 };
 
 type Gasto = {
-    id: string; // Agregamos ID para MongoDB
+    _id: string; // Agregamos ID para MongoDB
+    fecha: string;
+    detalle: string;
+    importe: number;
+};
+
+type Ingreso = {
+    _id: string;
     fecha: string;
     detalle: string;
     importe: number;
@@ -50,6 +57,9 @@ const ControlFinanciero = () => {
     const [totalGastos, setTotalGastos] = useState<number>(0);
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth()); // Mes actual
     const [gastosMensuales, setGastosMensuales] = useState<number[]>(new Array(12).fill(0));
+    const [ingresosAdicionales, setIngresosAdicionales] = useState<Ingreso[]>([]);
+    const [ingresosMensualesAdicionales, setIngresosMensualesAdicionales] = useState<number[]>(new Array(12).fill(0));
+    const [totalIngresosAdicionales, setTotalIngresosAdicionales] = useState<number>(0);
 
     if (session && session.user?.role !== 'dueño') {
         redirect('/');
@@ -149,46 +159,81 @@ const ControlFinanciero = () => {
         gastosMensuales[gastoMonth] += gasto.importe;
     });
 
-    //Gastos
     const fetchGastos = async (year: number, month: number) => {
         try {
             const response = await fetch('/api/gastos');
             const data = await response.json();
-    
+
             let newGastosMensuales = new Array(12).fill(0);
-    
+
             data.forEach((gasto: any) => {
                 const fechaGasto = new Date(gasto.fecha);
                 const gastoYear = fechaGasto.getFullYear();
                 const gastoMonth = fechaGasto.getMonth();
-    
+
                 if (gastoYear === year) {
                     newGastosMensuales[gastoMonth] += gasto.importe;
                 }
             });
-    
+
             // **Aquí se usa `setGastosMensuales` correctamente**
             setGastosMensuales(newGastosMensuales);
-    
+
             if (month === -1) {
                 setTotalGastos(newGastosMensuales.reduce((acc, val) => acc + val, 0));
             } else {
                 setTotalGastos(newGastosMensuales[month] || 0);
             }
-    
-            setGastos(data.filter((g: { fecha: string | number | Date }) => {
-                const fechaGasto = new Date(g.fecha);
-                return month === -1
-                    ? fechaGasto.getFullYear() === year // Mostrar todos los meses del año seleccionado
-                    : fechaGasto.getFullYear() === year && fechaGasto.getMonth() === month; // Solo el mes seleccionado
-            }));
+
+            setGastos(data
+                .filter((g: { fecha: string | number | Date }) => {
+                    const fechaGasto = new Date(g.fecha);
+                    return month === -1
+                        ? fechaGasto.getFullYear() === year
+                        : fechaGasto.getFullYear() === year && fechaGasto.getMonth() === month;
+                })
+                .sort(ordenarPorFecha) // Aplica el ordenamiento antes de guardarlo en el estado
+            );
         } catch (error) {
             console.error('Error al obtener los gastos:', error);
         }
-    };    
-
+    };
     useEffect(() => {
         fetchGastos(selectedYear, selectedMonth);
+    }, [selectedYear, selectedMonth]);
+
+    const fetchIngresos = async (year: number, month: number) => {
+        try {
+            const response = await fetch('/api/ingresos');
+            const data = await response.json();
+            let nuevosIngresosMensuales = new Array(12).fill(0);
+            data.forEach((ingreso: any) => {
+                const fecha = new Date(ingreso.fecha);
+                if (fecha.getFullYear() === year) {
+                    nuevosIngresosMensuales[fecha.getMonth()] += ingreso.importe;
+                }
+            });
+            setIngresosMensualesAdicionales(nuevosIngresosMensuales);
+            if (month === -1) {
+                setTotalIngresosAdicionales(nuevosIngresosMensuales.reduce((acc, val) => acc + val, 0));
+            } else {
+                setTotalIngresosAdicionales(nuevosIngresosMensuales[month] || 0);
+            }
+            setIngresosAdicionales(
+                data.filter((ingreso: { fecha: string | number | Date }) => {
+                    const fecha = new Date(ingreso.fecha);
+                    return month === -1
+                        ? fecha.getFullYear() === year
+                        : fecha.getFullYear() === year && fecha.getMonth() === month;
+                })
+                    .sort(ordenarPorFecha) // Aplica el ordenamiento antes de guardarlo en el estado
+            );
+        } catch (error) {
+            console.error('Error al obtener los ingresos adicionales:', error);
+        }
+    };
+    useEffect(() => {
+        fetchIngresos(selectedYear, selectedMonth);
     }, [selectedYear, selectedMonth]);
 
     const handleAgregarGasto = async () => {
@@ -204,7 +249,7 @@ const ControlFinanciero = () => {
             confirmButtonText: 'Agregar',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
-                const fecha = (document.getElementById('fecha-gasto') as HTMLInputElement).value;
+                const fecha = ajustarFechaLocal((document.getElementById('fecha-gasto') as HTMLInputElement).value).toISOString();
                 const detalle = (document.getElementById('detalle-gasto') as HTMLInputElement).value;
                 const importe = Number((document.getElementById('importe-gasto') as HTMLInputElement).value);
 
@@ -250,7 +295,7 @@ const ControlFinanciero = () => {
             confirmButtonText: 'Guardar Cambios',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
-                const fecha = (document.getElementById('fecha-gasto') as HTMLInputElement).value;
+                const fecha = ajustarFechaLocal((document.getElementById('fecha-gasto') as HTMLInputElement).value).toISOString();
                 const detalle = (document.getElementById('detalle-gasto') as HTMLInputElement).value;
                 const importe = Number((document.getElementById('importe-gasto') as HTMLInputElement).value);
 
@@ -280,6 +325,7 @@ const ControlFinanciero = () => {
     };
 
     const handleEliminarGasto = async (id: string) => {
+        console.log("Intentando eliminar gasto con ID:", id); // 👀 Verificar si el ID es correcto
         const confirm = await Swal.fire({
             title: '¿Estás seguro?',
             text: 'Esta acción eliminará el gasto de forma permanente.',
@@ -292,18 +338,147 @@ const ControlFinanciero = () => {
         if (!confirm.isConfirmed) return;
 
         try {
-            await fetch('/api/gastos', {
+            const response = await fetch('/api/gastos', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id }),
             });
 
-            Swal.fire('Eliminado', 'El gasto ha sido eliminado', 'success');
-            fetchGastos(selectedYear, selectedMonth);
+            const data = await response.json();
+            console.log("Respuesta de eliminación:", data); // 👀 Ver respuesta de la API
+
+            if (response.ok) {
+                Swal.fire('Eliminado', 'El gasto ha sido eliminado', 'success');
+                fetchGastos(selectedYear, selectedMonth);
+            } else {
+                Swal.fire('Error', data.error || 'No se pudo eliminar el gasto', 'error');
+            }
         } catch (error) {
+            console.error("Error al eliminar el gasto:", error);
             Swal.fire('Error', 'No se pudo eliminar el gasto', 'error');
         }
     };
+
+    const handleAgregarIngreso = async () => {
+        const { value: formData } = await Swal.fire({
+            title: 'Registrar Ingreso',
+            html: `
+            <input type="date" id="fecha-ingreso" class="swal2-input" placeholder="Fecha">
+            <input type="text" id="detalle-ingreso" class="swal2-input" placeholder="Detalle">
+            <input type="number" id="importe-ingreso" class="swal2-input" placeholder="Importe">
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Agregar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const fecha = ajustarFechaLocal((document.getElementById('fecha-ingreso') as HTMLInputElement).value).toISOString();
+                const detalle = (document.getElementById('detalle-ingreso') as HTMLInputElement).value;
+                const importe = Number((document.getElementById('importe-ingreso') as HTMLInputElement).value);
+                if (!fecha || !detalle || importe <= 0) {
+                    Swal.showValidationMessage('Todos los campos son obligatorios y el importe debe ser mayor a 0');
+                    return null;
+                }
+                return { fecha, detalle, importe };
+            },
+        });
+        if (!formData) return;
+        try {
+            const response = await fetch('/api/ingresos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (response.ok) {
+                Swal.fire('Éxito', 'Ingreso registrado correctamente', 'success');
+                fetchIngresos(selectedYear, selectedMonth);
+            } else {
+                Swal.fire('Error', 'No se pudo registrar el ingreso', 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Hubo un problema al registrar el ingreso', 'error');
+        }
+    };
+
+    const handleEditarIngreso = async (id: string, fechaActual: string, detalleActual: string, importeActual: number) => {
+        const { value: formData } = await Swal.fire({
+            title: 'Editar Ingreso',
+            html: `
+            <input type="date" id="fecha-ingreso" class="swal2-input" value="${fechaActual}">
+            <input type="text" id="detalle-ingreso" class="swal2-input" value="${detalleActual}">
+            <input type="number" id="importe-ingreso" class="swal2-input" value="${importeActual}">
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar Cambios',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const fecha = ajustarFechaLocal((document.getElementById('fecha-ingreso') as HTMLInputElement).value).toISOString();
+                const detalle = (document.getElementById('detalle-ingreso') as HTMLInputElement).value;
+                const importe = Number((document.getElementById('importe-ingreso') as HTMLInputElement).value);
+                if (!fecha || !detalle || importe <= 0) {
+                    Swal.showValidationMessage('Todos los campos son obligatorios y el importe debe ser mayor a 0');
+                    return null;
+                }
+                return { fecha, detalle, importe };
+            },
+        });
+        if (!formData) return;
+        try {
+            await fetch('/api/ingresos', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, ...formData }),
+            });
+            Swal.fire('Éxito', 'Ingreso actualizado correctamente', 'success');
+            fetchIngresos(selectedYear, selectedMonth);
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo actualizar el ingreso', 'error');
+        }
+    };
+
+    const handleEliminarIngreso = async (id: string) => {
+        const confirm = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Esta acción eliminará el ingreso de forma permanente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!confirm.isConfirmed) return;
+        try {
+            await fetch('/api/ingresos', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            });
+            Swal.fire('Eliminado', 'El ingreso ha sido eliminado', 'success');
+            fetchIngresos(selectedYear, selectedMonth);
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo eliminar el ingreso', 'error');
+        }
+    };
+
+    const ajustarFechaLocal = (fechaString: string) => {
+        const [year, month, day] = fechaString.split('-').map(Number);
+        return new Date(year, month - 1, day, 12, 0, 0); // Ajustamos a las 12:00 PM para evitar el desfase
+    };
+
+    const ordenarPorFecha = (a: { fecha: string }, b: { fecha: string }) => {
+        return new Date(a.fecha).getTime() - new Date(b.fecha).getTime(); // Ordena de más reciente a más antiguo
+    };
+
+
+    // Combinar los ingresos: pagos de alumnos + ingresos adicionales
+    const ingresosMensualesCombinados = new Array(12).fill(0);
+    for (let i = 0; i < 12; i++) {
+        ingresosMensualesCombinados[i] = ingresosPorMes[i] + ingresosMensualesAdicionales[i];
+    }
+    const totalIngresosCombinados =
+        selectedMonth === -1
+            ? ingresosMensualesCombinados.reduce((acc, val) => acc + val, 0)
+            : ingresosMensualesCombinados[selectedMonth] || 0;
 
     return (
         <div className="bg-white p-6 rounded shadow-md max-w-4xl mx-auto">
@@ -346,38 +521,59 @@ const ControlFinanciero = () => {
 
             </div>
 
-            {/* Ingresos Totales */}
-            <div className="bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    {selectedMonth === -1
-                        ? `Ingresos Totales - ${selectedYear}`
-                        : `Ingresos en ${[
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-                        ][selectedMonth]} ${selectedYear}`}
-                </h3>
-                <p className="text-gray-700">
-                    <span className="font-bold text-green-600">
-                        ${totalIngresos.toLocaleString('es-ES')}
-                    </span>
+            {/* Sección de Ingresos Adicionales */}
+            <div className="mt-2 bg-gray-50 p-4 rounded shadow border">
+                <h3 className="text-xl font-semibold text-blue-600 mb-4">Ingresos Adicionales</h3>
+                <p className="text-lg font-medium mb-4 text-gray-700">
+                    Total de Ingresos Adicionales: <span className="text-blue-600 font-bold">${totalIngresosAdicionales.toLocaleString('es-ES')}</span>
                 </p>
-            </div>
-
-            {/* Resultado Final */}
-            <div className="mt-6 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    {selectedMonth === -1
-                        ? `Resultado Final - ${selectedYear}`
-                        : `Resultado Final en ${[
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-                        ][selectedMonth]} ${selectedYear}`}
-                </h3>
-                <p className="text-gray-700">
-                    <span className={`font-bold ${totalIngresos - totalGastos >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${(totalIngresos - totalGastos).toLocaleString('es-ES')}
-                    </span>
-                </p>
+                <button
+                    onClick={handleAgregarIngreso}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                    Agregar Ingreso
+                </button>
+                <div className="mt-4 overflow-auto max-h-60 border rounded p-2 bg-white">
+                    {ingresosAdicionales.length > 0 ? (
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="border-b">
+                                    <th className="p-2 text-left">Fecha</th>
+                                    <th className="p-2 text-left">Detalle</th>
+                                    <th className="p-2 text-right">Importe</th>
+                                    <th className="p-2 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {ingresosAdicionales.map((ingreso) => (
+                                    <tr key={ingreso._id} className="border-b"> {/* Cambia ingreso.id por ingreso._id */}
+                                        <td className="p-2">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
+                                        <td className="p-2">{ingreso.detalle}</td>
+                                        <td className="p-2 text-right text-blue-600 font-bold">
+                                            ${ingreso.importe.toLocaleString('es-ES')}
+                                        </td>
+                                        <td className="p-2 text-right">
+                                            <button
+                                                onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} // Cambia ingreso.id por ingreso._id
+                                                className="bg-yellow-500 text-white px-2 py-2 rounded hover:bg-yellow-600 mx-1"
+                                            >
+                                                <FaEdit />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEliminarIngreso(ingreso._id)} // Cambia ingreso.id por ingreso._id
+                                                className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
+                                            >
+                                                <FaTrashAlt />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p className="text-gray-500">No hay ingresos registrados.</p>
+                    )}
+                </div>
             </div>
 
             {/* Sección de Gastos */}
@@ -408,7 +604,7 @@ const ControlFinanciero = () => {
                             </thead>
                             <tbody>
                                 {gastos.map((gasto) => (
-                                    <tr key={gasto.id} className="border-b">
+                                    <tr key={gasto._id} className="border-b">
                                         <td className="p-2">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
                                         <td className="p-2">{gasto.detalle}</td>
                                         <td className="p-2 text-right text-red-600 font-bold">
@@ -416,13 +612,13 @@ const ControlFinanciero = () => {
                                         </td>
                                         <td className="p-2 text-right">
                                             <button
-                                                onClick={() => handleEditarGasto(gasto.id, gasto.fecha, gasto.detalle, gasto.importe)}
-                                                className="bg-yellow-500 text-white px-2 py-2 rounded hover:bg-blue-600 mx-1"
+                                                onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)}
+                                                className="bg-yellow-500 text-white px-2 py-2 rounded hover:bg-yellow-600 mx-1"
                                             >
                                                 <FaEdit />
                                             </button>
                                             <button
-                                                onClick={() => handleEliminarGasto(gasto.id)}
+                                                onClick={() => handleEliminarGasto(gasto._id)}
                                                 className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
                                             >
                                                 <FaTrashAlt />
@@ -438,12 +634,36 @@ const ControlFinanciero = () => {
                 </div>
             </div>
 
+            {/* Ingresos Totales (Combinados: pagos + ingresos adicionales) */}
+            <div className="mt-6 bg-gray-50 p-4 rounded shadow border">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    {selectedMonth === -1
+                        ? `Ingresos Totales - ${selectedYear}`
+                        : `Ingresos en ${[
+                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                        ][selectedMonth]} ${selectedYear}`}
+                </h3>
+                <p className="text-gray-700">
+                    <span className="font-bold text-green-600">
+                        ${totalIngresosCombinados.toLocaleString('es-ES')}
+                    </span>
+                </p>
+            </div>
+
             {/* Resultado Final */}
             <div className="mt-6 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Resultado Final - {selectedYear}</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    {selectedMonth === -1
+                        ? `Resultado Final - ${selectedYear}`
+                        : `Resultado Final en ${[
+                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+                        ][selectedMonth]} ${selectedYear}`}
+                </h3>
                 <p className="text-gray-700">
-                    <span className={`font-bold ${totalIngresos - totalGastos >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${(totalIngresos - totalGastos).toLocaleString('es-ES')}
+                    <span className={`font-bold ${totalIngresosCombinados - totalGastos >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        ${(totalIngresosCombinados - totalGastos).toLocaleString('es-ES')}
                     </span>
                 </p>
             </div>
@@ -549,7 +769,6 @@ const ControlFinanciero = () => {
             </div> */}
 
         </div>
-
     );
 };
 
