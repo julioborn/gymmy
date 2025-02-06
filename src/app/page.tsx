@@ -33,8 +33,8 @@ export default function HomePage() {
   return (
     <div className="flex justify-center items-center mt-10">
       <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">
-          Bienvenido, {session.user?.username ? capitalizeFirstLetter(session.user.username) : "Usuario"}
+        <h1 className="text-4xl font-semibold text-gray-800 mb-6">
+          Bienvenido {session.user?.username ? capitalizeFirstLetter(session.user.username) : "Usuario"}
         </h1>
         <p className="text-gray-600 mb-6">Selecciona una opción:</p>
         <div className="flex flex-col space-y-4 pb-4 border-b border-b-slate-300">
@@ -53,12 +53,20 @@ export default function HomePage() {
             </Link>
             {/* Botón de Estadísticas visible solo para el dueño */}
             {session.user?.role === 'dueño' && (
-              <Link
-                href="/alumnos/finanzas"
-                className="px-8 py-4 w-3/4 bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
-              >
-                Finanzas
-              </Link>
+              <>
+                <Link
+                  href="/alumnos/finanzas"
+                  className="px-8 py-4 w-3/4 bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
+                >
+                  Finanzas
+                </Link>
+                <Link
+                  href="/alumnos/estadisticas"
+                  className="px-8 py-4 w-3/4 bg-yellow-500 text-white rounded-lg text-md font-semibold hover:bg-yellow-400 transition duration-300"
+                >
+                  Estadísticas
+                </Link>
+              </>
             )}
           </div>
         </div>

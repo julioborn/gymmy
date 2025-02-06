@@ -64,6 +64,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         { text: 'Lista de Alumnos', href: '/alumnos' },
         { text: 'Registrar Alumno', href: '/alumnos/nuevo' },
         { text: 'Finanzas', href: '/alumnos/finanzas' },
+        { text: 'Estadísticas', href: '/alumnos/estadisticas' },
         // { text: 'DNI', href: '/alumnos/dni' },
     ];
 
@@ -73,13 +74,15 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         if (session?.user?.role === 'dueño') {
             return menuItems; // El dueño ve todas las rutas
         } else if (session?.user?.role === 'profesor') {
-            return menuItems.filter((item) => item.href !== '/alumnos/finanzas'); // El profesor no ve Finanzas
+            return menuItems.filter(
+                (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
+            ); // El profesor no ve Finanzas ni Estadísticas
         } else if (session?.user?.role === 'alumno') {
             return []; // Los alumnos no ven ninguna ruta, solo "Cerrar Sesión"
         }
     
         return []; // En caso de rol indefinido, no mostrar nada
-    })();    
+    })();        
 
     useEffect(() => {
         const updateOnlineStatus = () => {

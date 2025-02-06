@@ -722,52 +722,6 @@ const ControlFinanciero = () => {
                 />
             </div>
 
-            {/* Gráfico de horarios más frecuentes */}
-            {/* <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                    Horarios más frecuentes
-                </h3>
-                <Bar
-                    data={{
-                        labels: topHorarios.map((h) => h.hora),
-                        datasets: [
-                            {
-                                label: 'Frecuencia',
-                                data: topHorarios.map((h) => h.frecuencia),
-                                backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                                borderColor: 'rgba(153, 102, 255, 1)',
-                                borderWidth: 1,
-                            },
-                        ],
-                    }}
-                    options={{
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: false,
-                            },
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Frecuencia',
-                                },
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Horarios',
-                                },
-                            },
-                        },
-                    }}
-                    style={{ maxHeight: '400px' }}
-                />
-            </div> */}
-
         </div>
     );
 };
