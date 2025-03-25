@@ -1,9 +1,11 @@
-const withPWA = require('next-pwa')({
+import nextPWA from 'next-pwa';
+
+const withPWA = nextPWA({
     dest: 'public', // Carpeta donde se generarán los archivos de la PWA
     register: true,
     skipWaiting: true,
 });
 
-module.exports = withPWA({
+export default withPWA({
     // Aquí puedes añadir otras configuraciones de Next.js
 });
