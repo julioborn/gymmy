@@ -31,9 +31,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <link className="rounded" rel="icon" href="favicon.ico" />
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#FF5722" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body className="bg-gray-400 min-h-screen">
-        <ClientLayout>{children}</ClientLayout> {/* Manejamos el cliente aquí */}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
