@@ -13,7 +13,9 @@ export async function GET() {
     }
 }
 
+export const dynamic = 'force-dynamic'; // ⬅️ importante
 export async function PUT(request: Request) {
+    console.log("➡️ PUT ejecutado");
     await connectMongoDB();
     const nuevasTarifas = await request.json();
 

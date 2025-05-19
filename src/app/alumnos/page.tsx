@@ -644,29 +644,28 @@ export default function ListaAlumnosPage() {
         const { value: formValues } = await Swal.fire({
             title: 'Editar alumno',
             html: `
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
 
-    <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${alumno.nombre || ''}">
-    <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${alumno.apellido || ''}">
+                    <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${alumno.nombre || ''}">
+                    <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${alumno.apellido || ''}">
 
-    <input id="swal-dni" class="swal2-input" placeholder="DNI" value="${alumno.dni || ''}">
-    <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" value="${alumno.telefono || ''}">
+                    <input id="swal-dni" class="swal2-input" placeholder="DNI" value="${alumno.dni || ''}">
+                    <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" value="${alumno.telefono || ''}">
 
-    <input id="swal-email" class="swal2-input" placeholder="Email" value="${alumno.email || ''}">
-    <input id="swal-horario" class="swal2-input" placeholder="Franja horaria (mañana/siesta/tarde)" value="${alumno.horarioEntrenamiento || ''}">
+                    <input id="swal-email" class="swal2-input" placeholder="Email" value="${alumno.email || ''}">
+                    <input id="swal-horario" class="swal2-input" placeholder="Franja horaria (mañana/siesta/tarde)" value="${alumno.horarioEntrenamiento || ''}">
 
-    <input id="swal-hora-exacta" class="swal2-input" type="time" placeholder="Hora exacta" value="${alumno.horaExactaEntrenamiento || ''}">
+                    <input id="swal-hora-exacta" class="swal2-input" type="time" placeholder="Hora exacta" value="${alumno.horaExactaEntrenamiento || ''}">
 
-    <textarea id="swal-historial-deportivo" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial deportivo">${alumno.historialDeportivo || ''}</textarea>
+                    <textarea id="swal-historial-deportivo" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial deportivo">${alumno.historialDeportivo || ''}</textarea>
 
-    <textarea id="swal-historial-vida" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial de vida">${alumno.historialDeVida || ''}</textarea>
+                    <textarea id="swal-historial-vida" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial de vida">${alumno.historialDeVida || ''}</textarea>
 
-    <textarea id="swal-objetivos" class="swal2-textarea" style="grid-column: span 2;" placeholder="Objetivos">${alumno.objetivos || ''}</textarea>
+                    <textarea id="swal-objetivos" class="swal2-textarea" style="grid-column: span 2;" placeholder="Objetivos">${alumno.objetivos || ''}</textarea>
 
-    <textarea id="swal-patologias" class="swal2-textarea" style="grid-column: span 2;" placeholder="Patologías">${alumno.patologias || ''}</textarea>
-
-  </div>
-`,
+                    <textarea id="swal-patologias" class="swal2-textarea" style="grid-column: span 2;" placeholder="Patologías">${alumno.patologias || ''}</textarea>
+                </div>
+            `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Guardar',
