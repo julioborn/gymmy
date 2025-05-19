@@ -9,36 +9,42 @@ export default function NuevoAlumnoPage() {
     const [dni, setDni] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');
-    const [diasEntrenaSemana, setDiasEntrenaSemana] = useState<number | ''>(''); // Estado para días de entrenamiento
+    const [diasEntrenaSemana, setDiasEntrenaSemana] = useState<number | ''>('');
+    const [fechaInicio, setFechaInicio] = useState('');
+    const [horarioEntrenamiento, setHorarioEntrenamiento] = useState('');
+    const [horaExactaEntrenamiento, setHoraExactaEntrenamiento] = useState('');
+    const [historialDeportivo, setHistorialDeportivo] = useState('');
+    const [historialDeVida, setHistorialDeVida] = useState('');
+    const [objetivos, setObjetivos] = useState('');
+    const [patologias, setPatologias] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Construir el objeto del alumno
         const nuevoAlumno: any = {
-            nombre,
-            apellido,
+            nombre: capitalizar(nombre.trim()),
+            apellido: capitalizar(apellido.trim()),
             fechaNacimiento: new Date(fechaNacimiento),
             dni,
             telefono,
             email,
         };
 
-        // Agregar los días de entrenamiento si se proporcionan
-        if (diasEntrenaSemana !== '') {
-            nuevoAlumno.diasEntrenaSemana = Number(diasEntrenaSemana);
-        }
+        if (diasEntrenaSemana !== '') nuevoAlumno.diasEntrenaSemana = diasEntrenaSemana;
+        if (fechaInicio) nuevoAlumno.fechaInicio = new Date(fechaInicio);
+        if (horarioEntrenamiento) nuevoAlumno.horarioEntrenamiento = horarioEntrenamiento;
+        if (horaExactaEntrenamiento) nuevoAlumno.horaExactaEntrenamiento = horaExactaEntrenamiento;
+        if (historialDeportivo) nuevoAlumno.historialDeportivo = historialDeportivo;
+        if (historialDeVida) nuevoAlumno.historialDeVida = historialDeVida;
+        if (objetivos) nuevoAlumno.objetivos = objetivos;
+        if (patologias) nuevoAlumno.patologias = patologias;
 
-        // Llama a la API para agregar el alumno
         await fetch('/api/alumnos', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoAlumno),
         });
 
-        // Mostrar la alerta de SweetAlert2
         Swal.fire({
             icon: 'success',
             title: 'Alumno registrado exitosamente',
@@ -46,7 +52,7 @@ export default function NuevoAlumnoPage() {
             timer: 1500,
         });
 
-        // Limpia el formulario después de registrar al alumno
+        // Limpiar todos los campos
         setNombre('');
         setApellido('');
         setFechaNacimiento('');
@@ -54,7 +60,18 @@ export default function NuevoAlumnoPage() {
         setTelefono('');
         setEmail('');
         setDiasEntrenaSemana('');
+        setFechaInicio('');
+        setHorarioEntrenamiento('');
+        setHoraExactaEntrenamiento('');
+        setHistorialDeportivo('');
+        setHistorialDeVida('');
+        setObjetivos('');
+        setPatologias('');
     };
+
+    function capitalizar(texto: string) {
+        return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+    }
 
     return (
         <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md">
@@ -115,9 +132,10 @@ export default function NuevoAlumnoPage() {
                         required
                     />
                 </div>
+                <p className='text-red-600'>OPCIONALES</p>
                 <div>
                     <label htmlFor="telefono" className="block text-gray-700 font-medium mb-2">
-                        Teléfono <span className='text-red-600'>(opcional)</span>
+                        Teléfono
                     </label>
                     <input
                         id="telefono"
@@ -130,7 +148,7 @@ export default function NuevoAlumnoPage() {
                 </div>
                 <div>
                     <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-                        Email <span className='text-red-600'>(opcional)</span>
+                        Email
                     </label>
                     <input
                         id="email"
@@ -143,7 +161,7 @@ export default function NuevoAlumnoPage() {
                 </div>
                 <div>
                     <label htmlFor="diasEntrenaSemana" className="block text-gray-700 font-medium mb-2">
-                        Días por semana <span className='text-red-600'>(opcional)</span>
+                        Días por semana
                     </label>
                     <input
                         id="diasEntrenaSemana"
@@ -156,6 +174,55 @@ export default function NuevoAlumnoPage() {
                         className="border border-gray-300 p-2 w-full"
                     />
                 </div>
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Fecha de inicio</label>
+                    <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="border border-gray-300 p-2 w-full" />
+                </div>
+
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Franja horaria</label>
+                    <select
+                        value={horarioEntrenamiento}
+                        onChange={(e) => setHorarioEntrenamiento(e.target.value)}
+                        className="border border-gray-300 p-2 w-full"
+                    >
+                        <option value="">Seleccionar</option>
+                        <option value="mañana">Mañana</option>
+                        <option value="siesta">Siesta</option>
+                        <option value="tarde">Tarde</option>
+                    </select>
+                </div>
+
+                <div className="mt-2">
+                    <label className="block text-gray-700 font-medium mb-2">Hora de inicio</label>
+                    <input
+                        type="time"
+                        value={horaExactaEntrenamiento || ''}
+                        onChange={(e) => setHoraExactaEntrenamiento(e.target.value)}
+                        className="border border-gray-300 p-2 w-full"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Historial deportivo</label>
+                    <textarea value={historialDeportivo} onChange={(e) => setHistorialDeportivo(e.target.value)} className="border border-gray-300 p-2 w-full" />
+                </div>
+
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Historial de vida</label>
+                    <textarea value={historialDeVida} onChange={(e) => setHistorialDeVida(e.target.value)} className="border border-gray-300 p-2 w-full" />
+                </div>
+
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Objetivos</label>
+                    <textarea value={objetivos} onChange={(e) => setObjetivos(e.target.value)} className="border border-gray-300 p-2 w-full" />
+                </div>
+
+                <div>
+                    <label className="block text-gray-700 font-medium mb-2">Patologías</label>
+                    <textarea value={patologias} onChange={(e) => setPatologias(e.target.value)} className="border border-gray-300 p-2 w-full" />
+                </div>
+
                 <button type="submit" className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded">
                     Registrar Alumno
                 </button>

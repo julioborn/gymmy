@@ -71,7 +71,8 @@ export default function ListaAlumnosPage() {
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
     const [page, setPage] = useState(1); // Página actual
-    const [itemsPerPage] = useState(4); // Cantidad de elementos por página
+    const [itemsPerPage] = useState(10); // Cantidad de elementos por página
+    const [alumnoSeleccionado, setAlumnoSeleccionado] = useState<any | null>(null);
 
     const fetchAlumnos = async () => {
         setIsLoading(true); // Inicia la carga
@@ -637,7 +638,73 @@ export default function ListaAlumnosPage() {
         XLSX.writeFile(workbook, `Balance_Mensual_${new Date().toLocaleDateString('es-ES')}.xlsx`);
     };
 
+    const handleEditarAlumno = async (alumno: any) => {
+        setAlumnoSeleccionado(null); // Cerrar el modal para evitar solapamientos
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Editar alumno',
+            html: `
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
+
+    <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${alumno.nombre || ''}">
+    <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${alumno.apellido || ''}">
+
+    <input id="swal-dni" class="swal2-input" placeholder="DNI" value="${alumno.dni || ''}">
+    <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" value="${alumno.telefono || ''}">
+
+    <input id="swal-email" class="swal2-input" placeholder="Email" value="${alumno.email || ''}">
+    <input id="swal-horario" class="swal2-input" placeholder="Franja horaria (mañana/siesta/tarde)" value="${alumno.horarioEntrenamiento || ''}">
+
+    <input id="swal-hora-exacta" class="swal2-input" type="time" placeholder="Hora exacta" value="${alumno.horaExactaEntrenamiento || ''}">
+
+    <textarea id="swal-historial-deportivo" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial deportivo">${alumno.historialDeportivo || ''}</textarea>
+
+    <textarea id="swal-historial-vida" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial de vida">${alumno.historialDeVida || ''}</textarea>
+
+    <textarea id="swal-objetivos" class="swal2-textarea" style="grid-column: span 2;" placeholder="Objetivos">${alumno.objetivos || ''}</textarea>
+
+    <textarea id="swal-patologias" class="swal2-textarea" style="grid-column: span 2;" placeholder="Patologías">${alumno.patologias || ''}</textarea>
+
+  </div>
+`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return {
+                    nombre: (document.getElementById('swal-nombre') as HTMLInputElement).value,
+                    apellido: (document.getElementById('swal-apellido') as HTMLInputElement).value,
+                    dni: (document.getElementById('swal-dni') as HTMLInputElement).value,
+                    telefono: (document.getElementById('swal-telefono') as HTMLInputElement).value,
+                    email: (document.getElementById('swal-email') as HTMLInputElement).value,
+                    horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLInputElement).value,
+                    horaExactaEntrenamiento: (document.getElementById('swal-hora-exacta') as HTMLInputElement).value,
+                    historialDeportivo: (document.getElementById('swal-historial-deportivo') as HTMLTextAreaElement).value,
+                    historialDeVida: (document.getElementById('swal-historial-vida') as HTMLTextAreaElement).value,
+                    objetivos: (document.getElementById('swal-objetivos') as HTMLTextAreaElement).value,
+                    patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
+                };
+            },
+            customClass: {
+                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
+            },
+            buttonsStyling: false,
+            width: '50rem',
+        });
+
+        if (formValues) {
+            await guardarAlumno(alumno._id, { ...alumno, ...formValues });
+        }
+    };
+
+    function capitalizar(texto: string) {
+        return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : '-';
+    }
+
     return (
+
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
 
@@ -718,22 +785,37 @@ export default function ListaAlumnosPage() {
                 <Loader />
             ) : (
                 <>
-                    <Suspense fallback={<Loader />}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
-                            {paginatedAlumnos.map((alumno) => (
-                                <AlumnoActions
-                                    key={alumno._id}
-                                    alumno={alumno}
-                                    router={router}
-                                    onHistorial={(id) => router.push(`/alumnos/${id}/historial`)}
-                                    onEditar={(alumno) => setEditandoAlumno(alumno)}
-                                    onEliminar={(id) => eliminarAlumno(id)}
-                                    onIniciarPlan={(id) => iniciarPlan(id)}
-                                    onMarcarPago={(id) => marcarPagoMes(id)}
-                                />
-                            ))}
-                        </div>
-                    </Suspense>
+                    <div className="overflow-x-auto rounded shadow mt-4">
+                        <table className="w-full text-sm text-left text-gray-700">
+                            <thead className="text-xs text-gray-100 uppercase bg-gray-700">
+                                <tr>
+                                    <th className="px-4 py-3">Apellido</th>
+                                    <th className="px-4 py-3">Nombre</th>
+                                    <th className="px-4 py-3">Edad</th>
+                                    <th className="px-4 py-3">DNI</th>
+                                    <th className="px-4 py-3">Pagó</th>
+                                    <th className="px-4 py-3">Días restantes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedAlumnos.map((alumno) => (
+                                    <tr
+                                        key={alumno._id}
+                                        className="bg-white border-b hover:bg-gray-100 cursor-pointer"
+                                        onClick={() => setAlumnoSeleccionado(alumno)}
+
+                                    >
+                                        <td className="px-4 py-3 font-medium">{alumno.apellido}</td>
+                                        <td className="px-4 py-3">{alumno.nombre}</td>
+                                        <td className="px-4 py-3">{alumno.edad ?? '-'}</td>
+                                        <td className="px-4 py-3">{alumno.dni}</td>
+                                        <td className="px-4 py-3">{verificarPagoMesActual(alumno.pagos) ? 'Sí' : 'No'}</td>
+                                        <td className="px-4 py-3">{alumno.diasRestantes ?? '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                     {/* Componente de paginación */}
                     <div className="flex justify-center mt-6">
                         <Pagination
@@ -767,6 +849,67 @@ export default function ListaAlumnosPage() {
                     />
                 </Suspense>
             )}
+
+
+            <Modal
+                isOpen={!!alumnoSeleccionado}
+                onRequestClose={() => setAlumnoSeleccionado(null)}
+                contentLabel="Detalle del Alumno"
+                className="relative max-w-2xl w-full mx-auto mt-24 bg-white p-6 rounded shadow-md outline-none"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
+            >
+                {alumnoSeleccionado && (
+                    <>
+                        {/* Botón de cierre "X" */}
+                        <button
+                            onClick={() => setAlumnoSeleccionado(null)}
+                            className="absolute top-2 right-4 text-gray-500 hover:text-gray-700 text-3xl font-bold"
+                            aria-label="Cerrar"
+                        >
+                            ×
+                        </button>
+
+                        <h2 className="text-xl font-bold mb-4">
+                            {alumnoSeleccionado.nombre} {alumnoSeleccionado.apellido}
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <p><strong>DNI:</strong> {alumnoSeleccionado.dni}</p>
+                            <p><strong>Edad:</strong> {alumnoSeleccionado.edad ?? '-'}</p>
+                            <p><strong>Teléfono:</strong> {alumnoSeleccionado.telefono || '-'}</p>
+                            <p><strong>Email:</strong> {alumnoSeleccionado.email || '-'}</p>
+                            <p><strong>Fecha de inicio:</strong> {alumnoSeleccionado.fechaInicio ? new Date(alumnoSeleccionado.fechaInicio).toLocaleDateString() : '-'}</p>
+                            <p><strong>Franja horaria:</strong> {capitalizar(alumnoSeleccionado.horarioEntrenamiento)}</p>
+                            <p><strong>Hora de inicio:</strong> {alumnoSeleccionado.horaExactaEntrenamiento || '-'}</p>
+                            <p><strong>Historial deportivo:</strong> {alumnoSeleccionado.historialDeportivo || '-'}</p>
+                            <p><strong>Historial de vida:</strong> {alumnoSeleccionado.historialDeVida || '-'}</p>
+                            <p><strong>Objetivos:</strong> {alumnoSeleccionado.objetivos || '-'}</p>
+                            <p><strong>Patologías:</strong> {alumnoSeleccionado.patologias || '-'}</p>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2 mt-6">
+                            <button onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)} className="bg-blue-600 text-white px-4 py-2 rounded">
+                                Historial
+                            </button>
+                            <button onClick={() => marcarPagoMes(alumnoSeleccionado._id)} className="bg-green-600 text-white px-4 py-2 rounded">
+                                Pago
+                            </button>
+                            <button onClick={() => iniciarPlan(alumnoSeleccionado._id)} className="bg-purple-600 text-white px-4 py-2 rounded">
+                                Plan
+                            </button>
+                            <button
+                                onClick={() => handleEditarAlumno(alumnoSeleccionado)}
+                                className="bg-yellow-500 text-white px-4 py-2 rounded"
+                            >
+                                Editar
+                            </button>
+                            <button onClick={() => eliminarAlumno(alumnoSeleccionado._id)} className="bg-red-600 text-white px-4 py-2 rounded">
+                                Eliminar
+                            </button>
+                        </div>
+                    </>
+                )}
+            </Modal>
 
         </div>
     );
