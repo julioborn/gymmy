@@ -328,15 +328,18 @@ export default function ListaAlumnosPage() {
             const confirmacion = await Swal.fire({
                 title: 'Confirmar cobro',
                 html: `
-                                    <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-                                    <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
-                                    <p>Precio: $${tarifaSeleccionada.valor}</p>
-                                    ${recargo
-                        ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
-                        : ''
-                    }
-                                    <p>Total a pagar: <strong>$${(tarifaSeleccionada.valor + (recargo || 0)).toFixed(2)}</strong></p> <!-- Total -->
-                                `,
+        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
+        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
+        <p>Precio: $${tarifaSeleccionada.valor}</p>
+        <div style="margin-top: 8px;">
+            <input type="checkbox" id="swal-aplicar-recargo" ${new Date().getDate() > 10 ? 'checked' : ''}>
+            <label for="swal-aplicar-recargo"> Aplicar recargo ($${recargo?.toFixed(2) || 0})</label>
+        </div>
+    `,
+                preConfirm: () => {
+                    const checkbox = document.getElementById('swal-aplicar-recargo') as HTMLInputElement;
+                    return { aplicarRecargo: checkbox?.checked ?? false };
+                },
                 icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Cobrar',
@@ -351,15 +354,22 @@ export default function ListaAlumnosPage() {
 
             if (confirmacion.isConfirmed) {
                 try {
+                    const aplicarRecargo = confirmacion.value?.aplicarRecargo;
                     const mesActual = new Date()
                         .toLocaleString('es-ES', { month: 'long' })
                         .toLowerCase();
+
+                    const montoRecargo = aplicarRecargo ? recargo || 0 : 0;
+                    const total = tarifaSeleccionada.valor + montoRecargo;
+
                     const nuevoPago = {
                         mes: mesActual,
                         fechaPago: new Date(),
                         diasMusculacion: Number(diasMusculacion),
                         tarifa: tarifaSeleccionada.valor,
                         metodoPago,
+                        recargo: montoRecargo,
+                        totalPagado: total,
                     };
 
                     const response = await fetch(`/api/alumnos/pagos`, {
@@ -385,6 +395,7 @@ export default function ListaAlumnosPage() {
                     });
                 }
             }
+
         }
     };
 
