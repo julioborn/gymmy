@@ -1,26 +1,26 @@
 type FiltrosProps = {
     busqueda: string;
     setBusqueda: (value: string) => void;
-    filtroEdad: string;
-    setFiltroEdad: (value: string) => void;
     filtroPago: string;
     setFiltroPago: (value: string) => void;
     ordenDiasRestantes: string;
     setOrdenDiasRestantes: (value: string) => void;
-    edades: number[]; // Las edades disponibles para filtrar
+    filtroDiasEntrena: string;
+    setFiltroDiasEntrena: (value: string) => void;
+    diasDisponibles: number[];
     limpiarFiltros: () => void;
 };
 
 export default function FiltrosAlumnos({
     busqueda,
     setBusqueda,
-    filtroEdad,
-    setFiltroEdad,
     filtroPago,
     setFiltroPago,
     ordenDiasRestantes,
     setOrdenDiasRestantes,
-    edades,
+    filtroDiasEntrena,
+    setFiltroDiasEntrena,
+    diasDisponibles,
     limpiarFiltros,
 }: FiltrosProps) {
     return (
@@ -36,16 +36,6 @@ export default function FiltrosAlumnos({
             </div>
 
             <div className="space-y-2 lg:space-x-2 lg:space-y-0 flex flex-col lg:flex-row">
-                <select
-                    value={filtroEdad}
-                    onChange={(e) => setFiltroEdad(e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
-                >
-                    <option value="">Edad</option>
-                    {edades.map((edad) => (
-                        <option key={edad} value={edad}>{edad}</option>
-                    ))}
-                </select>
 
                 <select
                     value={filtroPago}
@@ -66,6 +56,19 @@ export default function FiltrosAlumnos({
                     <option value="asc">Días Restantes (Ascendente)</option>
                     <option value="desc">Días Restantes (Descendente)</option>
                 </select>
+                <select
+                    value={filtroDiasEntrena}
+                    onChange={(e) => setFiltroDiasEntrena(e.target.value)}
+                    className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
+                >
+                    <option value="">Días Por Semana</option>
+                    {diasDisponibles.map((d) => (
+                        <option key={d} value={d}>
+                            {d} días
+                        </option>
+                    ))}
+                </select>
+
             </div>
 
             <div className="flex justify-end items-center mb-10 mt-4">

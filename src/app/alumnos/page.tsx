@@ -61,7 +61,6 @@ export default function ListaAlumnosPage() {
     const [alumnos, setAlumnos] = useState<any[]>([]);
     const [editandoAlumno, setEditandoAlumno] = useState<any | null>(null);
     const [busqueda, setBusqueda] = useState('');
-    const [filtroEdad, setFiltroEdad] = useState('');
     const [filtroLetraApellido, setFiltroLetraApellido] = useState('');
     const [filtroPago, setFiltroPago] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +72,7 @@ export default function ListaAlumnosPage() {
     const [page, setPage] = useState(1); // Página actual
     const [itemsPerPage] = useState(10); // Cantidad de elementos por página
     const [alumnoSeleccionado, setAlumnoSeleccionado] = useState<any | null>(null);
+    const [filtroDiasEntrena, setFiltroDiasEntrena] = useState('');
 
     const fetchAlumnos = async () => {
         setIsLoading(true); // Inicia la carga
@@ -262,7 +262,6 @@ export default function ListaAlumnosPage() {
     };
 
     const marcarPagoMes = async (alumnoId: string) => {
-        // Crear las opciones dinámicas basadas en las tarifas
         const opcionesTarifas = tarifas.reduce((options, tarifa) => {
             options[tarifa.dias] = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -472,8 +471,10 @@ export default function ListaAlumnosPage() {
     const alumnosFiltrados = alumnos
         .filter((alumno) => {
             const coincideBusqueda = alumno.nombre.toLowerCase().includes(busqueda.toLowerCase()) || alumno.dni.includes(busqueda);
-            const coincideEdad = filtroEdad ? alumno.edad === parseInt(filtroEdad) : true;
             const coincideLetraApellido = filtroLetraApellido ? alumno.apellido.startsWith(filtroLetraApellido) : true;
+            const coincideDiasEntrena = filtroDiasEntrena
+                ? alumno.diasEntrenaSemana === parseInt(filtroDiasEntrena)
+                : true;
 
             const coincidePago = filtroPago === '' // Filtrar por pago
                 ? true
@@ -481,7 +482,8 @@ export default function ListaAlumnosPage() {
                     ? verificarPagoMesActual(alumno.pagos)
                     : !verificarPagoMesActual(alumno.pagos);
 
-            return coincideBusqueda && coincideEdad && coincideLetraApellido && coincidePago;
+            return coincideBusqueda && coincideLetraApellido && coincidePago && coincideDiasEntrena;
+
         })
         .sort((a, b) => {
             if (ordenDiasRestantes === 'asc') {
@@ -714,7 +716,6 @@ export default function ListaAlumnosPage() {
     }
 
     return (
-
         <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
             <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
 
@@ -723,18 +724,18 @@ export default function ListaAlumnosPage() {
                 <FiltrosAlumnos
                     busqueda={busqueda}
                     setBusqueda={setBusqueda}
-                    filtroEdad={filtroEdad}
-                    setFiltroEdad={setFiltroEdad}
                     filtroPago={filtroPago}
                     setFiltroPago={setFiltroPago}
                     ordenDiasRestantes={ordenDiasRestantes}
                     setOrdenDiasRestantes={setOrdenDiasRestantes}
-                    edades={[...Array.from(new Set(alumnos.map((alumno) => alumno.edad)))].sort((a, b) => a - b)}
+                    filtroDiasEntrena={filtroDiasEntrena}
+                    setFiltroDiasEntrena={setFiltroDiasEntrena}
+                    diasDisponibles={[...Array.from(new Set(alumnos.map((a) => a.diasEntrenaSemana)))].filter(Boolean).sort((a, b) => a - b)}
                     limpiarFiltros={() => {
                         setBusqueda('');
-                        setFiltroEdad('');
                         setFiltroPago('');
                         setOrdenDiasRestantes('');
+                        setFiltroDiasEntrena('');
                     }}
                 />
             </Suspense>
@@ -859,7 +860,6 @@ export default function ListaAlumnosPage() {
                     />
                 </Suspense>
             )}
-
 
             <Modal
                 isOpen={!!alumnoSeleccionado}
