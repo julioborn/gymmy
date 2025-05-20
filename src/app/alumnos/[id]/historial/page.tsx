@@ -652,16 +652,23 @@ export default function HistorialAlumnoPage() {
                 const confirmacion = await Swal.fire({
                     title: 'Confirmar cobro',
                     html: `
-                        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-                        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
-                        <p>Precio: $${tarifaSeleccionada.valor}</p>
-                        ${recargo
-                            ? `<p>Recargo: $${recargo.toFixed(2)}</p>` // Mostrar el recargo si no es null
+        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
+        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
+        <p>Precio base: $${tarifaSeleccionada.valor}</p>
+        ${recargo !== null
+                            ? `
+            <div style="margin-top: 8px;">
+                <input type="checkbox" id="incluir-recargo" checked />
+                <label for="incluir-recargo">Aplicar recargo de $${recargo.toFixed(2)}</label>
+            </div>
+            `
                             : ''
                         }
-                        <p>Total a pagar: <strong>$${(tarifaSeleccionada.valor + (recargo || 0)).toFixed(2)}</strong></p> <!-- Total -->
-                    `,
-                    icon: 'info',
+    `,
+                    preConfirm: () => {
+                        const incluirRecargo = (document.getElementById('incluir-recargo') as HTMLInputElement)?.checked;
+                        return { incluirRecargo };
+                    },
                     showCancelButton: true,
                     confirmButtonText: 'Cobrar',
                     cancelButtonText: 'Cancelar',
@@ -675,6 +682,9 @@ export default function HistorialAlumnoPage() {
 
                 if (confirmacion.isConfirmed) {
                     try {
+                        const incluirRecargo = confirmacion.value?.incluirRecargo ?? true;
+                        const totalAPagar = tarifaSeleccionada.valor + (incluirRecargo ? (recargo || 0) : 0);
+
                         const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada
                         const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
                         const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
@@ -683,8 +693,8 @@ export default function HistorialAlumnoPage() {
                             mes: mesActual,
                             fechaPago,
                             diasMusculacion: Number(diasMusculacion),
-                            tarifa: tarifaSeleccionada.valor,
-                            metodoPago, // Incluye el método de pago aquí
+                            tarifa: totalAPagar,
+                            metodoPago,
                         };
 
                         const response = await fetch(`/api/alumnos/pagos`, {
