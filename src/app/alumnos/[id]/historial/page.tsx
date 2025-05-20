@@ -540,12 +540,10 @@ export default function HistorialAlumnoPage() {
                         if (!hora) {
                             Swal.showValidationMessage('La hora no puede estar vacía');
                         }
-
-                        // Convertir a fecha local preservando la hora del usuario
-                        const fechaLocal = new Date(`${fechaSeleccionada}T${hora}`);
-                        const isoConTimezone = new Date(fechaLocal.getTime() - fechaLocal.getTimezoneOffset() * 60000).toISOString();
-
-                        return isoConTimezone;
+                        const [year, month, day] = fechaSeleccionada.split('-');
+                        const [hh, mm] = hora.split(':');
+                        const fechaLocal = new Date(Number(year), Number(month) - 1, Number(day), Number(hh), Number(mm));
+                        return fechaLocal.toISOString(); // ya ajustado a horario local
                     },
                     showCancelButton: true,
                     confirmButtonText: 'Aceptar',
@@ -1331,8 +1329,7 @@ export default function HistorialAlumnoPage() {
 
                                                 if (hora) {
                                                     try {
-                                                        const fechaLocal = new Date(`${fecha}T${hora}`);
-                                                        const fechaHora = new Date(fechaLocal.getTime() - fechaLocal.getTimezoneOffset() * 60000).toISOString();
+                                                        const fechaHora = `${fecha}T${hora}`;
 
                                                         const actividadDuplicada = alumno?.asistencia.some(
                                                             (asistencia: Asistencia) =>
