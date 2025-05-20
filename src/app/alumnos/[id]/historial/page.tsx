@@ -331,21 +331,21 @@ export default function HistorialAlumnoPage() {
         if (response.ok) {
             const data = await response.json();
             setAlumno(data);
-    
+
             // Calcular los días restantes del plan de entrenamiento
             if (data.planEntrenamiento) {
                 const fechaInicio = new Date(data.planEntrenamiento.fechaInicio);
                 const duracion = data.planEntrenamiento.duracion;
-    
+
                 const asistenciasMusculacion = data.asistencia.filter(
                     (asistencia: Asistencia) =>
                         asistencia.actividad === 'Musculación' &&
                         asistencia.presente &&
                         new Date(asistencia.fecha) >= fechaInicio
                 ).length;
-    
+
                 const diasRestantes = duracion - asistenciasMusculacion;
-    
+
                 if (diasRestantes <= 0) {
                     // Eliminar el inicio del plan automáticamente
                     await fetch(`/api/alumnos/${id}/plan`, {
@@ -354,7 +354,7 @@ export default function HistorialAlumnoPage() {
                             'Content-Type': 'application/json',
                         },
                     });
-    
+
                     setDiasRestantes(null); // Sin plan
                 } else {
                     setDiasRestantes(diasRestantes);
@@ -365,7 +365,7 @@ export default function HistorialAlumnoPage() {
         } else {
             console.error('Error fetching alumno');
         }
-    };    
+    };
 
     useEffect(() => {
         if (id) {
@@ -540,7 +540,12 @@ export default function HistorialAlumnoPage() {
                         if (!hora) {
                             Swal.showValidationMessage('La hora no puede estar vacía');
                         }
-                        return `${fechaSeleccionada}T${hora}`;
+
+                        // Convertir a fecha local preservando la hora del usuario
+                        const fechaLocal = new Date(`${fechaSeleccionada}T${hora}`);
+                        const isoConTimezone = new Date(fechaLocal.getTime() - fechaLocal.getTimezoneOffset() * 60000).toISOString();
+
+                        return isoConTimezone;
                     },
                     showCancelButton: true,
                     confirmButtonText: 'Aceptar',
@@ -1326,7 +1331,8 @@ export default function HistorialAlumnoPage() {
 
                                                 if (hora) {
                                                     try {
-                                                        const fechaHora = `${fecha}T${hora}`;
+                                                        const fechaLocal = new Date(`${fecha}T${hora}`);
+                                                        const fechaHora = new Date(fechaLocal.getTime() - fechaLocal.getTimezoneOffset() * 60000).toISOString();
 
                                                         const actividadDuplicada = alumno?.asistencia.some(
                                                             (asistencia: Asistencia) =>
