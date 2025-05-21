@@ -13,21 +13,20 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // Verificar si el usuario es 'alumno'
-    if (token.role === 'alumno') {
-        // Permitir solo la ruta /alumnos/dni
-        if (pathname !== '/alumnos/dni') {
-            const dniUrl = req.nextUrl.clone();
-            dniUrl.pathname = '/alumnos/dni';
-            return NextResponse.redirect(dniUrl);
-        }
+    // Si es alumno, redirigir a /alumnos/dni si intenta ir a otra página
+    if (token.role === 'alumno' && pathname !== '/alumnos/dni') {
+        const dniUrl = req.nextUrl.clone();
+        dniUrl.pathname = '/alumnos/dni';
+        return NextResponse.redirect(dniUrl);
     }
 
-    // Si es 'profesor', permitir acceso a todas las rutas
+    // Si es profesor o cualquier otro rol, permitir acceso completo
     return NextResponse.next();
 }
 
-// Proteger todas las rutas bajo /alumnos/*
+// Aplica el middleware a todas las rutas, excepto assets estáticos y APIs
 export const config = {
-    matcher: ['/alumnos/:path*'],
+    matcher: [
+        '/((?!_next/static|_next/image|favicon.ico|api).*)',
+    ],
 };
