@@ -1,12 +1,10 @@
 {
     "name": "Gymmy",
     "short_name": "Gymmy",
-    "description": "Control de gym para dueños, profesores y alumnos",
-    "start_url": "/?source=pwa",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#FF5722",
-    "prefer_related_applications": false,
     "icons": [
         {
             "src": "/icons/icon-192x192.png",
