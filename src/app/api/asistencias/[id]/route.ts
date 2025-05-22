@@ -19,10 +19,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
             alumno.asistencia = [];
         }
 
-        // Verificar si ya existe una asistencia para esa fecha y actividad
+        // Comparar solo la parte de la fecha (sin hora)
+        const fechaAsistencia = new Date(fecha).toISOString().split('T')[0];
+
         const asistenciaExistente = alumno.asistencia.find(
-            (asistencia: { fecha: string; actividad: string }) =>
-                asistencia.fecha === fecha && asistencia.actividad === actividad
+            (asistencia: { fecha: string; actividad: string }) => {
+                const fechaRegistrada = new Date(asistencia.fecha).toISOString().split('T')[0];
+                return fechaRegistrada === fechaAsistencia && asistencia.actividad === actividad;
+            }
         );
 
         if (asistenciaExistente) {
@@ -37,11 +41,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
             if (alumno.planEntrenamiento.diasRestantes > 0) {
                 alumno.planEntrenamiento.diasRestantes -= 1;
 
-                // Verificar si el plan ha terminado
                 if (alumno.planEntrenamiento.diasRestantes === 0) {
                     alumno.planEntrenamiento.terminado = true;
 
-                    // Enviar correo al alumno con estadísticas
                     if (alumno.email) {
                         await enviarCorreoPlanTerminado(
                             alumno.email,
@@ -67,10 +69,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 // Editar asistencia - ajusta para recibir solo el id de la asistencia
+// Editar asistencia
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     await connectMongoDB();
 
-    const { id } = params; // ID de la asistencia
+    const { id } = params;
     const { fecha, actividad } = await request.json();
 
     try {
@@ -85,6 +88,20 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
         if (!asistencia) {
             return new Response('Asistencia no encontrada', { status: 404 });
+        }
+
+        // Comparar solo la parte de la fecha
+        const nuevaFecha = new Date(fecha).toISOString().split('T')[0];
+
+        const asistenciaDuplicada = alumno.asistencia.find(
+            (a: { _id: string; fecha: string; actividad: string }) => {
+                const fechaExistente = new Date(a.fecha).toISOString().split('T')[0];
+                return a._id.toString() !== id && fechaExistente === nuevaFecha && a.actividad === actividad;
+            }
+        );
+
+        if (asistenciaDuplicada) {
+            return new Response('Ya existe una asistencia para esta actividad en esa fecha', { status: 400 });
         }
 
         // Actualizar la asistencia
