@@ -417,20 +417,27 @@ export default function ListaAlumnosPage() {
     };
 
     const iniciarPlan = async (alumnoId: string) => {
-        // Obtén la fecha actual en formato ISO (YYYY-MM-DD)
-        const fechaInicio = new Date().toISOString().split('T')[0];
-
-        const { value: duracion } = await Swal.fire({
-            title: 'Definir duración del plan de entrenamiento',
-            input: 'number',
-            inputLabel: 'Cantidad de entrenamientos',
-            inputPlaceholder: 'Ingresar la cantidad',
+        const { value: formValues } = await Swal.fire({
+            title: 'Iniciar plan de entrenamiento',
+            html: `
+            <input type="number" id="duracion" class="swal2-input" placeholder="Duración del plan">
+            <input type="date" id="fecha" class="swal2-input" style="width: 100%; max-width: 265px;" value="${new Date().toISOString().split('T')[0]}">
+        `,
             showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value || Number(value) <= 0) {
-                    return 'Debes ingresar una duración válida';
+            focusConfirm: false,
+            preConfirm: () => {
+                const duracion = (document.getElementById('duracion') as HTMLInputElement).value;
+                const fecha = (document.getElementById('fecha') as HTMLInputElement).value;
+
+                if (!duracion || Number(duracion) <= 0) {
+                    Swal.showValidationMessage('Debes ingresar una duración válida');
                 }
-                return null;
+
+                if (!fecha) {
+                    Swal.showValidationMessage('Debes seleccionar una fecha de inicio');
+                }
+
+                return { duracion: Number(duracion), fechaInicio: fecha };
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
@@ -442,7 +449,7 @@ export default function ListaAlumnosPage() {
             buttonsStyling: false,
         });
 
-        if (duracion) {
+        if (formValues) {
             try {
                 const response = await fetch(`/api/alumnos/${alumnoId}/plan`, {
                     method: 'POST',
@@ -450,8 +457,8 @@ export default function ListaAlumnosPage() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        fechaInicio,
-                        duracion: Number(duracion),
+                        fechaInicio: formValues.fechaInicio,
+                        duracion: formValues.duracion,
                         terminado: false,
                     }),
                 });
@@ -805,7 +812,7 @@ export default function ListaAlumnosPage() {
                                     <th className="px-4 py-3">Edad</th>
                                     <th className="px-4 py-3">DNI</th>
                                     <th className="px-4 py-3">Pagó</th>
-                                    <th className="px-4 py-3">Días restantes</th>
+                                    <th className="px-4 py-3">Días restantes plan</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -816,8 +823,8 @@ export default function ListaAlumnosPage() {
                                         onClick={() => setAlumnoSeleccionado(alumno)}
 
                                     >
-                                        <td className="px-4 py-3 font-medium">{alumno.apellido}</td>
-                                        <td className="px-4 py-3">{alumno.nombre}</td>
+                                        <td className="px-4 py-3 font-bold">{alumno.apellido}</td>
+                                        <td className="px-4 py-3 font-bold">{alumno.nombre}</td>
                                         <td className="px-4 py-3">{alumno.edad ?? '-'}</td>
                                         <td className="px-4 py-3">{alumno.dni}</td>
                                         <td className="px-4 py-3">{verificarPagoMesActual(alumno.pagos) ? 'Sí' : 'No'}</td>

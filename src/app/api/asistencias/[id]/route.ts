@@ -37,24 +37,28 @@ export async function POST(request: Request, { params }: { params: { id: string 
         alumno.asistencia.push({ fecha, presente, actividad });
 
         // Reducir días restantes si la actividad es "Musculación" y está presente
-        if (actividad === 'Musculación' && presente && alumno.planEntrenamiento) {
-            if (alumno.planEntrenamiento.diasRestantes > 0) {
-                alumno.planEntrenamiento.diasRestantes -= 1;
+        if (actividad === 'Musculación' && presente && alumno.planEntrenamiento && !alumno.planEntrenamiento.terminado) {
+            const fechaInicio = new Date(alumno.planEntrenamiento.fechaInicio);
+            const asistenciasMusculacion = alumno.asistencia.filter(
+                (a: any) =>
+                    a.actividad === 'Musculación' &&
+                    a.presente &&
+                    new Date(a.fecha) >= fechaInicio
+            ).length;
 
-                if (alumno.planEntrenamiento.diasRestantes === 0) {
-                    alumno.planEntrenamiento.terminado = true;
+            if (asistenciasMusculacion >= alumno.planEntrenamiento.duracion) {
+                alumno.planEntrenamiento.terminado = true;
 
-                    if (alumno.email) {
-                        await enviarCorreoPlanTerminado(
-                            alumno.email,
-                            alumno.nombre,
-                            alumno.asistencia,
-                            {
-                                fechaInicio: alumno.planEntrenamiento.fechaInicio,
-                                duracion: alumno.planEntrenamiento.duracion,
-                            }
-                        );
-                    }
+                if (alumno.email) {
+                    await enviarCorreoPlanTerminado(
+                        alumno.email,
+                        alumno.nombre,
+                        alumno.asistencia,
+                        {
+                            fechaInicio: alumno.planEntrenamiento.fechaInicio,
+                            duracion: alumno.planEntrenamiento.duracion,
+                        }
+                    );
                 }
             }
         }
