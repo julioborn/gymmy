@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">Bienvenido</h1>
           <p className="text-gray-600 mb-6">
-            Inicia sesión para gestionar tus alumnos.
+            Inicia sesión.
           </p>
           <button
             onClick={() => signIn()}
