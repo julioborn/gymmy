@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Actualizar el alumno con el nuevo pago, incluyendo el recargo si corresponde
+        // Actualizar el alumno con el nuevo pago, incluyendo el recargo si corresponde
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             alumnoId,
             {
@@ -56,20 +57,17 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        // 🔔 Enviar correo si hay email registrado
+        // ✅ ENVIAR MAIL SI EL ALUMNO TIENE EMAIL
         if (alumnoActualizado.email) {
-            await enviarCorreoPagoCuota(
-                alumnoActualizado.email,
-                alumnoActualizado.nombre,
-                {
-                    ...nuevoPago,
-                    fechaPago,
-                    tarifa: nuevoPago.tarifa + recargo, // Se envía el valor real cobrado
-                }
-            );
+            await enviarCorreoPagoCuota(alumnoActualizado.email, alumnoActualizado.nombre, {
+                ...nuevoPago,
+                fechaPago,
+                tarifa: nuevoPago.tarifa + recargo,
+            });
         }
 
         return NextResponse.json(alumnoActualizado, { status: 200 });
+
     } catch (error) {
         console.error('Error al registrar el pago:', error);
         return NextResponse.json({ message: 'Error interno al registrar el pago' }, { status: 500 });
