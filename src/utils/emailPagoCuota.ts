@@ -8,7 +8,7 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
         return;
     }
 
-    const recargoHtml = pago.recargo && Number(pago.recargo) > 0
+    const recargoHtml = Number(pago.recargo) > 0
         ?   `<li style="margin-bottom: 10px; font-size: 14px;">
                 <strong style="color: #000000;">Recargo aplicado:</strong> $${Number(pago.recargo).toFixed(2)}
             </li>`
