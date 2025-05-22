@@ -8,6 +8,12 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
         return;
     }
 
+    const recargoHtml = pago.recargo && Number(pago.recargo) > 0
+        ?   `<li style="margin-bottom: 10px; font-size: 14px;">
+                <strong style="color: #000000;">Recargo aplicado:</strong> $${Number(pago.recargo).toFixed(2)}
+            </li>`
+        : '';
+
     const mailOptions = {
         from: EMAIL_USER,
         to: email,
@@ -18,9 +24,9 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
                 <div style="padding: 20px; background-color: #d1e188">
                     <h1 style="color: #000000; text-align: center; font-size: 24px; margin-bottom: 10px;">¡Hola, ${nombre}!</h1>
                     <p style="text-align: center; font-size: 16px; color: #555;">Hemos registrado correctamente tu pago de la cuota mensual.</p>
-                    
+
                     <hr style="border: none; border-top: 1px solid #000000; margin: 20px 0;">
-                    
+
                     <p style="font-size: 16px; color: #333;">Aquí tienes los detalles del pago:</p>
                     <ul style="list-style: none; padding: 0; margin: 20px 0;">
                         <li style="margin-bottom: 10px; font-size: 14px;">
@@ -32,11 +38,7 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
                         <li style="margin-bottom: 10px; font-size: 14px;">
                             <strong style="color: #000000;">Precio final:</strong> $${pago.tarifa.toFixed(2)}
                         </li>
-                            ${pago.recargo && pago.recargo > 0 ? `
-                        <li style="margin-bottom: 10px; font-size: 14px;">
-                            <strong style="color: #000000;">Recargo aplicado:</strong> $${pago.recargo.toFixed(2)}
-                        </li>
-                        ` : ''}
+                        ${recargoHtml}
                         <li style="margin-bottom: 10px; font-size: 14px;">
                             <strong style="color: #000000;">Días de musculación:</strong> ${pago.diasMusculacion} días por semana
                         </li>
@@ -62,3 +64,4 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
         console.error('Error enviando correo de pago:', error);
     }
 };
+
