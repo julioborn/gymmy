@@ -1,10 +1,20 @@
 'use client';
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Redirigir si el usuario es alumno
+  useEffect(() => {
+    if (session?.user?.role === 'alumno') {
+      router.push('/alumnos/dni');
+    }
+  }, [session, router]);
 
   if (!session) {
     return (
@@ -23,7 +33,7 @@ export default function HomePage() {
   }
 
   function capitalizeFirstLetter(text: string) {
-    if (!text) return ''; // Manejar caso de texto vacío o undefined
+    if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
@@ -48,7 +58,6 @@ export default function HomePage() {
             >
               Registrar Alumno
             </Link>
-            {/* Botón de Estadísticas visible solo para el dueño */}
             {session.user?.role === 'dueño' && (
               <>
                 <Link
