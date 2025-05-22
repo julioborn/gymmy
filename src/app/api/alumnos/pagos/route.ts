@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Actualizar el alumno con el nuevo pago, incluyendo el recargo si corresponde
-        // Actualizar el alumno con el nuevo pago, incluyendo el recargo si corresponde
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             alumnoId,
             {
@@ -63,7 +62,6 @@ export async function POST(request: NextRequest) {
                 ...nuevoPago,
                 fechaPago,
                 tarifa: nuevoPago.tarifa + recargo,
-                recargo,
             });
         }
 
