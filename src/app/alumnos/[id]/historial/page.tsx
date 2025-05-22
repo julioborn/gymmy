@@ -682,7 +682,9 @@ export default function HistorialAlumnoPage() {
 
                 if (confirmacion.isConfirmed) {
                     try {
-                        const incluirRecargo = confirmacion.value?.incluirRecargo ?? true;
+                        const incluirRecargo = document.getElementById('incluir-recargo') instanceof HTMLInputElement
+                            ? (document.getElementById('incluir-recargo') as HTMLInputElement).checked
+                            : false;
                         const totalAPagar = tarifaSeleccionada.valor + (incluirRecargo ? (recargo || 0) : 0);
 
                         const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada

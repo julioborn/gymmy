@@ -5,12 +5,11 @@ import { enviarCorreoPagoCuota } from '@/utils/emailPagoCuota';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-    await connectMongoDB(); // Conexión activa
+    await connectMongoDB();
 
     try {
         const { alumnoId, nuevoPago } = await request.json();
 
-        // Validar campos requeridos
         if (
             !nuevoPago.mes ||
             !nuevoPago.fechaPago ||
@@ -24,20 +23,17 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Convertir la fecha de pago
         const fechaPago = new Date(nuevoPago.fechaPago);
-
-        // Obtener el día de la fecha de pago
-        const diaPago = fechaPago.getDate();
-
-        // Obtener el recargo desde la base de datos
+        const incluirRecargo = nuevoPago.incluirRecargo === true;
         let recargo = 0;
-        if (diaPago >= 10) {
-            const recargoData = await Recargo.findOne(); // Suponiendo que tienes un modelo para Recargo
+
+        if (incluirRecargo) {
+            const recargoData = await Recargo.findOne();
             recargo = recargoData?.monto || 0;
         }
 
-        // Actualizar el alumno con el nuevo pago, incluyendo el recargo si corresponde
+        const tarifaFinal = nuevoPago.tarifa + recargo;
+
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             alumnoId,
             {
@@ -45,7 +41,8 @@ export async function POST(request: NextRequest) {
                     pagos: {
                         ...nuevoPago,
                         fechaPago,
-                        tarifa: nuevoPago.tarifa + recargo, // Tarifa con recargo sumado si aplica
+                        tarifa: tarifaFinal,
+                        recargo: incluirRecargo ? recargo : 0, // guardás explícitamente si hubo o no
                     },
                 },
             },
@@ -56,12 +53,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        // ✅ ENVIAR MAIL SI EL ALUMNO TIENE EMAIL
         if (alumnoActualizado.email) {
             await enviarCorreoPagoCuota(alumnoActualizado.email, alumnoActualizado.nombre, {
                 ...nuevoPago,
                 fechaPago,
-                tarifa: nuevoPago.tarifa + recargo,
+                tarifa: tarifaFinal,
+                recargo: incluirRecargo ? recargo : 0,
             });
         }
 
