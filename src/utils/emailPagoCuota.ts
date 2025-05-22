@@ -7,7 +7,7 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
         console.log('No se envió el correo porque el email no está definido.');
         return;
     }
-    
+
     const mailOptions = {
         from: EMAIL_USER,
         to: email,
@@ -30,8 +30,13 @@ export const enviarCorreoPagoCuota = async (email: string, nombre: string, pago:
                             <strong style="color: #000000;">Fecha de pago:</strong> ${new Date(pago.fechaPago).toLocaleDateString('es-ES')}
                         </li>
                         <li style="margin-bottom: 10px; font-size: 14px;">
-                            <strong style="color: #000000;">Tarifa:</strong> $${pago.tarifa.toFixed(2)}
+                            <strong style="color: #000000;">Precio final:</strong> $${pago.tarifa.toFixed(2)}
                         </li>
+                            ${pago.recargo && pago.recargo > 0 ? `
+                        <li style="margin-bottom: 10px; font-size: 14px;">
+                            <strong style="color: #000000;">Recargo aplicado:</strong> $${pago.recargo.toFixed(2)}
+                        </li>
+                        ` : ''}
                         <li style="margin-bottom: 10px; font-size: 14px;">
                             <strong style="color: #000000;">Días de musculación:</strong> ${pago.diasMusculacion} días por semana
                         </li>
