@@ -6,19 +6,22 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    // Permitir libre acceso a la raíz solo para la instalación de la PWA
-    if (pathname === '/' && req.method === 'GET') {
+    // Permitir acceso sin token a /, /login, /manifest.json, /sw.js y archivos de íconos
+    const publicPaths = ['/', '/login', '/manifest.json', '/sw.js', '/favicon.ico', '/apple-touch-icon.png'];
+    const isPublic = publicPaths.includes(pathname) || pathname.startsWith('/icons');
+
+    if (isPublic) {
         return NextResponse.next();
     }
 
-    // Si no está autenticado, redirigir a login
+    // Redirigir a login si no hay token
     if (!token) {
         const loginUrl = req.nextUrl.clone();
         loginUrl.pathname = '/login';
         return NextResponse.redirect(loginUrl);
     }
 
-    // Si es alumno, limitar a rutas específicas
+    // Si es alumno, restringir solo a /alumnos/dni y /logout
     if (token.role === 'alumno') {
         const allowedPaths = ['/alumnos/dni', '/logout'];
         if (!allowedPaths.includes(pathname)) {
@@ -34,6 +37,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|apple-touch-icon.png).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|apple-touch-icon.png|api).*)',
     ],
 };

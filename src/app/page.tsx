@@ -11,9 +11,6 @@ export default function HomePage() {
       <div className="flex justify-center items-center mt-10">
         <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
           <h1 className="text-4xl font-bold text-gray-800 mb-6">Bienvenido</h1>
-          <p className="text-gray-600 mb-6">
-            Inicia sesión.
-          </p>
           <button
             onClick={() => signIn()}
             className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition duration-300"
