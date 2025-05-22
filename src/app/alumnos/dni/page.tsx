@@ -71,36 +71,47 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 body: JSON.stringify(ingreso),
             });
 
-            if (!asistenciaResponse.ok) throw new Error('Error al registrar asistencia');
+            if (!asistenciaResponse.ok) {
+                const errorText = await asistenciaResponse.text();
+                throw new Error(errorText); // Aquí usamos el mensaje del servidor
+            }
 
             Swal.fire({
                 icon: 'success',
                 title: `¡Hola ${alumno.nombre}!`,
-                text: `Tu asistencia para "${actividad}" ha sido registrada.`,
+                text: `Tu asistencia para ${actividad} ha sido registrada.`,
                 showConfirmButton: false,
                 timer: 4000,
             });
 
-            setDni(''); // Limpiar el campo DNI
-            if (keyboard) keyboard.setInput(''); // Limpia el teclado virtual
-        } catch (error) {
-            console.error('Error de conexión. Guardando localmente:', error);
+            setDni('');
+            if (keyboard) keyboard.setInput('');
+        } catch (error: any) {
+            console.error('Error registrando asistencia:', error);
 
-            const ingreso = {
-                dni: cleanDNI,
-                actividad,
-                fecha,
-                presente: true,
-                nombre: 'Alumno',
-            };
+            if (error.message.includes("Asistencia ya registrada")) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Ya registrada',
+                    text: `Ya se registró una asistencia para ${actividad} hoy.`,
+                });
+            } else {
+                const ingreso = {
+                    dni: cleanDNI,
+                    actividad,
+                    fecha,
+                    presente: true,
+                    nombre: 'Alumno',
+                };
 
-            await addIngreso(ingreso);
+                await addIngreso(ingreso);
 
-            Swal.fire({
-                icon: 'info',
-                title: `¡Hola!`,
-                text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
-            });
+                Swal.fire({
+                    icon: 'info',
+                    title: `¡Hola!`,
+                    text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
+                });
+            }
 
             setDni('');
             if (keyboard) keyboard.setInput('');
