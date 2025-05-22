@@ -56,6 +56,19 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
+        // 🔔 Enviar correo si hay email registrado
+        if (alumnoActualizado.email) {
+            await enviarCorreoPagoCuota(
+                alumnoActualizado.email,
+                alumnoActualizado.nombre,
+                {
+                    ...nuevoPago,
+                    fechaPago,
+                    tarifa: nuevoPago.tarifa + recargo, // Se envía el valor real cobrado
+                }
+            );
+        }
+
         return NextResponse.json(alumnoActualizado, { status: 200 });
     } catch (error) {
         console.error('Error al registrar el pago:', error);
