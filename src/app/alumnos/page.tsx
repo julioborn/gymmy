@@ -673,7 +673,12 @@ export default function ListaAlumnosPage() {
                     <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" value="${alumno.telefono || ''}">
 
                     <input id="swal-email" class="swal2-input" placeholder="Email" value="${alumno.email || ''}">
-                    <input id="swal-horario" class="swal2-input" placeholder="Franja horaria (mañana/siesta/tarde)" value="${alumno.horarioEntrenamiento || ''}">
+                    <select id="swal-horario" class="swal2-input">
+                        <option value="">Selecciona una franja</option>
+                        <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana</option>
+                        <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta</option>
+                        <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde</option>
+                    </select>
 
                     <input id="swal-hora-exacta" class="swal2-input" type="time" placeholder="Hora exacta" value="${alumno.horaExactaEntrenamiento || ''}">
 
