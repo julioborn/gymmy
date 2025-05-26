@@ -73,6 +73,12 @@ body {
   }
 }
 
+.swal2-popup.custom-swal-popup {
+  max-height: 80vh !important; /* Limita el alto del modal */
+  overflow-y: auto !important; /* Activa el scroll vertical si es necesario */
+  padding: 1rem !important;
+}
+
 /* Oculta el punto de color predeterminado en la vista de lista */
 .fc-list-event-dot {
   display: none !important;

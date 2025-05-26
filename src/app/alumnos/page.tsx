@@ -711,6 +711,7 @@ export default function ListaAlumnosPage() {
                 };
             },
             customClass: {
+                popup: 'custom-swal-popup',
                 confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
                 cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
             },
@@ -783,7 +784,7 @@ export default function ListaAlumnosPage() {
                             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
                             onClick={handleGenerateExcel}
                         >
-                            <span className="mr-2">Generar Balance</span>
+                            <span className="mr-2">Balance</span>
                             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 48 48">
                                 <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
                                 <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
@@ -815,9 +816,9 @@ export default function ListaAlumnosPage() {
                                     <th className="px-4 py-3">Apellido</th>
                                     <th className="px-4 py-3">Nombre</th>
                                     <th className="px-4 py-3">Edad</th>
-                                    <th className="px-4 py-3">DNI</th>
-                                    <th className="px-4 py-3">Pagó</th>
-                                    <th className="px-4 py-3">Días restantes plan</th>
+                                    {/* <th className="px-4 py-3">DNI</th> */}
+                                    <th className="px-4 py-3">Pago Mes</th>
+                                    <th className="px-4 py-3">Días Restantes Plan</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -831,9 +832,19 @@ export default function ListaAlumnosPage() {
                                         <td className="px-4 py-3 font-bold">{alumno.apellido}</td>
                                         <td className="px-4 py-3 font-bold">{alumno.nombre}</td>
                                         <td className="px-4 py-3">{alumno.edad ?? '-'}</td>
-                                        <td className="px-4 py-3">{alumno.dni}</td>
-                                        <td className="px-4 py-3">{verificarPagoMesActual(alumno.pagos) ? 'Sí' : 'No'}</td>
-                                        <td className="px-4 py-3">{alumno.diasRestantes ?? '-'}</td>
+                                        {/* <td className="px-4 py-3">{alumno.dni}</td> */}
+                                        <td className="px-4 py-3">{verificarPagoMesActual(alumno.pagos) ?
+                                            <p className='text-green-700'>Si</p>
+                                            // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 text-green-500">
+                                            //     <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                                            // </svg>
+                                            :
+                                            <p className='text-red-700'>No</p>
+                                            // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 text-red-600">
+                                            //     <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" />
+                                            // </svg>
+                                        }</td>
+                                        <td className="px-4 py-3">{alumno.diasRestantes ?? <p className='text-red-700'>Sin Plan</p>}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -910,23 +921,28 @@ export default function ListaAlumnosPage() {
                         </div>
 
                         <div className="flex flex-wrap justify-center gap-2 mt-6">
-                            <button onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)} className="bg-blue-600 text-white px-4 py-2 rounded">
+                            <button onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)} className="bg-gray-800 text-white px-4 py-2 rounded">
                                 Historial
                             </button>
-                            <button onClick={() => marcarPagoMes(alumnoSeleccionado._id)} className="bg-green-600 text-white px-4 py-2 rounded">
+                            <button onClick={() => marcarPagoMes(alumnoSeleccionado._id)} className="bg-green-700 text-white px-4 py-2 rounded">
                                 Pago
                             </button>
-                            <button onClick={() => iniciarPlan(alumnoSeleccionado._id)} className="bg-purple-600 text-white px-4 py-2 rounded">
+                            <button onClick={() => iniciarPlan(alumnoSeleccionado._id)} className="bg-orange-700 text-white px-4 py-2 rounded">
                                 Plan
                             </button>
                             <button
                                 onClick={() => handleEditarAlumno(alumnoSeleccionado)}
                                 className="bg-yellow-500 text-white px-4 py-2 rounded"
                             >
-                                Editar
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
+                                    <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+                                    <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+                                </svg>
                             </button>
                             <button onClick={() => eliminarAlumno(alumnoSeleccionado._id)} className="bg-red-600 text-white px-4 py-2 rounded">
-                                Eliminar
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
+                                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+                                </svg>
                             </button>
                         </div>
                     </>
