@@ -1,15 +1,24 @@
 import connectMongoDB from '@/lib/mongodb';
+import Recargo from '@/models/Recargo';
 import Tarifa from '@/models/Tarifa';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
     await connectMongoDB();
     try {
-        const tarifas = await Tarifa.find();
-        return NextResponse.json(tarifas, { status: 200 });
+        const tarifas = await Tarifa.find().sort({ dias: 1 });
+
+        // ⬇️ Si no tenés modelo Recargo, podés usar un valor fijo
+        const recargoDoc = await Recargo.findOne(); // O podés hacer: const recargo = 0;
+
+        return NextResponse.json({
+            ok: true,
+            tarifas,
+            recargo: recargoDoc?.monto || 0, // O simplemente recargo: 0 si no usás modelo
+        }, { status: 200 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ message: 'Error al obtener tarifas' }, { status: 500 });
+        return NextResponse.json({ ok: false, message: 'Error al obtener tarifas' }, { status: 500 });
     }
 }
 

@@ -39,3 +39,4 @@ next-env.d.ts
 src/app/alumnos/planificacion/
 src/app/api/ejercicios
 src/app/api/planes
+src/app/models/Plan.ts

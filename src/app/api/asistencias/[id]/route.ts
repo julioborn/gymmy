@@ -36,27 +36,66 @@ export async function POST(request: Request, { params }: { params: { id: string 
         // Agregar nueva asistencia
         alumno.asistencia.push({ fecha, presente, actividad });
 
-        // Reducir días restantes si la actividad es "Musculación" y está presente
-        if (actividad === 'Musculación' && presente && alumno.planEntrenamiento && !alumno.planEntrenamiento.terminado) {
-            const fechaInicio = new Date(alumno.planEntrenamiento.fechaInicio);
-            const asistenciasMusculacion = alumno.asistencia.filter(
+        // Reducir días restantes si es "Musculación" y está presente
+        if (
+            actividad === "Musculación" &&
+            presente &&
+            alumno.planEntrenamiento &&
+            !alumno.planEntrenamiento.terminado
+        ) {
+            const fechaInicio = new Date(alumno.planEntrenamiento.fechaInicio as Date);
+
+            const asistenciasValidas = alumno.asistencia.filter(
                 (a: any) =>
-                    a.actividad === 'Musculación' &&
+                    a.actividad === "Musculación" &&
                     a.presente &&
                     new Date(a.fecha) >= fechaInicio
-            ).length;
+            );
 
-            if (asistenciasMusculacion >= alumno.planEntrenamiento.duracion) {
+            if (asistenciasValidas.length >= alumno.planEntrenamiento.duracion!) {
+                // Marcar como terminado
                 alumno.planEntrenamiento.terminado = true;
 
+                // Calcular fecha fin
+                const fechaFin = new Date(fecha);
+
+                // Calcular día más frecuente
+                const diasSemana = asistenciasValidas.map((a: { fecha: Date }) =>
+                    new Date(a.fecha).getDay()
+                );
+
+                const conteoDias = diasSemana.reduce(
+                    (acc: Record<string, number>, dia: number) => {
+                        const clave = dia.toString();
+                        acc[clave] = (acc[clave] || 0) + 1;
+                        return acc;
+                    },
+                    {}
+                );
+
+                const diasTexto = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+                const diaMasFrecuente = (Object.entries(conteoDias) as [string, number][])
+                    .reduce((a, b) => (a[1] > b[1] ? a : b))[0];
+                const diaTexto = diasTexto[parseInt(diaMasFrecuente)];
+
+                // Agregar al historial
+                alumno.planEntrenamientoHistorial.push({
+                    fechaInicio: fechaInicio,
+                    fechaFin: fechaFin,
+                    duracion: asistenciasValidas.length,
+                    asistenciasContadas: asistenciasValidas.length,
+                    horarioMasFrecuente: diaTexto,
+                });
+
+                // Enviar mail si tiene email
                 if (alumno.email) {
                     await enviarCorreoPlanTerminado(
                         alumno.email,
                         alumno.nombre,
                         alumno.asistencia,
                         {
-                            fechaInicio: alumno.planEntrenamiento.fechaInicio,
-                            duracion: alumno.planEntrenamiento.duracion,
+                            fechaInicio: fechaInicio.toISOString(),
+                            duracion: alumno.planEntrenamiento.duracion!,
                         }
                     );
                 }
@@ -64,6 +103,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         }
 
         await alumno.save();
+
 
         return new Response(JSON.stringify(alumno), { status: 200 });
     } catch (error) {

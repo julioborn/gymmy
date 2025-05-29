@@ -38,7 +38,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 }
 
-
 // Método PUT para actualizar un pago de un alumno
 export async function PUT(request: Request, { params }: { params: { id: string; pagoId: string } }) {
     try {

@@ -24,15 +24,10 @@ export async function POST(request: NextRequest) {
         }
 
         const fechaPago = new Date(nuevoPago.fechaPago);
-        const incluirRecargo = nuevoPago.incluirRecargo === true;
-        let recargo = 0;
 
-        if (incluirRecargo) {
-            const recargoData = await Recargo.findOne();
-            recargo = recargoData?.monto || 0;
-        }
-
-        const tarifaFinal = nuevoPago.tarifa + recargo;
+        // 🧠 usar directamente el recargo que viene del frontend:
+        const montoRecargo = nuevoPago.recargo || 0;
+        const tarifaFinal = nuevoPago.tarifa + montoRecargo;
 
         const alumnoActualizado = await Alumno.findByIdAndUpdate(
             alumnoId,
@@ -41,8 +36,8 @@ export async function POST(request: NextRequest) {
                     pagos: {
                         ...nuevoPago,
                         fechaPago,
-                        tarifa: tarifaFinal,
-                        recargo: incluirRecargo ? recargo : 0, // guardás explícitamente si hubo o no
+                        tarifa: tarifaFinal,     // ya sumado el recargo
+                        recargo: montoRecargo,   // ✅ lo registrás correctamente
                     },
                 },
             },
@@ -58,7 +53,7 @@ export async function POST(request: NextRequest) {
                 ...nuevoPago,
                 fechaPago,
                 tarifa: tarifaFinal,
-                recargo: incluirRecargo ? recargo : 0,
+                recargo: nuevoPago.recargo || 0,
             });
         }
 

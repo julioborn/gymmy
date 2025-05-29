@@ -16,14 +16,6 @@ interface IAsistencia {
     actividad: string;
 }
 
-// Interfaz para el plan de entrenamiento
-interface IPlanEntrenamiento {
-    fechaInicio: Date | null;
-    duracion: number | null;
-    diasRestantes: number | null;
-    terminado: boolean;
-}
-
 // Interfaz para el alumno
 export interface IAlumno extends Document {
     nombre: string;
@@ -36,6 +28,7 @@ export interface IAlumno extends Document {
     diasEntrenaSemana?: number | null;
     pagos: IPago[];
     planEntrenamiento: IPlanEntrenamiento;
+    planEntrenamientoHistorial: IPlanEntrenamientoHistorial[];
     // Nuevos campos
     fechaInicio?: Date | null;
     horarioEntrenamiento?: 'mañana' | 'siesta' | 'tarde' | null;
@@ -44,6 +37,21 @@ export interface IAlumno extends Document {
     historialDeVida?: string;
     objetivos?: string;
     patologias?: string;
+}
+
+// Interfaz para el plan de entrenamiento
+interface IPlanEntrenamiento {
+    fechaInicio: Date | null;
+    duracion: number | null;
+    diasRestantes: number | null;
+    terminado: boolean;
+}
+
+// Interfaz para el historial de planes finalizados
+interface IPlanEntrenamientoHistorial extends IPlanEntrenamiento {
+    fechaFin: Date;
+    asistenciasContadas: number;
+    horarioMasFrecuente?: string;
 }
 
 // Subesquemas
@@ -60,8 +68,16 @@ const PlanEntrenamientoSchema: Schema = new Schema({
     terminado: { type: Boolean, default: false },
 });
 
+const PlanEntrenamientoHistorialSchema: Schema = new Schema({
+    fechaInicio: { type: Date, required: true },
+    fechaFin: { type: Date, required: true },
+    duracion: { type: Number, required: true },
+    asistenciasContadas: { type: Number, required: true },
+    horarioMasFrecuente: { type: String, required: false },
+});
+
 // Esquema principal del Alumno
-const AlumnoSchema = new mongoose.Schema({
+const AlumnoSchema = new mongoose.Schema<IAlumno>({
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
     dni: { type: String, required: true },
@@ -77,6 +93,7 @@ const AlumnoSchema = new mongoose.Schema({
             tarifa: { type: Number, required: true },
             diasMusculacion: { type: Number, required: true },
             metodoPago: { type: String, required: true, enum: ['efectivo', 'transferencia'] },
+            recargo: { type: Number, required: false, default: 0 },
         },
     ],
     planEntrenamiento: {
@@ -90,6 +107,10 @@ const AlumnoSchema = new mongoose.Schema({
         required: false,
         enum: ['mañana', 'siesta', 'tarde'],
         default: null
+    },
+    planEntrenamientoHistorial: {
+        type: [PlanEntrenamientoHistorialSchema],
+        default: [],
     },
     horaExactaEntrenamiento: { type: String, required: false, default: null }, // Nueva línea
     historialDeportivo: { type: String, required: false, default: "" },

@@ -103,7 +103,14 @@ export default function ListaAlumnosPage() {
         try {
             const response = await fetch('/api/tarifas');
             const data = await response.json();
-            setTarifas(data); // Actualiza el estado con los datos de tarifas
+
+            // ✔️ si data viene como { ok: true, tarifas: [...], recargo: 1000 }
+            if (data.ok && Array.isArray(data.tarifas)) {
+                setTarifas(data.tarifas);
+                setRecargo(data.recargo || 0); // si usás recargo
+            } else {
+                console.error('Formato inesperado de tarifas:', data);
+            }
         } catch (error) {
             console.error("Error al obtener tarifas:", error);
         }

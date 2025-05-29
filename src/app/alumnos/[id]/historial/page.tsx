@@ -18,6 +18,7 @@ import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
 //     BarElement,
 // } from 'chart.js';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
 // Loader giratorio
 const Loader = () => (
@@ -333,7 +334,11 @@ export default function HistorialAlumnoPage() {
             setAlumno(data);
 
             // Calcular los días restantes del plan de entrenamiento
-            if (data.planEntrenamiento) {
+            if (
+                data.planEntrenamiento &&
+                data.planEntrenamiento.fechaInicio &&
+                !isNaN(new Date(data.planEntrenamiento.fechaInicio).getTime())
+            ) {
                 const fechaInicio = new Date(data.planEntrenamiento.fechaInicio);
                 const duracion = data.planEntrenamiento.duracion;
 
@@ -360,8 +365,9 @@ export default function HistorialAlumnoPage() {
                     setDiasRestantes(diasRestantes);
                 }
             } else {
-                setDiasRestantes(null); // Sin plan
+                setDiasRestantes(null); // Sin plan o con fecha inválida
             }
+
         } else {
             console.error('Error fetching alumno');
         }
@@ -695,8 +701,9 @@ export default function HistorialAlumnoPage() {
                             mes: mesActual,
                             fechaPago,
                             diasMusculacion: Number(diasMusculacion),
-                            tarifa: totalAPagar,
+                            tarifa: tarifaSeleccionada.valor,
                             metodoPago,
+                            recargo: incluirRecargo ? recargo || 0 : 0,
                         };
 
                         const response = await fetch(`/api/alumnos/pagos`, {
@@ -1044,34 +1051,57 @@ export default function HistorialAlumnoPage() {
         <div className="max-w-6xl mx-auto bg-gray-50 p-8 rounded shadow-md">
 
             {/* Nombre alumno */}
-            <div className="flex mb-2 justify-center">
+            <div className="flex justify-center">
                 <h1 className="text-4xl font-light text-gray-800 p-1 pl-1.5 pr-1.5">
                     {alumno.nombre} {alumno.apellido}
                 </h1>
             </div>
 
-            {/* Finalización del plan */}
-            {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio && diasRestantes !== null ? (
-                diasRestantes > 0 ? (
-                    <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
-                        Finaliza el plan en
-                        <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
-                            {diasRestantes}
-                        </span>
-                        entrenamientos.
-                    </p>
-                ) : (
-                    <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
-                        Sin plan
-                    </p>
-                )
-            ) : (
-                <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
-                    Sin plan
-                </p>
-            )}
+            {/* Menú historial */}
+            <div className="flex flex-col mb-4 gap-4">
 
-            {/* Botones superiores */}
+                {/* Historial */}
+                <div className="flex-1 bg-gray-50 p-4 overflow-auto max-h-screen">
+                    {/* <h3 className="text-xl font-semibold text-gray-700 mb-2 flex justify-center">Historial del Alumno</h3> */}
+
+                    {/* Finalización del plan */}
+                    {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio && diasRestantes !== null ? (
+                        diasRestantes > 0 ? (
+                            <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
+                                Finaliza el plan en
+                                <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
+                                    {diasRestantes}
+                                </span>
+                                entrenamientos.
+                            </p>
+                        ) : (
+                            <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
+                                Sin plan
+                            </p>
+                        )
+                    ) : (
+                        <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
+                            Sin plan
+                        </p>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center mb-4 items-center">
+                        <Link href={`/alumnos/${id}/asistencias`} className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Asistencias</button>
+                        </Link>
+                        <Link href={`/alumnos/${id}/planes`} className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800">Planes</button>
+                        </Link>
+                        <Link href={`/alumnos/${id}/pagos`} className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">Pagos</button>
+                        </Link>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {/* Botones cuotas / recargo */}
             <div className='flex justify-center sm:justify-start'>
                 {/* Botón de configuración de tarifas */}
                 <div className="sm:block sm:pl-4 pl-0">
@@ -1180,590 +1210,6 @@ export default function HistorialAlumnoPage() {
                         }}
                     />
                 </Suspense>
-            </div>
-
-            {/* Menú inferior */}
-            <div className="flex flex-col mt-8 gap-4">
-
-                {/* Historial */}
-                <div className="flex-1 bg-gray-50 p-4 rounded shadow border overflow-auto max-h-screen">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-1">Historial del Alumno</h3>
-
-                    {/* Contenedor dividido */}
-                    <div className="flex flex-col md:flex-row divide-y md:divide-x divide-gray-200 mt-3 bg-gray-50 p-2 rounded border">
-
-                        {/* Actividades */}
-                        <div className="flex-1 pb-4 md:pr-4 md:pb-0">
-                            <h4 className="text-lg text-center font-semibold text-orange-600 mb-2">Actividades</h4>
-                            {alumno.asistencia.length > 0 ? (
-                                Object.entries(
-                                    alumno.asistencia.reduce((acc: Record<string, Record<string, Asistencia[]>>, asistencia) => {
-                                        const fecha = new Date(asistencia.fecha);
-                                        const year = fecha.getFullYear().toString();
-                                        const month = fecha.toLocaleString('es-ES', { month: 'long' });
-                                        if (!acc[year]) acc[year] = {};
-                                        if (!acc[year][month]) acc[year][month] = [];
-                                        acc[year][month].push(asistencia);
-                                        return acc;
-                                    }, {})
-                                ).map(([year, meses]) => (
-                                    <div key={year} className="mb-6">
-                                        <h5
-                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center bg-gray-50 p-1.5 rounded border"
-                                            onClick={() => toggleYearActividades(year)}
-                                        >
-                                            {year}
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className={`w-4 h-4 ml-2 transition-transform ${expandedYearsActividades[year] ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </h5>
-                                        {expandedYearsActividades[year] &&
-                                            Object.entries(meses).map(([mes, actividades]) => (
-                                                <div key={mes} className="mb-4">
-                                                    <h6
-                                                        className="text-md font-light text-gray-600 pb-1 mb-2 ml-1 cursor-pointer flex items-center"
-                                                        onClick={() => toggleMonthActividades(year, mes)}
-                                                    >
-                                                        {mes}
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsActividades[year]?.[mes] ? 'rotate-180' : ''
-                                                                }`}
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                        </svg>
-                                                    </h6>
-                                                    {expandedMonthsActividades[year]?.[mes] && (
-                                                        <ul className="list-disc pl-6">
-                                                            {actividades.map((asistencia) => {
-                                                                const fechaHora = new Date(asistencia.fecha).toLocaleString('es-ES', {
-                                                                    dateStyle: 'short',
-                                                                    timeStyle: 'short',
-                                                                });
-                                                                return (
-                                                                    <li key={asistencia._id} className="mb-1">
-                                                                        <span className="font-medium">{asistencia.actividad}</span> - {fechaHora}
-                                                                        {asistencia.presente ? (
-                                                                            <span className="text-green-600 ml-2">Presente</span>
-                                                                        ) : (
-                                                                            <span className="text-red-600 ml-2">Ausente</span>
-                                                                        )}
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    )}
-                                                </div>
-                                            ))}
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-500">No hay actividades registradas.</p>
-                            )}
-
-                            <div className="flex justify-center mt-4 sm:hidden">
-                                <button
-                                    onClick={async () => {
-                                        const { value: actividad } = await Swal.fire({
-                                            title: 'Ingresar Actividad',
-                                            input: 'select',
-                                            inputOptions: {
-                                                Musculación: 'Musculación',
-                                                Intermitente: 'Intermitente',
-                                                Otro: 'Otro',
-                                            },
-                                            inputPlaceholder: 'Selecciona una actividad',
-                                            showCancelButton: true,
-                                            confirmButtonText: 'Aceptar',
-                                            cancelButtonText: 'Cancelar',
-                                            customClass: {
-                                                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                                                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                                                popup: 'custom-swal-popup',
-                                            },
-                                            buttonsStyling: false,
-                                        });
-
-                                        if (actividad) {
-                                            const { value: fecha } = await Swal.fire({
-                                                title: 'Seleccionar Fecha',
-                                                html: `<input type="date" id="fecha-actividad" class="swal2-input">`,
-                                                focusConfirm: false,
-                                                showCancelButton: true,
-                                                preConfirm: () => {
-                                                    const fecha = (document.getElementById('fecha-actividad') as HTMLInputElement).value;
-                                                    if (!fecha) {
-                                                        Swal.showValidationMessage('La fecha no puede estar vacía');
-                                                    }
-                                                    return fecha;
-                                                },
-                                                confirmButtonText: 'Aceptar',
-                                                cancelButtonText: 'Cancelar',
-                                                customClass: {
-                                                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                                                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                                                    popup: 'custom-swal-popup',
-                                                },
-                                                buttonsStyling: false,
-                                            });
-
-                                            if (fecha) {
-                                                const { value: hora } = await Swal.fire({
-                                                    title: 'Seleccionar Hora',
-                                                    html: `<input type="time" id="hora-actividad" class="swal2-input" value="12:00">`,
-                                                    focusConfirm: false,
-                                                    showCancelButton: true,
-                                                    preConfirm: () => {
-                                                        const hora = (document.getElementById('hora-actividad') as HTMLInputElement).value;
-                                                        if (!hora) {
-                                                            Swal.showValidationMessage('La hora no puede estar vacía');
-                                                        }
-                                                        return hora;
-                                                    },
-                                                    confirmButtonText: 'Aceptar',
-                                                    cancelButtonText: 'Cancelar',
-                                                    customClass: {
-                                                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                                                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                                                        popup: 'custom-swal-popup',
-                                                    },
-                                                    buttonsStyling: false,
-                                                });
-
-                                                if (hora) {
-                                                    try {
-                                                        const fechaHora = `${fecha}T${hora}`;
-
-                                                        const actividadDuplicada = alumno?.asistencia.some(
-                                                            (asistencia: Asistencia) =>
-                                                                asistencia.fecha.startsWith(fecha) &&
-                                                                asistencia.actividad === actividad &&
-                                                                asistencia.presente
-                                                        );
-
-                                                        if (actividadDuplicada) {
-                                                            Swal.fire({
-                                                                icon: 'info',
-                                                                title: 'Actividad duplicada',
-                                                                text: `Ya tienes registrada la actividad "${actividad}" para esta fecha. No es posible registrarla nuevamente.`,
-                                                            });
-                                                            return;
-                                                        }
-
-                                                        const response = await fetch(`/api/asistencias/${id}`, {
-                                                            method: 'POST',
-                                                            headers: {
-                                                                'Content-Type': 'application/json',
-                                                            },
-                                                            body: JSON.stringify({
-                                                                fecha: fechaHora,
-                                                                actividad,
-                                                                presente: true,
-                                                            }),
-                                                        });
-
-                                                        if (response.ok) {
-                                                            Swal.fire('Actividad registrada', '', 'success');
-                                                            fetchAlumno(); // Refresca los datos del alumno
-                                                        } else {
-                                                            Swal.fire('Error', 'No se pudo registrar la actividad', 'error');
-                                                        }
-                                                    } catch (error) {
-                                                        console.error('Error al registrar actividad:', error);
-                                                        Swal.fire('Error', 'Ocurrió un problema al registrar la actividad', 'error');
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }}
-                                    className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
-                                >
-                                    Registrar Actividad
-                                </button>
-                            </div>
-
-                        </div>
-
-                        {/* Pagos */}
-                        <div className="flex-1 pt-4 md:pl-4 md:pt-0">
-                            <h4 className="text-lg font-semibold text-center text-green-600 mb-2">Pagos</h4>
-                            {alumno.pagos.length > 0 ? (
-                                Object.entries(
-                                    alumno.pagos.reduce((acc: Record<string, Record<string, Pago[]>>, pago) => {
-                                        const fecha = new Date(pago.fechaPago);
-                                        const year = fecha.getFullYear().toString();
-                                        const month = fecha.toLocaleString('es-ES', { month: 'long' });
-                                        if (!acc[year]) acc[year] = {};
-                                        if (!acc[year][month]) acc[year][month] = [];
-                                        acc[year][month].push(pago);
-                                        return acc;
-                                    }, {})
-                                ).map(([year, meses]) => (
-                                    <div key={year} className="mb-6">
-                                        <h5
-                                            className="text-md font-semibold text-gray-700 mb-2 cursor-pointer flex items-center bg-gray-50 p-1.5 rounded border"
-                                            onClick={() => toggleYearPagos(year)}
-                                        >
-                                            {year}
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className={`w-4 h-4 ml-2 transition-transform ${expandedYearsPagos[year] ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </h5>
-                                        {expandedYearsPagos[year] &&
-                                            Object.entries(meses).map(([mes, pagos]) => (
-                                                <div key={mes} className="mb-4">
-                                                    <h6
-                                                        className="text-md font-light text-gray-600 pb-1 mb-2 ml-1 cursor-pointer flex items-center"
-                                                        onClick={() => toggleMonthPagos(year, mes)}
-                                                    >
-                                                        {mes}
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            className={`w-3 h-3 ml-2 transition-transform ${expandedMonthsPagos[year]?.[mes] ? 'rotate-180' : ''
-                                                                }`}
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                        </svg>
-                                                    </h6>
-                                                    {expandedMonthsPagos[year]?.[mes] && (
-                                                        <ul className="list-disc pl-6">
-                                                            {pagos.map((pago) => {
-                                                                const fecha = new Date(pago.fechaPago).toLocaleDateString('es-ES', {
-                                                                    dateStyle: 'short',
-                                                                });
-                                                                return (
-                                                                    <li key={pago._id} className="mb-1">
-                                                                        <span className="font-medium">Pago</span> - {fecha} -{' '}
-                                                                        <span className="text-green-700">${pago.tarifa}</span>
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    )}
-                                                </div>
-                                            ))}
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-500">No hay pagos registrados.</p>
-                            )}
-
-                            {/* Botón para registrar un nuevo pago */}
-                            <div className="flex justify-center mt-4 sm:hidden">
-                                <button
-                                    onClick={async () => {
-                                        if (!tarifas.length) {
-                                            Swal.fire('Error', 'No se encontraron tarifas disponibles.', 'error');
-                                            return;
-                                        }
-
-                                        const opcionesTarifas = tarifas.reduce((options, tarifa) => {
-                                            options[tarifa.dias] = `${tarifa.dias} días por semana - $${tarifa.valor}`;
-                                            return options;
-                                        }, {} as Record<number, string>);
-
-                                        const { value: diasMusculacion } = await Swal.fire({
-                                            title: 'Selecciona los días de musculación',
-                                            input: 'select',
-                                            inputOptions: opcionesTarifas,
-                                            inputPlaceholder: 'Selecciona una opción',
-                                            showCancelButton: true,
-                                            confirmButtonText: 'Aceptar',
-                                            cancelButtonText: 'Cancelar',
-                                            customClass: {
-                                                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                                                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                                                popup: 'custom-swal-popup',
-                                            },
-                                            buttonsStyling: false,
-                                        });
-
-                                        if (diasMusculacion) {
-                                            const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
-
-                                            if (!tarifaSeleccionada) {
-                                                Swal.fire('Error', 'No se encontró la tarifa seleccionada.', 'error');
-                                                return;
-                                            }
-
-                                            const { value: fechaPago } = await Swal.fire({
-                                                title: 'Selecciona la fecha del pago',
-                                                html: `<input type="date" id="fecha-pago" class="swal2-input">`,
-                                                focusConfirm: false,
-                                                showCancelButton: true,
-                                                preConfirm: () => {
-                                                    const fecha = (document.getElementById('fecha-pago') as HTMLInputElement).value;
-                                                    if (!fecha) {
-                                                        Swal.showValidationMessage('Debes seleccionar una fecha válida');
-                                                    }
-                                                    return fecha;
-                                                },
-                                                confirmButtonText: 'Aceptar',
-                                                cancelButtonText: 'Cancelar',
-                                                customClass: {
-                                                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                                                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                                                    popup: 'custom-swal-popup',
-                                                },
-                                                buttonsStyling: false,
-                                            });
-
-                                            if (fechaPago) {
-                                                try {
-                                                    const response = await fetch(`/api/alumnos/pagos`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                        },
-                                                        body: JSON.stringify({
-                                                            alumnoId: alumno._id, // ID del alumno
-                                                            nuevoPago: {
-                                                                mes: new Date(fechaPago).toLocaleString('es-ES', { month: 'long' }).toLowerCase(), // Mes en formato texto
-                                                                fechaPago: fechaPago, // Aquí usamos la fecha seleccionada
-                                                                tarifa: tarifaSeleccionada.valor, // Tarifa seleccionada
-                                                                diasMusculacion: Number(diasMusculacion), // Días de musculación seleccionados
-                                                            },
-                                                        }),
-                                                    });
-
-                                                    if (!response.ok) {
-                                                        throw new Error('Error al registrar el pago');
-                                                    }
-
-                                                    Swal.fire('Pago registrado correctamente', '', 'success');
-                                                    fetchAlumno(); // Refrescar los datos del alumno después del registro
-                                                } catch (error) {
-                                                    console.error('Error al registrar el pago:', error);
-                                                    Swal.fire('Error al registrar el pago', 'Por favor intenta de nuevo.', 'error');
-                                                }
-                                            }
-                                        }
-                                    }}
-                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                >
-                                    Registrar Pago
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                {/* Estadísticas */}
-                {/* <div className="flex-1 bg-gray-50 p-4 rounded shadow border"> */}
-                {/* Gráficos */}
-                {/* <h3 className="text-xl font-semibold mb-4 text-gray-700">Estadísticas del Alumno</h3> */}
-
-                {/* Contenedor de gráficos */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
-
-                {/* Bar Chart: Frecuencia de Asistencia por Día de la Semana */}
-                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
-                            <h4 className="text-xl font-semibold text-[#4BC0C0] mb-4">Frecuencia de Asistencias por Día de la Semana</h4>
-                            <div className="mb-4 flex justify-end">
-                                <select
-                                    className="border border-gray-300 rounded px-2 py-1 bg-gray-50 p-4 shadow"
-                                    value={yearFrecuencia}
-                                    onChange={(e) => setYearFrecuencia(Number(e.target.value))}
-                                >
-                                    {availableYears.map((availableYear) => (
-                                        <option key={availableYear} value={availableYear}>
-                                            {availableYear}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <Bar
-                                data={{
-                                    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
-                                    datasets: [
-                                        {
-                                            label: `Porcentaje de Asistencias en ${yearFrecuencia}`,
-                                            data: [0, 0, 0, 0, 0, 0, 0].map((_, index) =>
-                                                (
-                                                    (alumno.asistencia.filter(
-                                                        (a) =>
-                                                            new Date(a.fecha).getFullYear() === yearFrecuencia &&
-                                                            new Date(a.fecha).getDay() === (index === 6 ? 0 : index + 1) &&
-                                                            a.presente
-                                                    ).length /
-                                                        alumno.asistencia.filter(
-                                                            (a) => new Date(a.fecha).getFullYear() === yearFrecuencia && a.presente
-                                                        ).length) *
-                                                    100
-                                                ).toFixed(2)
-                                            ),
-                                            backgroundColor: '#4BC0C0',
-                                            borderColor: 'gray',
-                                            borderWidth: 1,
-                                        },
-                                    ],
-                                }}
-                                options={{
-                                    scales: {
-                                        x: {
-                                            title: {
-                                                display: true,
-                                                text: 'Días de la Semana',
-                                            },
-                                        },
-                                        y: {
-                                            beginAtZero: true,
-                                            max: 100,
-                                            title: {
-                                                display: true,
-                                                text: 'Porcentaje',
-                                            },
-                                            ticks: {
-                                                callback: (value) => `${value}%`,
-                                            },
-                                        },
-                                    },
-                                }}
-                            />
-                        </div> */}
-
-                {/* Bar Chart: Distribución de Asistencias por Actividad */}
-                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
-                            <h4 className="text-xl font-semibold text-orange-600 mb-4">Porcentaje de Asistencias por Actividad</h4>
-                            <div className="mb-4 flex justify-end">
-                                <select
-                                    className="border border-gray-300 rounded px-2 py-1 bg-gray-50 p-4 shadow"
-                                    value={yearActividad}
-                                    onChange={(e) => setYearActividad(Number(e.target.value))}
-                                >
-                                    {availableYears.map((availableYear) => (
-                                        <option key={availableYear} value={availableYear}>
-                                            {availableYear}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <Bar
-                                data={{
-                                    labels: ['Musculación', 'Intermitente', 'Otro'],
-                                    datasets: [
-                                        {
-                                            label: `Porcentaje de Asistencias en ${yearActividad}`,
-                                            data: [
-                                                (alumno.asistencia.filter(
-                                                    (a) => a.actividad === 'Musculación' && new Date(a.fecha).getFullYear() === yearActividad
-                                                ).length /
-                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
-                                                100 || 0,
-                                                (alumno.asistencia.filter(
-                                                    (a) => a.actividad === 'Intermitente' && new Date(a.fecha).getFullYear() === yearActividad
-                                                ).length /
-                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
-                                                100 || 0,
-                                                (alumno.asistencia.filter(
-                                                    (a) => a.actividad === 'Otro' && new Date(a.fecha).getFullYear() === yearActividad
-                                                ).length /
-                                                    alumno.asistencia.filter((a) => new Date(a.fecha).getFullYear() === yearActividad).length) *
-                                                100 || 0,
-                                            ],
-                                            backgroundColor: ['#007bff', '#ff851b', '#f1c40f'],
-                                            borderColor: 'gray',
-                                        },
-                                    ],
-                                }}
-                                options={{
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            max: 100,
-                                            ticks: {
-                                                callback: (value) => `${value}%`,
-                                            },
-                                        },
-                                    },
-                                }}
-                            />
-                        </div> */}
-
-                {/* Bar Chart: Pagos Realizados */}
-                {/* <div className="bg-gray-50 p-4 rounded shadow-md border">
-                            <h4 className="text-xl font-semibold text-green-600 mb-4">Pagos Realizados en {yearPagos}</h4>
-                            <div className="mb-4 flex justify-end">
-                                <select
-                                    className="border-gray-300 px-2 py-1 bg-gray-50 p-4 rounded shadow border"
-                                    value={yearPagos}
-                                    onChange={(e) => setYearPagos(Number(e.target.value))}
-                                >
-                                    {availableYears.map((availableYear) => (
-                                        <option key={availableYear} value={availableYear}>
-                                            {availableYear}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <Bar
-                                data={{
-                                    labels: [
-                                        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-                                    ],
-                                    datasets: [
-                                        {
-                                            label: `Pagos en ${yearPagos}`,
-                                            data: pagosPorMes,
-                                            backgroundColor: 'rgba(40, 167, 69, 0.5)',
-                                            borderColor: '#28a745',
-                                            borderWidth: 1,
-                                        },
-                                    ],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top',
-                                        },
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            title: {
-                                                display: true,
-                                                text: 'Monto Pagado ($)',
-                                            },
-                                            ticks: {
-                                                stepSize: 500,
-                                            },
-                                        },
-                                        x: {
-                                            title: {
-                                                display: true,
-                                                text: 'Meses',
-                                            },
-                                        },
-                                    },
-                                }}
-                            />
-                        </div> */}
-
-                {/* </div> */}
-                {/* </div> */}
-
             </div>
 
         </div>
