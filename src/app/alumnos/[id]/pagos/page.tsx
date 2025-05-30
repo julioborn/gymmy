@@ -178,61 +178,61 @@ export default function PagosPage() {
         }
     };
 
-    const handleEditarPago = async (pago: any) => {
-        const { value: nuevaFecha } = await Swal.fire({
-            title: 'Editar fecha de pago',
-            input: 'date',
-            inputValue: new Date(pago.fechaPago).toISOString().split('T')[0],
-            showCancelButton: true,
-            confirmButtonText: 'Siguiente',
-            cancelButtonText: 'Cancelar',
-        });
+    // const handleEditarPago = async (pago: any) => {
+    //     const { value: nuevaFecha } = await Swal.fire({
+    //         title: 'Editar fecha de pago',
+    //         input: 'date',
+    //         inputValue: new Date(pago.fechaPago).toISOString().split('T')[0],
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Siguiente',
+    //         cancelButtonText: 'Cancelar',
+    //     });
 
-        if (!nuevaFecha) return;
+    //     if (!nuevaFecha) return;
 
-        const { value: nuevaTarifa } = await Swal.fire({
-            title: 'Editar tarifa',
-            input: 'number',
-            inputValue: pago.tarifa,
-            showCancelButton: true,
-            confirmButtonText: 'Siguiente',
-            cancelButtonText: 'Cancelar',
-        });
+    //     const { value: nuevaTarifa } = await Swal.fire({
+    //         title: 'Editar tarifa',
+    //         input: 'number',
+    //         inputValue: pago.tarifa,
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Siguiente',
+    //         cancelButtonText: 'Cancelar',
+    //     });
 
-        if (!nuevaTarifa) return;
+    //     if (!nuevaTarifa) return;
 
-        const { value: nuevosDias } = await Swal.fire({
-            title: 'Editar días de musculación',
-            input: 'number',
-            inputValue: pago.diasMusculacion,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-        });
+    //     const { value: nuevosDias } = await Swal.fire({
+    //         title: 'Editar días de musculación',
+    //         input: 'number',
+    //         inputValue: pago.diasMusculacion,
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Guardar',
+    //         cancelButtonText: 'Cancelar',
+    //     });
 
-        if (!nuevosDias) return;
+    //     if (!nuevosDias) return;
 
-        try {
-            const res = await fetch(`/api/alumnos/${id}/pagos/${pago._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    nuevaFechaPago: new Date(nuevaFecha + "T12:00:00"),
-                    tarifa: Number(nuevaTarifa),
-                    diasMusculacion: Number(nuevosDias),
-                }),
-            });
+    //     try {
+    //         const res = await fetch(`/api/alumnos/${id}/pagos/${pago._id}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({
+    //                 nuevaFechaPago: new Date(nuevaFecha + "T12:00:00"),
+    //                 tarifa: Number(nuevaTarifa),
+    //                 diasMusculacion: Number(nuevosDias),
+    //             }),
+    //         });
 
-            if (!res.ok) throw new Error('Error al actualizar el pago');
+    //         if (!res.ok) throw new Error('Error al actualizar el pago');
 
-            Swal.fire('Pago actualizado', '', 'success').then(() => location.reload());
-        } catch (error) {
-            console.error('Error al actualizar el pago:', error);
-            Swal.fire('Error', 'No se pudo actualizar el pago', 'error');
-        }
-    };
+    //         Swal.fire('Pago actualizado', '', 'success').then(() => location.reload());
+    //     } catch (error) {
+    //         console.error('Error al actualizar el pago:', error);
+    //         Swal.fire('Error', 'No se pudo actualizar el pago', 'error');
+    //     }
+    // };
 
     const handleEliminarPago = async (pagoId: string) => {
         const confirmacion = await Swal.fire({
