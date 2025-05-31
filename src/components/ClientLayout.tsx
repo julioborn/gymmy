@@ -77,7 +77,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             return menuItems.filter(
                 (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
             ); // El profesor no ve Finanzas ni Estadísticas
-        } else if (session?.user?.role === 'alumno') {
+        } else if (session?.user?.role === 'registro') {
             return []; // Los alumnos no ven ninguna ruta, solo "Cerrar Sesión"
         }
     

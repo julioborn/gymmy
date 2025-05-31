@@ -31,7 +31,7 @@ export default function LoginPage() {
             const sessionResponse = await fetch("/api/auth/session");
             const session = await sessionResponse.json();
 
-            if (session?.user?.role === "alumno") {
+            if (session?.user?.role === "registro") {
                 router.push("/alumnos/dni"); // Redirigir a la página de DNI si el rol es "alumno"
             } else {
                 router.push("/"); // Redirigir al inicio si no es "alumno"

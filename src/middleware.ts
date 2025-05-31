@@ -22,7 +22,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Si es alumno, restringir solo a /alumnos/dni y /logout
-    if (token.role === 'alumno') {
+    if (token.role === 'registro') {
         const allowedPaths = ['/alumnos/dni', '/logout'];
         if (!allowedPaths.includes(pathname)) {
             const redirectUrl = req.nextUrl.clone();

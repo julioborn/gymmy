@@ -11,7 +11,7 @@ export default function HomePage() {
 
   // Redirigir si el usuario es alumno
   useEffect(() => {
-    if (session?.user?.role === 'alumno') {
+    if (session?.user?.role === 'registro') {
       router.push('/alumnos/dni');
     }
   }, [session, router]);
