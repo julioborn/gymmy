@@ -210,54 +210,56 @@ export default function AsistenciasPage() {
                 {alumno.nombre} {alumno.apellido}
             </h2>
 
-            {/* Filtros */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-4 justify-center">
-                <div>
-                    <label className="block text-gray-700 text-sm mb-1">Desde:</label>
-                    <input
-                        type="date"
-                        className="border rounded px-2 py-1"
-                        value={fechaDesde}
-                        onChange={(e) => setFechaDesde(e.target.value)}
-                    />
+            {/* Filtros responsivos como en la imagen */}
+            <div className="w-full max-w-sm mx-auto flex flex-col space-y-4 mb-6">
+                <div className='flex justify-between'>
+                    <div>
+                        <label className="block text-gray-700 text-sm mb-1">Desde:</label>
+                        <input
+                            type="date"
+                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            value={fechaDesde}
+                            onChange={(e) => setFechaDesde(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm mb-1">Hasta</label>
+                        <input
+                            type="date"
+                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            value={fechaHasta}
+                            onChange={(e) => setFechaHasta(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div>
-                    <label className="block text-gray-700 text-sm mb-1">Hasta:</label>
-                    <input
-                        type="date"
-                        className="border rounded px-2 py-1"
-                        value={fechaHasta}
-                        onChange={(e) => setFechaHasta(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 text-sm mb-1">Actividad:</label>
+                    <label className="block text-gray-700 font-semibold text-sm mb-1">Actividad</label>
                     <select
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                         value={filtroActividad}
                         onChange={(e) => setFiltroActividad(e.target.value)}
                     >
-                        <option value="Todas">Todas</option>
+                        <option value="Todas">Todas las Actividades</option>
                         <option value="Musculación">Musculación</option>
                         <option value="Intermitente">Intermitente</option>
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
                 <div>
-                    <label className="block text-gray-700 text-sm mb-1">Orden:</label>
+                    <label className="block text-gray-700 font-semibold text-sm mb-1">Orden</label>
                     <select
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                         value={orden}
                         onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
                     >
-                        <option value="recientes">Más recientes</option>
-                        <option value="antiguos">Más antiguos</option>
+                        <option value="recientes">Más Recientes</option>
+                        <option value="antiguos">Más Antiguas</option>
                     </select>
                 </div>
             </div>
 
             {/* Botón centrado */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-end mb-6">
                 <button
                     onClick={() => {
                         setFechaDesde('');
@@ -265,7 +267,7 @@ export default function AsistenciasPage() {
                         setFiltroActividad('Todas');
                         setOrden('recientes');
                     }}
-                    className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                    className="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600 transition"
                 >
                     Limpiar filtros
                 </button>
@@ -274,7 +276,7 @@ export default function AsistenciasPage() {
             {/* Botón registrar asistencia */}
             <div className="flex justify-start mb-6">
                 <button
-                    className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-4 py-2 rounded"
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
                     onClick={handleAgregarAsistencia}
                 >
                     Registrar Asistencia

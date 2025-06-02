@@ -72,47 +72,47 @@ export default function PlanesPage() {
             </h2>
 
             {/* Filtros */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-4 justify-center">
+            <div className="w-full max-w-sm mx-auto flex flex-col space-y-4 mb-6">
                 <div>
-                    <label className="block text-sm text-gray-700 mb-1">Desde:</label>
+                    <label className="block text-sm text-gray-700 font-semibold mb-1">Desde</label>
                     <input
                         type="date"
                         value={fechaDesde}
                         onChange={(e) => setFechaDesde(e.target.value)}
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm text-gray-700 mb-1">Hasta:</label>
+                    <label className="block text-sm text-gray-700 font-semibold mb-1">Hasta</label>
                     <input
                         type="date"
                         value={fechaHasta}
                         onChange={(e) => setFechaHasta(e.target.value)}
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm text-gray-700 mb-1">Orden:</label>
+                    <label className="block text-sm text-gray-700 font-semibold mb-1">Orden</label>
                     <select
                         value={orden}
                         onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                     >
-                        <option value="recientes">Más recientes</option>
-                        <option value="antiguos">Más antiguos</option>
+                        <option value="recientes">Más Recientes</option>
+                        <option value="antiguos">Más Antiguos</option>
                     </select>
                 </div>
             </div>
 
             {/* Botón de limpiar filtros */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-end mb-6">
                 <button
                     onClick={() => {
                         setFechaDesde('');
                         setFechaHasta('');
                         setOrden('recientes');
                     }}
-                    className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                    className="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600 transition"
                 >
                     Limpiar filtros
                 </button>

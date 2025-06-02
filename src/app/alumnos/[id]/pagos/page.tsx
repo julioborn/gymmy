@@ -269,29 +269,31 @@ export default function PagosPage() {
             </h2>
 
             {/* Filtros */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-4 justify-center">
-                <div>
-                    <label className="block text-gray-700 text-sm mb-1">Desde:</label>
-                    <input
-                        type="date"
-                        className="border rounded px-2 py-1"
-                        value={fechaDesde}
-                        onChange={(e) => setFechaDesde(e.target.value)}
-                    />
+            <div className="w-full max-w-sm mx-auto flex flex-col space-y-4 mb-6">
+                <div className='flex justify-between'>
+                    <div>
+                        <label className="block text-gray-700 font-semibold text-sm mb-1">Desde</label>
+                        <input
+                            type="date"
+                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            value={fechaDesde}
+                            onChange={(e) => setFechaDesde(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 font-semibold text-sm mb-1">Hasta</label>
+                        <input
+                            type="date"
+                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            value={fechaHasta}
+                            onChange={(e) => setFechaHasta(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div>
-                    <label className="block text-gray-700 text-sm mb-1">Hasta:</label>
-                    <input
-                        type="date"
-                        className="border rounded px-2 py-1"
-                        value={fechaHasta}
-                        onChange={(e) => setFechaHasta(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 text-sm mb-1">Año:</label>
+                    <label className="block text-gray-700 font-semibold text-sm mb-1">Año</label>
                     <select
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                         value={filtroAnio}
                         onChange={(e) => setFiltroAnio(e.target.value)}
                     >
@@ -302,9 +304,9 @@ export default function PagosPage() {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-gray-700 text-sm mb-1">Método:</label>
+                    <label className="block text-gray-700 font-semibold text-sm mb-1">Método</label>
                     <select
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                         value={filtroMetodo}
                         onChange={(e) => setFiltroMetodo(e.target.value)}
                     >
@@ -315,9 +317,9 @@ export default function PagosPage() {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-gray-700 text-sm mb-1">Orden:</label>
+                    <label className="block text-gray-700 font-semibold text-sm mb-1">Orden</label>
                     <select
-                        className="border rounded px-2 py-1"
+                        className="w-full border rounded px-3 py-2 bg-gray-200"
                         value={orden}
                         onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
                     >
@@ -327,8 +329,9 @@ export default function PagosPage() {
                 </div>
             </div>
 
+
             {/* Botón centrado */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-end mb-6">
                 <button
                     onClick={() => {
                         setFechaDesde('');
@@ -337,7 +340,7 @@ export default function PagosPage() {
                         setFiltroMetodo('Todos');
                         setOrden('recientes');
                     }}
-                    className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                    className="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600 transition"
                 >
                     Limpiar filtros
                 </button>

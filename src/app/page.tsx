@@ -48,13 +48,13 @@ export default function HomePage() {
           <div className="flex flex-col space-y-4 justify-center items-center">
             <Link
               href="/alumnos"
-              className="block px-8 py-4 w-3/4 bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300 text-center"
+              className="block px-8 py-4 w-full bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300 text-center"
             >
               Lista de Alumnos
             </Link>
             <Link
               href="/alumnos/nuevo"
-              className="px-8 py-4 w-3/4 bg-indigo-600 text-white rounded-lg text-md font-semibold hover:bg-indigo-500 transition duration-300"
+              className="px-8 py-4 w-full bg-indigo-600 text-white rounded-lg text-md font-semibold hover:bg-indigo-500 transition duration-300"
             >
               Registrar Alumno
             </Link>
@@ -62,13 +62,13 @@ export default function HomePage() {
               <>
                 <Link
                   href="/alumnos/finanzas"
-                  className="px-8 py-4 w-3/4 bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
+                  className="px-8 py-4 w-full bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
                 >
                   Finanzas
                 </Link>
                 <Link
                   href="/alumnos/estadisticas"
-                  className="px-8 py-4 w-3/4 bg-yellow-500 text-white rounded-lg text-md font-semibold hover:bg-yellow-400 transition duration-300"
+                  className="px-8 py-4 w-full bg-yellow-500 text-white rounded-lg text-md font-semibold hover:bg-yellow-400 transition duration-300"
                 >
                   Estadísticas
                 </Link>
@@ -78,7 +78,7 @@ export default function HomePage() {
         </div>
         <button
           onClick={() => signOut()}
-          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg text-md hover:bg-red-600 transition duration-300"
+          className="mt-4 px-6 py-3 w-3/4 bg-red-500 text-white font-semibold rounded-lg text-md hover:bg-red-600 transition duration-300"
         >
           Cerrar Sesión
         </button>
