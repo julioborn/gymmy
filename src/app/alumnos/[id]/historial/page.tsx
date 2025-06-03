@@ -420,6 +420,7 @@ export default function HistorialAlumnoPage() {
         ...alumno.pagos.map((pago) => ({
             title: `Pago ${pago.mes}`,   // Este es el título que se mostrará en la primera línea
             start: convertirAFechaLocal(pago.fechaPago),
+            allDay: false,
             display: 'block',
             color: '#28a745', // Verde para los pagos
             extendedProps: {
@@ -1163,7 +1164,7 @@ export default function HistorialAlumnoPage() {
                                             <strong>{pagoMes}</strong>
                                         </div>
                                         <div>
-                                            <strong className="text-white mr-1">${tarifa}</strong>
+                                            <strong className="text-green-700 mr-1">${tarifa}</strong>
                                         </div>
                                     </div>
                                 );

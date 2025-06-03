@@ -211,22 +211,22 @@ export default function AsistenciasPage() {
             </h2>
 
             {/* Filtros responsivos como en la imagen */}
-            <div className="w-full max-w-sm mx-auto flex flex-col space-y-4 mb-6">
+            <div className="w-full flex flex-col sm:flex-row sm:flex-wrap sm:gap-4 sm:items-end sm:justify-start mb-6 space-y-4 sm:space-y-0">
                 <div className='flex justify-between'>
                     <div>
-                        <label className="block text-gray-700 text-sm mb-1">Desde:</label>
+                        <label className="block text-gray-700 font-semibold text-sm mb-1">Desde</label>
                         <input
                             type="date"
-                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            className="w-full border rounded px-3 py-1 bg-gray-200"
                             value={fechaDesde}
                             onChange={(e) => setFechaDesde(e.target.value)}
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 text-sm mb-1">Hasta</label>
+                        <label className="block text-gray-700 font-semibold text-sm mb-1">Hasta</label>
                         <input
                             type="date"
-                            className="w-full border rounded px-3 py-2 bg-gray-200"
+                            className="w-full border rounded px-3 py-1 bg-gray-200"
                             value={fechaHasta}
                             onChange={(e) => setFechaHasta(e.target.value)}
                         />
@@ -239,7 +239,7 @@ export default function AsistenciasPage() {
                         value={filtroActividad}
                         onChange={(e) => setFiltroActividad(e.target.value)}
                     >
-                        <option value="Todas">Todas las Actividades</option>
+                        <option value="Todas">Todas</option>
                         <option value="Musculación">Musculación</option>
                         <option value="Intermitente">Intermitente</option>
                         <option value="Otro">Otro</option>
@@ -252,8 +252,8 @@ export default function AsistenciasPage() {
                         value={orden}
                         onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
                     >
-                        <option value="recientes">Más Recientes</option>
-                        <option value="antiguos">Más Antiguas</option>
+                        <option value="recientes">Más recientes</option>
+                        <option value="antiguos">Más antiguas</option>
                     </select>
                 </div>
             </div>
@@ -285,7 +285,7 @@ export default function AsistenciasPage() {
 
             {/* Lista de asistencias */}
             {asistenciasFiltradas.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                     {asistenciasFiltradas.map((asistencia: any, index: number) => (
                         <div
                             key={index}

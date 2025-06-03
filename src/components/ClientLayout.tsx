@@ -70,7 +70,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
     const menuLinks = (() => {
         console.log('Rol del usuario:', session?.user?.role); // Para depuración
-    
+
         if (session?.user?.role === 'dueño') {
             return menuItems; // El dueño ve todas las rutas
         } else if (session?.user?.role === 'profesor') {
@@ -80,9 +80,9 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         } else if (session?.user?.role === 'registro') {
             return []; // Los alumnos no ven ninguna ruta, solo "Cerrar Sesión"
         }
-    
+
         return []; // En caso de rol indefinido, no mostrar nada
-    })();        
+    })();
 
     useEffect(() => {
         const updateOnlineStatus = () => {
@@ -108,6 +108,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+
             {/* AppBar */}
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1f2937' }}>
                 <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

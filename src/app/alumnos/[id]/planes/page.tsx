@@ -72,14 +72,14 @@ export default function PlanesPage() {
             </h2>
 
             {/* Filtros */}
-            <div className="w-full max-w-sm mx-auto flex flex-col space-y-4 mb-6">
+            <div className="w-full flex flex-col sm:flex-row sm:flex-wrap sm:gap-4 sm:items-end sm:justify-start mb-6 space-y-4 sm:space-y-0">
                 <div>
                     <label className="block text-sm text-gray-700 font-semibold mb-1">Desde</label>
                     <input
                         type="date"
                         value={fechaDesde}
                         onChange={(e) => setFechaDesde(e.target.value)}
-                        className="w-full border rounded px-3 py-2 bg-gray-200"
+                        className="w-full border rounded px-3 py-1 bg-gray-200"
                     />
                 </div>
                 <div>
@@ -88,7 +88,7 @@ export default function PlanesPage() {
                         type="date"
                         value={fechaHasta}
                         onChange={(e) => setFechaHasta(e.target.value)}
-                        className="w-full border rounded px-3 py-2 bg-gray-200"
+                        className="w-full border rounded px-3 py-1 bg-gray-200"
                     />
                 </div>
                 <div>
@@ -98,8 +98,8 @@ export default function PlanesPage() {
                         onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
                         className="w-full border rounded px-3 py-2 bg-gray-200"
                     >
-                        <option value="recientes">Más Recientes</option>
-                        <option value="antiguos">Más Antiguos</option>
+                        <option value="recientes">Más recientes</option>
+                        <option value="antiguos">Más antiguos</option>
                     </select>
                 </div>
             </div>
@@ -120,7 +120,7 @@ export default function PlanesPage() {
 
             {/* Lista de planes */}
             {historialFiltrado.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                     {historialFiltrado.map((plan: any, index: number) => (
                         <div
                             key={plan._id || index}
