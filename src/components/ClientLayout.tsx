@@ -212,7 +212,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         {menuLinks.map((item) => (
                             <ListItem key={item.text} disablePadding>
                                 <ListItemButton component="a" href={item.href}>
-                                    <ListItemText primary={item.text} />
+                                    <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 600 }} />
                                 </ListItemButton>
                             </ListItem>
                         ))}
@@ -228,7 +228,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                     '&:hover': { backgroundColor: '#ffe5e5' },
                                 }}
                             >
-                                <ListItemText primary="Cerrar Sesión" />
+                                <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 600 }} />
                             </ListItemButton>
                         </ListItem>
                     </List>
