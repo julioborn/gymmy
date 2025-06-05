@@ -374,7 +374,7 @@ export default function PagosPage() {
                                     <>
                                         <p><strong>Recargo:</strong> ${pago.recargo}</p>
                                         <p><strong>Total con recargo:</strong> ${pago.tarifa}</p>
-                                    </>
+                                    </>     
                                 ) : null}
                             </div>
 
