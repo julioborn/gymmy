@@ -40,21 +40,21 @@ export default function HomePage() {
   return (
     <div className="flex justify-center items-center mt-10">
       <div className="bg-white p-10 rounded-lg shadow-lg text-center max-w-lg w-full">
-        <h1 className="text-4xl font-semibold text-gray-800 mb-6">
-          Bienvenido {session.user?.username ? capitalizeFirstLetter(session.user.username) : "Usuario"}
+        <h1 className="text-4xl font-semibold text-gray-800 mb-2">
+          Hola, {session.user?.username ? capitalizeFirstLetter(session.user.username) : "Usuario"}
         </h1>
-        <p className="text-gray-600 mb-6">Selecciona una opción:</p>
+        <p className="text-gray-600 mb-4">Selecciona una opción</p>
         <div className="flex flex-col space-y-4 pb-4 border-b border-b-slate-300">
           <div className="flex flex-col space-y-4 justify-center items-center">
             <Link
               href="/alumnos"
-              className="block px-8 py-4 w-full bg-green-600 text-white rounded-lg text-md font-semibold hover:bg-green-500 transition duration-300 text-center"
+              className="block px-8 py-4 w-full bg-gray-700 text-white rounded-lg text-md font-semibold hover:bg-gray-600 transition duration-300 text-center"
             >
               Lista de Alumnos
             </Link>
             <Link
               href="/alumnos/nuevo"
-              className="px-8 py-4 w-full bg-indigo-600 text-white rounded-lg text-md font-semibold hover:bg-indigo-500 transition duration-300"
+              className="px-8 py-4 w-full bg-gray-700 text-white rounded-lg text-md font-semibold hover:bg-gray-600 transition duration-300"
             >
               Registrar Alumno
             </Link>
@@ -62,13 +62,13 @@ export default function HomePage() {
               <>
                 <Link
                   href="/alumnos/finanzas"
-                  className="px-8 py-4 w-full bg-orange-500 text-white rounded-lg text-md font-semibold hover:bg-orange-400 transition duration-300"
+                  className="px-8 py-4 w-full bg-gray-700 text-white rounded-lg text-md font-semibold hover:bg-gray-800 transition duration-300"
                 >
                   Finanzas
                 </Link>
                 <Link
                   href="/alumnos/estadisticas"
-                  className="px-8 py-4 w-full bg-yellow-500 text-white rounded-lg text-md font-semibold hover:bg-yellow-400 transition duration-300"
+                  className="px-8 py-4 w-full bg-gray-700 text-white rounded-lg text-md font-semibold hover:bg-gray-600 transition duration-300"
                 >
                   Estadísticas
                 </Link>
