@@ -20,6 +20,16 @@ import {
     CssBaseline,
     ThemeProvider,
 } from '@mui/material';
+import {
+    Home as HomeIcon,
+    People as PeopleIcon,
+    PersonAdd as PersonAddIcon,
+    MonetizationOn as FinanceIcon,
+    BarChart as StatsIcon,
+    ExitToApp as LogoutIcon,
+    MonetizationOn,
+} from '@mui/icons-material';
+
 import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
 
 interface ClientLayoutProps {
@@ -200,35 +210,74 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 onClose={toggleMenu}
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: 240,
-                        boxSizing: 'border-box',
+                        width: 260,
                         mt: 9,
-                        backgroundColor: '#dcdcdc',
+                        boxSizing: 'border-box',
+                        backgroundColor: '#f8fafc',
+                        borderRight: '1px solid #e5e7eb',
                     },
                 }}
             >
                 <Box role="presentation" onClick={toggleMenu} onKeyDown={toggleMenu}>
                     <List>
-                        {menuLinks.map((item) => (
-                            <ListItem key={item.text} disablePadding>
-                                <ListItemButton component="a" href={item.href}>
-                                    <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 600 }} />
-                                </ListItemButton>
-                            </ListItem>
-                        ))}
+                        {menuLinks.map((item) => {
+                            const icon =
+                                item.text === 'Inicio' ? <HomeIcon sx={{ mr: 1 }} /> :
+                                    item.text === 'Lista de Alumnos' ? <PeopleIcon sx={{ mr: 1 }} /> :
+                                        item.text === 'Registrar Alumno' ? <PersonAddIcon sx={{ mr: 1 }} /> :
+                                            item.text === 'Finanzas' ? <MonetizationOn sx={{ mr: 1 }} /> :
+                                                item.text === 'Estadísticas' ? <StatsIcon sx={{ mr: 1 }} /> :
+                                                    null;
+
+                            return (
+                                <ListItem key={item.text} disablePadding>
+                                    <ListItemButton
+                                        component="a"
+                                        href={item.href}
+                                        sx={{
+                                            px: 3,
+                                            py: 1.5,
+                                            mx: 1,
+                                            borderRadius: 2,
+                                            '&:hover': {
+                                                backgroundColor: '#e2e8f0',
+                                            },
+                                        }}
+                                    >
+                                        {icon}
+                                        <ListItemText
+                                            primary={item.text}
+                                            primaryTypographyProps={{ fontWeight: 600 }}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            );
+                        })}
                     </List>
-                    <Divider />
+
+                    <Divider sx={{ my: 1 }} />
+
                     {/* Cerrar sesión */}
                     <List>
                         <ListItem disablePadding>
                             <ListItemButton
                                 onClick={() => signOut()}
                                 sx={{
-                                    color: 'red',
-                                    '&:hover': { backgroundColor: '#ffe5e5' },
+                                    px: 3,
+                                    py: 1.5,
+                                    mx: 1,
+                                    borderRadius: 2,
+                                    color: '#dc2626',
+                                    '&:hover': {
+                                        backgroundColor: '#fee2e2',
+                                    },
                                 }}
                             >
-                                <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 600 }} />
+                                <LogoutIcon sx={{ mr: 1 }} />
+                                <ListItemText
+                                    primary="Cerrar Sesión"
+                                    primaryTypographyProps={{ fontWeight: 600 }}
+                                />
                             </ListItemButton>
                         </ListItem>
                     </List>
