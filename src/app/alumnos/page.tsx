@@ -895,11 +895,11 @@ export default function ListaAlumnosPage() {
                 isOpen={!!alumnoSeleccionado}
                 onRequestClose={() => setAlumnoSeleccionado(null)}
                 contentLabel="Detalle del Alumno"
-                className="relative w-full max-w-4xl mx-auto mt-20 p-8"
+                className="relative w-full max-w-4xl mx-auto mt-20 p-8 outline-none"
                 overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
             >
                 {alumnoSeleccionado && (
-                    <div className="relative max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-6 border border-gray-200">
+                    <div className="relative max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-6 border border-gray-200 outline-none focus:outline-none">
                         {/* Botón de cierre "X" */}
                         <button
                             onClick={() => setAlumnoSeleccionado(null)}

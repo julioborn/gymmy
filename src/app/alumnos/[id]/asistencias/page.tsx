@@ -213,23 +213,25 @@ export default function AsistenciasPage() {
             {/* Filtros responsivos como en la imagen */}
             <div className="w-full flex flex-col sm:flex-row sm:flex-wrap sm:gap-4 sm:items-end sm:justify-start mb-6 space-y-4 sm:space-y-0">
                 <div className='flex justify-between'>
-                    <div>
-                        <label className="block text-gray-700 font-semibold text-sm mb-1">Desde</label>
-                        <input
-                            type="date"
-                            className="w-full border rounded px-3 py-1 bg-gray-200"
-                            value={fechaDesde}
-                            onChange={(e) => setFechaDesde(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-semibold text-sm mb-1">Hasta</label>
-                        <input
-                            type="date"
-                            className="w-full border rounded px-3 py-1 bg-gray-200"
-                            value={fechaHasta}
-                            onChange={(e) => setFechaHasta(e.target.value)}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-2 w-full">
+                        <div className="flex-1">
+                            <label className="block text-gray-700 text-sm font-semibold mb-1">Desde</label>
+                            <input
+                                type="date"
+                                className="w-full border rounded px-3 py-1 bg-gray-200 text-gray-800"
+                                value={fechaDesde}
+                                onChange={(e) => setFechaDesde(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-gray-700 text-sm font-semibold mb-1">Hasta</label>
+                            <input
+                                type="date"
+                                className="w-full border rounded px-3 py-1 bg-gray-200 text-gray-800"
+                                value={fechaHasta}
+                                onChange={(e) => setFechaHasta(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -295,11 +297,13 @@ export default function AsistenciasPage() {
                             <div className="space-y-1">
                                 <p>
                                     <strong>Fecha:</strong>{' '}
-                                    {new Date(asistencia.fecha).toLocaleDateString('es-ES', {
-                                        day: '2-digit',
-                                        month: 'long',
-                                        year: 'numeric',
-                                    })}
+                                    {(() => {
+                                        const fecha = new Date(asistencia.fecha);
+                                        const dia = String(fecha.getDate()).padStart(2, '0');
+                                        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                                        const anio = fecha.getFullYear();
+                                        return `${dia}/${mes}/${anio}`;
+                                    })()}
                                 </p>
                                 <p>
                                     <strong>Hora:</strong>{' '}
