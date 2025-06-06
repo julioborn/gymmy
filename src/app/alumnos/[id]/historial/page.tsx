@@ -1088,13 +1088,13 @@ export default function HistorialAlumnoPage() {
 
                     <div className="flex flex-col sm:flex-row gap-2 justify-center mb-4 items-center">
                         <Link href={`/alumnos/${id}/asistencias`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Asistencias</button>
+                            <button className="w-full sm:w-auto bg-gray-700 text-white px-4 py-2 rounded font-semibold hover:bg-gray-800">Asistencias</button>
                         </Link>
                         <Link href={`/alumnos/${id}/planes`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800">Planes</button>
+                            <button className="w-full sm:w-auto bg-red-700 text-white px-4 py-2 rounded font-semibold hover:bg-red-800">Planes</button>
                         </Link>
                         <Link href={`/alumnos/${id}/pagos`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">Pagos</button>
+                            <button className="w-full sm:w-auto bg-green-700 text-white px-4 py-2 rounded font-semibold hover:bg-green-800">Pagos</button>
                         </Link>
                     </div>
 
