@@ -4,134 +4,100 @@ import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import {
-    Drawer,
-    AppBar,
-    Toolbar,
-    IconButton,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
-    Divider,
-    Box,
-    CircularProgress,
-    Typography,
-    createTheme,
-    CssBaseline,
-    ThemeProvider,
+    Drawer, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton,
+    ListItemText, Divider, Box, CircularProgress, Typography,
+    createTheme, CssBaseline, ThemeProvider,
 } from '@mui/material';
 import {
-    Home as HomeIcon,
-    People as PeopleIcon,
-    PersonAdd as PersonAddIcon,
-    MonetizationOn as FinanceIcon,
-    BarChart as StatsIcon,
-    ExitToApp as LogoutIcon,
-    MonetizationOn,
+    Home as HomeIcon, People as PeopleIcon, PersonAdd as PersonAddIcon,
+    MonetizationOn, BarChart as StatsIcon, ExitToApp as LogoutIcon,
+    Menu as MenuIcon, Close as CloseIcon,
 } from '@mui/icons-material';
 
-import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
+interface ClientLayoutProps { children: React.ReactNode; }
 
-interface ClientLayoutProps {
-    children: React.ReactNode;
-}
-
-// Define el tema de Material-UI
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#111827', // Tu color primario
-        },
-        secondary: {
-            main: '#d32f2f', // Opcional: color secundario
-        },
-    },
-});
+const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
     return (
         <SessionProvider>
             <ThemeProvider theme={theme}>
-                <CssBaseline /> {/* Resetea el estilo base */}
+                <CssBaseline />
                 <LayoutWithSession>{children}</LayoutWithSession>
             </ThemeProvider>
         </SessionProvider>
     );
 }
 
+const menuItems = [
+    { text: 'Inicio',            href: '/',                    icon: <HomeIcon /> },
+    { text: 'Lista de Alumnos',  href: '/alumnos',             icon: <PeopleIcon /> },
+    { text: 'Registrar Alumno',  href: '/alumnos/nuevo',       icon: <PersonAddIcon /> },
+    { text: 'Finanzas',          href: '/alumnos/finanzas',    icon: <MonetizationOn /> },
+    { text: 'Estadísticas',      href: '/alumnos/estadisticas',icon: <StatsIcon /> },
+];
+
 function LayoutWithSession({ children }: ClientLayoutProps) {
     const { data: session } = useSession();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isOnline, setIsOnline] = useState(true); // Estado de conexión
-    const [reconnecting, setReconnecting] = useState(false); // Estado de reconexión
-    const [backOnlineMessage, setBackOnlineMessage] = useState(false); // Mostrar mensaje "De vuelta en línea"
-    const pathname = usePathname(); // Obtener la ruta actual
+    const [isOnline, setIsOnline] = useState(true);
+    const [backOnlineMessage, setBackOnlineMessage] = useState(false);
+    const pathname = usePathname();
 
-    const toggleMenu = () => setMenuOpen(!menuOpen);
-
-    const menuItems = [
-        { text: 'Inicio', href: '/' },
-        { text: 'Lista de Alumnos', href: '/alumnos' },
-        { text: 'Registrar Alumno', href: '/alumnos/nuevo' },
-        { text: 'Finanzas', href: '/alumnos/finanzas' },
-        { text: 'Estadísticas', href: '/alumnos/estadisticas' },
-        // { text: 'DNI', href: '/alumnos/dni' },
-    ];
+    const toggleMenu = () => setMenuOpen((v) => !v);
 
     const menuLinks = (() => {
-        console.log('Rol del usuario:', session?.user?.role); // Para depuración
-
-        if (session?.user?.role === 'dueño') {
-            return menuItems; // El dueño ve todas las rutas
-        } else if (session?.user?.role === 'profesor') {
-            return menuItems.filter(
-                (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
-            ); // El profesor no ve Finanzas ni Estadísticas
-        } else if (session?.user?.role === 'registro') {
-            return []; // Los alumnos no ven ninguna ruta, solo "Cerrar Sesión"
-        }
-
-        return []; // En caso de rol indefinido, no mostrar nada
+        if (session?.user?.role === 'dueño') return menuItems;
+        if (session?.user?.role === 'profesor') return menuItems.filter(
+            (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
+        );
+        return [];
     })();
 
     useEffect(() => {
-        const updateOnlineStatus = () => {
+        const update = () => {
             if (navigator.onLine) {
                 setIsOnline(true);
-                setReconnecting(false);
                 setBackOnlineMessage(true);
-                setTimeout(() => setBackOnlineMessage(false), 3000); // Mostrar mensaje por 3 segundos
+                setTimeout(() => setBackOnlineMessage(false), 3000);
             } else {
                 setIsOnline(false);
-                setReconnecting(true);
             }
         };
-
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
-        return () => {
-            window.removeEventListener('online', updateOnlineStatus);
-            window.removeEventListener('offline', updateOnlineStatus);
-        };
+        window.addEventListener('online', update);
+        window.addEventListener('offline', update);
+        return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
     }, []);
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             {/* AppBar */}
-            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1f2937' }}>
+            <AppBar
+                position="fixed"
+                sx={{
+                    zIndex: (t) => t.zIndex.drawer + 1,
+                    backgroundColor: '#0f172a',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    boxShadow: '0 1px 12px rgba(0,0,0,0.4)',
+                }}
+            >
                 <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {/* Botón del menú */}
                     {pathname !== '/' && pathname !== '/login' ? (
-                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu} sx={{ mr: 2 }}>
+                        <IconButton
+                            edge="start"
+                            onClick={toggleMenu}
+                            sx={{
+                                color: '#94a3b8',
+                                '&:hover': { color: '#fff', backgroundColor: 'rgba(255,255,255,0.08)' },
+                                transition: 'all 0.2s',
+                            }}
+                        >
                             {menuOpen ? <CloseIcon /> : <MenuIcon />}
                         </IconButton>
                     ) : (
-                        <Box sx={{ width: 48 /* Espacio reservado para mantener alineación */ }} />
+                        <Box sx={{ width: 48 }} />
                     )}
 
-                    {/* Logo */}
                     <Box
                         component="img"
                         src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
@@ -141,65 +107,45 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                             position: 'absolute',
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            fontFamily: "'Hammersmith One', sans-serif",
-                            color: '#fff',
-                            pointerEvents: 'none', // Deshabilita la interacción del logo
+                            pointerEvents: 'none',
                         }}
                     />
 
-                    {/* Luz indicadora */}
-                    <Box
-                        sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            backgroundColor: isOnline ? 'green' : 'red',
-                            marginRight: 2,
-                        }}
-                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                            sx={{
+                                width: 9,
+                                height: 9,
+                                borderRadius: '50%',
+                                backgroundColor: isOnline ? '#10b981' : '#ef4444',
+                                boxShadow: isOnline ? '0 0 8px #10b981' : '0 0 8px #ef4444',
+                                transition: 'all 0.3s',
+                            }}
+                        />
+                    </Box>
                 </Toolbar>
             </AppBar>
 
-            {/* Mensaje de reconexión */}
+            {/* Offline overlay */}
             {!isOnline && pathname !== '/alumnos/dni' && (
-                <Box
-                    sx={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        zIndex: 9999,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        color: 'white',
-                        flexDirection: 'column',
-                    }}
-                >
-                    <CircularProgress sx={{ color: 'white', mb: 2 }} />
-                    <Typography variant="h6">Reconectando...</Typography>
+                <Box sx={{
+                    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)',
+                    zIndex: 9999, display: 'flex', flexDirection: 'column',
+                    justifyContent: 'center', alignItems: 'center', color: 'white',
+                }}>
+                    <CircularProgress sx={{ color: '#10b981', mb: 2 }} />
+                    <Typography variant="h6" fontWeight={600}>Reconectando...</Typography>
                 </Box>
             )}
 
-            {/* Mensaje "De vuelta en línea" */}
+            {/* Back-online toast */}
             {backOnlineMessage && pathname !== '/alumnos/dni' && (
-                <Box
-                    sx={{
-                        position: 'fixed',
-                        top: 20,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        backgroundColor: 'green',
-                        color: 'white',
-                        px: 3,
-                        py: 1,
-                        borderRadius: 5,
-                        zIndex: 1000,
-                    }}
-                >
-                    <Typography variant="body1">De vuelta en línea</Typography>
+                <Box sx={{
+                    position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: '#10b981', color: 'white', px: 3, py: 1,
+                    borderRadius: 3, zIndex: 1000, boxShadow: '0 4px 14px rgba(16,185,129,0.4)',
+                }}>
+                    <Typography variant="body2" fontWeight={700}>De vuelta en línea</Typography>
                 </Box>
             )}
 
@@ -211,43 +157,36 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 sx={{
                     '& .MuiDrawer-paper': {
                         width: 260,
-                        mt: 9,
+                        mt: '75px',
                         boxSizing: 'border-box',
-                        backgroundColor: '#f8fafc',
-                        borderRight: '1px solid #e5e7eb',
+                        backgroundColor: '#0f172a',
+                        borderRight: '1px solid rgba(255,255,255,0.06)',
                     },
                 }}
             >
-                <Box role="presentation" onClick={toggleMenu} onKeyDown={toggleMenu}>
-                    <List>
+                <Box role="presentation" onClick={toggleMenu} onKeyDown={toggleMenu} sx={{ pt: 1.5 }}>
+                    <List disablePadding>
                         {menuLinks.map((item) => {
-                            const icon =
-                                item.text === 'Inicio' ? <HomeIcon sx={{ mr: 1 }} /> :
-                                    item.text === 'Lista de Alumnos' ? <PeopleIcon sx={{ mr: 1 }} /> :
-                                        item.text === 'Registrar Alumno' ? <PersonAddIcon sx={{ mr: 1 }} /> :
-                                            item.text === 'Finanzas' ? <MonetizationOn sx={{ mr: 1 }} /> :
-                                                item.text === 'Estadísticas' ? <StatsIcon sx={{ mr: 1 }} /> :
-                                                    null;
-
+                            const isActive = pathname === item.href;
                             return (
-                                <ListItem key={item.text} disablePadding>
+                                <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                                     <ListItemButton
                                         component="a"
                                         href={item.href}
                                         sx={{
-                                            px: 3,
-                                            py: 1.5,
-                                            mx: 1,
-                                            borderRadius: 2,
-                                            '&:hover': {
-                                                backgroundColor: '#e2e8f0',
-                                            },
+                                            px: 2.5, py: 1.4, mx: 1, borderRadius: 2,
+                                            backgroundColor: isActive ? 'rgba(16,185,129,0.12)' : 'transparent',
+                                            color: isActive ? '#10b981' : '#94a3b8',
+                                            borderLeft: isActive ? '3px solid #10b981' : '3px solid transparent',
+                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.06)', color: '#e2e8f0' },
+                                            transition: 'all 0.15s',
+                                            display: 'flex', alignItems: 'center', gap: 1.5,
                                         }}
                                     >
-                                        {icon}
+                                        <Box sx={{ display: 'flex', fontSize: 20 }}>{item.icon}</Box>
                                         <ListItemText
                                             primary={item.text}
-                                            primaryTypographyProps={{ fontWeight: 600 }}
+                                            primaryTypographyProps={{ fontWeight: 600, fontSize: '0.875rem' }}
                                         />
                                     </ListItemButton>
                                 </ListItem>
@@ -255,28 +194,25 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         })}
                     </List>
 
-                    <Divider sx={{ my: 1 }} />
+                    <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.07)' }} />
 
-                    {/* Cerrar sesión */}
-                    <List>
+                    <List disablePadding>
                         <ListItem disablePadding>
                             <ListItemButton
                                 onClick={() => signOut()}
                                 sx={{
-                                    px: 3,
-                                    py: 1.5,
-                                    mx: 1,
-                                    borderRadius: 2,
-                                    color: '#dc2626',
-                                    '&:hover': {
-                                        backgroundColor: '#fee2e2',
-                                    },
+                                    px: 2.5, py: 1.4, mx: 1, borderRadius: 2,
+                                    color: '#f87171',
+                                    borderLeft: '3px solid transparent',
+                                    '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' },
+                                    transition: 'all 0.15s',
+                                    display: 'flex', alignItems: 'center', gap: 1.5,
                                 }}
                             >
-                                <LogoutIcon sx={{ mr: 1 }} />
+                                <LogoutIcon fontSize="small" />
                                 <ListItemText
                                     primary="Cerrar Sesión"
-                                    primaryTypographyProps={{ fontWeight: 600 }}
+                                    primaryTypographyProps={{ fontWeight: 600, fontSize: '0.875rem' }}
                                 />
                             </ListItemButton>
                         </ListItem>
@@ -284,8 +220,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 </Box>
             </Drawer>
 
-            {/* Main Content */}
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+            {/* Content */}
+            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: '75px' }}>
                 {children}
             </Box>
         </Box>

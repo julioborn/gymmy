@@ -36,12 +36,58 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 639px) {
+  /* Toolbar más compacto */
   .fc-toolbar-title {
-    font-size: 1.2rem; /* Ajusta el tamaño de la fuente del título */
-    white-space: nowrap; /* Evita que el título se corte o haga saltos de línea */
+    font-size: 1rem;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Si el título es muy largo, se cortará con "..." */
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
+  .fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+  }
+
+  .fc .fc-button {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .fc .fc-button-group .fc-button {
+    padding: 4px 7px !important;
+  }
+
+  /* Vista lista: más espacio y texto legible */
+  .fc-list-event-title {
+    font-size: 0.8rem;
+  }
+
+  .fc-list-day-text,
+  .fc-list-day-side-text {
+    font-size: 0.78rem;
+  }
+
+  /* Grid: celdas más chicas */
+  .fc-daygrid-day-number {
+    font-size: 0.72rem;
+    padding: 2px 4px;
+  }
+
+  .fc-col-header-cell-cushion {
+    font-size: 0.7rem;
+    padding: 2px 2px;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.65rem;
   }
 }
 
@@ -82,4 +128,224 @@ body {
 /* Oculta el punto de color predeterminado en la vista de lista */
 .fc-list-event-dot {
   display: none !important;
+}
+
+/* ═══════════════════════════════════════════
+   SweetAlert2 – Gymmy theme
+═══════════════════════════════════════════ */
+.swal-gymmy {
+  border-radius: 1rem !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  font-family: 'Trebuchet MS', Arial, sans-serif !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Título con header oscuro (modales de formulario) */
+.swal-gymmy .swal2-title {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: #f8fafc !important;
+  padding: 1rem 1.25rem !important;
+  margin: 0 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+  letter-spacing: 0.01em !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Modales de notificación (con ícono) */
+.swal-gymmy-notify .swal2-title {
+  background: transparent !important;
+  color: #1e293b !important;
+  padding: 1.25rem 1.5rem 0.25rem !important;
+  text-align: center !important;
+  font-size: 1.1rem !important;
+}
+
+.swal-gymmy .swal2-icon {
+  margin: 1.5rem auto 0 !important;
+  transform: scale(0.9) !important;
+}
+
+.swal-gymmy .swal2-html-container {
+  padding: 0.75rem 1.5rem 0 !important;
+  margin: 0 !important;
+  font-size: 0.9rem !important;
+  color: #475569 !important;
+  text-align: left !important;
+}
+
+.swal-gymmy-notify .swal2-html-container {
+  text-align: center !important;
+}
+
+/* Label del input nativo (inputLabel) */
+.swal-gymmy .swal2-input-label {
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-align: left !important;
+  margin: 0.875rem 1.5rem 0.2rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Todos los inputs – estilo base */
+.swal-gymmy .swal2-input,
+.swal-gymmy .swal2-textarea,
+.swal-gymmy .swal2-select {
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 0.6rem !important;
+  padding: 0.6rem 0.875rem !important;
+  font-size: 0.875rem !important;
+  width: calc(100% - 3rem) !important;
+  margin: 0.4rem 1.5rem !important;
+  box-shadow: none !important;
+  color: #1e293b !important;
+  background: #f8fafc !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.swal-gymmy .swal2-input:focus,
+.swal-gymmy .swal2-textarea:focus,
+.swal-gymmy .swal2-select:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+  outline: none !important;
+  background: #fff !important;
+}
+
+.swal-gymmy .swal2-textarea {
+  min-height: 78px !important;
+  resize: vertical !important;
+}
+
+/* Inputs dentro del html custom → full width */
+.swal-gymmy .swal2-html-container .swal2-input,
+.swal-gymmy .swal2-html-container .swal2-textarea,
+.swal-gymmy .swal2-html-container .swal2-select {
+  width: 100% !important;
+  margin: 0.25rem 0 0.5rem !important;
+}
+
+/* Mensaje de validación */
+.swal-gymmy .swal2-validation-message {
+  margin: 0.25rem 1.5rem 0.5rem !important;
+  padding: 0.5rem 0.875rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.8rem !important;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+  justify-content: flex-start !important;
+}
+
+/* Radio buttons */
+.swal-gymmy .swal2-radio {
+  flex-direction: column !important;
+  margin: 0.75rem 1.5rem !important;
+  align-items: flex-start !important;
+  gap: 0.4rem !important;
+}
+
+.swal-gymmy .swal2-radio label {
+  font-size: 0.9rem !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.35rem 0.75rem !important;
+  border-radius: 0.5rem !important;
+  width: 100% !important;
+  transition: background 0.15s !important;
+}
+
+.swal-gymmy .swal2-radio label:hover {
+  background: #f1f5f9 !important;
+}
+
+/* Fila de botones */
+.swal-gymmy .swal2-actions {
+  padding: 0.75rem 1.25rem 1.25rem !important;
+  margin-top: 0.5rem !important;
+  gap: 0.5rem !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+}
+
+.swal-gymmy-notify .swal2-actions {
+  justify-content: center !important;
+}
+
+/* ── Botones ── */
+.sg-btn {
+  padding: 0.55rem 1.5rem !important;
+  border-radius: 0.6rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background-color 0.15s ease !important;
+  line-height: 1.5 !important;
+}
+
+.sg-btn-confirm { background: #059669 !important; color: #fff !important; }
+.sg-btn-confirm:hover { background: #047857 !important; }
+
+.sg-btn-cancel { background: #f1f5f9 !important; color: #475569 !important; }
+.sg-btn-cancel:hover { background: #e2e8f0 !important; }
+
+.sg-btn-danger { background: #dc2626 !important; color: #fff !important; }
+.sg-btn-danger:hover { background: #b91c1c !important; }
+
+/* ── Helpers para HTML custom ── */
+.swal-form-body { padding: 0 0.25rem; }
+
+.swal-form-label {
+  display: block !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  margin: 0.75rem 0 0.2rem !important;
+}
+
+.swal-form-label:first-child { margin-top: 0 !important; }
+
+/* Grid de dos columnas */
+.swal-form-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0.5rem 0.75rem !important;
+  text-align: left !important;
+}
+
+.swal-form-grid .swal-form-label { margin-top: 0.75rem !important; }
+.swal-form-grid .swal-form-label:first-child { margin-top: 0 !important; }
+
+.swal-full-row { grid-column: 1 / -1 !important; }
+
+/* Mobile */
+@media (max-width: 520px) {
+  .swal-gymmy .swal2-actions {
+    flex-direction: column-reverse !important;
+    padding: 0.75rem 1rem 1rem !important;
+  }
+
+  .sg-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .swal-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .swal-full-row { grid-column: 1 !important; }
 }

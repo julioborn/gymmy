@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(git diff *)",
+      "Bash(npx tsc *)",
+      "Bash(npm uninstall *)",
+      "Bash(npx next *)"
+    ]
+  }
+}

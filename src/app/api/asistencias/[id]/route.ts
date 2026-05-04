@@ -1,9 +1,12 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
+import { requireAuth } from '@/lib/requireAuth';
 
-// Crear asistencia
 export async function POST(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const { id } = params;
@@ -19,7 +22,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
             alumno.asistencia = [];
         }
 
-        // Comparar solo la parte de la fecha (sin hora)
         const fechaAsistencia = new Date(fecha).toISOString().split('T')[0];
 
         const asistenciaExistente = alumno.asistencia.find(
@@ -33,10 +35,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
             return new Response('Asistencia ya registrada para esta actividad en el día', { status: 400 });
         }
 
-        // Agregar nueva asistencia
         alumno.asistencia.push({ fecha, presente, actividad });
 
-        // Reducir días restantes si es "Musculación" y está presente
         if (
             actividad === "Musculación" &&
             presente &&
@@ -53,13 +53,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
             );
 
             if (asistenciasValidas.length >= alumno.planEntrenamiento.duracion!) {
-                // Marcar como terminado
                 alumno.planEntrenamiento.terminado = true;
 
-                // Calcular fecha fin
                 const fechaFin = new Date(fecha);
 
-                // Calcular día más frecuente
                 const diasSemana = asistenciasValidas.map((a: { fecha: Date }) =>
                     new Date(a.fecha).getDay()
                 );
@@ -78,7 +75,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
                     .reduce((a, b) => (a[1] > b[1] ? a : b))[0];
                 const diaTexto = diasTexto[parseInt(diaMasFrecuente)];
 
-                // Agregar al historial
                 alumno.planEntrenamientoHistorial.push({
                     fechaInicio: fechaInicio,
                     fechaFin: fechaFin,
@@ -87,7 +83,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
                     horarioMasFrecuente: diaTexto,
                 });
 
-                // Enviar mail si tiene email
                 if (alumno.email) {
                     await enviarCorreoPlanTerminado(
                         alumno.email,
@@ -104,17 +99,16 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
         await alumno.save();
 
-
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error('Error registrando asistencia:', error);
+    } catch {
         return new Response('Error registrando asistencia', { status: 500 });
     }
 }
 
-// Editar asistencia - ajusta para recibir solo el id de la asistencia
-// Editar asistencia
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const { id } = params;
@@ -134,7 +128,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return new Response('Asistencia no encontrada', { status: 404 });
         }
 
-        // Comparar solo la parte de la fecha
         const nuevaFecha = new Date(fecha).toISOString().split('T')[0];
 
         const asistenciaDuplicada = alumno.asistencia.find(
@@ -148,20 +141,20 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return new Response('Ya existe una asistencia para esta actividad en esa fecha', { status: 400 });
         }
 
-        // Actualizar la asistencia
         asistencia.fecha = fecha;
         asistencia.actividad = actividad;
 
         await alumno.save();
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error('Error actualizando asistencia:', error);
+    } catch {
         return new Response('Error actualizando asistencia', { status: 500 });
     }
 }
 
-// Eliminar asistencia
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
     const { id } = params;
 
@@ -177,8 +170,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         }
 
         return new Response(JSON.stringify({ message: 'Asistencia eliminada correctamente' }), { status: 200 });
-    } catch (error) {
-        console.error("Error eliminando la actividad:", error);
+    } catch {
         return new Response(JSON.stringify({ error: 'Error al eliminar la asistencia' }), { status: 500 });
     }
 }

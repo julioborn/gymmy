@@ -1,10 +1,13 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import Recargo from '@/models/Recargo';
 import { enviarCorreoPagoCuota } from '@/utils/emailPagoCuota';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/requireAuth';
 
 export async function POST(request: NextRequest) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     try {
@@ -24,8 +27,6 @@ export async function POST(request: NextRequest) {
         }
 
         const fechaPago = new Date(nuevoPago.fechaPago);
-
-        // 🧠 usar directamente el recargo que viene del frontend:
         const montoRecargo = nuevoPago.recargo || 0;
         const tarifaFinal = nuevoPago.tarifa + montoRecargo;
 
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
                     pagos: {
                         ...nuevoPago,
                         fechaPago,
-                        tarifa: tarifaFinal,     // ya sumado el recargo
-                        recargo: montoRecargo,   // ✅ lo registrás correctamente
+                        tarifa: tarifaFinal,
+                        recargo: montoRecargo,
                     },
                 },
             },
@@ -59,13 +60,15 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(alumnoActualizado, { status: 200 });
 
-    } catch (error) {
-        console.error('Error al registrar el pago:', error);
+    } catch {
         return NextResponse.json({ message: 'Error interno al registrar el pago' }, { status: 500 });
     }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const { id } = params;
@@ -78,36 +81,31 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return new Response('Alumno no encontrado', { status: 404 });
         }
 
-        // Encontrar el pago a actualizar por su _id
         const pago = alumno.pagos.find((pago: { _id: string }) => pago._id.toString() === pagoId);
 
         if (!pago) {
             return new Response('Pago no encontrado', { status: 404 });
         }
 
-        // Actualizar la fecha de pago y el mes si se proporcionan
-        if (nuevaFechaPago) {
-            pago.fechaPago = nuevaFechaPago;
-        }
-
-        if (nuevoMes) {
-            pago.mes = nuevoMes;
-        }
+        if (nuevaFechaPago) pago.fechaPago = nuevaFechaPago;
+        if (nuevoMes) pago.mes = nuevoMes;
 
         await alumno.save();
 
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error('Error actualizando pago:', error);
+    } catch {
         return new Response('Error actualizando pago', { status: 500 });
     }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const { id } = params;
-    const { pagoId } = await request.json(); // Obtener el _id del pago a eliminar
+    const { pagoId } = await request.json();
 
     try {
         const alumno = await Alumno.findById(id);
@@ -116,14 +114,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             return new Response('Alumno no encontrado', { status: 404 });
         }
 
-        // Filtrar el pago para eliminarlo por su _id
         alumno.pagos = alumno.pagos.filter((pago: { _id: string }) => pago._id.toString() !== pagoId);
 
         await alumno.save();
 
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error('Error eliminando pago:', error);
+    } catch {
         return new Response('Error eliminando pago', { status: 500 });
     }
 }

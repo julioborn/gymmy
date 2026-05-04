@@ -1,7 +1,11 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import { requireAuth } from '@/lib/requireAuth';
 
 export async function DELETE(_: Request, { params }: { params: { id: string; planId: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const alumnoId = params.id;
@@ -21,8 +25,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string; pla
         await alumno.save();
 
         return new Response(JSON.stringify({ message: 'Plan eliminado correctamente' }), { status: 200 });
-    } catch (error) {
-        console.error('Error al eliminar el plan:', error);
+    } catch {
         return new Response(JSON.stringify({ error: 'Error al eliminar el plan' }), { status: 500 });
     }
 }

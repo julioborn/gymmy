@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useAlumno } from '@/hooks/useAlumno';
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 
 export default function PagosPage() {
     const { id } = useParams();
@@ -24,11 +25,9 @@ export default function PagosPage() {
                 if (data.ok) {
                     setTarifas(data.tarifas);
                     setRecargo(data.recargo || 0); // en caso de que venga
-                } else {
-                    console.error('Error al obtener tarifas:', data.error);
                 }
-            } catch (error) {
-                console.error('Error al obtener tarifas:', error);
+            } catch {
+                // silenced
             }
         };
 
@@ -80,6 +79,7 @@ export default function PagosPage() {
         }, {} as Record<string, string>);
 
         const { value: diasMusculacion } = await Swal.fire({
+            ...swalBase,
             title: 'Selecciona los días de musculación por semana',
             input: 'select',
             inputOptions: opcionesTarifas,
@@ -97,14 +97,15 @@ export default function PagosPage() {
 
         if (!tarifaSeleccionada) {
             Swal.fire({
+                ...swalNotify,
                 icon: 'error',
-                title: 'Error',
-                text: 'No se encontró una tarifa para los días seleccionados.',
+                title: 'No se encontró una tarifa para los días seleccionados.',
             });
             return;
         }
 
         const { value: metodoPago } = await Swal.fire({
+            ...swalBase,
             title: 'Selecciona el método de pago',
             input: 'radio',
             inputOptions: {
@@ -122,6 +123,7 @@ export default function PagosPage() {
         if (!metodoPago) return;
 
         const confirmacion = await Swal.fire({
+            ...swalBase,
             title: 'Confirmar cobro',
             html: `
             <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
@@ -171,10 +173,9 @@ export default function PagosPage() {
 
             if (!response.ok) throw new Error('Error al registrar el pago');
 
-            Swal.fire('Pago registrado correctamente', '', 'success').then(() => location.reload());
-        } catch (error) {
-            console.error('Error al registrar el pago:', error);
-            Swal.fire('Error', 'No se pudo registrar el pago', 'error');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago registrado correctamente' }).then(() => location.reload());
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar el pago' });
         }
     };
 
@@ -236,6 +237,7 @@ export default function PagosPage() {
 
     const handleEliminarPago = async (pagoId: string) => {
         const confirmacion = await Swal.fire({
+            ...swalDanger,
             title: '¿Eliminar este pago?',
             text: 'Esta acción no se puede deshacer.',
             icon: 'warning',
@@ -253,160 +255,88 @@ export default function PagosPage() {
 
             if (!res.ok) throw new Error('Error al eliminar el pago');
 
-            Swal.fire('Pago eliminado correctamente', '', 'success').then(() => location.reload());
-        } catch (error) {
-            console.error('Error al eliminar el pago:', error);
-            Swal.fire('Error', 'No se pudo eliminar el pago', 'error');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago eliminado correctamente' }).then(() => location.reload());
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el pago' });
         }
     };
 
+    const inputCls = "border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
+
     return (
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow-md border">
-            <h1 className="text-2xl font-semibold mb-4 text-gray-800 text-center">Historial de Pagos</h1>
+        <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-emerald-800 to-emerald-700 rounded-t-2xl px-6 py-5">
+                <h1 className="text-xl font-bold text-white">Historial de Pagos</h1>
+                <p className="text-emerald-200 text-sm mt-0.5">{alumno.nombre} {alumno.apellido}</p>
+            </div>
 
-            <h2 className="text-xl font-medium text-center text-gray-700 mb-6">
-                {alumno.nombre} {alumno.apellido}
-            </h2>
-
-            {/* Filtros */}
-            <div className="w-full flex flex-col sm:flex-row sm:flex-wrap sm:gap-4 sm:items-end sm:justify-start mb-6 space-y-4 sm:space-y-0">
-                <div className='flex justify-between'>
-                    <div className="flex flex-col sm:flex-row gap-2 w-full">
-                        <div className="flex-1">
-                            <label className="block text-gray-700 text-sm font-semibold mb-1">Desde</label>
-                            <input
-                                type="date"
-                                className="w-full border rounded px-3 py-2 bg-gray-200 text-gray-800"
-                                value={fechaDesde}
-                                onChange={(e) => setFechaDesde(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex-1">
-                            <label className="block text-gray-700 text-sm font-semibold mb-1">Hasta</label>
-                            <input
-                                type="date"
-                                className="w-full border rounded px-3 py-2 bg-gray-200 text-gray-800"
-                                value={fechaHasta}
-                                onChange={(e) => setFechaHasta(e.target.value)}
-                            />
-                        </div>
+            <div className="bg-white rounded-b-2xl shadow-xl p-5">
+                <div className="flex flex-wrap gap-3 mb-4">
+                    <div>
+                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
+                        <input type="date" className={inputCls} value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
+                        <input type="date" className={inputCls} value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-500 font-semibold mb-1">Año</label>
+                        <select className={inputCls} value={filtroAnio} onChange={(e) => setFiltroAnio(e.target.value)}>
+                            <option value="Todos">Todos</option>
+                            {aniosDisponibles.map((anio) => <option key={anio} value={anio}>{anio}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-500 font-semibold mb-1">Método</label>
+                        <select className={inputCls} value={filtroMetodo} onChange={(e) => setFiltroMetodo(e.target.value)}>
+                            <option value="Todos">Todos</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
+                        <select className={inputCls} value={orden} onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}>
+                            <option value="recientes">Más recientes</option>
+                            <option value="antiguos">Más antiguos</option>
+                        </select>
+                    </div>
+                    <div className="flex items-end gap-2">
+                        <button onClick={() => { setFechaDesde(''); setFechaHasta(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrden('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                            Limpiar
+                        </button>
+                        <button onClick={handleAgregarPago} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition">
+                            + Registrar
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold text-sm mb-1">Año</label>
-                    <select
-                        className="w-full border rounded px-3 py-2 bg-gray-200"
-                        value={filtroAnio}
-                        onChange={(e) => setFiltroAnio(e.target.value)}
-                    >
-                        <option value="Todos">Todos</option>
-                        {aniosDisponibles.map((anio) => (
-                            <option key={anio} value={anio}>{anio}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold text-sm mb-1">Método</label>
-                    <select
-                        className="w-full border rounded px-3 py-2 bg-gray-200"
-                        value={filtroMetodo}
-                        onChange={(e) => setFiltroMetodo(e.target.value)}
-                    >
-                        <option value="Todos">Todos</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-semibold text-sm mb-1">Orden</label>
-                    <select
-                        className="w-full border rounded px-3 py-2 bg-gray-200"
-                        value={orden}
-                        onChange={(e) => setOrden(e.target.value as 'recientes' | 'antiguos')}
-                    >
-                        <option value="recientes">Más recientes</option>
-                        <option value="antiguos">Más antiguos</option>
-                    </select>
-                </div>
-            </div>
 
-            {/* Botón centrado */}
-            <div className="flex justify-end mb-6">
-                <button
-                    onClick={() => {
-                        setFechaDesde('');
-                        setFechaHasta('');
-                        setFiltroAnio('Todos');
-                        setFiltroMetodo('Todos');
-                        setOrden('recientes');
-                    }}
-                    className="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600 transition"
-                >
-                    Limpiar filtros
-                </button>
-            </div>
-
-            {/* Botón registrar pago */}
-            <div className="flex justify-start mb-6">
-                <button
-                    onClick={handleAgregarPago}
-                    className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-                >
-                    Registrar pago
-                </button>
-            </div>
-
-            {/* Lista de pagos */}
-            {pagosFiltrados.length > 0 ? (
-                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                    {pagosFiltrados.map((pago: any, index: number) => (
-                        <div
-                            key={index}
-                            className="p-4 border rounded-md shadow-sm bg-gray-50 hover:bg-green-50 transition flex justify-between items-center"
-                        >
-                            <div className="space-y-1">
-                                <p><strong>Fecha de pago:</strong> {new Date(pago.fechaPago).toLocaleDateString('es-AR')}</p>
-                                <p><strong>Mes:</strong> {pago.mes}</p>
-                                <p><strong>Método:</strong> {pago.metodoPago}</p>
-                                <p><strong>Monto:</strong> ${pago.tarifa - (pago.recargo || 0)}</p>
-                                {pago.recargo ? (
-                                    <>
-                                        <p><strong>Recargo:</strong> ${pago.recargo}</p>
-                                        <p><strong>Total con recargo:</strong> ${pago.tarifa}</p>
-                                    </>     
-                                ) : null}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                {/* <button
-                                    onClick={() => handleEditarPago(pago)}
-                                    className="bg-yellow-500 text-white px-1.5 py-1.5 rounded"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="size-5" viewBox="0 0 20 20">
-                                        <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
-                                        <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
-                                    </svg>
-                                </button> */}
-                                <button
-                                    onClick={() => handleEliminarPago(pago._id)}
-                                    className="bg-red-600 text-white px-1.5 py-1.5 rounded"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="size-5" viewBox="0 0 20 20">
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
+                {pagosFiltrados.length > 0 ? (
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                        {pagosFiltrados.map((pago: any, index: number) => (
+                            <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition flex justify-between items-center gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-sm flex-1">
+                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fecha</p><p className="font-medium text-slate-800">{new Date(pago.fechaPago).toLocaleDateString('es-AR')}</p></div>
+                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Mes</p><p className="font-medium text-slate-800 capitalize">{pago.mes}</p></div>
+                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Método</p><p className="font-medium text-slate-800 capitalize">{pago.metodoPago || '-'}</p></div>
+                                    <div>
+                                        <p className="text-xs text-slate-400 font-semibold uppercase">Total</p>
+                                        <p className="font-bold text-emerald-600">${pago.tarifa}</p>
+                                        {pago.recargo ? <p className="text-xs text-slate-400">inc. ${pago.recargo} recargo</p> : null}
+                                    </div>
+                                </div>
+                                <button onClick={() => handleEliminarPago(pago._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex-shrink-0">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" /></svg>
                                 </button>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-gray-600 text-center">No hay pagos para los filtros aplicados.</p>
-            )}
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-slate-500 text-sm text-center py-8">No hay pagos para los filtros aplicados.</p>
+                )}
+            </div>
         </div>
     );
 }

@@ -8,17 +8,12 @@ const connectMongoDB = async () => {
         throw new Error("No se encontró el URI para MongoDB. Verifica tus variables de entorno.");
     }
 
-    // Evitar reconexiones múltiples
-    if (mongoose.connection.readyState === 1) {
-        console.log("Ya conectado a MongoDB");
-        return;
-    }
+    if (mongoose.connection.readyState === 1) return;
 
     try {
-        await mongoose.connect(uri); // Sin necesidad de opciones adicionales
-        console.log(`Conectado a MongoDB en: ${uri}`);
+        await mongoose.connect(uri);
     } catch (error) {
-        console.error("Error de conexión a MongoDB:", error);
+        throw error;
     }
 };
 

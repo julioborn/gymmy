@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import Swal from 'sweetalert2';
+import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -74,7 +75,7 @@ const ControlFinanciero = () => {
                 calcularIngresosPorMes(alumnos, selectedYear, selectedMonth);
                 calcularTopHorarios(data);
             })
-            .catch((error) => console.error('Error al cargar alumnos:', error));
+            .catch(() => { /* silenced */ });
     }, []);
 
     useEffect(() => {
@@ -194,8 +195,8 @@ const ControlFinanciero = () => {
                 })
                 .sort(ordenarPorFecha) // Aplica el ordenamiento antes de guardarlo en el estado
             );
-        } catch (error) {
-            console.error('Error al obtener los gastos:', error);
+        } catch {
+            // silenced
         }
     };
     useEffect(() => {
@@ -228,8 +229,8 @@ const ControlFinanciero = () => {
                 })
                     .sort(ordenarPorFecha) // Aplica el ordenamiento antes de guardarlo en el estado
             );
-        } catch (error) {
-            console.error('Error al obtener los ingresos adicionales:', error);
+        } catch {
+            // silenced
         }
     };
     useEffect(() => {
@@ -238,11 +239,17 @@ const ControlFinanciero = () => {
 
     const handleAgregarGasto = async () => {
         const { value: formData } = await Swal.fire({
+            ...swalBase,
             title: 'Registrar Gasto',
             html: `
-                <input type="date" id="fecha-gasto" class="swal2-input" placeholder="Fecha">
-                <input type="text" id="detalle-gasto" class="swal2-input" placeholder="Detalle">
-                <input type="number" id="importe-gasto" class="swal2-input" placeholder="Importe">
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha</label>
+                    <input type="date" id="fecha-gasto" class="swal2-input">
+                    <label class="swal-form-label">Detalle</label>
+                    <input type="text" id="detalle-gasto" class="swal2-input" placeholder="Descripción del gasto">
+                    <label class="swal-form-label">Importe ($)</label>
+                    <input type="number" id="importe-gasto" class="swal2-input" placeholder="0">
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -252,12 +259,10 @@ const ControlFinanciero = () => {
                 const fecha = ajustarFechaLocal((document.getElementById('fecha-gasto') as HTMLInputElement).value).toISOString();
                 const detalle = (document.getElementById('detalle-gasto') as HTMLInputElement).value;
                 const importe = Number((document.getElementById('importe-gasto') as HTMLInputElement).value);
-
                 if (!fecha || !detalle || importe <= 0) {
                     Swal.showValidationMessage('Todos los campos son obligatorios y el importe debe ser mayor a 0');
                     return null;
                 }
-
                 return { fecha, detalle, importe };
             },
         });
@@ -270,40 +275,44 @@ const ControlFinanciero = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
-
             if (response.ok) {
-                Swal.fire('Éxito', 'Gasto registrado correctamente', 'success');
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Gasto registrado correctamente' });
                 fetchGastos(selectedYear, selectedMonth);
             } else {
-                Swal.fire('Error', 'No se pudo registrar el gasto', 'error');
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar el gasto' });
             }
-        } catch (error) {
-            Swal.fire('Error', 'Hubo un problema al registrar el gasto', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Hubo un problema al registrar el gasto' });
         }
     };
 
     const handleEditarGasto = async (id: string, fechaActual: string, detalleActual: string, importeActual: number) => {
+        const fechaISO = new Date(fechaActual).toISOString().split('T')[0];
         const { value: formData } = await Swal.fire({
+            ...swalBase,
             title: 'Editar Gasto',
             html: `
-                <input type="date" id="fecha-gasto" class="swal2-input" value="${fechaActual}">
-                <input type="text" id="detalle-gasto" class="swal2-input" value="${detalleActual}">
-                <input type="number" id="importe-gasto" class="swal2-input" value="${importeActual}">
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha</label>
+                    <input type="date" id="fecha-gasto" class="swal2-input" value="${fechaISO}">
+                    <label class="swal-form-label">Detalle</label>
+                    <input type="text" id="detalle-gasto" class="swal2-input" value="${detalleActual}">
+                    <label class="swal-form-label">Importe ($)</label>
+                    <input type="number" id="importe-gasto" class="swal2-input" value="${importeActual}">
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Guardar Cambios',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
                 const fecha = ajustarFechaLocal((document.getElementById('fecha-gasto') as HTMLInputElement).value).toISOString();
                 const detalle = (document.getElementById('detalle-gasto') as HTMLInputElement).value;
                 const importe = Number((document.getElementById('importe-gasto') as HTMLInputElement).value);
-
                 if (!fecha || !detalle || importe <= 0) {
                     Swal.showValidationMessage('Todos los campos son obligatorios y el importe debe ser mayor a 0');
                     return null;
                 }
-
                 return { fecha, detalle, importe };
             },
         });
@@ -316,22 +325,21 @@ const ControlFinanciero = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, ...formData }),
             });
-
-            Swal.fire('Éxito', 'Gasto actualizado correctamente', 'success');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Gasto actualizado correctamente' });
             fetchGastos(selectedYear, selectedMonth);
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo actualizar el gasto', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el gasto' });
         }
     };
 
     const handleEliminarGasto = async (id: string) => {
-        console.log("Intentando eliminar gasto con ID:", id); // 👀 Verificar si el ID es correcto
         const confirm = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: 'Esta acción eliminará el gasto de forma permanente.',
+            ...swalDanger,
+            title: '¿Eliminar gasto?',
+            text: 'Esta acción no se puede deshacer.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
+            confirmButtonText: 'Eliminar',
             cancelButtonText: 'Cancelar',
         });
 
@@ -343,29 +351,31 @@ const ControlFinanciero = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id }),
             });
-
             const data = await response.json();
-            console.log("Respuesta de eliminación:", data); // 👀 Ver respuesta de la API
-
             if (response.ok) {
-                Swal.fire('Eliminado', 'El gasto ha sido eliminado', 'success');
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Gasto eliminado' });
                 fetchGastos(selectedYear, selectedMonth);
             } else {
-                Swal.fire('Error', data.error || 'No se pudo eliminar el gasto', 'error');
+                Swal.fire({ ...swalNotify, icon: 'error', title: data.error || 'No se pudo eliminar el gasto' });
             }
-        } catch (error) {
-            console.error("Error al eliminar el gasto:", error);
-            Swal.fire('Error', 'No se pudo eliminar el gasto', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el gasto' });
         }
     };
 
     const handleAgregarIngreso = async () => {
         const { value: formData } = await Swal.fire({
+            ...swalBase,
             title: 'Registrar Ingreso',
             html: `
-            <input type="date" id="fecha-ingreso" class="swal2-input" placeholder="Fecha">
-            <input type="text" id="detalle-ingreso" class="swal2-input" placeholder="Detalle">
-            <input type="number" id="importe-ingreso" class="swal2-input" placeholder="Importe">
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha</label>
+                    <input type="date" id="fecha-ingreso" class="swal2-input">
+                    <label class="swal-form-label">Detalle</label>
+                    <input type="text" id="detalle-ingreso" class="swal2-input" placeholder="Descripción del ingreso">
+                    <label class="swal-form-label">Importe ($)</label>
+                    <input type="number" id="importe-ingreso" class="swal2-input" placeholder="0">
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
@@ -390,27 +400,34 @@ const ControlFinanciero = () => {
                 body: JSON.stringify(formData),
             });
             if (response.ok) {
-                Swal.fire('Éxito', 'Ingreso registrado correctamente', 'success');
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Ingreso registrado correctamente' });
                 fetchIngresos(selectedYear, selectedMonth);
             } else {
-                Swal.fire('Error', 'No se pudo registrar el ingreso', 'error');
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar el ingreso' });
             }
-        } catch (error) {
-            Swal.fire('Error', 'Hubo un problema al registrar el ingreso', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Hubo un problema al registrar el ingreso' });
         }
     };
 
     const handleEditarIngreso = async (id: string, fechaActual: string, detalleActual: string, importeActual: number) => {
+        const fechaISO = new Date(fechaActual).toISOString().split('T')[0];
         const { value: formData } = await Swal.fire({
+            ...swalBase,
             title: 'Editar Ingreso',
             html: `
-            <input type="date" id="fecha-ingreso" class="swal2-input" value="${fechaActual}">
-            <input type="text" id="detalle-ingreso" class="swal2-input" value="${detalleActual}">
-            <input type="number" id="importe-ingreso" class="swal2-input" value="${importeActual}">
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha</label>
+                    <input type="date" id="fecha-ingreso" class="swal2-input" value="${fechaISO}">
+                    <label class="swal-form-label">Detalle</label>
+                    <input type="text" id="detalle-ingreso" class="swal2-input" value="${detalleActual}">
+                    <label class="swal-form-label">Importe ($)</label>
+                    <input type="number" id="importe-ingreso" class="swal2-input" value="${importeActual}">
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Guardar Cambios',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
                 const fecha = ajustarFechaLocal((document.getElementById('fecha-ingreso') as HTMLInputElement).value).toISOString();
@@ -430,20 +447,21 @@ const ControlFinanciero = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, ...formData }),
             });
-            Swal.fire('Éxito', 'Ingreso actualizado correctamente', 'success');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Ingreso actualizado correctamente' });
             fetchIngresos(selectedYear, selectedMonth);
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo actualizar el ingreso', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el ingreso' });
         }
     };
 
     const handleEliminarIngreso = async (id: string) => {
         const confirm = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: 'Esta acción eliminará el ingreso de forma permanente.',
+            ...swalDanger,
+            title: '¿Eliminar ingreso?',
+            text: 'Esta acción no se puede deshacer.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
+            confirmButtonText: 'Eliminar',
             cancelButtonText: 'Cancelar',
         });
         if (!confirm.isConfirmed) return;
@@ -453,10 +471,10 @@ const ControlFinanciero = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id }),
             });
-            Swal.fire('Eliminado', 'El ingreso ha sido eliminado', 'success');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Ingreso eliminado' });
             fetchIngresos(selectedYear, selectedMonth);
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo eliminar el ingreso', 'error');
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el ingreso' });
         }
     };
 
@@ -480,248 +498,163 @@ const ControlFinanciero = () => {
             ? ingresosMensualesCombinados.reduce((acc, val) => acc + val, 0)
             : ingresosMensualesCombinados[selectedMonth] || 0;
 
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const selectCls = "border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
+    const resultado = totalIngresosCombinados - totalGastos;
+
     return (
-        <div className="bg-white p-6 rounded shadow-md max-w-4xl mx-auto">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Control Financiero</h2>
+        <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
+                <h1 className="text-xl font-bold text-white">Control Financiero</h1>
+            </div>
 
-            <div className='flex space-x-2'>
-                <div className="mb-6">
-                    <select
-                        id="year-selector"
-                        className="border border-gray-300 px-3 py-2 bg-gray-50 p-4 rounded shadow cursor-pointer"
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(Number(e.target.value))}
-                    >
-                        {availableYears.map((year) => (
-                            <option key={year} value={year}>
-                                {year}
-                            </option>
-                        ))}
+            <div className="bg-white rounded-b-2xl shadow-xl p-6 space-y-6">
+                {/* Filtros */}
+                <div className="flex flex-wrap gap-3">
+                    <select className={selectCls} value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}>
+                        {availableYears.map((year) => <option key={year} value={year}>{year}</option>)}
+                    </select>
+                    <select className={selectCls} value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))}>
+                        <option value={-1}>Todos los meses</option>
+                        {meses.map((m, i) => <option key={i} value={i}>{m}</option>)}
                     </select>
                 </div>
 
-                <div className="mb-6">
-                    <select
-                        id="month-selector"
-                        className="border border-gray-300 px-3 py-2 bg-gray-50 p-4 rounded shadow cursor-pointer"
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                    >
-                        <option value={-1}>Todos</option>
-                        {[
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-                        ].map((month, index) => (
-                            <option key={index} value={index}>
-                                {month}
-                            </option>
-                        ))}
-                    </select>
+                {/* Resumen */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                        <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wide mb-1">Ingresos Totales</p>
+                        <p className="text-2xl font-bold text-emerald-700">${totalIngresosCombinados.toLocaleString('es-ES')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{selectedMonth === -1 ? selectedYear : `${meses[selectedMonth]} ${selectedYear}`}</p>
+                    </div>
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                        <p className="text-xs text-red-600 font-semibold uppercase tracking-wide mb-1">Gastos Totales</p>
+                        <p className="text-2xl font-bold text-red-700">${totalGastos.toLocaleString('es-ES')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{selectedMonth === -1 ? selectedYear : `${meses[selectedMonth]} ${selectedYear}`}</p>
+                    </div>
+                    <div className={`${resultado >= 0 ? 'bg-slate-50 border-slate-100' : 'bg-red-50 border-red-100'} border rounded-xl p-4`}>
+                        <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-1">Resultado Final</p>
+                        <p className={`text-2xl font-bold ${resultado >= 0 ? 'text-slate-800' : 'text-red-700'}`}>${resultado.toLocaleString('es-ES')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{selectedMonth === -1 ? selectedYear : `${meses[selectedMonth]} ${selectedYear}`}</p>
+                    </div>
                 </div>
 
-            </div>
-
-            {/* Sección de Ingresos Adicionales */}
-            <div className="mt-2 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-xl font-semibold text-blue-600 mb-4">Ingresos Adicionales</h3>
-                <p className="text-lg font-medium mb-4 text-gray-700">
-                    Total de Ingresos Adicionales: <span className="text-blue-600 font-bold">${totalIngresosAdicionales.toLocaleString('es-ES')}</span>
-                </p>
-                <button
-                    onClick={handleAgregarIngreso}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    Agregar Ingreso
-                </button>
-                <div className="mt-4 overflow-auto max-h-60 border rounded p-2 bg-white">
-                    {ingresosAdicionales.length > 0 ? (
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="p-2 text-left">Fecha</th>
-                                    <th className="p-2 text-left">Detalle</th>
-                                    <th className="p-2 text-right">Importe</th>
-                                    <th className="p-2 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {ingresosAdicionales.map((ingreso) => (
-                                    <tr key={ingreso._id} className="border-b"> {/* Cambia ingreso.id por ingreso._id */}
-                                        <td className="p-2">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
-                                        <td className="p-2">{ingreso.detalle}</td>
-                                        <td className="p-2 text-right text-blue-600 font-bold">
-                                            ${ingreso.importe.toLocaleString('es-ES')}
-                                        </td>
-                                        <td className="p-2 text-right">
-                                            <button
-                                                onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} // Cambia ingreso.id por ingreso._id
-                                                className="bg-yellow-500 text-white px-2 py-2 rounded hover:bg-yellow-600 mx-1"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleEliminarIngreso(ingreso._id)} // Cambia ingreso.id por ingreso._id
-                                                className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
-                                            >
-                                                <FaTrashAlt />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="text-gray-500">No hay ingresos registrados.</p>
-                    )}
+                {/* Ingresos Adicionales */}
+                <div className="border border-slate-100 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 px-4 py-3 flex items-center justify-between border-b border-slate-100">
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700">Ingresos Adicionales</h3>
+                            <p className="text-xs text-slate-500">Total: <span className="font-bold text-blue-600">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
+                        </div>
+                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition">
+                            + Agregar
+                        </button>
+                    </div>
+                    <div className="overflow-auto max-h-56">
+                        {ingresosAdicionales.length > 0 ? (
+                            <table className="w-full text-sm">
+                                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Fecha</th>
+                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Detalle</th>
+                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Importe</th>
+                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Acciones</th>
+                                </tr></thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {ingresosAdicionales.map((ingreso) => (
+                                        <tr key={ingreso._id} className="hover:bg-slate-50 transition">
+                                            <td className="px-4 py-2 text-slate-700">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
+                                            <td className="px-4 py-2 text-slate-700">{ingreso.detalle}</td>
+                                            <td className="px-4 py-2 text-right font-bold text-blue-600">${ingreso.importe.toLocaleString('es-ES')}</td>
+                                            <td className="px-4 py-2 text-right">
+                                                <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className="p-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition mr-1"><FaEdit /></button>
+                                                <button onClick={() => handleEliminarIngreso(ingreso._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition"><FaTrashAlt /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p className="text-slate-500 text-sm text-center py-6">No hay ingresos registrados.</p>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Sección de Gastos */}
-            <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-xl font-semibold text-red-600 mb-4">Gastos</h3>
-
-                <p className="text-lg font-medium mb-4 text-gray-700">
-                    Total de Gastos: <span className="text-red-600 font-bold">${totalGastos.toLocaleString('es-ES')}</span>
-                </p>
-
-                <button
-                    onClick={handleAgregarGasto}
-                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                >
-                    Agregar Gasto
-                </button>
-
-                <div className="mt-4 overflow-auto max-h-60 border rounded p-2 bg-white">
-                    {gastos.length > 0 ? (
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="p-2 text-left">Fecha</th>
-                                    <th className="p-2 text-left">Detalle</th>
-                                    <th className="p-2 text-right">Importe</th>
-                                    <th className="p-2 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {gastos.map((gasto) => (
-                                    <tr key={gasto._id} className="border-b">
-                                        <td className="p-2">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
-                                        <td className="p-2">{gasto.detalle}</td>
-                                        <td className="p-2 text-right text-red-600 font-bold">
-                                            ${gasto.importe.toLocaleString('es-ES')}
-                                        </td>
-                                        <td className="p-2 text-right">
-                                            <button
-                                                onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)}
-                                                className="bg-yellow-500 text-white px-2 py-2 rounded hover:bg-yellow-600 mx-1"
-                                            >
-                                                <FaEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleEliminarGasto(gasto._id)}
-                                                className="bg-red-500 text-white px-2 py-2 rounded hover:bg-red-600"
-                                            >
-                                                <FaTrashAlt />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="text-gray-500">No hay gastos registrados.</p>
-                    )}
+                {/* Gastos */}
+                <div className="border border-slate-100 rounded-xl overflow-hidden">
+                    <div className="bg-slate-50 px-4 py-3 flex items-center justify-between border-b border-slate-100">
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700">Gastos</h3>
+                            <p className="text-xs text-slate-500">Total: <span className="font-bold text-red-600">${totalGastos.toLocaleString('es-ES')}</span></p>
+                        </div>
+                        <button onClick={handleAgregarGasto} className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-semibold rounded-lg transition">
+                            + Agregar
+                        </button>
+                    </div>
+                    <div className="overflow-auto max-h-56">
+                        {gastos.length > 0 ? (
+                            <table className="w-full text-sm">
+                                <thead><tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Fecha</th>
+                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Detalle</th>
+                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Importe</th>
+                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Acciones</th>
+                                </tr></thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {gastos.map((gasto) => (
+                                        <tr key={gasto._id} className="hover:bg-slate-50 transition">
+                                            <td className="px-4 py-2 text-slate-700">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
+                                            <td className="px-4 py-2 text-slate-700">{gasto.detalle}</td>
+                                            <td className="px-4 py-2 text-right font-bold text-red-600">${gasto.importe.toLocaleString('es-ES')}</td>
+                                            <td className="px-4 py-2 text-right">
+                                                <button onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)} className="p-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition mr-1"><FaEdit /></button>
+                                                <button onClick={() => handleEliminarGasto(gasto._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition"><FaTrashAlt /></button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p className="text-slate-500 text-sm text-center py-6">No hay gastos registrados.</p>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Ingresos Totales (Combinados: pagos + ingresos adicionales) */}
-            <div className="mt-6 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    {selectedMonth === -1
-                        ? `Ingresos Totales - ${selectedYear}`
-                        : `Ingresos en ${[
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-                        ][selectedMonth]} ${selectedYear}`}
-                </h3>
-                <p className="text-gray-700">
-                    <span className="font-bold text-green-600">
-                        ${totalIngresosCombinados.toLocaleString('es-ES')}
-                    </span>
-                </p>
-            </div>
-
-            {/* Resultado Final */}
-            <div className="mt-6 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    {selectedMonth === -1
-                        ? `Resultado Final - ${selectedYear}`
-                        : `Resultado Final en ${[
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-                        ][selectedMonth]} ${selectedYear}`}
-                </h3>
-                <p className="text-gray-700">
-                    <span className={`font-bold ${totalIngresosCombinados - totalGastos >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${(totalIngresosCombinados - totalGastos).toLocaleString('es-ES')}
-                    </span>
-                </p>
-            </div>
-
-            {/* Gráfico de ingresos vs gastos */}
-            <div className="mt-8 bg-gray-50 p-4 rounded shadow border">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">Ingresos | Gastos - {selectedYear}</h3>
-                <Bar
-                    data={{
-                        labels: [
-                            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-                        ],
-                        datasets: [
-                            {
-                                label: `Ingresos (${selectedYear})`,
-                                data: ingresosPorMes.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
-                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                            },
-                            {
-                                label: `Gastos (${selectedYear})`,
-                                data: gastosMensuales.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
-                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 1,
-                            },
-                        ],
-                    }}
-                    options={{
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                            },
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Monto en $',
+                {/* Gráfico */}
+                <div className="border border-slate-100 rounded-xl p-4">
+                    <h3 className="text-sm font-bold text-slate-700 mb-4">Ingresos vs Gastos — {selectedYear}</h3>
+                    <Bar
+                        data={{
+                            labels: meses,
+                            datasets: [
+                                {
+                                    label: `Ingresos (${selectedYear})`,
+                                    data: ingresosPorMes.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
+                                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                                    borderColor: 'rgba(16, 185, 129, 1)',
+                                    borderWidth: 1,
                                 },
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Meses',
+                                {
+                                    label: `Gastos (${selectedYear})`,
+                                    data: gastosMensuales.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
+                                    backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                                    borderColor: 'rgba(239, 68, 68, 1)',
+                                    borderWidth: 1,
                                 },
+                            ],
+                        }}
+                        options={{
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true } },
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Monto en $' } },
+                                x: { title: { display: true, text: 'Meses' } },
                             },
-                        },
-                    }}
-                    style={{ maxHeight: '400px' }}
-                />
+                        }}
+                        style={{ maxHeight: '400px' }}
+                    />
+                </div>
             </div>
-
         </div>
     );
 };

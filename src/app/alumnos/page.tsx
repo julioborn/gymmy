@@ -7,6 +7,7 @@ import AlumnoActions from '@/components/AlumnoActions';
 import { Pagination } from '@mui/material';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
+import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -88,8 +89,8 @@ export default function ListaAlumnosPage() {
             });
 
             setAlumnos(alumnosConDatos); // No necesitas await aquí, el cálculo es síncrono
-        } catch (error) {
-            console.error('Error al obtener alumnos:', error);
+        } catch {
+            // silenced
         } finally {
             setIsLoading(false); // Finaliza la carga
         }
@@ -107,39 +108,31 @@ export default function ListaAlumnosPage() {
             // ✔️ si data viene como { ok: true, tarifas: [...], recargo: 1000 }
             if (data.ok && Array.isArray(data.tarifas)) {
                 setTarifas(data.tarifas);
-                setRecargo(data.recargo || 0); // si usás recargo
-            } else {
-                console.error('Formato inesperado de tarifas:', data);
+                setRecargo(data.recargo || 0);
             }
-        } catch (error) {
-            console.error("Error al obtener tarifas:", error);
+        } catch {
+            // silenced
         }
     };
 
     const handleConfiguracionTarifas = async () => {
         if (tarifas.length === 0) {
-            await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'Error', text: 'No se encontraron cuotas. Por favor, recarga la página.' });
             return;
         }
 
         const tarifaInputs = tarifas
-            .map(
-                (tarifa) => `
-                        <div style="display: flex; justify-content: center; margin-top: 4px; font-size: 16px;">
-                            <label for="tarifa-${tarifa.dias}" style="display: flex; justify-content: center; align-items: center; font-weight: bold; margin-top: 14px; ">
-                                Días ${tarifa.dias}:
-                            </label>
-                            <div style="display: flex; align-items: center;">
-                                <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}" style="width: 100%;" />
-                            </div>
-                        </div>
-                    `
-            )
-            .join('');
+            .map(tarifa => `
+                <div>
+                    <label class="swal-form-label">Días ${tarifa.dias} por semana</label>
+                    <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
+                </div>
+            `).join('');
 
         const result = await Swal.fire({
+            ...swalBase,
             title: 'Configurar Cuotas',
-            html: `<div>${tarifaInputs}</div>`,
+            html: `<div class="swal-form-body">${tarifaInputs}</div>`,
             focusConfirm: false,
             showCancelButton: true,
             preConfirm: () => {
@@ -151,11 +144,6 @@ export default function ListaAlumnosPage() {
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         const nuevasTarifas = result.value as Tarifa[] | undefined;
@@ -167,13 +155,13 @@ export default function ListaAlumnosPage() {
                     body: JSON.stringify(nuevasTarifas),
                 });
                 if (response.ok) {
-                    Swal.fire('Tarifas actualizadas', '', 'success');
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Tarifas actualizadas' });
                     setTarifas(nuevasTarifas);
                 } else {
-                    Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las tarifas' });
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las tarifas' });
             }
         }
     };
@@ -204,31 +192,20 @@ export default function ListaAlumnosPage() {
             );
             setEditandoAlumno(null);
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Alumno actualizado correctamente',
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno actualizado correctamente', showConfirmButton: false, timer: 1500 });
 
-        } catch (error) {
-            console.error('Error al guardar el alumno:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al actualizar el alumno',
-                text: 'Hubo un problema al guardar los cambios.',
-            });
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al actualizar el alumno', text: 'Hubo un problema al guardar los cambios.' });
         }
     };
 
     const eliminarAlumno = async (id: string) => {
         const result = await Swal.fire({
-            title: '¿Estás seguro de eliminar el alumno?',
-            text: "Esta acción no se puede deshacer",
+            ...swalDanger,
+            title: '¿Eliminar alumno?',
+            text: 'Esta acción no se puede deshacer',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Eliminar',
             cancelButtonText: 'Cancelar',
         });
@@ -250,20 +227,10 @@ export default function ListaAlumnosPage() {
                 const alumnoEliminado = await response.json();
                 setAlumnos((prevAlumnos) => prevAlumnos.filter((alumno) => alumno._id !== alumnoEliminado._id));
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Alumno eliminado correctamente',
-                    showConfirmButton: false,
-                    timer: 1500,
-                });
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno eliminado correctamente', showConfirmButton: false, timer: 1500 });
 
-            } catch (error) {
-                console.error('Error al eliminar alumno:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al eliminar el alumno',
-                    text: 'Hubo un problema al intentar eliminar el alumno.',
-                });
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar el alumno', text: 'Hubo un problema al intentar eliminar el alumno.' });
             }
         }
     };
@@ -279,18 +246,14 @@ export default function ListaAlumnosPage() {
         }, {} as Record<number, string>);
 
         const { value: diasMusculacion } = await Swal.fire({
-            title: 'Selecciona los días de musculación por semana',
+            ...swalBase,
+            title: 'Días de musculación por semana',
             input: 'select',
             inputOptions: opcionesTarifas,
             inputPlaceholder: 'Selecciona una opción',
             showCancelButton: true,
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         if (diasMusculacion) {
@@ -299,63 +262,51 @@ export default function ListaAlumnosPage() {
             );
 
             if (!tarifaSeleccionada) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se encontró una tarifa para los días seleccionados.',
-                });
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró una tarifa para los días seleccionados.' });
                 return;
             }
 
             const { value: metodoPago } = await Swal.fire({
-                title: 'Selecciona el método de pago',
+                ...swalBase,
+                title: 'Método de pago',
                 input: 'radio',
                 inputOptions: {
                     efectivo: 'Efectivo',
                     transferencia: 'Transferencia',
                 },
                 inputValidator: (value) => {
-                    if (!value) {
-                        return 'Debes seleccionar un método de pago';
-                    }
-                    return null; // Retorna null en lugar de undefined
+                    if (!value) return 'Debes seleccionar un método de pago';
+                    return null;
                 },
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                },
-                buttonsStyling: false
             });
 
             if (!metodoPago) return; // Cancelado
 
             const confirmacion = await Swal.fire({
+                ...swalBase,
                 title: 'Confirmar cobro',
                 html: `
-        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
-        <p>Precio: $${tarifaSeleccionada.valor}</p>
-        <div style="margin-top: 8px;">
-            <input type="checkbox" id="swal-aplicar-recargo" ${new Date().getDate() > 10 ? 'checked' : ''}>
-            <label for="swal-aplicar-recargo"> Aplicar recargo ($${recargo?.toFixed(2) || 0})</label>
-        </div>
-    `,
+                    <div class="swal-form-body">
+                        <p style="text-align:center;color:#475569;font-size:0.875rem;margin:0 0 0.75rem;">
+                            Días de musculación: <strong>${diasMusculacion}</strong><br>
+                            Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
+                            Precio: <strong>$${tarifaSeleccionada.valor}</strong>
+                        </p>
+                        <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
+                            <input type="checkbox" id="swal-aplicar-recargo" ${new Date().getDate() > 10 ? 'checked' : ''} style="width:16px;height:16px;accent-color:#059669;">
+                            Aplicar recargo ($${recargo?.toFixed(2) || 0})
+                        </label>
+                    </div>
+                `,
                 preConfirm: () => {
                     const checkbox = document.getElementById('swal-aplicar-recargo') as HTMLInputElement;
                     return { aplicarRecargo: checkbox?.checked ?? false };
                 },
-                icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Cobrar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    popup: 'custom-swal-popup',
-                },
-                buttonsStyling: false,
             });
 
             if (confirmacion.isConfirmed) {
@@ -390,15 +341,10 @@ export default function ListaAlumnosPage() {
                         throw new Error('Error al registrar el pago');
                     }
 
-                    Swal.fire('Pago registrado correctamente', '', 'success');
-                    fetchAlumnos(); // Refrescar la lista de alumnos
-                } catch (error) {
-                    console.error('Error al registrar el pago:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error al registrar el pago',
-                        text: 'Hubo un problema al registrar el pago.',
-                    });
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago registrado correctamente' });
+                    fetchAlumnos();
+                } catch {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar el pago', text: 'Hubo un problema al registrar el pago.' });
                 }
             }
 
@@ -415,45 +361,41 @@ export default function ListaAlumnosPage() {
 
             if (!response.ok) throw new Error('Error al actualizar tarifas');
 
-            Swal.fire('Tarifas actualizadas', '', 'success');
-            setTarifas(nuevasTarifas); // Actualiza el estado de tarifas
-            setEditandoTarifas(false); // Cierra el modal
-        } catch (error) {
-            Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Tarifas actualizadas' });
+            setTarifas(nuevasTarifas);
+            setEditandoTarifas(false);
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las tarifas' });
         }
     };
 
     const iniciarPlan = async (alumnoId: string) => {
         const { value: formValues } = await Swal.fire({
+            ...swalBase,
             title: 'Iniciar plan de entrenamiento',
             html: `
-            <input type="number" id="duracion" class="swal2-input" placeholder="Duración del plan">
-            <input type="date" id="fecha" class="swal2-input" style="width: 100%; max-width: 265px;" value="${new Date().toISOString().split('T')[0]}">
-        `,
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Duración (clases)</label>
+                    <input type="number" id="duracion" class="swal2-input" placeholder="Ej: 20">
+                    <label class="swal-form-label">Fecha de inicio</label>
+                    <input type="date" id="fecha" class="swal2-input" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+            `,
             showCancelButton: true,
             focusConfirm: false,
             preConfirm: () => {
                 const duracion = (document.getElementById('duracion') as HTMLInputElement).value;
                 const fecha = (document.getElementById('fecha') as HTMLInputElement).value;
-
                 if (!duracion || Number(duracion) <= 0) {
                     Swal.showValidationMessage('Debes ingresar una duración válida');
                 }
-
                 if (!fecha) {
                     Swal.showValidationMessage('Debes seleccionar una fecha de inicio');
                 }
-
                 return { duracion: Number(duracion), fechaInicio: fecha };
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                popup: 'custom-swal-popup',
-            },
-            buttonsStyling: false,
         });
 
         if (formValues) {
@@ -471,13 +413,13 @@ export default function ListaAlumnosPage() {
                 });
 
                 if (response.ok) {
-                    Swal.fire('Plan de entrenamiento iniciado', '', 'success');
-                    fetchAlumnos(); // Refrescar la lista de alumnos
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan de entrenamiento iniciado' });
+                    fetchAlumnos();
                 } else {
-                    Swal.fire('Error', 'No se pudo iniciar el plan de entrenamiento', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo iniciar el plan de entrenamiento' });
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al iniciar el plan', 'error');
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al iniciar el plan' });
             }
         }
     };
@@ -518,7 +460,7 @@ export default function ListaAlumnosPage() {
 
     const Loader = () => (
         <div className="flex justify-center items-center h-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-700"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-400"></div>
         </div>
     );
 
@@ -528,39 +470,33 @@ export default function ListaAlumnosPage() {
 
     const fetchRecargo = async () => {
         try {
-            const response = await fetch('/api/recargo'); // Endpoint de recargo
+            const response = await fetch('/api/recargo');
             const data = await response.json();
-            setRecargo(data.monto || 0); // Asigna el valor del recargo al estado
-        } catch (error) {
-            console.error('Error al obtener recargo:', error);
+            setRecargo(data.monto || 0);
+        } catch {
+            // silenced
         }
     };
 
     const handleConfiguracionRecargos = async () => {
         if (recargo === null) {
-            await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
             return;
         }
 
         const { value: nuevoMonto } = await Swal.fire({
+            ...swalBase,
             title: 'Configurar Recargo',
             input: 'number',
             inputLabel: 'Monto del recargo ($)',
             inputValue: recargo,
             showCancelButton: true,
             inputValidator: (value) => {
-                if (!value || Number(value) <= 0) {
-                    return 'El monto debe ser un número mayor a 0';
-                }
+                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
                 return null;
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         if (nuevoMonto && Number(nuevoMonto) !== recargo) {
@@ -572,13 +508,13 @@ export default function ListaAlumnosPage() {
                 });
 
                 if (response.ok) {
-                    Swal.fire('Recargo actualizado', '', 'success');
-                    setRecargo(Number(nuevoMonto)); // Actualiza el estado con el nuevo valor
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
+                    setRecargo(Number(nuevoMonto));
                 } else {
-                    Swal.fire('Error', 'No se pudo actualizar el recargo', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
             }
         }
     };
@@ -669,39 +605,66 @@ export default function ListaAlumnosPage() {
         setAlumnoSeleccionado(null); // Cerrar el modal para evitar solapamientos
 
         const { value: formValues } = await Swal.fire({
+            ...swalBase,
             title: 'Editar alumno',
             html: `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
-
-                    <input id="swal-nombre" class="swal2-input" placeholder="Nombre" value="${alumno.nombre || ''}">
-                    <input id="swal-apellido" class="swal2-input" placeholder="Apellido" value="${alumno.apellido || ''}">
-
-                    <input id="swal-dni" class="swal2-input" placeholder="DNI" value="${alumno.dni || ''}">
-                    <input id="swal-telefono" class="swal2-input" placeholder="Teléfono" value="${alumno.telefono || ''}">
-
-                    <input id="swal-email" class="swal2-input" placeholder="Email" value="${alumno.email || ''}">
-                    <select id="swal-horario" class="swal2-input">
-                        <option value="">Selecciona una franja</option>
-                        <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana</option>
-                        <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta</option>
-                        <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde</option>
-                    </select>
-
-                    <input id="swal-hora-exacta" class="swal2-input" type="time" placeholder="Hora exacta" value="${alumno.horaExactaEntrenamiento || ''}">
-
-                    <textarea id="swal-historial-deportivo" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial deportivo">${alumno.historialDeportivo || ''}</textarea>
-
-                    <textarea id="swal-historial-vida" class="swal2-textarea" style="grid-column: span 2;" placeholder="Historial de vida">${alumno.historialDeVida || ''}</textarea>
-
-                    <textarea id="swal-objetivos" class="swal2-textarea" style="grid-column: span 2;" placeholder="Objetivos">${alumno.objetivos || ''}</textarea>
-
-                    <textarea id="swal-patologias" class="swal2-textarea" style="grid-column: span 2;" placeholder="Patologías">${alumno.patologias || ''}</textarea>
+                <div class="swal-form-body swal-form-grid">
+                    <div>
+                        <label class="swal-form-label">Nombre</label>
+                        <input id="swal-nombre" class="swal2-input" value="${alumno.nombre || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Apellido</label>
+                        <input id="swal-apellido" class="swal2-input" value="${alumno.apellido || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">DNI</label>
+                        <input id="swal-dni" class="swal2-input" value="${alumno.dni || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Teléfono</label>
+                        <input id="swal-telefono" class="swal2-input" value="${alumno.telefono || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Email</label>
+                        <input id="swal-email" class="swal2-input" value="${alumno.email || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Franja horaria</label>
+                        <select id="swal-horario" class="swal2-select">
+                            <option value="">Selecciona una franja</option>
+                            <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana</option>
+                            <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta</option>
+                            <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Hora exacta</label>
+                        <input id="swal-hora-exacta" class="swal2-input" type="time" value="${alumno.horaExactaEntrenamiento || ''}">
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Historial deportivo</label>
+                        <textarea id="swal-historial-deportivo" class="swal2-textarea">${alumno.historialDeportivo || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Historial de vida</label>
+                        <textarea id="swal-historial-vida" class="swal2-textarea">${alumno.historialDeVida || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Objetivos</label>
+                        <textarea id="swal-objetivos" class="swal2-textarea">${alumno.objetivos || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Patologías</label>
+                        <textarea id="swal-patologias" class="swal2-textarea">${alumno.patologias || ''}</textarea>
+                    </div>
                 </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
+            width: '50rem',
             preConfirm: () => {
                 return {
                     nombre: (document.getElementById('swal-nombre') as HTMLInputElement).value,
@@ -717,13 +680,6 @@ export default function ListaAlumnosPage() {
                     patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
                 };
             },
-            customClass: {
-                popup: 'custom-swal-popup',
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
-            width: '50rem',
         });
 
         if (formValues) {
@@ -736,236 +692,272 @@ export default function ListaAlumnosPage() {
     }
 
     return (
-        <div className="w-full max-w-full lg:max-w-6xl mx-auto bg-white p-4 lg:p-8 rounded shadow-md">
-            <h1 className="text-xl lg:text-2xl font-semibold text-gray-800 mb-4 lg:mb-6">Lista de Alumnos</h1>
+        <div className="w-full max-w-full lg:max-w-6xl mx-auto">
 
-            {/* Filtros select */}
-            <Suspense fallback={<Loader />}>
-                <FiltrosAlumnos
-                    busqueda={busqueda}
-                    setBusqueda={setBusqueda}
-                    filtroPago={filtroPago}
-                    setFiltroPago={setFiltroPago}
-                    ordenDiasRestantes={ordenDiasRestantes}
-                    setOrdenDiasRestantes={setOrdenDiasRestantes}
-                    filtroDiasEntrena={filtroDiasEntrena}
-                    setFiltroDiasEntrena={setFiltroDiasEntrena}
-                    diasDisponibles={[...Array.from(new Set(alumnos.map((a) => a.diasEntrenaSemana)))].filter(Boolean).sort((a, b) => a - b)}
-                    limpiarFiltros={() => {
-                        setBusqueda('');
-                        setFiltroPago('');
-                        setOrdenDiasRestantes('');
-                        setFiltroDiasEntrena('');
-                    }}
-                />
-            </Suspense>
-
-            {/* Botones superiores */}
-            <div className='flex justify-between'>
-                <div className='flex'>
-                    {/* Botón de configuración de tarifas */}
-                    <div className="sm:block">
-                        <button
-                            className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                            onClick={handleConfiguracionTarifas}
-                        >
-                            <span className="text-white">Cuotas</span>
-                        </button>
-                    </div>
-
-                    {/* Botón de configuración de recargos */}
-                    <div className="sm:block">
-                        <button
-                            className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                            onClick={handleConfiguracionRecargos}
-                        >
-                            <span className="text-white">Recargo</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Botón para generar el balance */}
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-4 flex items-center justify-between">
+                <h1 className="text-xl font-bold text-white tracking-tight">Lista de Alumnos</h1>
                 {session?.user?.role === 'dueño' && (
-                    <div className="mb-4 flex justify-end">
-                        <button
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
-                            onClick={handleGenerateExcel}
-                        >
-                            <span className="mr-2">Balance</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 48 48">
-                                <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
-                                <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
-                                <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
-                                <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
-                                <g>
-                                    <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
-                                    <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
-                                    <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
-                                    <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
-                                </g>
-                                <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
-                                <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
-                            </svg>
-                        </button>
-                    </div>
+                    <button
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-200 shadow-md"
+                        onClick={handleGenerateExcel}
+                    >
+                        Balance
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="18" height="18" viewBox="0 0 48 48">
+                            <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
+                            <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
+                            <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
+                            <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
+                            <g>
+                                <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
+                                <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
+                                <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
+                                <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
+                            </g>
+                            <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
+                            <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
+                        </svg>
+                    </button>
                 )}
             </div>
 
-            {/* Tarjetas de alumnos */}
-            {isLoading ? ( // Si los datos están cargando, muestra el Loader
-                <Loader />
-            ) : (
-                <>
-                    <div className="overflow-x-auto rounded shadow mt-4">
-                        <table className="w-full text-sm text-left text-gray-700">
-                            <thead className="text-xs text-gray-100 uppercase bg-gray-700">
-                                <tr>
-                                    <th className="px-4 py-3">Apellido</th>
-                                    <th className="px-4 py-3">Nombre</th>
-                                    <th className="px-4 py-3">Edad</th>
-                                    {/* <th className="px-4 py-3">DNI</th> */}
-                                    <th className="px-4 py-3">Pago Mes</th>
-                                    <th className="px-4 py-3">Días Restantes Plan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {paginatedAlumnos.map((alumno) => (
-                                    <tr
-                                        key={alumno._id}
-                                        className="bg-white border-b hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => setAlumnoSeleccionado(alumno)}
+            {/* Body */}
+            <div className="bg-white rounded-b-2xl shadow-xl p-4 lg:p-6">
 
-                                    >
-                                        <td className="px-4 py-3 font-bold">{alumno.apellido}</td>
-                                        <td className="px-4 py-3 font-bold">{alumno.nombre}</td>
-                                        <td className="px-4 py-3">{alumno.edad ?? '-'}</td>
-                                        {/* <td className="px-4 py-3">{alumno.dni}</td> */}
-                                        <td className="px-4 py-3">{verificarPagoMesActual(alumno.pagos) ?
-                                            // <p className='text-green-700'>Si</p>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 text-green-500">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                                            </svg>
-                                            :
-                                            // <p className='text-red-700'>No</p>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 text-red-600">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" />
-                                            </svg>
-                                        }</td>
-                                        <td className="px-4 py-3">{alumno.diasRestantes ?? <p className='text-red-700'>Sin Plan</p>}</td>
+                {/* Filtros */}
+                <Suspense fallback={<Loader />}>
+                    <FiltrosAlumnos
+                        busqueda={busqueda}
+                        setBusqueda={setBusqueda}
+                        filtroPago={filtroPago}
+                        setFiltroPago={setFiltroPago}
+                        ordenDiasRestantes={ordenDiasRestantes}
+                        setOrdenDiasRestantes={setOrdenDiasRestantes}
+                        filtroDiasEntrena={filtroDiasEntrena}
+                        setFiltroDiasEntrena={setFiltroDiasEntrena}
+                        diasDisponibles={[...Array.from(new Set(alumnos.map((a) => a.diasEntrenaSemana)))].filter(Boolean).sort((a, b) => a - b)}
+                        limpiarFiltros={() => {
+                            setBusqueda('');
+                            setFiltroPago('');
+                            setOrdenDiasRestantes('');
+                            setFiltroDiasEntrena('');
+                        }}
+                    />
+                </Suspense>
+
+                {/* Config buttons */}
+                <div className="flex gap-2 mb-4">
+                    <button
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg border border-slate-200 transition-all duration-150"
+                        onClick={handleConfiguracionTarifas}
+                    >
+                        Cuotas
+                    </button>
+                    <button
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg border border-slate-200 transition-all duration-150"
+                        onClick={handleConfiguracionRecargos}
+                    >
+                        Recargo
+                    </button>
+                </div>
+
+                {/* Tabla */}
+                {isLoading ? (
+                    <Loader />
+                ) : (
+                    <>
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                            <table className="w-full text-sm text-left">
+                                <thead>
+                                    <tr className="bg-gradient-to-r from-slate-700 to-slate-600">
+                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Apellido</th>
+                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Nombre</th>
+                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Edad</th>
+                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Pago</th>
+                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Plan</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    {/* Componente de paginación */}
-                    <div className="flex justify-center mt-6">
-                        <Pagination
-                            count={Math.ceil(alumnos.length / itemsPerPage)} // Calcula el número total de páginas
-                            page={page}
-                            onChange={handlePageChange}
-                            color="primary"
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {paginatedAlumnos.map((alumno, idx) => {
+                                        const pagado = verificarPagoMesActual(alumno.pagos);
+                                        return (
+                                            <tr
+                                                key={alumno._id}
+                                                className={`cursor-pointer transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100`}
+                                                onClick={() => setAlumnoSeleccionado(alumno)}
+                                            >
+                                                <td className="px-4 py-3 font-semibold text-slate-800">{alumno.apellido}</td>
+                                                <td className="px-4 py-3 text-slate-700">{alumno.nombre}</td>
+                                                <td className="px-4 py-3 text-slate-500">{alumno.edad ?? '-'}</td>
+                                                <td className="px-4 py-3">
+                                                    {pagado ? (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                                                            </svg>
+                                                            Pagó
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+                                                            </svg>
+                                                            Debe
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {alumno.diasRestantes != null ? (
+                                                        <span className={`font-semibold text-sm ${alumno.diasRestantes === 0 ? 'text-red-600' : alumno.diasRestantes <= 5 ? 'text-amber-600' : 'text-slate-700'}`}>
+                                                            {alumno.diasRestantes} días
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs font-medium text-red-500">Sin plan</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex justify-center mt-5">
+                            <Pagination
+                                count={Math.ceil(alumnosFiltrados.length / itemsPerPage)}
+                                page={page}
+                                onChange={handlePageChange}
+                                color="primary"
+                            />
+                        </div>
+                    </>
+                )}
+
+                {editandoAlumno && (
+                    <Suspense fallback={<Loader />}>
+                        <ModalEditAlumno
+                            alumno={editandoAlumno}
+                            onClose={() => setEditandoAlumno(null)}
+                            onSave={guardarAlumno}
                         />
-                    </div>
-                </>
-            )}
+                    </Suspense>
+                )}
 
-            {/* Ventana modal para editar el alumno */}
-            {editandoAlumno && (
-                <Suspense fallback={<Loader />}>
-                    <ModalEditAlumno
-                        alumno={editandoAlumno}
-                        onClose={() => setEditandoAlumno(null)}
-                        onSave={guardarAlumno}
-                    />
-                </Suspense>
-            )}
+                {editandoTarifas && (
+                    <Suspense fallback={<Loader />}>
+                        <ModalEditTarifas
+                            tarifas={tarifas}
+                            onClose={() => setEditandoTarifas(false)}
+                            onSave={guardarTarifas}
+                        />
+                    </Suspense>
+                )}
+            </div>
 
-            {/* Ventana modal para editar las tarifas */}
-            {editandoTarifas && (
-                <Suspense fallback={<Loader />}>
-                    <ModalEditTarifas
-                        tarifas={tarifas}
-                        onClose={() => setEditandoTarifas(false)}
-                        onSave={guardarTarifas}
-                    />
-                </Suspense>
-            )}
-
+            {/* Modal detalle alumno */}
             <Modal
                 isOpen={!!alumnoSeleccionado}
                 onRequestClose={() => setAlumnoSeleccionado(null)}
                 contentLabel="Detalle del Alumno"
-                className="relative w-full max-w-4xl mx-auto mt-20 p-8 outline-none"
-                overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
+                className="relative w-full max-w-2xl mx-auto mt-16 outline-none"
+                overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-start z-50 px-4 overflow-y-auto"
             >
                 {alumnoSeleccionado && (
-                    <div className="relative max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-6 border border-gray-200 outline-none focus:outline-none">
-                        {/* Botón de cierre "X" */}
-                        <button
-                            onClick={() => setAlumnoSeleccionado(null)}
-                            className="absolute top-2 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold"
-                            aria-label="Cerrar"
-                        >
-                            ×
-                        </button>
-
-                        {/* Nombre */}
-                        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
-                            {alumnoSeleccionado.nombre} {alumnoSeleccionado.apellido}
-                        </h2>
-
-                        {/* Detalles */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-base text-gray-700 mb-6 leading-relaxed">
-                            <p><strong>DNI:</strong> {alumnoSeleccionado.dni}</p>
-                            <p><strong>Edad:</strong> {alumnoSeleccionado.edad ?? '-'}</p>
-                            <p><strong>Teléfono:</strong> {alumnoSeleccionado.telefono || '-'}</p>
-                            <p><strong>Email:</strong> {alumnoSeleccionado.email || '-'}</p>
-                            <p><strong>Fecha de inicio:</strong> {alumnoSeleccionado.fechaInicio ? new Date(alumnoSeleccionado.fechaInicio).toLocaleDateString() : '-'}</p>
-                            <p><strong>Franja horaria:</strong> {capitalizar(alumnoSeleccionado.horarioEntrenamiento)}</p>
-                            <p><strong>Hora de inicio:</strong> {alumnoSeleccionado.horaExactaEntrenamiento || '-'}</p>
-                            <p><strong>Historial deportivo:</strong> {alumnoSeleccionado.historialDeportivo || '-'}</p>
-                            <p><strong>Historial de vida:</strong> {alumnoSeleccionado.historialDeVida || '-'}</p>
-                            <p><strong>Objetivos:</strong> {alumnoSeleccionado.objetivos || '-'}</p>
-                            <p><strong>Patologías:</strong> {alumnoSeleccionado.patologias || '-'}</p>
+                    <div className="relative bg-white shadow-2xl rounded-2xl overflow-hidden outline-none">
+                        {/* Header del modal */}
+                        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5">
+                            <button
+                                onClick={() => setAlumnoSeleccionado(null)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                                aria-label="Cerrar"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <h2 className="text-xl font-bold text-white">
+                                {alumnoSeleccionado.nombre} {alumnoSeleccionado.apellido}
+                            </h2>
+                            <div className="mt-1">
+                                {verificarPagoMesActual(alumnoSeleccionado.pagos) ? (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300">
+                                        Pago al día
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-300">
+                                        Debe este mes
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Botones */}
-                        <div className="flex flex-wrap justify-center gap-3">
-                            <button onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)} className="bg-gray-800 text-white px-4 py-2 font-semibold rounded-md hover:bg-gray-700 transition">
-                                Historial
-                            </button>
-                            <button onClick={() => marcarPagoMes(alumnoSeleccionado._id)} className="bg-green-700 text-white px-4 py-2 font-semibold rounded-md hover:bg-green-600 transition">
-                                {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
-                                    <path d="M10.75 10.818v2.614A3.13 3.13 0 0 0 11.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 0 0-1.138-.432ZM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 0 0-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.202.592.037.051.08.102.128.152Z" />
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-6a.75.75 0 0 1 .75.75v.316a3.78 3.78 0 0 1 1.653.713c.426.33.744.74.925 1.2a.75.75 0 0 1-1.395.55 1.35 1.35 0 0 0-.447-.563 2.187 2.187 0 0 0-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 1 1-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.188a.75.75 0 1 1 1.359-.636c.08.173.245.376.54.569.313.205.706.353 1.138.432v-2.748a3.782 3.782 0 0 1-1.653-.713C6.9 9.433 6.5 8.681 6.5 7.875c0-.805.4-1.558 1.097-2.096a3.78 3.78 0 0 1 1.653-.713V4.75A.75.75 0 0 1 10 4Z" clip-rule="evenodd" />
-                                </svg> */}
-                                Marcar Pago
-                            </button>
-                            <button onClick={() => iniciarPlan(alumnoSeleccionado._id)} className="bg-orange-600 text-white px-4 py-2 font-semibold rounded-md hover:bg-orange-500 transition">
-                                {/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
-                                    <path fill-rule="evenodd" d="M13.887 3.182c.396.037.79.08 1.183.128C16.194 3.45 17 4.414 17 5.517V16.75A2.25 2.25 0 0 1 14.75 19h-9.5A2.25 2.25 0 0 1 3 16.75V5.517c0-1.103.806-2.068 1.93-2.207.393-.048.787-.09 1.183-.128A3.001 3.001 0 0 1 9 1h2c1.373 0 2.531.923 2.887 2.182ZM7.5 4A1.5 1.5 0 0 1 9 2.5h2A1.5 1.5 0 0 1 12.5 4v.5h-5V4Z" clip-rule="evenodd" />
-                                </svg> */}
-                                Iniciar Plan
-                            </button>
-                            <button
-                                onClick={() => handleEditarAlumno(alumnoSeleccionado)}
-                                className="bg-yellow-500 text-white px-4 py-2 rounded"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
-                                    <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
-                                    <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
-                                </svg>
-                            </button>
-                            <button onClick={() => eliminarAlumno(alumnoSeleccionado._id)} className="bg-red-600 text-white px-4 py-2 rounded">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5">
-                                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                        {/* Datos del alumno */}
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-700 mb-6">
+                                {[
+                                    ['DNI', alumnoSeleccionado.dni],
+                                    ['Edad', alumnoSeleccionado.edad ?? '-'],
+                                    ['Teléfono', alumnoSeleccionado.telefono || '-'],
+                                    ['Email', alumnoSeleccionado.email || '-'],
+                                    ['Fecha de inicio', alumnoSeleccionado.fechaInicio ? new Date(alumnoSeleccionado.fechaInicio).toLocaleDateString() : '-'],
+                                    ['Franja horaria', capitalizar(alumnoSeleccionado.horarioEntrenamiento)],
+                                    ['Hora de inicio', alumnoSeleccionado.horaExactaEntrenamiento || '-'],
+                                    ['Historial deportivo', alumnoSeleccionado.historialDeportivo || '-'],
+                                    ['Historial de vida', alumnoSeleccionado.historialDeVida || '-'],
+                                    ['Objetivos', alumnoSeleccionado.objetivos || '-'],
+                                    ['Patologías', alumnoSeleccionado.patologias || '-'],
+                                ].map(([label, value]) => (
+                                    <div key={label} className="bg-slate-50 rounded-lg px-3 py-2">
+                                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-0.5">{label}</p>
+                                        <p className="font-medium text-slate-800 truncate">{value}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Botones de acción */}
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                <button
+                                    onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-all"
+                                >
+                                    Historial
+                                </button>
+                                <button
+                                    onClick={() => marcarPagoMes(alumnoSeleccionado._id)}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-all"
+                                >
+                                    Marcar Pago
+                                </button>
+                                <button
+                                    onClick={() => iniciarPlan(alumnoSeleccionado._id)}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all"
+                                >
+                                    Iniciar Plan
+                                </button>
+                                <button
+                                    onClick={() => handleEditarAlumno(alumnoSeleccionado)}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-all"
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+                                        <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+                                    </svg>
+                                    Editar
+                                </button>
+                                <button
+                                    onClick={() => eliminarAlumno(alumnoSeleccionado._id)}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition-all"
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+                                    </svg>
+                                    Eliminar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
             </Modal>
-
         </div>
     );
 }

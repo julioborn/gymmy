@@ -1,13 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IIngreso extends Document {
-    fecha: string;
+    fecha: Date;
     detalle: string;
     importe: number;
 }
 
 const IngresoSchema: Schema = new Schema({
-    fecha: { type: String, required: true },
+    fecha: { type: Date, required: true },
     detalle: { type: String, required: true },
     importe: { type: Number, required: true },
 });

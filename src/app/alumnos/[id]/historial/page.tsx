@@ -1,26 +1,15 @@
 'use client';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
+import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
-// import {
-//     Chart as ChartJS,
-//     ArcElement,
-//     Tooltip,
-//     Legend,
-//     CategoryScale,
-//     LinearScale,
-//     PointElement,
-//     LineElement,
-//     BarElement,
-// } from 'chart.js';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-// Loader giratorio
 const Loader = () => (
     <div className="flex justify-center items-center h-16">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-700"></div>
@@ -28,20 +17,9 @@ const Loader = () => (
 );
 
 const FullCalendar = dynamic(() => import('@fullcalendar/react'), {
-    ssr: false, // Esto asegura que el componente no se cargue en el servidor.
-    loading: () => <Loader />, // Mensaje de carga mientras el componente se carga dinámicamente.
+    ssr: false,
+    loading: () => <Loader />,
 });
-
-// ChartJS.register(
-//     ArcElement,
-//     Tooltip,
-//     Legend,
-//     CategoryScale,
-//     LinearScale,
-//     PointElement,
-//     LineElement,
-//     BarElement
-// );
 
 type Asistencia = {
     _id: string;
@@ -54,7 +32,11 @@ type Pago = {
     _id: string;
     mes: string;
     fechaPago: string;
-    tarifa: number;  // Añadimos la propiedad tarifa
+    tarifa: number;
+    diasMusculacion?: number;
+    metodoPago?: string;
+    recargo?: number;
+    totalPagado?: number;
 };
 
 type PlanEntrenamiento = {
@@ -72,6 +54,7 @@ type Alumno = {
     asistencia: Asistencia[];
     pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento;
+    planEntrenamientoHistorial: any[];
 };
 
 type Tarifa = {
@@ -99,16 +82,17 @@ export default function HistorialAlumnoPage() {
     const [diasRestantes, setDiasRestantes] = useState<number | null>(null);
     const params = useParams();
     const { id } = params;
+    const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 640;
     const [calendarView, setCalendarView] = useState<string>('dayGridMonth');
     const [headerToolbar, setHeaderToolbar] = useState({
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,dayGridWeek,dayGridDay', // Vista completa en pantallas grandes
+        right: 'dayGridMonth,dayGridWeek,dayGridDay',
     });
-    const [buttonText, setButtonText] = useState({
+    const [buttonText] = useState({
         today: 'Hoy',
         month: 'Mes',
-        week: 'Semana',
+        week: 'Sem',
         day: 'Día',
         list: 'Lista',
     });
@@ -142,8 +126,52 @@ export default function HistorialAlumnoPage() {
             },
         }));
     };
-    const [year, setYear] = useState(new Date().getFullYear()); // Año actual por defecto
+    const [year, setYear] = useState(new Date().getFullYear());
     const [yearPagos, setYearPagos] = useState(new Date().getFullYear());
+
+    // Tabs
+    const [activeTab, setActiveTab] = useState<'asistencias' | 'planes' | 'pagos' | null>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const planDeletedRef = useRef(false);
+    // Filtros asistencias
+    const [filtroActividad, setFiltroActividad] = useState('Todas');
+    const [fechaDesdeAsist, setFechaDesdeAsist] = useState('');
+    const [fechaHastaAsist, setFechaHastaAsist] = useState('');
+    const [ordenAsist, setOrdenAsist] = useState<'recientes' | 'antiguos'>('recientes');
+    // Filtros planes
+    const [fechaDesdePlanes, setFechaDesdePlanes] = useState('');
+    const [fechaHastaPlanes, setFechaHastaPlanes] = useState('');
+    const [ordenPlanes, setOrdenPlanes] = useState<'recientes' | 'antiguos'>('recientes');
+    // Filtros pagos
+    const [fechaDesdePagos, setFechaDesdePagos] = useState('');
+    const [fechaHastaPagos, setFechaHastaPagos] = useState('');
+    const [filtroAnio, setFiltroAnio] = useState('Todos');
+    const [filtroMetodo, setFiltroMetodo] = useState('Todos');
+    const [ordenPagos, setOrdenPagos] = useState<'recientes' | 'antiguos'>('recientes');
+
+    const handleTabClick = (tab: 'asistencias' | 'planes' | 'pagos') => {
+        const next = activeTab === tab ? null : tab;
+        setActiveTab(next);
+        if (next) {
+            setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+        }
+    };
+
+    useEffect(() => {
+        const applyResponsive = () => {
+            if (isMobile()) {
+                setCalendarView('listMonth');
+                setHeaderToolbar({ left: 'prev,next', center: 'title', right: 'listMonth,dayGridMonth' });
+            } else {
+                setCalendarView('dayGridMonth');
+                setHeaderToolbar({ left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek,dayGridDay' });
+            }
+        };
+
+        applyResponsive();
+        window.addEventListener('resize', applyResponsive);
+        return () => window.removeEventListener('resize', applyResponsive);
+    }, []);
 
     useEffect(() => {
         fetchTarifas();
@@ -151,12 +179,12 @@ export default function HistorialAlumnoPage() {
 
     const fetchTarifas = async () => {
         try {
-            const response = await fetch('/api/tarifas'); // Asegura que este sea el endpoint correcto
+            const response = await fetch('/api/tarifas');
             const data = await response.json();
-            console.log("Tarifas obtenidas:", data); // Verifica los datos obtenidos
-            setTarifas(data);
-        } catch (error) {
-            console.error("Error al obtener tarifas:", error);
+            setTarifas(data.tarifas || []);
+            if (data.recargo != null) setRecargo(data.recargo);
+        } catch {
+            // silently ignore, tarifas will be empty
         }
     };
 
@@ -169,35 +197,29 @@ export default function HistorialAlumnoPage() {
             const response = await fetch('/api/recargo'); // Endpoint de recargo
             const data = await response.json();
             setRecargo(data.monto || 0); // Asigna el valor del recargo al estado
-        } catch (error) {
-            console.error('Error al obtener recargo:', error);
+        } catch {
+            // silently ignore
         }
     };
 
     const handleConfiguracionTarifas = async () => {
         if (tarifas.length === 0) {
-            await Swal.fire('Error', 'No se encontraron cuotas. Por favor, recarga la página.', 'error');
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recarga la página.' });
             return;
         }
 
         const tarifaInputs = tarifas
-            .map(
-                (tarifa) => `
-                    <div style="display: flex; justify-content: center; margin-top: 4px; font-size: 16px;">
-                        <label for="tarifa-${tarifa.dias}" style="display: flex; justify-content: center; align-items: center; font-weight: bold; margin-top: 14px; ">
-                            Días ${tarifa.dias}:
-                        </label>
-                        <div style="display: flex; align-items: center;">
-                            <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}" style="width: 100%;" />
-                        </div>
-                    </div>
-                `
-            )
-            .join('');
+            .map(tarifa => `
+                <div>
+                    <label class="swal-form-label">Días ${tarifa.dias} por semana</label>
+                    <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
+                </div>
+            `).join('');
 
         const result = await Swal.fire({
+            ...swalBase,
             title: 'Configurar Cuotas',
-            html: `<div>${tarifaInputs}</div>`,
+            html: `<div class="swal-form-body">${tarifaInputs}</div>`,
             focusConfirm: false,
             showCancelButton: true,
             preConfirm: () => {
@@ -209,11 +231,6 @@ export default function HistorialAlumnoPage() {
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         const nuevasTarifas = result.value as Tarifa[] | undefined;
@@ -225,42 +242,36 @@ export default function HistorialAlumnoPage() {
                     body: JSON.stringify(nuevasTarifas),
                 });
                 if (response.ok) {
-                    Swal.fire('Tarifas actualizadas', '', 'success');
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Tarifas actualizadas' });
                     setTarifas(nuevasTarifas);
                 } else {
-                    Swal.fire('Error', 'No se pudieron actualizar las tarifas', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las tarifas' });
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al actualizar las tarifas', 'error');
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las tarifas' });
             }
         }
     };
 
     const handleConfiguracionRecargos = async () => {
         if (recargo === null) {
-            await Swal.fire('Error', 'No se encontró el valor del recargo. Por favor, recarga la página.', 'error');
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
             return;
         }
 
         const { value: nuevoMonto } = await Swal.fire({
+            ...swalBase,
             title: 'Configurar Recargo',
             input: 'number',
             inputLabel: 'Monto del recargo ($)',
             inputValue: recargo,
             showCancelButton: true,
             inputValidator: (value) => {
-                if (!value || Number(value) <= 0) {
-                    return 'El monto debe ser un número mayor a 0';
-                }
+                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
                 return null;
             },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         if (nuevoMonto && Number(nuevoMonto) !== recargo) {
@@ -270,61 +281,18 @@ export default function HistorialAlumnoPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ monto: Number(nuevoMonto) }),
                 });
-
                 if (response.ok) {
-                    Swal.fire('Recargo actualizado', '', 'success');
-                    setRecargo(Number(nuevoMonto)); // Actualiza el estado con el nuevo valor
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
+                    setRecargo(Number(nuevoMonto));
                 } else {
-                    Swal.fire('Error', 'No se pudo actualizar el recargo', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
                 }
-            } catch (error) {
-                Swal.fire('Error', 'Ocurrió un problema al actualizar el recargo', 'error');
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
             }
         }
     };
 
-    useEffect(() => {
-        // Detectar tamaño de la pantalla al cargar
-        const updateCalendarView = () => {
-            if (window.innerWidth <= 768) {
-                setCalendarView('listWeek'); // Vista de lista para móviles
-                setHeaderToolbar({
-                    left: 'prev,next',
-                    center: '',
-                    right: 'today',
-                });
-                setButtonText({
-                    today: 'Hoy',
-                    month: '', // No mostrar botones innecesarios
-                    week: '',
-                    day: '',
-                    list: 'Lista',
-                });
-            } else {
-                setCalendarView('dayGridMonth'); // Vista completa para pantallas grandes
-                setHeaderToolbar({
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek,dayGridDay',
-                });
-                setButtonText({
-                    today: 'Hoy',
-                    month: 'Mes',
-                    week: 'Semana',
-                    day: 'Día',
-                    list: 'Lista',
-                });
-            }
-        };
-
-        updateCalendarView(); // Ajusta la vista al montar
-
-        // Escuchar cambios de tamaño de la pantalla
-        window.addEventListener('resize', updateCalendarView);
-
-        // Limpia el evento al desmontar
-        return () => window.removeEventListener('resize', updateCalendarView);
-    }, [])
 
     // Función para obtener los datos del alumno
     const fetchAlumno = async () => {
@@ -352,15 +320,14 @@ export default function HistorialAlumnoPage() {
                 const diasRestantes = duracion - asistenciasMusculacion;
 
                 if (diasRestantes <= 0) {
-                    // Eliminar el inicio del plan automáticamente
-                    await fetch(`/api/alumnos/${id}/plan`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    });
-
-                    setDiasRestantes(null); // Sin plan
+                    if (!planDeletedRef.current) {
+                        planDeletedRef.current = true;
+                        await fetch(`/api/alumnos/${id}/plan`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+                    }
+                    setDiasRestantes(null);
                 } else {
                     setDiasRestantes(diasRestantes);
                 }
@@ -368,8 +335,6 @@ export default function HistorialAlumnoPage() {
                 setDiasRestantes(null); // Sin plan o con fecha inválida
             }
 
-        } else {
-            console.error('Error fetching alumno');
         }
     };
 
@@ -436,6 +401,7 @@ export default function HistorialAlumnoPage() {
         const fechaSeleccionada = selectInfo.startStr;
 
         const { value: action } = await Swal.fire({
+            ...swalBase,
             title: 'Seleccionar acción',
             input: 'select',
             inputOptions: {
@@ -447,61 +413,44 @@ export default function HistorialAlumnoPage() {
             showCancelButton: true,
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-            },
-            buttonsStyling: false,
         });
 
         if (action === 'plan') {
             const { value: duracion } = await Swal.fire({
-                title: 'Definir duración del plan de entrenamiento',
+                ...swalBase,
+                title: 'Duración del plan de entrenamiento',
                 input: 'number',
                 inputLabel: 'Cantidad de días de entrenamiento',
-                inputPlaceholder: 'Ingresar la cantidad',
+                inputPlaceholder: 'Ej: 20',
                 showCancelButton: true,
                 inputValidator: (value) => {
-                    if (!value || Number(value) <= 0) {
-                        return 'Debes ingresar una duración válida';
-                    }
+                    if (!value || Number(value) <= 0) return 'Debes ingresar una duración válida';
                     return null;
                 },
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                },
-                buttonsStyling: false,
             });
 
             if (duracion) {
                 try {
                     const response = await fetch(`/api/alumnos/${id}/plan`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            fechaInicio: fechaSeleccionada,
-                            duracion: Number(duracion),
-                            terminado: false
-                        }),
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fechaInicio: fechaSeleccionada, duracion: Number(duracion), terminado: false }),
                     });
-
                     if (response.ok) {
-                        Swal.fire('Plan de entrenamiento actualizado', '', 'success');
+                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan de entrenamiento actualizado' });
                         fetchAlumno();
                     } else {
-                        Swal.fire('Error', 'No se pudo actualizar el plan de entrenamiento', 'error');
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el plan de entrenamiento' });
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Ocurrió un problema al actualizar el plan', 'error');
+                } catch {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el plan' });
                 }
             }
         } else if (action === 'actividad') {
             const { value: actividad } = await Swal.fire({
+                ...swalBase,
                 title: 'Ingresar Actividad',
                 input: 'select',
                 inputOptions: {
@@ -513,11 +462,6 @@ export default function HistorialAlumnoPage() {
                 showCancelButton: true,
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                },
-                buttonsStyling: false,
             });
 
             if (actividad) {
@@ -528,19 +472,19 @@ export default function HistorialAlumnoPage() {
                 );
 
                 if (actividadDuplicada) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Actividad duplicada',
-                        text: `Ya tienes registrada la actividad "${actividad}" para esta fecha. No es posible registrarla nuevamente.`,
-                    });
+                    Swal.fire({ ...swalNotify, icon: 'info', title: 'Actividad duplicada', text: `Ya tienes registrada la actividad "${actividad}" para esta fecha.` });
                     return;
                 }
 
                 const { value: fechaHora } = await Swal.fire({
-                    title: 'Ingresar Hora',
+                    ...swalBase,
+                    title: 'Hora de la actividad',
                     html: `
-                    <input type="time" id="hora-actividad" value="12:00" class="swal2-input">
-                `,
+                        <div class="swal-form-body">
+                            <label class="swal-form-label">Hora</label>
+                            <input type="time" id="hora-actividad" value="12:00" class="swal2-input">
+                        </div>
+                    `,
                     focusConfirm: false,
                     preConfirm: () => {
                         const hora = (document.getElementById('hora-actividad') as HTMLInputElement).value;
@@ -550,128 +494,91 @@ export default function HistorialAlumnoPage() {
                         const [year, month, day] = fechaSeleccionada.split('-');
                         const [hh, mm] = hora.split(':');
                         const fechaLocal = new Date(Number(year), Number(month) - 1, Number(day), Number(hh), Number(mm));
-                        return fechaLocal.toISOString(); // ya ajustado a horario local
+                        return fechaLocal.toISOString();
                     },
                     showCancelButton: true,
                     confirmButtonText: 'Aceptar',
                     cancelButtonText: 'Cancelar',
-                    customClass: {
-                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    },
-                    buttonsStyling: false,
                 });
 
                 if (fechaHora) {
                     try {
                         const response = await fetch(`/api/asistencias/${id}`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                fecha: fechaHora,
-                                actividad,
-                                presente: true,
-                            }),
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fecha: fechaHora, actividad, presente: true }),
                         });
-
                         if (response.ok) {
-                            Swal.fire('Actividad registrada', '', 'success');
+                            Swal.fire({ ...swalNotify, icon: 'success', title: 'Actividad registrada' });
                             fetchAlumno();
                         } else {
-                            Swal.fire('Error', 'No se pudo registrar la actividad', 'error');
+                            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar la actividad' });
                         }
-                    } catch (error) {
-                        Swal.fire('Error', 'Ocurrió un problema al registrar la actividad', 'error');
+                    } catch {
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al registrar la actividad' });
                     }
                 }
             }
         } else if (action === 'pago') {
             if (!tarifas.length) {
-                Swal.fire('Error', 'No se encontraron tarifas disponibles.', 'error');
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron tarifas disponibles.' });
                 return;
             }
 
             const opcionesTarifas = tarifas.reduce((options, tarifa) => {
-                options[tarifa.dias] = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana</span>
-                        <strong>$${tarifa.valor}</strong>
-                    </div>`;
+                options[tarifa.dias] = `${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana — $${tarifa.valor}`;
                 return options;
             }, {} as Record<number, string>);
 
             const { value: diasMusculacion } = await Swal.fire({
-                title: 'Selecciona los días de musculación por semana',
+                ...swalBase,
+                title: 'Días de musculación por semana',
                 input: 'select',
                 inputOptions: opcionesTarifas,
                 inputPlaceholder: 'Selecciona una opción',
                 showCancelButton: true,
-                didOpen: () => {
-                    const select = Swal.getHtmlContainer()?.querySelector('select');
-                    if (select) {
-                        select.style.textAlign = 'left';
-                        select.style.width = '100%';
-                    }
-                },
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    popup: 'custom-swal-popup',
-                },
-                buttonsStyling: false,
             });
 
             if (diasMusculacion) {
                 const tarifaSeleccionada = tarifas.find((tarifa) => tarifa.dias === Number(diasMusculacion));
 
                 if (!tarifaSeleccionada) {
-                    Swal.fire('Error', 'No se encontró la tarifa para los días seleccionados.', 'error');
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró la tarifa para los días seleccionados.' });
                     return;
                 }
 
                 const { value: metodoPago } = await Swal.fire({
-                    title: 'Selecciona el método de pago',
+                    ...swalBase,
+                    title: 'Método de pago',
                     input: 'select',
-                    inputOptions: {
-                        efectivo: 'Efectivo',
-                        transferencia: 'Transferencia',
-                    },
+                    inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
                     inputPlaceholder: 'Selecciona un método',
                     showCancelButton: true,
                     confirmButtonText: 'Aceptar',
                     cancelButtonText: 'Cancelar',
-                    customClass: {
-                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    },
-                    buttonsStyling: false,
                 });
 
-                if (!metodoPago) {
-                    Swal.fire('Error', 'Debes seleccionar un método de pago.', 'error');
-                    return;
-                }
+                if (!metodoPago) return;
 
                 const confirmacion = await Swal.fire({
+                    ...swalBase,
                     title: 'Confirmar cobro',
                     html: `
-        <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-        <p>Método de pago: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong></p>
-        <p>Precio base: $${tarifaSeleccionada.valor}</p>
-        ${recargo !== null
-                            ? `
-            <div style="margin-top: 8px;">
-                <input type="checkbox" id="incluir-recargo" checked />
-                <label for="incluir-recargo">Aplicar recargo de $${recargo.toFixed(2)}</label>
-            </div>
-            `
-                            : ''
-                        }
-    `,
+                        <div class="swal-form-body">
+                            <p style="text-align:center;color:#475569;font-size:0.875rem;margin:0 0 0.75rem;">
+                                Días de musculación: <strong>${diasMusculacion}</strong><br>
+                                Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
+                                Precio: <strong>$${tarifaSeleccionada.valor}</strong>
+                            </p>
+                            ${recargo !== null ? `
+                            <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
+                                <input type="checkbox" id="incluir-recargo" checked style="width:16px;height:16px;accent-color:#059669;">
+                                Aplicar recargo ($${recargo.toFixed(2)})
+                            </label>` : ''}
+                        </div>
+                    `,
                     preConfirm: () => {
                         const incluirRecargo = (document.getElementById('incluir-recargo') as HTMLInputElement)?.checked;
                         return { incluirRecargo };
@@ -679,12 +586,6 @@ export default function HistorialAlumnoPage() {
                     showCancelButton: true,
                     confirmButtonText: 'Cobrar',
                     cancelButtonText: 'Cancelar',
-                    customClass: {
-                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                        popup: 'custom-swal-popup',
-                    },
-                    buttonsStyling: false,
                 });
 
                 if (confirmacion.isConfirmed) {
@@ -692,9 +593,8 @@ export default function HistorialAlumnoPage() {
                         const incluirRecargo = document.getElementById('incluir-recargo') instanceof HTMLInputElement
                             ? (document.getElementById('incluir-recargo') as HTMLInputElement).checked
                             : false;
-                        const totalAPagar = tarifaSeleccionada.valor + (incluirRecargo ? (recargo || 0) : 0);
 
-                        const [year, month, day] = selectInfo.startStr.split('-'); // Fecha seleccionada
+                        const [year, month, day] = selectInfo.startStr.split('-');
                         const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
                         const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
 
@@ -707,27 +607,18 @@ export default function HistorialAlumnoPage() {
                             recargo: incluirRecargo ? recargo || 0 : 0,
                         };
 
-                        const response = await fetch(`/api/alumnos/pagos`, {
+                        const response = await fetch('/api/alumnos/pagos', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ alumnoId: id, nuevoPago }),
                         });
 
-                        if (!response.ok) {
-                            throw new Error('Error al registrar el pago');
-                        }
+                        if (!response.ok) throw new Error('Error al registrar el pago');
 
-                        Swal.fire('Pago registrado correctamente', '', 'success');
-                        fetchAlumno(); // Refrescar el historial de pagos
-                    } catch (error) {
-                        console.error('Error al registrar el pago:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error al registrar el pago',
-                            text: 'Hubo un problema al registrar el pago.',
-                        });
+                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago registrado correctamente' });
+                        fetchAlumno();
+                    } catch {
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar el pago', text: 'Hubo un problema al registrar el pago.' });
                     }
                 }
             }
@@ -741,22 +632,14 @@ export default function HistorialAlumnoPage() {
 
         if (tipoEvento === 'actividad') {
             const { value: action } = await Swal.fire({
+                ...swalBase,
                 title: 'Actividad',
                 input: 'select',
-                inputOptions: {
-                    editar: 'Editar Actividad',
-                    eliminar: 'Eliminar Actividad',
-                },
+                inputOptions: { editar: 'Editar Actividad', eliminar: 'Eliminar Actividad' },
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    popup: 'custom-swal-popup',
-                },
-                buttonsStyling: false,
             });
 
             if (action === 'editar') {
@@ -767,87 +650,57 @@ export default function HistorialAlumnoPage() {
 
                 // Nuevo modal para editar actividad, fecha y hora
                 const { value: formData } = await Swal.fire({
+                    ...swalBase,
                     title: 'Editar Actividad',
                     html: `
-                        <div style="
-                            display: flex; 
-                            flex-direction: column; 
-                            align-items: center; 
-                            gap: 1rem; 
-                            text-align: left; 
-                            width: 100%; 
-                            max-width: 100%; 
-                            padding: 1rem; 
-                            box-sizing: border-box; 
-                            overflow-x: hidden;
-                        ">
-                            <div style="width: 100%; max-width: 300px;">
-                                <label for="nueva-actividad" style="display: block; margin-bottom: 0.5rem;">Actividad:</label>
-                                <select id="nueva-actividad" class="swal2-input" style="width: 100%;">
-                                    <option value="Musculación" ${clickInfo.event.title === 'Musculación' ? 'selected' : ''}>Musculación</option>
-                                    <option value="Intermitente" ${clickInfo.event.title === 'Intermitente' ? 'selected' : ''}>Intermitente</option>
-                                    <option value="Otro" ${clickInfo.event.title === 'Otro' ? 'selected' : ''}>Otro</option>
-                                </select>
-                            </div>
-                            <div style="width: 100%; max-width: 300px;">
-                                <label for="nueva-fecha-actividad" style="display: block; margin-bottom: 0.5rem;">Fecha:</label>
-                                <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${fechaActual?.toISOString().split('T')[0]}" style="width: 100%;">
-                            </div>
-                            <div style="width: 100%; max-width: 300px;">
-                                <label for="nueva-hora-actividad" style="display: block; margin-bottom: 0.5rem;">Hora:</label>
-                                <input type="time" id="nueva-hora-actividad" class="swal2-input" value="${horaActual}" style="width: 100%;">
-                            </div>
+                        <div class="swal-form-body">
+                            <label class="swal-form-label">Actividad</label>
+                            <select id="nueva-actividad" class="swal2-select">
+                                <option value="Musculación" ${clickInfo.event.title === 'Musculación' ? 'selected' : ''}>Musculación</option>
+                                <option value="Intermitente" ${clickInfo.event.title === 'Intermitente' ? 'selected' : ''}>Intermitente</option>
+                                <option value="Otro" ${clickInfo.event.title === 'Otro' ? 'selected' : ''}>Otro</option>
+                            </select>
+                            <label class="swal-form-label">Fecha</label>
+                            <input type="date" id="nueva-fecha-actividad" class="swal2-input" value="${fechaActual?.toISOString().split('T')[0]}">
+                            <label class="swal-form-label">Hora</label>
+                            <input type="time" id="nueva-hora-actividad" class="swal2-input" value="${horaActual}">
                         </div>
                     `,
                     preConfirm: () => {
                         const nuevaActividad = (document.getElementById('nueva-actividad') as HTMLSelectElement).value;
                         const nuevaFecha = (document.getElementById('nueva-fecha-actividad') as HTMLInputElement).value;
                         const nuevaHora = (document.getElementById('nueva-hora-actividad') as HTMLInputElement).value;
-
                         const actividadDuplicada = alumno?.asistencia.some(
                             (asistencia: Asistencia) =>
                                 asistencia.fecha.startsWith(nuevaFecha) &&
                                 asistencia.actividad === nuevaActividad &&
                                 asistencia._id !== clickInfo.event.extendedProps._id
                         );
-
                         if (actividadDuplicada) {
                             Swal.showValidationMessage(`Ya existe una actividad "${nuevaActividad}" registrada para esa fecha.`);
                         }
                         return { nuevaActividad, nuevaFechaHora: `${nuevaFecha}T${nuevaHora}` };
                     },
                     showCancelButton: true,
-                    confirmButtonText: 'Aceptar',
+                    confirmButtonText: 'Guardar',
                     cancelButtonText: 'Cancelar',
-                    customClass: {
-                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                        popup: 'custom-swal-popup',
-                    },
-                    buttonsStyling: false,
                 });
 
                 if (formData) {
                     try {
                         const response = await fetch(`/api/asistencias/${eventoId}`, {
                             method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                fecha: formData.nuevaFechaHora,
-                                actividad: formData.nuevaActividad,
-                            }),
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fecha: formData.nuevaFechaHora, actividad: formData.nuevaActividad }),
                         });
-
                         if (response.ok) {
-                            Swal.fire('Actividad actualizada', '', 'success');
-                            fetchAlumno(); // Refrescar la lista de actividades
+                            Swal.fire({ ...swalNotify, icon: 'success', title: 'Actividad actualizada' });
+                            fetchAlumno();
                         } else {
-                            Swal.fire('Error', 'No se pudo actualizar la actividad', 'error');
+                            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar la actividad' });
                         }
-                    } catch (error) {
-                        Swal.fire('Error', 'Ocurrió un problema al actualizar la actividad', 'error');
+                    } catch {
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar la actividad' });
                     }
                 }
             }
@@ -855,176 +708,116 @@ export default function HistorialAlumnoPage() {
                 try {
                     const response = await fetch(`/api/asistencias/${eventoId}`, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                     });
-
                     if (response.ok) {
-                        Swal.fire('Actividad eliminada', '', 'success');
+                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Actividad eliminada' });
                         fetchAlumno();
                     } else {
-                        const errorData = await response.json().catch(() => null);
-                        console.error("Error eliminando la actividad:", errorData || "Respuesta vacía");
-                        Swal.fire('Error', 'No se pudo eliminar la actividad', 'error');
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar la actividad' });
                     }
-                } catch (error) {
-                    console.error("Error al intentar eliminar la actividad:", error);
-                    Swal.fire('Error', 'Hubo un problema al eliminar la actividad', 'error');
+                } catch {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Hubo un problema al eliminar la actividad' });
                 }
             }
         } else if (tipoEvento === 'pago') {
             const { value: action } = await Swal.fire({
+                ...swalBase,
                 title: 'Pago',
                 input: 'select',
-                inputOptions: {
-                    editar: 'Editar Pago',
-                    eliminar: 'Eliminar Pago',
-                },
+                inputOptions: { editar: 'Editar Pago', eliminar: 'Eliminar Pago' },
                 inputPlaceholder: 'Selecciona una acción',
                 showCancelButton: true,
                 confirmButtonText: 'Aceptar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    popup: 'custom-swal-popup',
-                },
-                buttonsStyling: false,
             });
 
             if (action === 'eliminar') {
                 try {
                     const response = await fetch(`/api/alumnos/${id}/pagos/${eventoId}`, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                     });
-
                     if (response.ok) {
-                        Swal.fire('Pago eliminado', '', 'success');
+                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago eliminado' });
                         fetchAlumno();
                     } else {
-                        Swal.fire('Error', 'No se pudo eliminar el pago', 'error');
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el pago' });
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Hubo un problema al eliminar el pago', 'error');
+                } catch {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Hubo un problema al eliminar el pago' });
                 }
             } else if (action === 'editar') {
-                const { value: diasMusculacion } = await Swal.fire({
-                    title: 'Editar días de musculación por semana',
-                    input: 'select',
-                    inputOptions: {
-                        1: '1 día por semana',
-                        2: '2 días por semana',
-                        3: '3 días por semana',
-                        4: '4 días por semana',
-                        5: '5 días por semana',
+                const { value: formPago } = await Swal.fire({
+                    ...swalBase,
+                    title: 'Editar Pago',
+                    html: `
+                        <div class="swal-form-body">
+                            <label class="swal-form-label">Días de musculación</label>
+                            <select id="edit-dias" class="swal2-select">
+                                ${[1,2,3,4,5].map(d => `<option value="${d}">${d} día${d > 1 ? 's' : ''} por semana</option>`).join('')}
+                            </select>
+                            <label class="swal-form-label">Fecha de pago</label>
+                            <input type="date" id="nueva-fecha-pago" class="swal2-input" value="${clickInfo.event.startStr.split('T')[0]}">
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const dias = (document.getElementById('edit-dias') as HTMLSelectElement).value;
+                        const nuevaFecha = (document.getElementById('nueva-fecha-pago') as HTMLInputElement).value;
+                        if (!nuevaFecha) Swal.showValidationMessage('La fecha no puede estar vacía');
+                        return { dias, nuevaFecha };
                     },
-                    inputPlaceholder: 'Selecciona una opción',
                     showCancelButton: true,
-                    confirmButtonText: 'Aceptar',
+                    confirmButtonText: 'Guardar',
                     cancelButtonText: 'Cancelar',
-                    customClass: {
-                        confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                        cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                        popup: 'custom-swal-popup',
-                    },
-                    buttonsStyling: false,
                 });
 
-                if (diasMusculacion) {
-                    // Pedir la nueva fecha de pago
-                    const { value: nuevaFechaPago } = await Swal.fire({
-                        title: 'Editar Fecha de Pago',
-                        html: `<input type="date" id="nueva-fecha-pago" class="swal2-input" value="${clickInfo.event.startStr.split('T')[0]}">`,
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            const nuevaFecha = (document.getElementById('nueva-fecha-pago') as HTMLInputElement).value;
-                            if (!nuevaFecha) {
-                                Swal.showValidationMessage('La fecha no puede estar vacía');
-                            }
-                            return nuevaFecha;
-                        },
-                        showCancelButton: true,
-                        confirmButtonText: 'Aceptar',
-                        cancelButtonText: 'Cancelar',
-                        customClass: {
-                            confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                            cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                            popup: 'custom-swal-popup',
-                        },
-                        buttonsStyling: false,
-                    });
-
-                    if (nuevaFechaPago) {
-                        try {
-                            // Obtener la tarifa predeterminada basada en los días de musculación
-                            const responseTarifa = await fetch(`/api/alumnos/${id}/tarifas?dias=${diasMusculacion}`);
-                            const { tarifa } = await responseTarifa.json();
-
-                            // Actualizar el pago con los días de musculación y la nueva tarifa y fecha
-                            const response = await fetch(`/api/alumnos/${id}/pagos/${eventoId}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    nuevaFechaPago,
-                                    diasMusculacion: Number(diasMusculacion),
-                                    tarifa: tarifa,
-                                }),
-                            });
-
-                            if (response.ok) {
-                                Swal.fire('Pago actualizado correctamente', '', 'success');
-                                fetchAlumno(); // Refrescar los datos del alumno
-                            } else {
-                                Swal.fire('Error', 'No se pudo actualizar el pago', 'error');
-                            }
-                        } catch (error) {
-                            Swal.fire('Error', 'Ocurrió un problema al actualizar el pago', 'error');
+                if (formPago) {
+                    try {
+                        const responseTarifa = await fetch(`/api/alumnos/${id}/tarifas?dias=${formPago.dias}`);
+                        const { tarifa } = await responseTarifa.json();
+                        const response = await fetch(`/api/alumnos/${id}/pagos/${eventoId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ nuevaFechaPago: formPago.nuevaFecha, diasMusculacion: Number(formPago.dias), tarifa }),
+                        });
+                        if (response.ok) {
+                            Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago actualizado correctamente' });
+                            fetchAlumno();
+                        } else {
+                            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el pago' });
                         }
+                    } catch {
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el pago' });
                     }
                 }
             }
         } else if (tipoEvento === 'plan') {
-            const { value: action } = await Swal.fire({
-                title: 'Inicio del plan',
-                input: 'select',
-                inputOptions: {
-                    eliminar: 'Eliminar Inicio del Plan',
-                },
-                inputPlaceholder: 'Selecciona una acción',
+            const confirmPlan = await Swal.fire({
+                ...swalDanger,
+                title: '¿Eliminar inicio del plan?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Aceptar',
+                confirmButtonText: 'Eliminar',
                 cancelButtonText: 'Cancelar',
-                customClass: {
-                    confirmButton: 'bg-green-700 mr-2 hover:bg-green-800 text-white font-bold py-2 px-4 rounded',
-                    cancelButton: 'bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded',
-                    popup: 'custom-swal-popup',
-                },
-                buttonsStyling: false,
             });
 
-            if (action === 'eliminar') {
+            if (confirmPlan.isConfirmed) {
                 try {
                     const response = await fetch(`/api/alumnos/${id}/plan`, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                     });
-
                     if (response.ok) {
-                        Swal.fire('Inicio del plan eliminado', '', 'success');
-                        fetchAlumno(); // Refresca los datos del alumno
+                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Inicio del plan eliminado' });
+                        fetchAlumno();
                     } else {
-                        Swal.fire('Error', 'No se pudo eliminar el inicio del plan', 'error');
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el inicio del plan' });
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Ocurrió un problema al eliminar el inicio del plan', 'error');
+                } catch {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al eliminar el inicio del plan' });
                 }
             }
         }
@@ -1048,172 +841,329 @@ export default function HistorialAlumnoPage() {
         return pagoMes ? pagoMes.tarifa : 0;
     });
 
+    // Datos filtrados para los panels
+    const asistenciasFiltradas = (alumno.asistencia || [])
+        .filter((a: Asistencia) => {
+            const fecha = new Date(a.fecha);
+            const dentroRango = (!fechaDesdeAsist || fecha >= new Date(fechaDesdeAsist)) && (!fechaHastaAsist || fecha <= new Date(fechaHastaAsist));
+            return dentroRango && (filtroActividad === 'Todas' || a.actividad === filtroActividad) && a.presente;
+        })
+        .sort((a: Asistencia, b: Asistencia) =>
+            ordenAsist === 'recientes'
+                ? new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+                : new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+        );
+
+    const historialPlanesFiltrado = (alumno.planEntrenamientoHistorial || [])
+        .filter((plan: any) => {
+            const fi = new Date(plan.fechaInicio);
+            return (!fechaDesdePlanes || fi >= new Date(fechaDesdePlanes)) && (!fechaHastaPlanes || fi <= new Date(fechaHastaPlanes));
+        })
+        .sort((a: any, b: any) =>
+            ordenPlanes === 'recientes'
+                ? new Date(b.fechaInicio).getTime() - new Date(a.fechaInicio).getTime()
+                : new Date(a.fechaInicio).getTime() - new Date(b.fechaInicio).getTime()
+        );
+
+    const aniosDisponibles = Array.from(new Set((alumno.pagos || []).map((p: Pago) => new Date(p.fechaPago).getFullYear()))).sort((a, b) => (b as number) - (a as number));
+    const pagosPanelFiltrados = (alumno.pagos || [])
+        .filter((p: Pago) => {
+            const fecha = new Date(p.fechaPago);
+            return (!fechaDesdePagos || fecha >= new Date(fechaDesdePagos))
+                && (!fechaHastaPagos || fecha <= new Date(fechaHastaPagos))
+                && (filtroAnio === 'Todos' || fecha.getFullYear() === Number(filtroAnio))
+                && (filtroMetodo === 'Todos' || p.metodoPago?.toLowerCase() === filtroMetodo.toLowerCase());
+        })
+        .sort((a: Pago, b: Pago) =>
+            ordenPagos === 'recientes'
+                ? new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()
+                : new Date(a.fechaPago).getTime() - new Date(b.fechaPago).getTime()
+        );
+
+    const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
+
     return (
-        <div className="max-w-6xl mx-auto bg-gray-50 p-8 rounded shadow-md">
-
-            {/* Nombre alumno */}
-            <div className="flex justify-center">
-                <h1 className="text-4xl font-light text-gray-800 p-1 pl-1.5 pr-1.5">
-                    {alumno.nombre} {alumno.apellido}
-                </h1>
-            </div>
-
-            {/* Menú historial */}
-            <div className="flex flex-col mb-4 gap-4">
-
-                {/* Historial */}
-                <div className="flex-1 bg-gray-50 p-4 overflow-auto max-h-screen">
-                    {/* <h3 className="text-xl font-semibold text-gray-700 mb-2 flex justify-center">Historial del Alumno</h3> */}
-
-                    {/* Finalización del plan */}
-                    {alumno.planEntrenamiento && alumno.planEntrenamiento.fechaInicio && diasRestantes !== null ? (
-                        diasRestantes > 0 ? (
-                            <p className="text-lg font-medium mb-4 text-gray-700 flex justify-center flex-col md:flex-row items-center text-center md:text-left">
-                                Finaliza el plan en
-                                <span className={`mx-1 pr-1 pl-1 ${obtenerColorSemaforo(diasRestantes)}`}>
-                                    {diasRestantes}
-                                </span>
-                                entrenamientos.
-                            </p>
-                        ) : (
-                            <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
-                                Sin plan
-                            </p>
-                        )
+        <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
+                <h1 className="text-2xl font-bold text-white">{alumno.nombre} {alumno.apellido}</h1>
+                <div className="mt-1.5">
+                    {diasRestantes != null && diasRestantes > 0 ? (
+                        <span className={`text-sm font-semibold ${obtenerColorSemaforo(diasRestantes)}`}>
+                            Finaliza el plan en {diasRestantes} entrenamientos
+                        </span>
                     ) : (
-                        <p className="text-lg font-medium mb-4 text-red-700 flex justify-center text-center">
-                            Sin plan
-                        </p>
+                        <span className="text-sm text-red-400 font-medium">Sin plan activo</span>
                     )}
-
-                    <div className="flex flex-col sm:flex-row gap-2 justify-center mb-4 items-center">
-                        <Link href={`/alumnos/${id}/asistencias`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-gray-700 text-white px-4 py-2 rounded font-semibold hover:bg-gray-800">Asistencias</button>
-                        </Link>
-                        <Link href={`/alumnos/${id}/planes`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-red-700 text-white px-4 py-2 rounded font-semibold hover:bg-red-800">Planes</button>
-                        </Link>
-                        <Link href={`/alumnos/${id}/pagos`} className="w-full sm:w-auto">
-                            <button className="w-full sm:w-auto bg-green-700 text-white px-4 py-2 rounded font-semibold hover:bg-green-800">Pagos</button>
-                        </Link>
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* Botones cuotas / recargo */}
-            <div className='flex justify-center sm:justify-start'>
-                {/* Botón de configuración de tarifas */}
-                <div className="sm:block sm:pl-4 pl-0">
-                    <button
-                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                        onClick={handleConfiguracionTarifas}
-                    >
-                        <span className="text-white">Cuotas</span>
-                    </button>
-                </div>
-
-                {/* Botón de configuración de recargos */}
-                <div className="sm:block">
-                    <button
-                        className="flex mb-2 items-center border rounded p-2 bg-gray-700 hover:bg-gray-800"
-                        onClick={handleConfiguracionRecargos}
-                    >
-                        <span className="text-white">Recargo</span>
-                    </button>
                 </div>
             </div>
 
-            {/* Calendario */}
-            <div className="sm:block bg-gray-50 p-4 rounded shadow border">
-                <Suspense fallback={<p>Cargando calendario...</p>}>
-                    <FullCalendar
-                        firstDay={1}
-                        plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
-                        timeZone='local'
-                        initialView={calendarView}
-                        events={events}
-                        locale="es"
-                        headerToolbar={headerToolbar}
-                        buttonText={buttonText}
-                        height="auto"
-                        selectable={true}
-                        select={handleDateSelect}
-                        aspectRatio={1.5} // Controla la proporción ancho/alto
-                        eventClick={handleEventClick}
-                        noEventsText="No hay actividades" // Traducción al español
-                        eventContent={(arg) => {
-                            const tipo = arg.event.extendedProps.tipo; // Obtener el tipo de evento
-                            if (tipo === 'plan') {
-                                return (
-                                    <div
-                                        className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center break-words cursor-pointer"
-                                        style={{ whiteSpace: 'normal' }}
-                                    >
-                                        <strong>{arg.event.title}</strong>
-                                    </div>
-                                );
-                            }
-                            if (tipo === 'pago') {
-                                const pagoMes = arg.event.title;
-                                const tarifa = arg.event.extendedProps.tarifa;
-                                return (
-                                    <div className="flex flex-col justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer">
-                                        <div className="flex items-center break-words" style={{ whiteSpace: 'normal' }}>
-                                            <strong>{pagoMes}</strong>
-                                        </div>
-                                        <div>
-                                            <strong className="text-green-700 mr-1">${tarifa}</strong>
-                                        </div>
-                                    </div>
-                                );
-                            } else if (tipo === 'actividad') {
-                                const hora = arg.event.start
-                                    ? new Date(arg.event.start).toLocaleTimeString('es-ES', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })
-                                    : '';
-                                return (
-                                    <div
-                                        className="flex justify-between items-center w-full h-full text-xs md:text-sm cursor-pointer overflow-hidden"
-                                        style={{
-                                            whiteSpace: 'nowrap',
-                                            textOverflow: 'ellipsis',
-                                        }}
-                                    >
-                                        <div className="flex items-center">
-                                            <span
-                                                style={{
-                                                    backgroundColor: arg.event.backgroundColor,
-                                                    width: '8px',
-                                                    height: '8px',
-                                                    display: 'inline-block',
-                                                    borderRadius: '50%',
-                                                    marginRight: '8px',
-                                                }}
-                                            ></span>
-                                            <strong className="truncate">{arg.event.title}</strong>
-                                        </div>
-                                        <div>
-                                            {hora && <strong className="text-red-600 mr-1">{hora}</strong>}
-                                        </div>
-                                    </div>
-                                );
-                            } else {
-                                return (
-                                    <div className="flex items-center justify-center w-full h-full text-xs md:text-sm text-center">
-                                        {arg.event.title}
-                                    </div>
-                                );
-                            }
+            <div className="bg-white rounded-b-2xl shadow-xl overflow-hidden">
+                {/* Toolbar */}
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+                    {/* Config: select de ajustes */}
+                    <select
+                        className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
+                        value=""
+                        onChange={(e) => {
+                            if (e.target.value === 'cuotas') handleConfiguracionTarifas();
+                            if (e.target.value === 'recargo') handleConfiguracionRecargos();
+                            e.target.value = '';
                         }}
-                    />
-                </Suspense>
-            </div>
+                    >
+                        <option value="" disabled>Ajustes</option>
+                        <option value="cuotas">Cuotas</option>
+                        <option value="recargo">Recargo</option>
+                    </select>
 
+                    {/* Tabs: select de secciones */}
+                    <select
+                        className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
+                        value={activeTab || ''}
+                        onChange={(e) => {
+                            const val = e.target.value as 'asistencias' | 'planes' | 'pagos' | '';
+                            if (val) handleTabClick(val);
+                            else setActiveTab(null);
+                        }}
+                    >
+                        <option value="">Ver historial...</option>
+                        <option value="asistencias">Asistencias</option>
+                        <option value="planes">Planes</option>
+                        <option value="pagos">Pagos</option>
+                    </select>
+                </div>
+
+                {/* Calendario */}
+                <div className="p-3 sm:p-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
+                    <Suspense fallback={<Loader />}>
+                        <FullCalendar
+                            key={calendarView}
+                            firstDay={1}
+                            plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                            timeZone="local"
+                            initialView={calendarView}
+                            events={events}
+                            locale="es"
+                            headerToolbar={headerToolbar}
+                            buttonText={buttonText}
+                            titleFormat={isMobile() ? { month: 'short', year: 'numeric' } : { month: 'long', year: 'numeric' }}
+                            height="auto"
+                            selectable={true}
+                            select={handleDateSelect}
+                            aspectRatio={isMobile() ? 1.0 : 1.5}
+                            eventClick={handleEventClick}
+                            noEventsText="No hay actividades"
+                            eventContent={(arg) => {
+                                const tipo = arg.event.extendedProps.tipo;
+                                const isListView = calendarView === 'listMonth';
+                                if (tipo === 'plan') {
+                                    return (
+                                        <div className="flex items-center w-full h-full text-xs cursor-pointer px-1" style={{ whiteSpace: 'normal' }}>
+                                            <strong>{arg.event.title}</strong>
+                                        </div>
+                                    );
+                                }
+                                if (tipo === 'pago') {
+                                    return (
+                                        <div className="flex items-center justify-between w-full h-full text-xs cursor-pointer px-1 gap-1" style={{ whiteSpace: 'normal' }}>
+                                            <strong className="truncate">{arg.event.title}</strong>
+                                            <strong className="text-green-700 shrink-0">${arg.event.extendedProps.tarifa}</strong>
+                                        </div>
+                                    );
+                                }
+                                if (tipo === 'actividad') {
+                                    const hora = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                    return (
+                                        <div className="flex items-center justify-between w-full h-full text-xs cursor-pointer px-1 gap-1 overflow-hidden">
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <span style={{ backgroundColor: arg.event.backgroundColor, width: 7, height: 7, flexShrink: 0, display: 'inline-block', borderRadius: '50%' }} />
+                                                <strong className="truncate">{isListView ? arg.event.title : arg.event.title.slice(0, 3)}</strong>
+                                            </div>
+                                            {hora && !isListView && <strong className="text-red-600 shrink-0">{hora}</strong>}
+                                            {hora && isListView && <span className="text-slate-500 shrink-0">{hora}</span>}
+                                        </div>
+                                    );
+                                }
+                                return <div className="flex items-center w-full h-full text-xs px-1">{arg.event.title}</div>;
+                            }}
+                        />
+                    </Suspense>
+                </div>
+
+                {/* Panels */}
+                {activeTab && (
+                    <div ref={sectionRef} className="px-6 py-6">
+
+                        {/* ── ASISTENCIAS ── */}
+                        {activeTab === 'asistencias' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-4">Asistencias</h3>
+                                <div className="flex flex-wrap gap-3 mb-3">
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={inputCls} value={fechaDesdeAsist} onChange={(e) => setFechaDesdeAsist(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={inputCls} value={fechaHastaAsist} onChange={(e) => setFechaHastaAsist(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Actividad</label>
+                                        <select className={inputCls} value={filtroActividad} onChange={(e) => setFiltroActividad(e.target.value)}>
+                                            <option value="Todas">Todas</option>
+                                            <option value="Musculación">Musculación</option>
+                                            <option value="Intermitente">Intermitente</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
+                                        <select className={inputCls} value={ordenAsist} onChange={(e) => setOrdenAsist(e.target.value as any)}>
+                                            <option value="recientes">Más recientes</option>
+                                            <option value="antiguos">Más antiguas</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button onClick={() => { setFechaDesdeAsist(''); setFechaHastaAsist(''); setFiltroActividad('Todas'); setOrdenAsist('recientes'); }} className="px-3 py-1.5 mb-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                                {asistenciasFiltradas.length > 0 ? (
+                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                        {asistenciasFiltradas.map((a: Asistencia) => {
+                                            const f = new Date(a.fecha);
+                                            const colorMap: Record<string, string> = { Musculación: 'bg-blue-100 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                            const badgeCls = colorMap[a.actividad] || 'bg-slate-100 text-slate-700';
+                                            return (
+                                                <div key={a._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeCls}`}>{a.actividad}</span>
+                                                        <span className="text-sm text-slate-700">{f.toLocaleDateString('es-AR')}</span>
+                                                        <span className="text-sm text-slate-500">{f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-slate-500 text-sm text-center py-6">No hay asistencias para los filtros aplicados.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── PLANES ── */}
+                        {activeTab === 'planes' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-4">Historial de Planes</h3>
+                                <div className="flex flex-wrap gap-3 mb-3">
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={inputCls} value={fechaDesdePlanes} onChange={(e) => setFechaDesdePlanes(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={inputCls} value={fechaHastaPlanes} onChange={(e) => setFechaHastaPlanes(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
+                                        <select className={inputCls} value={ordenPlanes} onChange={(e) => setOrdenPlanes(e.target.value as any)}>
+                                            <option value="recientes">Más recientes</option>
+                                            <option value="antiguos">Más antiguos</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button onClick={() => { setFechaDesdePlanes(''); setFechaHastaPlanes(''); setOrdenPlanes('recientes'); }} className="px-3 py-1.5 text-xs mb-1.5 font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                                {historialPlanesFiltrado.length > 0 ? (
+                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                        {historialPlanesFiltrado.map((plan: any, idx: number) => (
+                                            <div key={plan._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Inicio</p><p className="font-medium text-slate-800">{new Date(plan.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fin</p><p className="font-medium text-slate-800">{new Date(plan.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Días planificados</p><p className="font-medium text-slate-800">{plan.duracion}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Asistencias</p><p className="font-medium text-slate-800">{plan.asistenciasContadas}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Horario frecuente</p><p className="font-medium text-slate-800">{plan.horarioMasFrecuente}</p></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-slate-500 text-sm text-center py-6">No hay planes finalizados para los filtros aplicados.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── PAGOS ── */}
+                        {activeTab === 'pagos' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-4">Historial de Pagos</h3>
+                                <div className="flex flex-wrap gap-3 mb-3">
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={inputCls} value={fechaDesdePagos} onChange={(e) => setFechaDesdePagos(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={inputCls} value={fechaHastaPagos} onChange={(e) => setFechaHastaPagos(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Año</label>
+                                        <select className={inputCls} value={filtroAnio} onChange={(e) => setFiltroAnio(e.target.value)}>
+                                            <option value="Todos">Todos</option>
+                                            {aniosDisponibles.map((a) => <option key={a as number} value={a as number}>{a as number}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Método</label>
+                                        <select className={inputCls} value={filtroMetodo} onChange={(e) => setFiltroMetodo(e.target.value)}>
+                                            <option value="Todos">Todos</option>
+                                            <option value="efectivo">Efectivo</option>
+                                            <option value="transferencia">Transferencia</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
+                                        <select className={inputCls} value={ordenPagos} onChange={(e) => setOrdenPagos(e.target.value as any)}>
+                                            <option value="recientes">Más recientes</option>
+                                            <option value="antiguos">Más antiguos</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button onClick={() => { setFechaDesdePagos(''); setFechaHastaPagos(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrdenPagos('recientes'); }} className="px-3 py-1.5 mb-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                                {pagosPanelFiltrados.length > 0 ? (
+                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                        {pagosPanelFiltrados.map((p: Pago, idx: number) => (
+                                            <div key={p._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fecha</p><p className="font-medium text-slate-800">{new Date(p.fechaPago).toLocaleDateString('es-AR')}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Mes</p><p className="font-medium text-slate-800 capitalize">{p.mes}</p></div>
+                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Método</p><p className="font-medium text-slate-800 capitalize">{p.metodoPago || '-'}</p></div>
+                                                    <div>
+                                                        <p className="text-xs text-slate-400 font-semibold uppercase">Monto</p>
+                                                        <p className="font-bold text-emerald-600">${p.tarifa}</p>
+                                                        {p.recargo ? <p className="text-xs text-slate-400">+ ${p.recargo} recargo</p> : null}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-slate-500 text-sm text-center py-6">No hay pagos para los filtros aplicados.</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
-
 }

@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import { swalNotify } from '@/utils/swalConfig';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css';
@@ -39,6 +40,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
         if (!/^\d+$/.test(cleanDNI)) {
             Swal.fire({
+                ...swalNotify,
                 icon: 'error',
                 title: 'DNI inválido',
                 text: 'El DNI debe contener solo números.',
@@ -77,6 +79,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             }
 
             Swal.fire({
+                ...swalNotify,
                 icon: 'success',
                 title: `¡Hola ${alumno.nombre}!`,
                 text: `Tu asistencia para ${actividad} ha sido registrada.`,
@@ -87,10 +90,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
             setDni('');
             if (keyboard) keyboard.setInput('');
         } catch (error: any) {
-            console.error('Error registrando asistencia:', error);
-
             if (error.message.includes("Asistencia ya registrada")) {
                 Swal.fire({
+                    ...swalNotify,
                     icon: 'info',
                     title: 'Ya registrada',
                     text: `Ya se registró una asistencia para ${actividad} hoy.`,
@@ -107,6 +109,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 await addIngreso(ingreso);
 
                 Swal.fire({
+                    ...swalNotify,
                     icon: 'info',
                     title: `¡Hola!`,
                     text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
@@ -139,8 +142,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 if (response.ok) {
                     await deleteIngreso(ingreso.id);
                 }
-            } catch (error) {
-                console.error('Error al sincronizar ingreso:', error);
+            } catch {
+                // silenced
             }
         }
         setIsSyncing(false);
@@ -161,23 +164,18 @@ export default function RegistrarAsistenciaPorDNIPage() {
     }, []);
 
     return (
-        <div className="max-w-lg mx-auto bg-white p-6 sm:p-8 md:p-10 rounded shadow-md mt-8 relative">
+        <div className="max-w-lg mx-auto bg-slate-800 border border-slate-700 p-6 sm:p-8 md:p-10 rounded-2xl shadow-2xl mt-8 relative">
             {isLoading && (
-                <div className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center z-10">
-                    <div className="loader border-t-4 border-gray-800 rounded-full w-12 h-12 animate-spin"></div>
+                <div className="absolute inset-0 bg-slate-800/80 rounded-2xl flex justify-center items-center z-10">
+                    <div className="border-t-4 border-emerald-400 rounded-full w-12 h-12 animate-spin"></div>
                 </div>
             )}
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Ingrese su Documento</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Ingrese su Documento</h1>
 
             <div className="mb-6 text-center">
                 <div
-                    className="border border-gray-400 bg-gray-100 rounded-md py-4 px-6 text-3xl font-bold text-gray-800 tracking-widest shadow-md min-h-[56px]"
-                    style={{
-                        fontFamily: "'Courier New', monospace",
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
+                    className="border border-slate-600 bg-slate-900 rounded-xl py-4 px-6 text-3xl font-bold text-white tracking-widest shadow-inner min-h-[56px]"
+                    style={{ fontFamily: "'Courier New', monospace", display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                     {dni || <span className="invisible">XX.XXX.XXX</span>}
                 </div>
@@ -188,7 +186,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Musculación' ? 'bg-[#007bff96]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
                         disabled={isLoading}
                     >
                         Musculación
@@ -196,7 +194,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Intermitente')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded ${actividad === 'Intermitente' ? 'bg-[#ff851bb0]' : 'bg-gray-200'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Intermitente' ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
                         disabled={isLoading}
                     >
                         Intermitente

@@ -1,8 +1,11 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import { requireAuth } from '@/lib/requireAuth';
 
-// Obtener el historial de asistencia del alumno
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
     const { id } = params;
@@ -14,24 +17,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
         }
 
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error('Error al obtener el alumno:', error);
+    } catch {
         return new Response('Error al obtener el alumno', { status: 500 });
     }
 }
 
-// Actualizar asistencia
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     await connectMongoDB();
 
-    const { id } = params; // Obtiene el id del alumno desde los parámetros de la ruta
-    const { dia, asistencia } = await request.json(); // Obtiene el día y el nuevo estado de asistencia
+    const { id } = params;
+    const { dia, asistencia } = await request.json();
 
     try {
         const alumno = await Alumno.findByIdAndUpdate(
             id,
-            { $set: { [`asistencia.${dia}`]: asistencia } }, // Actualiza el estado de asistencia
-            { new: true } // Devuelve el documento actualizado
+            { $set: { [`asistencia.${dia}`]: asistencia } },
+            { new: true }
         );
 
         if (!alumno) {
@@ -39,8 +43,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         }
 
         return new Response(JSON.stringify(alumno), { status: 200 });
-    } catch (error) {
-        console.error(error);
+    } catch {
         return new Response('Error updating alumno', { status: 500 });
     }
 }

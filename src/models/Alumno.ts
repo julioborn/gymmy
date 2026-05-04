@@ -80,7 +80,7 @@ const PlanEntrenamientoHistorialSchema: Schema = new Schema({
 const AlumnoSchema = new mongoose.Schema<IAlumno>({
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
-    dni: { type: String, required: true },
+    dni: { type: String, required: true, unique: true },
     telefono: { type: String, required: false, default: null },
     email: { type: String, required: false, default: null },
     fechaNacimiento: { type: Date, required: true },

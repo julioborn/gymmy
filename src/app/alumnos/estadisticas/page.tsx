@@ -80,20 +80,21 @@ export default function Estadisticas() {
     };
 
     return (
-        <div className="bg-white p-6 rounded shadow-md max-w-6xl mx-auto">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Estadísticas</h2>
-
-            <div className="grid gap-6">
-                <div>
-                    <h3 className="text-lg font-bold mb-2">Top horarios Musculación</h3>
-                    <TopHorariosChart topHorarios={topHorarios} />
+        <div className="max-w-6xl mx-auto">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
+                <h1 className="text-xl font-bold text-white">Estadísticas</h1>
+            </div>
+            <div className="bg-white rounded-b-2xl shadow-xl p-6">
+                <div className="grid gap-6">
+                    <div>
+                        <h3 className="text-base font-bold text-slate-700 mb-3">Top horarios Musculación</h3>
+                        <TopHorariosChart topHorarios={topHorarios} />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-bold text-slate-700 mb-3">Asistencias por tipo de actividad</h3>
+                        <ActividadChart data={porActividad} />
+                    </div>
                 </div>
-
-                <div>
-                    <h3 className="text-lg font-bold mb-2">Asistencias por tipo de actividad</h3>
-                    <ActividadChart data={porActividad} />
-                </div>
-
             </div>
         </div>
     );

@@ -36,6 +36,7 @@ export interface Alumno {
 export function useAlumno(id: string) {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -43,10 +44,11 @@ export function useAlumno(id: string) {
         const fetchAlumno = async () => {
             try {
                 const res = await fetch(`/api/alumnos/${id}`);
+                if (!res.ok) throw new Error(`Error ${res.status}`);
                 const data = await res.json();
                 setAlumno(data);
-            } catch (error) {
-                console.error('Error fetching alumno', error);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Error desconocido');
             } finally {
                 setLoading(false);
             }
@@ -55,5 +57,5 @@ export function useAlumno(id: string) {
         fetchAlumno();
     }, [id]);
 
-    return { alumno, loading };
+    return { alumno, loading, error };
 }

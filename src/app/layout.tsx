@@ -37,7 +37,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="bg-gray-400 min-h-screen">
+      <body className="bg-slate-900 min-h-screen">
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
