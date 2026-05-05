@@ -5,7 +5,9 @@
       "Bash(git diff *)",
       "Bash(npx tsc *)",
       "Bash(npm uninstall *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\PROYECTOS\\\\gymmy\\\\src\\\\app\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)"
     ]
   }
 }

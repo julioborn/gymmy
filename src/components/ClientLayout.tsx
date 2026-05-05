@@ -82,7 +82,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 }}
             >
                 <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {pathname !== '/' && pathname !== '/login' ? (
+                    {pathname !== '/login' && (pathname !== '/' || !!session) ? (
                         <IconButton
                             edge="start"
                             onClick={toggleMenu}

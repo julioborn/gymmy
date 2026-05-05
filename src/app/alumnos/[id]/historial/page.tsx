@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import esLocale from '@fullcalendar/core/locales/es';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -130,9 +131,12 @@ export default function HistorialAlumnoPage() {
     const [yearPagos, setYearPagos] = useState(new Date().getFullYear());
 
     // Tabs
-    const [activeTab, setActiveTab] = useState<'asistencias' | 'planes' | 'pagos' | null>(null);
+    const [activeTab, setActiveTab] = useState<'asistencias' | 'planes' | 'pagos'>('asistencias');
+    const [filtrosAbiertos, setFiltrosAbiertos] = useState<Record<string, boolean>>({});
+    const toggleFiltros = (tab: string) => setFiltrosAbiertos(prev => ({ ...prev, [tab]: !prev[tab] }));
     const sectionRef = useRef<HTMLDivElement>(null);
     const planDeletedRef = useRef(false);
+    const skipAutoDeleteRef = useRef(false);
     // Filtros asistencias
     const [filtroActividad, setFiltroActividad] = useState('Todas');
     const [fechaDesdeAsist, setFechaDesdeAsist] = useState('');
@@ -150,11 +154,58 @@ export default function HistorialAlumnoPage() {
     const [ordenPagos, setOrdenPagos] = useState<'recientes' | 'antiguos'>('recientes');
 
     const handleTabClick = (tab: 'asistencias' | 'planes' | 'pagos') => {
-        const next = activeTab === tab ? null : tab;
-        setActiveTab(next);
-        if (next) {
-            setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
-        }
+        setActiveTab(tab);
+    };
+
+    const handleEliminarAsistencia = async (asistenciaId: string) => {
+        const { isConfirmed } = await Swal.fire({
+            ...swalDanger,
+            title: '¿Eliminar asistencia?',
+            text: 'Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!isConfirmed) return;
+        try {
+            const res = await fetch(`/api/asistencias/${asistenciaId}`, { method: 'DELETE' });
+            if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Asistencia eliminada' }); fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar' });
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar' }); }
+    };
+
+    const handleEliminarPlanHistorial = async (planId: string) => {
+        const { isConfirmed } = await Swal.fire({
+            ...swalDanger,
+            title: '¿Eliminar plan del historial?',
+            text: 'Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!isConfirmed) return;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/plan/${planId}`, { method: 'DELETE' });
+            if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan eliminado' }); fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar' });
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar' }); }
+    };
+
+    const handleEliminarPago = async (pagoId: string) => {
+        const { isConfirmed } = await Swal.fire({
+            ...swalDanger,
+            title: '¿Eliminar pago?',
+            text: 'Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!isConfirmed) return;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/pagos/${pagoId}`, { method: 'DELETE' });
+            if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago eliminado' }); fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar' });
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar' }); }
     };
 
     useEffect(() => {
@@ -305,6 +356,8 @@ export default function HistorialAlumnoPage() {
             if (
                 data.planEntrenamiento &&
                 data.planEntrenamiento.fechaInicio &&
+                data.planEntrenamiento.duracion != null &&
+                !data.planEntrenamiento.terminado &&
                 !isNaN(new Date(data.planEntrenamiento.fechaInicio).getTime())
             ) {
                 const fechaInicio = new Date(data.planEntrenamiento.fechaInicio);
@@ -320,15 +373,17 @@ export default function HistorialAlumnoPage() {
                 const diasRestantes = duracion - asistenciasMusculacion;
 
                 if (diasRestantes <= 0) {
-                    if (!planDeletedRef.current) {
+                    if (!planDeletedRef.current && !skipAutoDeleteRef.current) {
                         planDeletedRef.current = true;
                         await fetch(`/api/alumnos/${id}/plan`, {
                             method: 'DELETE',
                             headers: { 'Content-Type': 'application/json' },
                         });
                     }
+                    skipAutoDeleteRef.current = false;
                     setDiasRestantes(null);
                 } else {
+                    skipAutoDeleteRef.current = false;
                     setDiasRestantes(diasRestantes);
                 }
             } else {
@@ -348,22 +403,35 @@ export default function HistorialAlumnoPage() {
         return <Loader />;
     }
 
-    // Ajustamos la creación de eventos para que incluya la tarifa en el título
+    // Helper: add one day using local-time constructor to avoid UTC timezone shift
+    const addOneDay = (dateStr: string) => {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const next = new Date(y, m - 1, d + 1);
+        return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+    };
+
+    const localToday = (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })();
+
+    const asistenciasPlan = (() => {
+        if (!alumno.planEntrenamiento?.fechaInicio || alumno.planEntrenamiento?.terminado) return 0;
+        const fi = new Date(alumno.planEntrenamiento.fechaInicio);
+        return alumno.asistencia.filter((a: Asistencia) =>
+            a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= fi
+        ).length;
+    })();
+
     const events: EventInput[] = [
+        // Asistencias
         ...alumno.asistencia.map((asistencia) => {
             let color = '';
             switch (asistencia.actividad) {
-                case 'Musculación':
-                    color = '#007bff'; // Azul
-                    break;
-                case 'Intermitente':
-                    color = '#ff851b'; // Naranja
-                    break;
-                case 'Otro':
-                    color = '#f1c40f'; // Amarillo
-                    break;
-                default:
-                    color = '#28a745'; // Verde por defecto
+                case 'Musculación': color = '#007bff'; break;
+                case 'Intermitente': color = '#ff851b'; break;
+                case 'Otro': color = '#f1c40f'; break;
+                default: color = '#28a745';
             }
             return asistencia.presente ? {
                 title: asistencia.actividad,
@@ -372,48 +440,78 @@ export default function HistorialAlumnoPage() {
                 color,
                 extendedProps: { _id: asistencia._id, tipo: 'actividad' },
             } : null;
-        }).filter(event => event !== null), // Filtrar valores nulos o inválidos
+        }).filter(Boolean),
 
-        alumno.planEntrenamiento.fechaInicio && {
-            title: `Inicio del plan (${alumno.planEntrenamiento.duracion})`,
+        // Plan activo: rango desde inicio hasta hoy (verde = en progreso)
+        alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && {
+            title: `Plan iniciado (${asistenciasPlan}/${alumno.planEntrenamiento.duracion})`,
             start: convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio),
+            end: addOneDay(localToday),
             display: 'block',
-            color: '#ff0000', // Rojo para el inicio del plan
+            backgroundColor: '#bbf7d0',
+            borderColor: '#4ade80',
+            textColor: '#15803d',
             extendedProps: { tipo: 'plan' },
         },
 
-        ...alumno.pagos.map((pago) => ({
-            title: `Pago ${pago.mes}`,   // Este es el título que se mostrará en la primera línea
-            start: convertirAFechaLocal(pago.fechaPago),
-            allDay: false,
-            display: 'block',
-            color: '#28a745', // Verde para los pagos
-            extendedProps: {
-                _id: pago._id,
-                tipo: 'pago',
-                tarifa: pago.tarifa,  // Pasamos la tarifa en extendedProps
-            },
-        })),
-    ].filter(event => event) as EventInput[]; // Asegurarte de que solo queden eventos válidos
+        // Planes históricos: rango completo de inicio a fin (rojo = finalizado)
+        ...alumno.planEntrenamientoHistorial.map((plan: any) => {
+            const inicioStr = convertirAFechaLocal(plan.fechaInicio);
+            const finStr = convertirAFechaLocal(plan.fechaFin);
+            return {
+                title: `Plan completado`,
+                start: inicioStr,
+                end: addOneDay(finStr),
+                display: 'block',
+                backgroundColor: '#fecaca',
+                borderColor: '#f87171',
+                textColor: '#b91c1c',
+                extendedProps: { tipo: 'planHistorial', planId: plan._id, plan },
+            };
+        }),
+
+        // Pagos — use local date+time so list view shows actual registration time
+        ...alumno.pagos.map((pago) => {
+            const pf = new Date(pago.fechaPago);
+            const pStart = `${pf.getFullYear()}-${String(pf.getMonth() + 1).padStart(2, '0')}-${String(pf.getDate()).padStart(2, '0')}T${String(pf.getHours()).padStart(2, '0')}:${String(pf.getMinutes()).padStart(2, '0')}:00`;
+            return {
+                title: `Pago ${pago.mes}`,
+                start: pStart,
+                allDay: false,
+                display: 'block',
+                color: '#28a745',
+                extendedProps: { _id: pago._id, tipo: 'pago', tarifa: pago.tarifa },
+            };
+        }),
+    ].filter(Boolean) as EventInput[];
+
+    const getTodayStr = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
 
     // Seleccionar fecha para agregar o editar una actividad, plan o pago
-    const handleDateSelect = async (selectInfo: DateSelectArg) => {
+    const handleDateSelect = async (selectInfo: DateSelectArg, forceAction?: 'plan' | 'actividad' | 'pago') => {
         const fechaSeleccionada = selectInfo.startStr;
 
-        const { value: action } = await Swal.fire({
-            ...swalBase,
-            title: 'Seleccionar acción',
-            input: 'select',
-            inputOptions: {
-                plan: 'Ingresar duración del plan',
-                actividad: 'Ingresar actividad',
-                pago: 'Registrar pago',
-            },
-            inputPlaceholder: 'Selecciona una opción',
-            showCancelButton: true,
-            confirmButtonText: 'Aceptar',
-            cancelButtonText: 'Cancelar',
-        });
+        let action: string | undefined = forceAction;
+        if (!action) {
+            const result = await Swal.fire({
+                ...swalBase,
+                title: 'Seleccionar acción',
+                input: 'select',
+                inputOptions: {
+                    plan: 'Ingresar duración del plan',
+                    actividad: 'Ingresar actividad',
+                    pago: 'Registrar pago',
+                },
+                inputPlaceholder: 'Selecciona una opción',
+                showCancelButton: true,
+                confirmButtonText: 'Aceptar',
+                cancelButtonText: 'Cancelar',
+            });
+            action = result.value;
+        }
 
         if (action === 'plan') {
             const { value: duracion } = await Swal.fire({
@@ -439,6 +537,7 @@ export default function HistorialAlumnoPage() {
                         body: JSON.stringify({ fechaInicio: fechaSeleccionada, duracion: Number(duracion), terminado: false }),
                     });
                     if (response.ok) {
+                        skipAutoDeleteRef.current = true;
                         Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan de entrenamiento actualizado' });
                         fetchAlumno();
                     } else {
@@ -595,7 +694,8 @@ export default function HistorialAlumnoPage() {
                             : false;
 
                         const [year, month, day] = selectInfo.startStr.split('-');
-                        const fechaPago = new Date(Number(year), Number(month) - 1, Number(day));
+                        const _now = new Date();
+                        const fechaPago = new Date(Number(year), Number(month) - 1, Number(day), _now.getHours(), _now.getMinutes(), _now.getSeconds());
                         const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
 
                         const nuevoPago = {
@@ -796,7 +896,7 @@ export default function HistorialAlumnoPage() {
         } else if (tipoEvento === 'plan') {
             const confirmPlan = await Swal.fire({
                 ...swalDanger,
-                title: '¿Eliminar inicio del plan?',
+                title: '¿Eliminar plan activo?',
                 text: 'Esta acción no se puede deshacer.',
                 icon: 'warning',
                 showCancelButton: true,
@@ -805,20 +905,59 @@ export default function HistorialAlumnoPage() {
             });
 
             if (confirmPlan.isConfirmed) {
+                const savedScroll = window.scrollY;
                 try {
                     const response = await fetch(`/api/alumnos/${id}/plan`, {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                     });
                     if (response.ok) {
-                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Inicio del plan eliminado' });
-                        fetchAlumno();
+                        void Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan activo eliminado' });
+                        await fetchAlumno();
+                        requestAnimationFrame(() => window.scrollTo(0, savedScroll));
                     } else {
-                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el inicio del plan' });
+                        Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar el plan' });
                     }
                 } catch {
-                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al eliminar el inicio del plan' });
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al eliminar el plan' });
                 }
+            }
+        } else if (tipoEvento === 'planHistorial') {
+            const plan = clickInfo.event.extendedProps.plan;
+            const planId = clickInfo.event.extendedProps.planId;
+            const pct = plan.duracion > 0 ? Math.round((plan.asistenciasContadas / plan.duracion) * 100) : 0;
+            const { isConfirmed } = await Swal.fire({
+                ...swalDanger,
+                title: 'Plan completado',
+                html: `
+                    <div class="swal-form-body" style="text-align:left">
+                        <p style="margin:0 0 0.5rem;color:#475569;font-size:0.85rem;">
+                            <strong>Inicio:</strong> ${new Date(plan.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}<br>
+                            <strong>Fin:</strong> ${new Date(plan.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}<br>
+                            <strong>Días planificados:</strong> ${plan.duracion}<br>
+                            <strong>Asistencias:</strong> ${plan.asistenciasContadas} (${pct}%)<br>
+                            ${plan.horarioMasFrecuente ? `<strong>Horario frecuente:</strong> ${plan.horarioMasFrecuente}` : ''}
+                        </p>
+                        <p style="color:#ef4444;font-size:0.8rem;margin-top:0.5rem;">¿Eliminar este plan del historial?</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cerrar',
+            });
+            if (!isConfirmed) return;
+            const savedScroll = window.scrollY;
+            try {
+                const res = await fetch(`/api/alumnos/${id}/plan/${planId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    void Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan eliminado del historial' });
+                    await fetchAlumno();
+                    requestAnimationFrame(() => window.scrollTo(0, savedScroll));
+                } else {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo eliminar' });
+                }
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar' });
             }
         }
     };
@@ -900,8 +1039,7 @@ export default function HistorialAlumnoPage() {
 
             <div className="bg-white rounded-b-2xl shadow-xl overflow-hidden">
                 {/* Toolbar */}
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
-                    {/* Config: select de ajustes */}
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-end">
                     <select
                         className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
                         value=""
@@ -915,22 +1053,6 @@ export default function HistorialAlumnoPage() {
                         <option value="cuotas">Cuotas</option>
                         <option value="recargo">Recargo</option>
                     </select>
-
-                    {/* Tabs: select de secciones */}
-                    <select
-                        className="flex-1 border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                        value={activeTab || ''}
-                        onChange={(e) => {
-                            const val = e.target.value as 'asistencias' | 'planes' | 'pagos' | '';
-                            if (val) handleTabClick(val);
-                            else setActiveTab(null);
-                        }}
-                    >
-                        <option value="">Ver historial...</option>
-                        <option value="asistencias">Asistencias</option>
-                        <option value="planes">Planes</option>
-                        <option value="pagos">Pagos</option>
-                    </select>
                 </div>
 
                 {/* Calendario */}
@@ -943,6 +1065,7 @@ export default function HistorialAlumnoPage() {
                             timeZone="local"
                             initialView={calendarView}
                             events={events}
+                            locales={[esLocale]}
                             locale="es"
                             headerToolbar={headerToolbar}
                             buttonText={buttonText}
@@ -957,17 +1080,82 @@ export default function HistorialAlumnoPage() {
                                 const tipo = arg.event.extendedProps.tipo;
                                 const isListView = calendarView === 'listMonth';
                                 if (tipo === 'plan') {
+                                    const dotColor = '#15803d';
+                                    const dot = <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0, display: 'inline-block' }} />;
+                                    const arrow = <span style={{ fontSize: '1rem', fontWeight: 700, color: dotColor, flexShrink: 0, lineHeight: 1 }}>→</span>;
+                                    if (arg.isStart && arg.isEnd) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                {dot}
+                                                <strong style={{ fontSize: '0.68rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{arg.event.title}</strong>
+                                                {arrow}
+                                            </div>
+                                        );
+                                    }
+                                    if (arg.isStart) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                {dot}
+                                                <strong style={{ fontSize: '0.68rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{arg.event.title}</strong>
+                                            </div>
+                                        );
+                                    }
+                                    if (arg.isEnd) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                {arrow}
+                                            </div>
+                                        );
+                                    }
+                                    return <div style={{ width: '100%', height: '100%', cursor: 'pointer' }} />;
+                                }
+                                if (tipo === 'planHistorial') {
+                                    const dotColor = '#b91c1c';
+                                    const dot = <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0, display: 'inline-block' }} />;
+                                    const planData = arg.event.extendedProps.plan;
+                                    const countStr = planData ? `(${planData.asistenciasContadas}/${planData.duracion})` : '';
+                                    if (arg.isStart && arg.isEnd) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                {dot}
+                                                <strong style={{ fontSize: '0.68rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>Inicio plan</strong>
+                                                <strong style={{ fontSize: '0.68rem', whiteSpace: 'nowrap', flexShrink: 0 }}>Plan finalizado {countStr}</strong>
+                                                {dot}
+                                            </div>
+                                        );
+                                    }
+                                    if (arg.isStart) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                {dot}
+                                                <strong style={{ fontSize: '0.68rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>Inicio plan</strong>
+                                            </div>
+                                        );
+                                    }
+                                    if (arg.isEnd) {
+                                        return (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                                <strong style={{ fontSize: '0.68rem', whiteSpace: 'nowrap', flexShrink: 0 }}>Plan finalizado {countStr}</strong>
+                                                {dot}
+                                            </div>
+                                        );
+                                    }
                                     return (
-                                        <div className="flex items-center w-full h-full text-xs cursor-pointer px-1" style={{ whiteSpace: 'normal' }}>
-                                            <strong>{arg.event.title}</strong>
+                                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%', padding: '0 4px', overflow: 'hidden', gap: 4, cursor: 'pointer' }}>
+                                            <strong style={{ fontSize: '0.68rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                                                {planData?.duracion ? `${planData.duracion} días` : '—'}
+                                            </strong>
                                         </div>
                                     );
                                 }
                                 if (tipo === 'pago') {
                                     return (
                                         <div className="flex items-center justify-between w-full h-full text-xs cursor-pointer px-1 gap-1" style={{ whiteSpace: 'normal' }}>
-                                            <strong className="truncate">{arg.event.title}</strong>
-                                            <strong className="text-green-700 shrink-0">${arg.event.extendedProps.tarifa}</strong>
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <span style={{ backgroundColor: '#28a745', width: 7, height: 7, flexShrink: 0, display: 'inline-block', borderRadius: '50%' }} />
+                                                <strong className="truncate">{arg.event.title}</strong>
+                                            </div>
+                                            <strong className="text-white shrink-0">${arg.event.extendedProps.tarifa}</strong>
                                         </div>
                                     );
                                 }
@@ -977,7 +1165,7 @@ export default function HistorialAlumnoPage() {
                                         <div className="flex items-center justify-between w-full h-full text-xs cursor-pointer px-1 gap-1 overflow-hidden">
                                             <div className="flex items-center gap-1 min-w-0">
                                                 <span style={{ backgroundColor: arg.event.backgroundColor, width: 7, height: 7, flexShrink: 0, display: 'inline-block', borderRadius: '50%' }} />
-                                                <strong className="truncate">{isListView ? arg.event.title : arg.event.title.slice(0, 3)}</strong>
+                                                <strong className="truncate">{arg.event.title}</strong>
                                             </div>
                                             {hora && !isListView && <strong className="text-red-600 shrink-0">{hora}</strong>}
                                             {hora && isListView && <span className="text-slate-500 shrink-0">{hora}</span>}
@@ -990,15 +1178,52 @@ export default function HistorialAlumnoPage() {
                     </Suspense>
                 </div>
 
-                {/* Panels */}
-                {activeTab && (
-                    <div ref={sectionRef} className="px-6 py-6">
+                {/* Tab buttons */}
+                <div className="px-3 pt-4 pb-1 flex gap-1.5 sm:gap-2 border-b border-slate-100">
+                    {([
+                        { key: 'asistencias', label: 'Asistencias' },
+                        { key: 'planes',      label: 'Planes' },
+                        { key: 'pagos',       label: 'Pagos' },
+                    ] as const).map(({ key, label }) => (
+                        <button
+                            key={key}
+                            onClick={() => handleTabClick(key)}
+                            className={`flex-1 py-2 px-1 sm:px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all truncate ${
+                                activeTab === key
+                                    ? 'bg-slate-800 text-white shadow-sm'
+                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
 
+                {/* Panels */}
+                <div ref={sectionRef} className="px-3 sm:px-6 py-5">
+
+                        {/* ── ASISTENCIAS ── */}
                         {/* ── ASISTENCIAS ── */}
                         {activeTab === 'asistencias' && (
                             <div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-4">Asistencias</h3>
-                                <div className="flex flex-wrap gap-3 mb-3">
+                                <div className="flex items-center justify-between gap-2 mb-3">
+                                    <h3 className="text-base font-bold text-slate-800 shrink-0">Asistencias</h3>
+                                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                        <span className="text-xs text-slate-400 font-medium whitespace-nowrap">{asistenciasFiltradas.length} registro{asistenciasFiltradas.length !== 1 ? 's' : ''}</span>
+                                        <button
+                                            onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'actividad')}
+                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition whitespace-nowrap"
+                                        >
+                                            + Registrar
+                                        </button>
+                                        <button onClick={() => toggleFiltros('asistencias')} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                                            {filtrosAbiertos['asistencias'] ? '▲' : '▼'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {filtrosAbiertos['asistencias'] && (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                     <div>
                                         <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
                                         <input type="date" className={inputCls} value={fechaDesdeAsist} onChange={(e) => setFechaDesdeAsist(e.target.value)} />
@@ -1023,31 +1248,45 @@ export default function HistorialAlumnoPage() {
                                             <option value="antiguos">Más antiguas</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-end">
-                                        <button onClick={() => { setFechaDesdeAsist(''); setFechaHastaAsist(''); setFiltroActividad('Todas'); setOrdenAsist('recientes'); }} className="px-3 py-1.5 mb-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                            Limpiar
+                                    <div className="col-span-2 sm:col-span-4 flex justify-end">
+                                        <button onClick={() => { setFechaDesdeAsist(''); setFechaHastaAsist(''); setFiltroActividad('Todas'); setOrdenAsist('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                            Limpiar filtros
                                         </button>
                                     </div>
                                 </div>
+                                )}
                                 {asistenciasFiltradas.length > 0 ? (
-                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                    <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                                         {asistenciasFiltradas.map((a: Asistencia) => {
                                             const f = new Date(a.fecha);
                                             const colorMap: Record<string, string> = { Musculación: 'bg-blue-100 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
                                             const badgeCls = colorMap[a.actividad] || 'bg-slate-100 text-slate-700';
+                                            const diaSemana = f.toLocaleDateString('es-AR', { weekday: 'short' });
                                             return (
-                                                <div key={a._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeCls}`}>{a.actividad}</span>
-                                                        <span className="text-sm text-slate-700">{f.toLocaleDateString('es-AR')}</span>
-                                                        <span className="text-sm text-slate-500">{f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                                                <div key={a._id} className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition group">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
+                                                        <span className={`self-start shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeCls}`}>{a.actividad}</span>
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <span className="text-sm font-medium text-slate-700 capitalize">{diaSemana} {f.toLocaleDateString('es-AR')}</span>
+                                                            <span className="text-xs text-slate-400 shrink-0">{f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
+                                                        </div>
                                                     </div>
+                                                    <button
+                                                        onClick={() => handleEliminarAsistencia(a._id)}
+                                                        className="shrink-0 ml-2 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100"
+                                                        title="Eliminar asistencia"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                            <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-500 text-sm text-center py-6">No hay asistencias para los filtros aplicados.</p>
+                                    <p className="text-slate-500 text-sm text-center py-8">No hay asistencias para los filtros aplicados.</p>
                                 )}
                             </div>
                         )}
@@ -1055,8 +1294,24 @@ export default function HistorialAlumnoPage() {
                         {/* ── PLANES ── */}
                         {activeTab === 'planes' && (
                             <div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-4">Historial de Planes</h3>
-                                <div className="flex flex-wrap gap-3 mb-3">
+                                <div className="flex items-center justify-between gap-2 mb-3">
+                                    <h3 className="text-base font-bold text-slate-800 shrink-0">Planes</h3>
+                                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                        <span className="text-xs text-slate-400 font-medium whitespace-nowrap">{historialPlanesFiltrado.length} plan{historialPlanesFiltrado.length !== 1 ? 'es' : ''}</span>
+                                        <button
+                                            onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'plan')}
+                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition whitespace-nowrap"
+                                        >
+                                            + Registrar
+                                        </button>
+                                        <button onClick={() => toggleFiltros('planes')} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                                            {filtrosAbiertos['planes'] ? '▲' : '▼'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {filtrosAbiertos['planes'] && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                     <div>
                                         <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
                                         <input type="date" className={inputCls} value={fechaDesdePlanes} onChange={(e) => setFechaDesdePlanes(e.target.value)} />
@@ -1072,28 +1327,69 @@ export default function HistorialAlumnoPage() {
                                             <option value="antiguos">Más antiguos</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-end">
-                                        <button onClick={() => { setFechaDesdePlanes(''); setFechaHastaPlanes(''); setOrdenPlanes('recientes'); }} className="px-3 py-1.5 text-xs mb-1.5 font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                            Limpiar
+                                    <div className="col-span-2 sm:col-span-3 flex justify-end">
+                                        <button onClick={() => { setFechaDesdePlanes(''); setFechaHastaPlanes(''); setOrdenPlanes('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                            Limpiar filtros
                                         </button>
                                     </div>
                                 </div>
+                                )}
                                 {historialPlanesFiltrado.length > 0 ? (
-                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                                        {historialPlanesFiltrado.map((plan: any, idx: number) => (
-                                            <div key={plan._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Inicio</p><p className="font-medium text-slate-800">{new Date(plan.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fin</p><p className="font-medium text-slate-800">{new Date(plan.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Días planificados</p><p className="font-medium text-slate-800">{plan.duracion}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Asistencias</p><p className="font-medium text-slate-800">{plan.asistenciasContadas}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Horario frecuente</p><p className="font-medium text-slate-800">{plan.horarioMasFrecuente}</p></div>
+                                    <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
+                                        {historialPlanesFiltrado.map((plan: any, idx: number) => {
+                                            const pct = plan.duracion > 0 ? Math.min(100, Math.round((plan.asistenciasContadas / plan.duracion) * 100)) : 0;
+                                            return (
+                                                <div key={plan._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition group">
+                                                    <div className="flex items-start justify-between gap-2 mb-3">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="text-sm font-semibold text-slate-800">
+                                                                {new Date(plan.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                            <span className="text-slate-400 text-xs">→</span>
+                                                            <span className="text-sm font-semibold text-slate-800">
+                                                                {new Date(plan.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleEliminarPlanHistorial(plan._id)}
+                                                            className="shrink-0 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100"
+                                                            title="Eliminar plan"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                                <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
+                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Días</p>
+                                                            <p className="font-bold text-slate-800">{plan.duracion}</p>
+                                                        </div>
+                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
+                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Asistencias</p>
+                                                            <p className="font-bold text-slate-800">{plan.asistenciasContadas}</p>
+                                                        </div>
+                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
+                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Horario</p>
+                                                            <p className="font-bold text-slate-800">{plan.horarioMasFrecuente || '—'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex justify-between text-xs text-slate-500 mb-1">
+                                                            <span>Completado</span>
+                                                            <span>{pct}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-200 rounded-full h-1.5">
+                                                            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-500 text-sm text-center py-6">No hay planes finalizados para los filtros aplicados.</p>
+                                    <p className="text-slate-500 text-sm text-center py-8">No hay planes finalizados para los filtros aplicados.</p>
                                 )}
                             </div>
                         )}
@@ -1101,8 +1397,26 @@ export default function HistorialAlumnoPage() {
                         {/* ── PAGOS ── */}
                         {activeTab === 'pagos' && (
                             <div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-4">Historial de Pagos</h3>
-                                <div className="flex flex-wrap gap-3 mb-3">
+                                <div className="flex items-center justify-between gap-2 mb-3">
+                                    <h3 className="text-base font-bold text-slate-800 shrink-0">Pagos</h3>
+                                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                        <span className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
+                                            ${pagosPanelFiltrados.reduce((s: number, p: Pago) => s + (p.totalPagado ?? p.tarifa ?? 0), 0).toLocaleString('es-AR')}
+                                        </span>
+                                        <button
+                                            onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'pago')}
+                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition whitespace-nowrap"
+                                        >
+                                            + Registrar
+                                        </button>
+                                        <button onClick={() => toggleFiltros('pagos')} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                                            {filtrosAbiertos['pagos'] ? '▲' : '▼'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {filtrosAbiertos['pagos'] && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                     <div>
                                         <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
                                         <input type="date" className={inputCls} value={fechaDesdePagos} onChange={(e) => setFechaDesdePagos(e.target.value)} />
@@ -1133,36 +1447,54 @@ export default function HistorialAlumnoPage() {
                                             <option value="antiguos">Más antiguos</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-end">
-                                        <button onClick={() => { setFechaDesdePagos(''); setFechaHastaPagos(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrdenPagos('recientes'); }} className="px-3 py-1.5 mb-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                                            Limpiar
+                                    <div className="col-span-2 sm:col-span-3 flex justify-end">
+                                        <button onClick={() => { setFechaDesdePagos(''); setFechaHastaPagos(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrdenPagos('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                            Limpiar filtros
                                         </button>
                                     </div>
                                 </div>
+                                )}
                                 {pagosPanelFiltrados.length > 0 ? (
-                                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                                        {pagosPanelFiltrados.map((p: Pago, idx: number) => (
-                                            <div key={p._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition">
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fecha</p><p className="font-medium text-slate-800">{new Date(p.fechaPago).toLocaleDateString('es-AR')}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Mes</p><p className="font-medium text-slate-800 capitalize">{p.mes}</p></div>
-                                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Método</p><p className="font-medium text-slate-800 capitalize">{p.metodoPago || '-'}</p></div>
-                                                    <div>
-                                                        <p className="text-xs text-slate-400 font-semibold uppercase">Monto</p>
-                                                        <p className="font-bold text-emerald-600">${p.tarifa}</p>
-                                                        {p.recargo ? <p className="text-xs text-slate-400">+ ${p.recargo} recargo</p> : null}
+                                    <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                                        {pagosPanelFiltrados.map((p: Pago, idx: number) => {
+                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-100 text-emerald-700' : p.metodoPago === 'transferencia' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500';
+                                            return (
+                                                <div key={p._id || idx} className="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition group">
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        <div className="flex flex-col min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-sm font-semibold text-slate-800 capitalize">{p.mes}</span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${metodoCls} capitalize`}>{p.metodoPago || '—'}</span>
+                                                            </div>
+                                                            <span className="text-xs text-slate-400 mt-0.5">{new Date(p.fechaPago).toLocaleDateString('es-AR')}{p.diasMusculacion ? ` · ${p.diasMusculacion}d/sem` : ''}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 shrink-0">
+                                                        <div className="text-right">
+                                                            <p className="font-bold text-emerald-600">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</p>
+                                                            {p.recargo ? <p className="text-xs text-slate-400">incl. ${p.recargo} recargo</p> : null}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleEliminarPago(p._id)}
+                                                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100"
+                                                            title="Eliminar pago"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                                                <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-500 text-sm text-center py-6">No hay pagos para los filtros aplicados.</p>
+                                    <p className="text-slate-500 text-sm text-center py-8">No hay pagos para los filtros aplicados.</p>
                                 )}
                             </div>
                         )}
                     </div>
-                )}
             </div>
         </div>
     );

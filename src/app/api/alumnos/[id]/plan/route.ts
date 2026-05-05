@@ -32,12 +32,41 @@ export async function POST(request: Request, { params }: { params: { id: string 
         const diasUsados = actividadesPrevias.length;
         const diasRestantes = Math.max(duracion - diasUsados, 0);
 
-        alumno.planEntrenamiento = {
-            fechaInicio,
-            duracion,
-            diasRestantes,
-            terminado: diasRestantes === 0,
-        };
+        if (diasRestantes === 0) {
+            // All required sessions already exist — archive directly to historial
+            const sorted = [...actividadesPrevias].sort(
+                (a: any, b: any) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+            );
+            const completingActivity = sorted[Math.min(duracion - 1, sorted.length - 1)];
+            const fechaFin = completingActivity ? new Date(completingActivity.fecha) : new Date(fechaInicio);
+
+            const diasSemana = actividadesPrevias.map((a: any) => new Date(a.fecha).getDay());
+            const conteoDias = diasSemana.reduce((acc: Record<number, number>, dia: number) => {
+                acc[dia] = (acc[dia] || 0) + 1;
+                return acc;
+            }, {});
+            const diasTexto = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const entries = Object.entries(conteoDias) as [string, number][];
+            const diaMasFrecuente = entries.length > 0 ? entries.sort(([, a], [, b]) => b - a)[0][0] : null;
+            const horarioMasFrecuente = diaMasFrecuente !== null ? diasTexto[Number(diaMasFrecuente)] : null;
+
+            alumno.planEntrenamientoHistorial.push({
+                fechaInicio: new Date(fechaInicio),
+                fechaFin,
+                duracion,
+                asistenciasContadas: diasUsados,
+                horarioMasFrecuente,
+            });
+
+            alumno.planEntrenamiento = undefined;
+        } else {
+            alumno.planEntrenamiento = {
+                fechaInicio,
+                duracion,
+                diasRestantes,
+                terminado: false,
+            };
+        }
 
         await alumno.save();
 

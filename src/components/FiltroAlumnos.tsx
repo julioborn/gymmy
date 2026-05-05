@@ -53,8 +53,8 @@ export default function FiltrosAlumnos({
                     className="border border-gray-300 p-2 rounded bg-gray-200 w-full cursor-pointer"
                 >
                     <option value="">Días Restantes Plan</option>
-                    <option value="asc">Días Restantes (Ascendente)</option>
-                    <option value="desc">Días Restantes (Descendente)</option>
+                    <option value="asc">Días Restantes ↑</option>
+                    <option value="desc">Días Restantes ↓</option>
                 </select>
                 <select
                     value={filtroDiasEntrena}
