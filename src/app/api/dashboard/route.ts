@@ -3,13 +3,14 @@ import Alumno from '@/models/Alumno';
 import Gasto from '@/models/Gasto';
 import Ingreso from '@/models/Ingreso';
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -24,19 +25,17 @@ export async function GET() {
     const finHoy = new Date(now); finHoy.setHours(23, 59, 59, 999);
 
     const [alumnos, gastosData, ingresosData] = await Promise.all([
-        Alumno.find({}).lean(),
-        Gasto.find({ fecha: { $gte: inicioMes, $lte: finMes } }).lean(),
-        Ingreso.find({ fecha: { $gte: inicioMes, $lte: finMes } }).lean(),
+        Alumno.find({ gimnasioId }).lean(),
+        Gasto.find({ gimnasioId, fecha: { $gte: inicioMes, $lte: finMes } }).lean(),
+        Ingreso.find({ gimnasioId, fecha: { $gte: inicioMes, $lte: finMes } }).lean(),
     ]);
 
     const totalAlumnos = alumnos.length;
 
-    // % pagaron este mes
     const pagados = alumnos.filter(a =>
         (a.pagos as any[]).some(p => p.mes.toLowerCase() === mesActual)
     ).length;
 
-    // Planes por vencer (0-5 días)
     const planesVenciendo = alumnos
         .filter(a => (a.planEntrenamiento as any)?.fechaInicio && !(a.planEntrenamiento as any).terminado)
         .map(a => {
@@ -55,7 +54,6 @@ export async function GET() {
         .filter(a => a.diasRestantes >= 0 && a.diasRestantes <= 5)
         .sort((a, b) => a.diasRestantes - b.diasRestantes);
 
-    // Horario pico del mes (hora más frecuente en asistencias)
     const horasEsteMes: number[] = [];
     for (const a of alumnos) {
         for (const s of a.asistencia as any[]) {
@@ -74,7 +72,6 @@ export async function GET() {
         horaPico = `${peak.toString().padStart(2, '0')}:00`;
     }
 
-    // Asistencias hoy
     const asistenciasHoy = alumnos.reduce((count, a) => {
         const vino = (a.asistencia as any[]).some(s => {
             const f = new Date(s.fecha);
@@ -83,7 +80,6 @@ export async function GET() {
         return count + (vino ? 1 : 0);
     }, 0);
 
-    // Financiero del mes
     const ingresosCuotas = alumnos.reduce((sum, a) => {
         return sum + (a.pagos as any[])
             .filter(p => {

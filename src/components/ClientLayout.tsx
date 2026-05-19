@@ -47,8 +47,10 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const toggleMenu = () => setMenuOpen((v) => !v);
 
     const menuLinks = (() => {
-        if (session?.user?.role === 'dueño') return menuItems;
-        if (session?.user?.role === 'profesor') return menuItems.filter(
+        const role = session?.user?.role;
+        if (role === 'superadmin') return [];
+        if (role === 'admin' || role === 'dueño') return menuItems;
+        if (role === 'profesor') return menuItems.filter(
             (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
         );
         return [];

@@ -29,7 +29,6 @@ export interface IAlumno extends Document {
     pagos: IPago[];
     planEntrenamiento: IPlanEntrenamiento;
     planEntrenamientoHistorial: IPlanEntrenamientoHistorial[];
-    // Nuevos campos
     fechaInicio?: Date | null;
     horarioEntrenamiento?: 'mañana' | 'siesta' | 'tarde' | null;
     horaExactaEntrenamiento?: string | null;
@@ -37,6 +36,8 @@ export interface IAlumno extends Document {
     historialDeVida?: string;
     objetivos?: string;
     patologias?: string;
+    gimnasioId: mongoose.Types.ObjectId;
+    password?: string;
 }
 
 // Interfaz para el plan de entrenamiento
@@ -80,7 +81,8 @@ const PlanEntrenamientoHistorialSchema: Schema = new Schema({
 const AlumnoSchema = new mongoose.Schema<IAlumno>({
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
-    dni: { type: String, required: true, unique: true },
+    dni: { type: String, required: true },
+    gimnasioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gimnasio', required: true },
     telefono: { type: String, required: false, default: null },
     email: { type: String, required: false, default: null },
     fechaNacimiento: { type: Date, required: true },
@@ -117,8 +119,10 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     historialDeVida: { type: String, required: false, default: "" },
     objetivos: { type: String, required: false, default: "" },
     patologias: { type: String, required: false, default: "" },
+    password: { type: String, select: false },
 });
 
-// Exportar modelo
+AlumnoSchema.index({ dni: 1, gimnasioId: 1 }, { unique: true });
+
 const Alumno = mongoose.models.Alumno || mongoose.model<IAlumno>('Alumno', AlumnoSchema);
 export default Alumno;

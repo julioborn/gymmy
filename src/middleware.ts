@@ -6,30 +6,55 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    // Permitir acceso sin token a /, /login, /manifest.json, /sw.js y archivos de íconos
     const publicPaths = ['/', '/login', '/manifest.json', '/sw.js', '/favicon.ico', '/apple-touch-icon.png'];
-    const isPublic = publicPaths.includes(pathname) || pathname.startsWith('/icons');
+    const isPublic = publicPaths.includes(pathname) ||
+        pathname.startsWith('/icons') ||
+        pathname.startsWith('/login/');
 
-    if (isPublic) {
-        return NextResponse.next();
-    }
+    if (isPublic) return NextResponse.next();
 
-    // Redirigir a login si no hay token
     if (!token) {
         const loginUrl = req.nextUrl.clone();
         loginUrl.pathname = '/login';
         return NextResponse.redirect(loginUrl);
     }
 
-    // Si es alumno, restringir solo a /alumnos/dni y /logout
+    // Superadmin: solo /superadmin
+    if (token.role === 'superadmin') {
+        if (!pathname.startsWith('/superadmin')) {
+            const url = req.nextUrl.clone();
+            url.pathname = '/superadmin';
+            return NextResponse.redirect(url);
+        }
+        return NextResponse.next();
+    }
+
+    // Alumno: solo /mi-cuenta
+    if (token.role === 'alumno') {
+        if (!pathname.startsWith('/mi-cuenta')) {
+            const url = req.nextUrl.clone();
+            url.pathname = '/mi-cuenta';
+            return NextResponse.redirect(url);
+        }
+        return NextResponse.next();
+    }
+
+    // Registro: solo /alumnos/dni
     if (token.role === 'registro') {
         const allowedPaths = ['/alumnos/dni', '/logout'];
         if (!allowedPaths.includes(pathname)) {
-            const redirectUrl = req.nextUrl.clone();
-            redirectUrl.pathname = '/alumnos/dni';
-            redirectUrl.search = '';
-            return NextResponse.redirect(redirectUrl);
+            const url = req.nextUrl.clone();
+            url.pathname = '/alumnos/dni';
+            url.search = '';
+            return NextResponse.redirect(url);
         }
+    }
+
+    // Gym staff no puede acceder a /superadmin ni /mi-cuenta
+    if (pathname.startsWith('/superadmin') || pathname.startsWith('/mi-cuenta')) {
+        const url = req.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url);
     }
 
     return NextResponse.next();

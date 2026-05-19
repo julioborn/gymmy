@@ -2,7 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 interface Pago {
     _id: string;
@@ -11,15 +11,16 @@ interface Pago {
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string; pagoId: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     try {
         await connectMongoDB();
 
         const { id, pagoId } = params;
 
-        const alumno = await Alumno.findById(id);
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
         if (!alumno) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
@@ -35,8 +36,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string; pagoId: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     try {
         await connectMongoDB();
@@ -48,7 +50,7 @@ export async function PUT(request: Request, { params }: { params: { id: string; 
             return NextResponse.json({ message: 'Faltan campos obligatorios' }, { status: 400 });
         }
 
-        const alumno = await Alumno.findById(id);
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
         if (!alumno) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }

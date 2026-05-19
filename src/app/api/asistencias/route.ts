@@ -1,16 +1,17 @@
-import Asistencia from '@/models/Asistencia';
+import Alumno from '@/models/Alumno';
 import connectMongoDB from '../../../lib/mongodb';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function GET() {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
     try {
-        const asistencias = await Asistencia.find();
-        return new Response(JSON.stringify(asistencias), { status: 200 });
+        const alumnos = await Alumno.find({ gimnasioId });
+        return new Response(JSON.stringify(alumnos), { status: 200 });
     } catch {
         return new Response('Error fetching asistencias', { status: 500 });
     }

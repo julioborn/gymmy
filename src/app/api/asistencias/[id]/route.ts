@@ -1,11 +1,12 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -13,7 +14,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { fecha, presente, actividad } = await request.json();
 
     try {
-        const alumno = await Alumno.findById(id);
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
         }
@@ -106,8 +107,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -115,7 +117,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const { fecha, actividad } = await request.json();
 
     try {
-        const alumno = await Alumno.findOne({ 'asistencia._id': id });
+        const alumno = await Alumno.findOne({ 'asistencia._id': id, gimnasioId });
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
         }
@@ -152,15 +154,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
     const { id } = params;
 
     try {
         const alumno = await Alumno.findOneAndUpdate(
-            { 'asistencia._id': id },
+            { 'asistencia._id': id, gimnasioId },
             { $pull: { asistencia: { _id: id } } },
             { new: true }
         );

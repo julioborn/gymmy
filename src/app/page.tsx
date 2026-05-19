@@ -4,6 +4,8 @@ import { useSession, signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Swal from 'sweetalert2';
+import { swalBase, swalNotify } from '@/utils/swalConfig';
 
 function getGreeting(): string {
     const h = new Date().getHours();
@@ -23,6 +25,8 @@ function fmt(n: number): string {
 function fmtDate(): string {
     return new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
+
+type Tarifa = { dias: number; valor: number };
 
 type DashboardData = {
     totalAlumnos: number;
@@ -108,6 +112,8 @@ export default function HomePage() {
     const router = useRouter();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+    const [recargo, setRecargo] = useState<number | null>(null);
 
     useEffect(() => {
         if (session?.user?.role === 'registro') {
@@ -124,6 +130,102 @@ export default function HomePage() {
                 .finally(() => setLoading(false));
         }
     }, [session]);
+
+    useEffect(() => {
+        fetch('/api/tarifas')
+            .then(r => r.json())
+            .then(d => {
+                setTarifas(d.tarifas || []);
+                if (d.recargo != null) setRecargo(d.recargo);
+            })
+            .catch(() => { });
+        fetch('/api/recargo')
+            .then(r => r.json())
+            .then(d => { if (d.monto != null) setRecargo(d.monto); })
+            .catch(() => { });
+    }, []);
+
+    const handleConfiguracionTarifas = async () => {
+        if (tarifas.length === 0) {
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recarga la página.' });
+            return;
+        }
+        const tarifaInputs = tarifas.map(t => `
+            <div>
+                <label class="swal-form-label">Días ${t.dias} por semana</label>
+                <input type="number" id="tarifa-${t.dias}" class="swal2-input" value="${t.valor}">
+            </div>
+        `).join('');
+        const result = await Swal.fire({
+            ...swalBase,
+            title: 'Configurar Cuotas',
+            html: `<div class="swal-form-body">${tarifaInputs}</div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => tarifas.map(t => ({
+                ...t,
+                valor: Number((document.getElementById(`tarifa-${t.dias}`) as HTMLInputElement).value),
+            })),
+        });
+        const nuevasTarifas = result.value as Tarifa[] | undefined;
+        if (nuevasTarifas) {
+            try {
+                const res = await fetch('/api/tarifas', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevasTarifas),
+                });
+                if (res.ok) {
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' });
+                    setTarifas(nuevasTarifas);
+                } else {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' });
+                }
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' });
+            }
+        }
+    };
+
+    const handleConfiguracionRecargos = async () => {
+        if (recargo === null) {
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
+            return;
+        }
+        const { value: nuevoMonto } = await Swal.fire({
+            ...swalBase,
+            title: 'Configurar Recargo',
+            input: 'number',
+            inputLabel: 'Monto del recargo ($)',
+            inputValue: recargo,
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
+                return null;
+            },
+        });
+        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+            try {
+                const res = await fetch('/api/recargo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
+                });
+                if (res.ok) {
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
+                    setRecargo(Number(nuevoMonto));
+                } else {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
+                }
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
+            }
+        }
+    };
 
     if (status === 'loading') {
         return (
@@ -309,6 +411,38 @@ export default function HomePage() {
                                 </div>
                             </Link>
                         ))}
+                    </div>
+                </div>
+
+                {/* Configuración */}
+                <div className="border-t border-slate-100" />
+                <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Configuración</p>
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={handleConfiguracionTarifas}
+                            className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-4 py-3 rounded-2xl transition-all duration-200 shadow-sm active:scale-[0.97]"
+                        >
+                            <svg className="w-5 h-5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                            </svg>
+                            <div className="text-left">
+                                <p className="font-bold text-sm text-slate-800">Cuotas</p>
+                                <p className="text-xs text-slate-500">Precios por días/semana</p>
+                            </div>
+                        </button>
+                        <button
+                            onClick={handleConfiguracionRecargos}
+                            className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-4 py-3 rounded-2xl transition-all duration-200 shadow-sm active:scale-[0.97]"
+                        >
+                            <svg className="w-5 h-5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <div className="text-left">
+                                <p className="font-bold text-sm text-slate-800">Recargo</p>
+                                <p className="text-xs text-slate-500">Monto por mora</p>
+                            </div>
+                        </button>
                     </div>
                 </div>
 

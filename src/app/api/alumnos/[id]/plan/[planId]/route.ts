@@ -1,10 +1,11 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function DELETE(_: Request, { params }: { params: { id: string; planId: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -12,7 +13,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string; pla
     const { planId } = params;
 
     try {
-        const alumno = await Alumno.findById(alumnoId);
+        const alumno = await Alumno.findOne({ _id: alumnoId, gimnasioId });
 
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });

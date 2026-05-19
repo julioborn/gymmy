@@ -14,6 +14,7 @@ const EjercicioSchema = new mongoose.Schema({
 const PlanSchema = new mongoose.Schema({
     alumno: { type: mongoose.Schema.Types.ObjectId, ref: 'Alumno', required: true },
     ejercicios: { type: [EjercicioSchema], required: true },
+    gimnasioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gimnasio', required: true },
 });
 
-export default mongoose.models.Plan || mongoose.model('Plan', PlanSchema, 'planes'); // Nombre explícito de la colección
+export default mongoose.models.Plan || mongoose.model('Plan', PlanSchema, 'planes');

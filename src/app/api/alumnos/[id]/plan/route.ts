@@ -1,10 +1,11 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -12,7 +13,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { fechaInicio, duracion } = await request.json();
 
     try {
-        const alumno = await Alumno.findById(id);
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
 
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
@@ -33,7 +34,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
         const diasRestantes = Math.max(duracion - diasUsados, 0);
 
         if (diasRestantes === 0) {
-            // All required sessions already exist — archive directly to historial
             const sorted = [...actividadesPrevias].sort(
                 (a: any, b: any) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
             );
@@ -77,15 +77,16 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
     const { id } = params;
 
     try {
-        const alumno = await Alumno.findById(id);
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
 
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });

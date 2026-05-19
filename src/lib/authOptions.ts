@@ -1,5 +1,5 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 
@@ -17,16 +17,12 @@ async function getDb() {
     return client.db(process.env.MONGODB_DB);
 }
 
-type UserWithRole = {
-    id: string;
-    username: string;
-    role: string;
-};
-
 export const authOptions: AuthOptions = {
     providers: [
+        // ── Personal del gimnasio ──────────────────────────────────────
         CredentialsProvider({
-            name: "Credentials",
+            id: "staff-credentials",
+            name: "Staff",
             credentials: {
                 username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" },
@@ -48,6 +44,43 @@ export const authOptions: AuthOptions = {
                     id: user._id.toString(),
                     username: user.username,
                     role: user.role,
+                    gimnasioId: user.gimnasioId?.toString() || null,
+                };
+            },
+        }),
+
+        // ── Alumnos ────────────────────────────────────────────────────
+        CredentialsProvider({
+            id: "alumno-credentials",
+            name: "Alumno",
+            credentials: {
+                dni: { label: "DNI", type: "text" },
+                password: { label: "Password", type: "password" },
+                gimnasioId: { label: "GimnasioId", type: "text" },
+            },
+            async authorize(credentials) {
+                if (!credentials?.dni || !credentials?.password) {
+                    throw new Error("Credenciales inválidas");
+                }
+
+                const db = await getDb();
+                const query: any = { dni: credentials.dni };
+                if (credentials.gimnasioId) {
+                    query.gimnasioId = new ObjectId(credentials.gimnasioId);
+                }
+
+                const alumno = await db.collection("alumnos").findOne(query);
+
+                if (!alumno || !alumno.password) throw new Error("Credenciales inválidas");
+
+                const isValid = await bcrypt.compare(credentials.password, alumno.password);
+                if (!isValid) throw new Error("Credenciales inválidas");
+
+                return {
+                    id: alumno._id.toString(),
+                    username: `${alumno.nombre} ${alumno.apellido}`,
+                    role: "alumno",
+                    gimnasioId: alumno.gimnasioId.toString(),
                 };
             },
         }),
@@ -63,14 +96,16 @@ export const authOptions: AuthOptions = {
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.role = token.role as string;
+                session.user.gimnasioId = (token.gimnasioId as string) || null;
             }
             return session;
         },
-        async jwt({ token, user }: { token: any; user?: UserWithRole }) {
+        async jwt({ token, user }: { token: any; user?: any }) {
             if (user) {
                 token.id = user.id;
                 token.username = user.username;
                 token.role = user.role;
+                token.gimnasioId = user.gimnasioId || null;
             }
             return token;
         },

@@ -1,10 +1,11 @@
 import Alumno from '@/models/Alumno';
 import connectMongoDB from '../../../lib/mongodb';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function GET(request: Request) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -12,7 +13,9 @@ export async function GET(request: Request) {
     const dni = searchParams.get('dni');
 
     try {
-        const alumnos = dni ? await Alumno.findOne({ dni }) : await Alumno.find();
+        const alumnos = dni
+            ? await Alumno.findOne({ dni, gimnasioId })
+            : await Alumno.find({ gimnasioId });
         return new Response(JSON.stringify(alumnos), { status: 200 });
     } catch {
         return new Response('Error fetching alumnos', { status: 500 });
@@ -20,8 +23,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -66,6 +70,7 @@ export async function POST(request: Request) {
                 diasRestantes: null,
                 terminado: false,
             },
+            gimnasioId,
         });
 
         await nuevoAlumno.save();
@@ -76,8 +81,9 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -100,8 +106,8 @@ export async function PUT(request: Request) {
             patologias,
         } = await request.json();
 
-        const alumnoActualizado = await Alumno.findByIdAndUpdate(
-            id,
+        const alumnoActualizado = await Alumno.findOneAndUpdate(
+            { _id: id, gimnasioId },
             {
                 nombre,
                 apellido,
@@ -132,15 +138,16 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
     try {
         const { id } = await request.json();
 
-        const alumnoEliminado = await Alumno.findByIdAndDelete(id);
+        const alumnoEliminado = await Alumno.findOneAndDelete({ _id: id, gimnasioId });
 
         if (!alumnoEliminado) {
             return new Response('Alumno no encontrado', { status: 404 });

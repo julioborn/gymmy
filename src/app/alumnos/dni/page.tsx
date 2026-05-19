@@ -14,17 +14,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [isSyncing, setIsSyncing] = useState(false);
     const [keyboard, setKeyboard] = useState<any>(null);
 
-    // Formatear el DNI para los casos X.XXX.XXX y XX.XXX.XXX
+    // Formatea de derecha a izquierda, grupos de 3, máximo 8 dígitos
     const formatDNIWithDots = (input: string): string => {
-        const cleanInput = input.replace(/\./g, ''); // Eliminar puntos existentes
-        if (cleanInput.length <= 7) {
-            // Caso X.XXX.XXX
-            return cleanInput.replace(/(\d{1})(\d{3})(\d{3})/, '$1.$2.$3');
-        } else if (cleanInput.length === 8) {
-            // Caso XX.XXX.XXX
-            return cleanInput.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
-        }
-        return cleanInput; // Retornar sin cambios si excede los 8 dígitos
+        const digits = input.replace(/\D/g, '').slice(0, 8);
+        const len = digits.length;
+        if (len <= 3) return digits;
+        if (len === 4) return `${digits.slice(0,1)}.${digits.slice(1)}`;
+        if (len === 5) return `${digits.slice(0,2)}.${digits.slice(2)}`;
+        if (len === 6) return `${digits.slice(0,3)}.${digits.slice(3)}`;
+        if (len === 7) return `${digits.slice(0,1)}.${digits.slice(1,4)}.${digits.slice(4)}`;
+        return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5)}`;
     };
 
     const handleKeyboardChange = (input: string) => {
@@ -38,12 +37,12 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
         const cleanDNI = dni.replace(/\./g, ''); // Eliminar puntos antes de enviar
 
-        if (!/^\d+$/.test(cleanDNI)) {
+        if (cleanDNI.length < 7 || cleanDNI.length > 8) {
             Swal.fire({
                 ...swalNotify,
                 icon: 'error',
                 title: 'DNI inválido',
-                text: 'El DNI debe contener solo números.',
+                text: 'El DNI debe tener 7 u 8 dígitos.',
             });
             return;
         }

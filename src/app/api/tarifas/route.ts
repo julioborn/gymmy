@@ -2,18 +2,19 @@ import connectMongoDB from '@/lib/mongodb';
 import Recargo from '@/models/Recargo';
 import Tarifa from '@/models/Tarifa';
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
     try {
-        const tarifas = await Tarifa.find().sort({ dias: 1 });
-        const recargoDoc = await Recargo.findOne();
+        const tarifas = await Tarifa.find({ gimnasioId }).sort({ dias: 1 });
+        const recargoDoc = await Recargo.findOne({ gimnasioId });
 
         return NextResponse.json({
             ok: true,
@@ -26,8 +27,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
     const nuevasTarifas = await request.json();
@@ -35,8 +37,8 @@ export async function PUT(request: Request) {
     try {
         const promises = nuevasTarifas.map((tarifa: { dias: number; valor: number }) =>
             Tarifa.findOneAndUpdate(
-                { dias: tarifa.dias },
-                { valor: tarifa.valor },
+                { dias: tarifa.dias, gimnasioId },
+                { valor: tarifa.valor, gimnasioId },
                 { new: true, upsert: true }
             )
         );

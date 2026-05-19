@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Recargo from '@/models/Recargo';
 import connectMongoDB from '@/lib/mongodb';
-import { requireAuth } from '@/lib/requireAuth';
+import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function GET() {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
     try {
-        const recargo = await Recargo.findOne();
+        const recargo = await Recargo.findOne({ gimnasioId });
         if (!recargo) {
             return NextResponse.json({ monto: 0 });
         }
@@ -21,8 +22,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-    const authError = await requireAuth();
-    if (authError) return authError;
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
 
@@ -34,7 +36,11 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: 'El monto debe ser un número mayor a 0' }, { status: 400 });
         }
 
-        const recargo = await Recargo.findOneAndUpdate({}, { monto }, { new: true, upsert: true });
+        const recargo = await Recargo.findOneAndUpdate(
+            { gimnasioId },
+            { monto, gimnasioId },
+            { new: true, upsert: true }
+        );
         return NextResponse.json(recargo);
     } catch {
         return NextResponse.json({ error: 'Error actualizando el recargo' }, { status: 500 });
