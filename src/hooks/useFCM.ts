@@ -57,7 +57,7 @@ async function initNativeFCM() {
 
     // Abrir URL al tocar la notificación
     FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
-        const url = event.notification.data?.url;
+        const url = (event.notification.data as any)?.url;
         if (url) window.location.href = url;
     });
 }

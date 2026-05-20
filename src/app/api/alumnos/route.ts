@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
         await nuevoAlumno.save();
 
-        notifyOwners(gimnasioId.toString(), {
+        notifyOwners(gimnasioId?.toString() ?? '', {
             title: '👤 Nuevo alumno registrado',
             body: `${nombre} ${apellido} se registró en el gimnasio.`,
             url: '/',

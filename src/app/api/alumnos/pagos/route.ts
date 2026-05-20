@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
                 url: '/mi-cuenta',
             });
             console.log('[Pagos] FCM result:', JSON.stringify(result));
-            const invalidos = alumnoActualizado.fcmTokens.filter((_, i) =>
+            const invalidos = alumnoActualizado.fcmTokens.filter((_: string, i: number) =>
                 result?.responses[i]?.error?.code === 'messaging/registration-token-not-registered'
             );
             if (invalidos.length) {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        notifyOwners(gimnasioId.toString(), {
+        notifyOwners(gimnasioId?.toString() ?? '', {
             title: '💰 Pago recibido',
             body: `${alumnoActualizado.nombre} ${alumnoActualizado.apellido} abonó su cuota${nuevoPago.mes ? ` de ${nuevoPago.mes}` : ''}. Total: $${tarifaFinal}`,
             url: '/',

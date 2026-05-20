@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/cuotas",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/ausencias",
+      "schedule": "0 9 * * 1"
+    }
+  ]
+}
