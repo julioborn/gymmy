@@ -1,6 +1,7 @@
 import Alumno from '@/models/Alumno';
 import connectMongoDB from '../../../lib/mongodb';
 import { requireGymAuth } from '@/lib/requireAuth';
+import { notifyOwners } from '@/lib/notifications';
 
 export async function GET(request: Request) {
     const auth = await requireGymAuth();
@@ -74,6 +75,13 @@ export async function POST(request: Request) {
         });
 
         await nuevoAlumno.save();
+
+        notifyOwners(gimnasioId.toString(), {
+            title: '👤 Nuevo alumno registrado',
+            body: `${nombre} ${apellido} se registró en el gimnasio.`,
+            url: '/',
+        }).catch(() => {});
+
         return new Response(JSON.stringify(nuevoAlumno), { status: 201 });
     } catch {
         return new Response('Error creando alumno', { status: 500 });

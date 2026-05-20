@@ -3,6 +3,7 @@
 import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useFCM } from '@/hooks/useFCM';
 import {
     Drawer, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton,
     ListItemText, Divider, Box, CircularProgress, Typography,
@@ -40,6 +41,7 @@ const menuItems = [
 function LayoutWithSession({ children }: ClientLayoutProps) {
     const { data: session } = useSession();
     const [menuOpen, setMenuOpen] = useState(false);
+    useFCM();
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
     const pathname = usePathname();

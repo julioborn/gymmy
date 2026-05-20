@@ -2,6 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
 import { requireGymAuth } from '@/lib/requireAuth';
+import { sendToTokens } from '@/lib/notifications';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
     const auth = await requireGymAuth();
@@ -14,7 +15,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { fecha, presente, actividad } = await request.json();
 
     try {
-        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId }).select('+fcmTokens');
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
         }
@@ -99,6 +100,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
         }
 
         await alumno.save();
+
+        if (presente && alumno.fcmTokens?.length) {
+            const actividadLabel = actividad === 'Musculación' ? 'musculación' : actividad.toLowerCase();
+            sendToTokens(alumno.fcmTokens, {
+                title: '📋 Asistencia registrada',
+                body: `Tu asistencia de ${actividadLabel} de hoy fue registrada. ¡Buen entrenamiento!`,
+                url: '/mi-cuenta',
+            }).catch(() => {});
+        }
 
         return new Response(JSON.stringify(alumno), { status: 200 });
     } catch {

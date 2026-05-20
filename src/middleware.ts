@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    const publicPaths = ['/', '/login', '/manifest.json', '/sw.js', '/favicon.ico', '/apple-touch-icon.png'];
+    const publicPaths = ['/', '/login', '/manifest.json', '/sw.js', '/firebase-messaging-sw.js', '/favicon.ico', '/apple-touch-icon.png'];
     const isPublic = publicPaths.includes(pathname) ||
         pathname.startsWith('/icons') ||
         pathname.startsWith('/login/');
@@ -62,6 +62,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|apple-touch-icon.png|api).*)',
+        '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|firebase-messaging-sw.js|icons|apple-touch-icon.png|api).*)',
     ],
 };

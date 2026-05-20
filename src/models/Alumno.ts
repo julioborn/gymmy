@@ -38,6 +38,7 @@ export interface IAlumno extends Document {
     patologias?: string;
     gimnasioId: mongoose.Types.ObjectId;
     password?: string;
+    fcmTokens?: string[];
 }
 
 // Interfaz para el plan de entrenamiento
@@ -120,6 +121,7 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     objetivos: { type: String, required: false, default: "" },
     patologias: { type: String, required: false, default: "" },
     password: { type: String, select: false },
+    fcmTokens: { type: [String], default: [], select: false },
 });
 
 AlumnoSchema.index({ dni: 1, gimnasioId: 1 }, { unique: true });

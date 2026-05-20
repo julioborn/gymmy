@@ -12,7 +12,23 @@
       "Bash(config\")",
       "PowerShell(Get-ChildItem -Path \"C:\\\\PROYECTOS\\\\gymmy\" -File | Where-Object { $_.Name -match \"env|config|\\\\.ts$\" } | Select-Object Name)",
       "PowerShell(Dir \"C:\\\\PROYECTOS\\\\gymmy\" | Where-Object { -not $_.PSIsContainer })",
-      "Bash(not exist *)"
+      "Bash(not exist *)",
+      "Bash(npm install *)",
+      "Bash(dir \"C:\\\\PROYECTOS\\\\gymmy\")",
+      "Bash(findstr \"env\")",
+      "Bash(npx cap *)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\PROYECTOS\\\\gymmy\\\\android\\\\app\\\\src\\\\main\\\\assets\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"created\")",
+      "Bash(keytool -genkey -v -keystore android/gymmy.keystore -alias gymmy -keyalg RSA -keysize 2048 -validity 10000 -storepass gymmy2024 -keypass gymmy2024 -dname \"CN=Gymmy, OU=Gymmy, O=Gymmy, L=Argentina, ST=Argentina, C=AR\")",
+      "Bash(./gradlew bundleRelease)",
+      "Read(//c/Program Files/Android/Android Studio/**)",
+      "Read(//c/Program Files/Android/**)",
+      "Bash(JAVA_HOME=\"C:/Program Files/Android/Android Studio/jbr\" cd \"C:/PROYECTOS/gymmy/android\")",
+      "Bash(JAVA_HOME=\"C:/Program Files/Android/Android Studio/jbr\" ./gradlew bundleRelease)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

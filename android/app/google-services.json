@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "115568601521",
+    "project_id": "gymmy-firebase",
+    "storage_bucket": "gymmy-firebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115568601521:android:8b2b7cd08ea5e9792e7590",
+        "android_client_info": {
+          "package_name": "com.julioborn.gymmy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5FpuVz99DmtM-CRNm1_3NLlMCCWi7LfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

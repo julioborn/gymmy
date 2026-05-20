@@ -1,8 +1,8 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import { enviarCorreoPagoCuota } from '@/utils/emailPagoCuota';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireGymAuth } from '@/lib/requireAuth';
+import { sendToTokens, notifyOwners } from '@/lib/notifications';
 
 export async function POST(request: NextRequest) {
     const auth = await requireGymAuth();
@@ -44,20 +44,34 @@ export async function POST(request: NextRequest) {
                 },
             },
             { new: true, runValidators: true }
-        );
+        ).select('+fcmTokens');
 
         if (!alumnoActualizado) {
             return NextResponse.json({ message: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        if (alumnoActualizado.email) {
-            await enviarCorreoPagoCuota(alumnoActualizado.email, alumnoActualizado.nombre, {
-                ...nuevoPago,
-                fechaPago,
-                tarifa: tarifaFinal,
-                recargo: nuevoPago.recargo || 0,
+        console.log('[Pagos] fcmTokens:', alumnoActualizado.fcmTokens);
+        if (alumnoActualizado.fcmTokens?.length) {
+            const mesLabel = nuevoPago.mes ? ` de ${nuevoPago.mes}` : '';
+            const result = await sendToTokens(alumnoActualizado.fcmTokens, {
+                title: '✅ Pago registrado',
+                body: `Tu cuota${mesLabel} fue registrada correctamente. Total: $${tarifaFinal}`,
+                url: '/mi-cuenta',
             });
+            console.log('[Pagos] FCM result:', JSON.stringify(result));
+            const invalidos = alumnoActualizado.fcmTokens.filter((_, i) =>
+                result?.responses[i]?.error?.code === 'messaging/registration-token-not-registered'
+            );
+            if (invalidos.length) {
+                await Alumno.updateOne({ _id: alumnoId }, { $pull: { fcmTokens: { $in: invalidos } } });
+            }
         }
+
+        notifyOwners(gimnasioId.toString(), {
+            title: '💰 Pago recibido',
+            body: `${alumnoActualizado.nombre} ${alumnoActualizado.apellido} abonó su cuota${nuevoPago.mes ? ` de ${nuevoPago.mes}` : ''}. Total: $${tarifaFinal}`,
+            url: '/',
+        }).catch(() => {});
 
         return NextResponse.json(alumnoActualizado, { status: 200 });
 

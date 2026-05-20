@@ -122,7 +122,7 @@ export default function HomePage() {
     }, [session, router]);
 
     useEffect(() => {
-        if (session && session.user?.role !== 'registro') {
+        if (session && session.user?.role !== 'registro' && session.user?.role !== 'alumno') {
             fetch('/api/dashboard')
                 .then(r => r.json())
                 .then(d => { if (d.ok) setData(d); })
@@ -132,6 +132,7 @@ export default function HomePage() {
     }, [session]);
 
     useEffect(() => {
+        if (!session || session.user?.role === 'alumno') return;
         fetch('/api/tarifas')
             .then(r => r.json())
             .then(d => {
@@ -143,7 +144,7 @@ export default function HomePage() {
             .then(r => r.json())
             .then(d => { if (d.monto != null) setRecargo(d.monto); })
             .catch(() => { });
-    }, []);
+    }, [session]);
 
     const handleConfiguracionTarifas = async () => {
         if (tarifas.length === 0) {
