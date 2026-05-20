@@ -1,7 +1,3 @@
-import admin from './firebaseAdmin';
-import mongoose from 'mongoose';
-import connectMongoDB from './mongodb';
-
 export interface NotifPayload {
     title: string;
     body: string;
@@ -11,6 +7,8 @@ export interface NotifPayload {
 
 export async function sendToTokens(tokens: string[], payload: NotifPayload) {
     if (!tokens.length) return;
+
+    const { default: admin } = await import('./firebaseAdmin');
 
     const messages = tokens.map(token => ({
         token,
@@ -45,8 +43,9 @@ export async function sendToToken(token: string, payload: NotifPayload) {
     return sendToTokens([token], payload);
 }
 
-// Obtiene los FCM tokens de todos los dueños/admins de un gimnasio
 export async function getOwnerTokens(gimnasioId: string): Promise<string[]> {
+    const { default: connectMongoDB } = await import('./mongodb');
+    const { default: mongoose } = await import('mongoose');
     await connectMongoDB();
     const db = mongoose.connection.db!;
     const usuarios = await db.collection('usuarios').find({
@@ -57,8 +56,8 @@ export async function getOwnerTokens(gimnasioId: string): Promise<string[]> {
     return usuarios.flatMap((u: any) => u.fcmTokens ?? []);
 }
 
-// Envía notificación a todos los dueños/admins de un gimnasio
 export async function notifyOwners(gimnasioId: string, payload: NotifPayload) {
+    if (!gimnasioId) return;
     const tokens = await getOwnerTokens(gimnasioId);
     if (!tokens.length) return;
     return sendToTokens(tokens, payload);
