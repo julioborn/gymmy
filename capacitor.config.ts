@@ -7,11 +7,14 @@ const config: CapacitorConfig = {
   appName: 'Gymmy',
   webDir: 'out',
   server: {
-    // En producción apunta al servidor desplegado; en dev a la IP local
     url: isProduction
       ? 'https://gymmy.com.ar'
       : 'http://192.168.1.91:3000',
     cleartext: true,
+  },
+  ios: {
+    // Dark background while the remote URL loads — prevents the white frozen screen
+    backgroundColor: '#0f172a',
   },
   plugins: {
     FirebaseMessaging: {
