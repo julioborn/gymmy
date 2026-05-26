@@ -33,7 +33,9 @@
       "Bash(npm run *)",
       "Bash(git checkout *)",
       "Bash(git pull *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(npx @capacitor/assets generate --iconPath public/icons/gymmy-android.png --android)",
+      "Bash(node scripts/seed-testers.js)"
     ]
   }
 }

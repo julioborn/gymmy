@@ -1,66 +1,67 @@
 export default function PrivacidadPage() {
-  return (
-    <main style={{ maxWidth: 800, margin: "0 auto", padding: "2rem", fontFamily: "sans-serif", lineHeight: 1.7 }}>
-      <h1>Política de Privacidad de Gymmy</h1>
-      <p><strong>Última actualización:</strong> 20 de mayo de 2026</p>
+    return (
+        <main className="max-w-2xl mx-auto px-6 py-12 text-slate-700">
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Política de Privacidad</h1>
+            <p className="text-sm text-slate-400 mb-8">Última actualización: mayo 2025</p>
 
-      <p>
-        Esta Política de Privacidad describe cómo Gymmy (&quot;nosotros&quot;, &quot;nuestro&quot;) recopila, usa y protege
-        la información personal de los usuarios de la aplicación móvil y sitio web Gymmy.
-      </p>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">1. Información que recopilamos</h2>
+                <p className="text-sm">Gymmy recopila la siguiente información de los usuarios registrados:</p>
+                <ul className="list-disc ml-5 mt-2 space-y-1 text-sm">
+                    <li>Nombre y apellido</li>
+                    <li>Número de DNI</li>
+                    <li>Fecha de nacimiento</li>
+                    <li>Correo electrónico y teléfono (opcionales)</li>
+                    <li>Historial de asistencias y pagos</li>
+                    <li>Token de dispositivo para notificaciones push</li>
+                </ul>
+            </section>
 
-      <h2>1. Información que recopilamos</h2>
-      <p>Recopilamos la siguiente información cuando usás Gymmy:</p>
-      <ul>
-        <li><strong>Datos de cuenta:</strong> nombre, dirección de correo electrónico y contraseña.</li>
-        <li><strong>Datos de uso:</strong> interacciones con la app, funciones utilizadas y frecuencia de uso.</li>
-        <li><strong>Identificadores de dispositivo:</strong> tokens de notificaciones push para el envío de alertas.</li>
-        <li><strong>Datos del gimnasio:</strong> información de socios, asistencias, pagos y planes de entrenamiento ingresados por los usuarios administradores.</li>
-      </ul>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">2. Uso de la información</h2>
+                <p className="text-sm">La información recopilada se utiliza exclusivamente para:</p>
+                <ul className="list-disc ml-5 mt-2 space-y-1 text-sm">
+                    <li>Gestionar la membresía y asistencia al gimnasio</li>
+                    <li>Registrar y notificar pagos de cuotas</li>
+                    <li>Enviar notificaciones push relacionadas con la actividad del usuario</li>
+                    <li>Generar estadísticas internas del gimnasio</li>
+                </ul>
+            </section>
 
-      <h2>2. Cómo usamos la información</h2>
-      <ul>
-        <li>Brindar y mejorar los servicios de Gymmy.</li>
-        <li>Enviar notificaciones relevantes sobre pagos, asistencias y actividad del gimnasio.</li>
-        <li>Gestionar cuentas de usuario y acceso a la plataforma.</li>
-        <li>Analizar el uso de la app para mejorar la experiencia del usuario.</li>
-      </ul>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">3. Notificaciones push</h2>
+                <p className="text-sm">
+                    Con tu consentimiento, Gymmy puede enviarte notificaciones push para informarte sobre pagos registrados, inicio de planes de entrenamiento y recordatorios de asistencia. Podés revocar este permiso en cualquier momento desde la configuración de tu dispositivo.
+                </p>
+            </section>
 
-      <h2>3. Compartir información con terceros</h2>
-      <p>
-        Utilizamos los siguientes servicios de terceros que pueden acceder a ciertos datos:
-      </p>
-      <ul>
-        <li><strong>Firebase (Google):</strong> para autenticación, base de datos, notificaciones push y análisis de uso.</li>
-        <li><strong>Vercel:</strong> para el alojamiento de la aplicación web.</li>
-      </ul>
-      <p>No vendemos ni compartimos datos personales con terceros con fines publicitarios.</p>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">4. Almacenamiento y seguridad</h2>
+                <p className="text-sm">
+                    Los datos se almacenan de forma segura en servidores en la nube con acceso restringido. Las contraseñas se guardan cifradas y nunca en texto plano.
+                </p>
+            </section>
 
-      <h2>4. Seguridad de los datos</h2>
-      <p>
-        Implementamos medidas de seguridad estándar de la industria para proteger tu información.
-        Sin embargo, ningún sistema es completamente seguro y no podemos garantizar la seguridad absoluta de los datos.
-      </p>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">5. Compartir información</h2>
+                <p className="text-sm">
+                    Gymmy no vende, alquila ni comparte información personal con terceros. Los datos son accesibles únicamente por el gimnasio al que pertenece el usuario.
+                </p>
+            </section>
 
-      <h2>5. Retención de datos</h2>
-      <p>
-        Conservamos tus datos mientras tu cuenta esté activa. Podés solicitar la eliminación de tu cuenta
-        y datos personales contactándonos.
-      </p>
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">6. Eliminación de datos</h2>
+                <p className="text-sm">
+                    Podés solicitar la eliminación de tu cuenta y datos personales contactándote con el administrador de tu gimnasio o escribiéndonos a <strong>gymmy.app.ar@gmail.com</strong>.
+                </p>
+            </section>
 
-      <h2>6. Derechos del usuario</h2>
-      <p>Tenés derecho a:</p>
-      <ul>
-        <li>Acceder a tus datos personales.</li>
-        <li>Solicitar la corrección de datos incorrectos.</li>
-        <li>Solicitar la eliminación de tus datos.</li>
-      </ul>
-
-      <h2>7. Contacto</h2>
-      <p>
-        Para consultas sobre esta política de privacidad podés contactarnos en:{" "}
-        <a href="mailto:juliobornes10@gmail.com">juliobornes10@gmail.com</a>
-      </p>
-    </main>
-  );
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">7. Contacto</h2>
+                <p className="text-sm">
+                    Para consultas sobre privacidad escribinos a <strong>gymmy.app.ar@gmail.com</strong>.
+                </p>
+            </section>
+        </main>
+    );
 }
