@@ -49,9 +49,8 @@ function ErrorBanner({ message }: { message: string }) {
     );
 }
 
-const inputCls = "w-full bg-slate-900/80 border border-slate-700 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-colors placeholder:text-slate-600";
-const labelCls = "block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5";
-const primaryBtn = "w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] text-white py-3 rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2";
+const inputCls = "w-full bg-white text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-slate-400";
+const primaryBtn = "w-full bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-slate-900 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2";
 
 export default function AlumnoLoginPage() {
     const router = useRouter();
@@ -184,20 +183,20 @@ export default function AlumnoLoginPage() {
     const isAtDNI = step.type === 'dni';
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-            <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center justify-center min-h-[80vh] px-6">
+            <div className="w-full max-w-xs">
 
                 {/* Botón volver */}
-                <div className="mb-5">
+                <div className="mb-8">
                     {isAtDNI ? (
-                        <Link href="/login" className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-sm transition-colors">
+                        <Link href="/login" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-sm transition-colors">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
                             Volver
                         </Link>
                     ) : (
-                        <button onClick={resetToDNI} className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 text-sm transition-colors">
+                        <button onClick={resetToDNI} className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-sm transition-colors">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                             </svg>
@@ -206,167 +205,137 @@ export default function AlumnoLoginPage() {
                     )}
                 </div>
 
-                <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8">
+                {/* ── PASO 1: DNI ── */}
+                {step.type === 'dni' && (
+                    <>
+                        <div className="mb-7">
+                            <h1 className="text-2xl font-bold text-white">Alumno</h1>
+                            <p className="text-slate-500 text-sm mt-1">Ingresá tu DNI para continuar</p>
+                        </div>
 
-                    {/* ── PASO 1: DNI ── */}
-                    {step.type === 'dni' && (
-                        <>
-                            <div className="mb-7">
-                                <div className="w-10 h-10 rounded-xl bg-slate-700 border border-slate-600 flex items-center justify-center mb-4">
-                                    <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
+                        <form onSubmit={handleDNISubmit} className="space-y-2.5">
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={dniRaw}
+                                onChange={e => setDniRaw(formatDNI(e.target.value))}
+                                className={`${inputCls} text-center text-lg font-mono tracking-widest`}
+                                maxLength={10}
+                                placeholder="DNI"
+                            />
+
+                            {error && <ErrorBanner message={error} />}
+
+                            <button type="submit" disabled={loading} className={primaryBtn}>
+                                {loading ? <><Spinner /> Buscando...</> : 'Continuar'}
+                            </button>
+                        </form>
+                    </>
+                )}
+
+                {/* ── PASO 2: seleccionar gimnasio ── */}
+                {step.type === 'gym-select' && (
+                    <>
+                        <div className="mb-6">
+                            <h1 className="text-2xl font-bold text-white">Seleccioná tu gimnasio</h1>
+                            <p className="text-slate-500 text-sm mt-1">Tu DNI está en más de un gimnasio</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            {step.gyms.map(gym => (
+                                <button
+                                    key={gym.gimnasioId}
+                                    onClick={() => handleGymSelect(gym)}
+                                    className="w-full bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-900 rounded-2xl px-5 py-4 text-left font-semibold text-sm transition-all flex items-center justify-between"
+                                >
+                                    <div>
+                                        <p className="font-semibold text-sm">{gym.gimnasioNombre}</p>
+                                        <p className="text-slate-400 text-xs mt-0.5 font-normal">{gym.nombre} {gym.apellido}</p>
+                                    </div>
+                                    <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                     </svg>
-                                </div>
-                                <h1 className="text-xl font-bold text-white">Acceso para alumnos</h1>
-                                <p className="text-slate-400 text-sm mt-1">Ingresá tu DNI para continuar</p>
-                            </div>
-
-                            <form onSubmit={handleDNISubmit} className="space-y-4">
-                                <div>
-                                    <label className={labelCls}>Número de DNI</label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={dniRaw}
-                                        onChange={e => setDniRaw(formatDNI(e.target.value))}
-                                        className={`${inputCls} text-center text-lg font-mono tracking-widest`}
-                                        maxLength={10}
-                                        placeholder=""
-                                    />
-                                </div>
-
-                                {error && <ErrorBanner message={error} />}
-
-                                <button type="submit" disabled={loading} className={primaryBtn}>
-                                    {loading ? <><Spinner /> Buscando...</> : 'Continuar'}
                                 </button>
-                            </form>
-                        </>
-                    )}
+                            ))}
+                        </div>
+                    </>
+                )}
 
-                    {/* ── PASO 2: seleccionar gimnasio ── */}
-                    {step.type === 'gym-select' && (
-                        <>
-                            <div className="mb-6">
-                                <h1 className="text-xl font-bold text-white">Seleccioná tu gimnasio</h1>
-                                <p className="text-slate-400 text-sm mt-1">Tu DNI está registrado en más de un gimnasio</p>
-                            </div>
+                {/* ── PASO 3: primer acceso ── */}
+                {step.type === 'register' && (
+                    <>
+                        <div className="mb-6">
+                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-2">Primer acceso</p>
+                            <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
+                            <p className="text-slate-500 text-sm mt-1">{step.gimnasioNombre} · Creá tu contraseña</p>
+                        </div>
 
-                            <div className="space-y-2">
-                                {step.gyms.map(gym => (
-                                    <button
-                                        key={gym.gimnasioId}
-                                        onClick={() => handleGymSelect(gym)}
-                                        className="w-full bg-slate-900/60 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-white rounded-xl p-4 text-left transition-all group flex items-center gap-3"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                                            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M3 3h12" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm text-white truncate">{gym.gimnasioNombre}</p>
-                                            <p className="text-slate-400 text-xs mt-0.5">{gym.nombre} {gym.apellido}</p>
-                                        </div>
-                                        <svg className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                        </svg>
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
+                        <form onSubmit={handleRegister} className="space-y-2.5">
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="Nueva contraseña"
+                                required
+                                className={inputCls}
+                            />
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                placeholder="Repetí la contraseña"
+                                required
+                                className={inputCls}
+                            />
 
-                    {/* ── PASO 3: primer acceso — crear contraseña ── */}
-                    {step.type === 'register' && (
-                        <>
-                            <div className="mb-6">
-                                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1 mb-4">
-                                    <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                    </svg>
-                                    <span className="text-emerald-400 text-xs font-semibold">Primer acceso</span>
-                                </div>
-                                <h1 className="text-xl font-bold text-white">Hola, {step.nombre}</h1>
-                                <p className="text-slate-400 text-sm mt-1">{step.gimnasioNombre} · Creá tu contraseña</p>
-                            </div>
+                            {error && <ErrorBanner message={error} />}
 
-                            <form onSubmit={handleRegister} className="space-y-4">
-                                <div>
-                                    <label className={labelCls}>Nueva contraseña</label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        placeholder="Mínimo 6 caracteres"
-                                        required
-                                        className={inputCls}
-                                    />
-                                </div>
-                                <div>
-                                    <label className={labelCls}>Confirmar contraseña</label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                        placeholder="Repetí la contraseña"
-                                        required
-                                        className={inputCls}
-                                    />
-                                </div>
+                            <button type="submit" disabled={loading} className={primaryBtn}>
+                                {loading ? <><Spinner /> Creando cuenta...</> : 'Crear cuenta e ingresar'}
+                            </button>
 
-                                {error && <ErrorBanner message={error} />}
-
-                                <button type="submit" disabled={loading} className={primaryBtn}>
-                                    {loading ? <><Spinner /> Creando cuenta...</> : 'Crear cuenta e ingresar'}
+                            <p className="text-center text-slate-600 text-xs pt-1">
+                                ¿Ya tenés contraseña?{' '}
+                                <button
+                                    type="button"
+                                    onClick={() => step.type === 'register' && setStep({ type: 'login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre })}
+                                    className="text-white underline underline-offset-2 hover:text-slate-300"
+                                >
+                                    Ingresá acá
                                 </button>
+                            </p>
+                        </form>
+                    </>
+                )}
 
-                                <p className="text-center text-slate-500 text-xs pt-1">
-                                    ¿Ya tenés contraseña?{' '}
-                                    <button
-                                        type="button"
-                                        onClick={() => step.type === 'register' && setStep({ type: 'login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre })}
-                                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
-                                    >
-                                        Ingresá acá
-                                    </button>
-                                </p>
-                            </form>
-                        </>
-                    )}
+                {/* ── PASO 4: login normal ── */}
+                {step.type === 'login' && (
+                    <>
+                        <div className="mb-6">
+                            <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
+                            <p className="text-slate-500 text-sm mt-1">{step.gimnasioNombre}</p>
+                        </div>
 
-                    {/* ── PASO 4: login normal ── */}
-                    {step.type === 'login' && (
-                        <>
-                            <div className="mb-6">
-                                <h1 className="text-xl font-bold text-white">Hola, {step.nombre}</h1>
-                                <p className="text-slate-400 text-sm mt-1">{step.gimnasioNombre}</p>
-                            </div>
+                        <form onSubmit={handleLogin} className="space-y-2.5">
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="Contraseña"
+                                required
+                                autoFocus
+                                className={inputCls}
+                            />
 
-                            <form onSubmit={handleLogin} className="space-y-4">
-                                <div>
-                                    <label className={labelCls}>Contraseña</label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        placeholder="Tu contraseña"
-                                        required
-                                        autoFocus
-                                        className={inputCls}
-                                    />
-                                </div>
+                            {error && <ErrorBanner message={error} />}
 
-                                {error && <ErrorBanner message={error} />}
+                            <button type="submit" disabled={loading} className={primaryBtn}>
+                                {loading ? <><Spinner /> Ingresando...</> : 'Ingresar'}
+                            </button>
+                        </form>
+                    </>
+                )}
 
-                                <button type="submit" disabled={loading} className={primaryBtn}>
-                                    {loading ? <><Spinner /> Ingresando...</> : 'Ingresar'}
-                                </button>
-                            </form>
-                        </>
-                    )}
-
-                </div>
             </div>
         </div>
     );

@@ -40,29 +40,26 @@ const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto'
 const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
-const ACTIVIDAD_COLOR: Record<string, string> = {
+const ACTIVIDAD_DOT: Record<string, string> = {
     'Musculación': 'bg-blue-500',
-    'Intermitente': 'bg-orange-500',
+    'Intermitente': 'bg-orange-400',
     'Otro': 'bg-slate-400',
 };
-const ACTIVIDAD_TEXT: Record<string, string> = {
-    'Musculación': 'text-blue-400',
-    'Intermitente': 'text-orange-400',
-    'Otro': 'text-slate-400',
+const ACTIVIDAD_LABEL: Record<string, string> = {
+    'Musculación': 'text-blue-600',
+    'Intermitente': 'text-orange-500',
+    'Otro': 'text-slate-500',
 };
 
 function toLocalDateKey(fechaStr: string): string {
     const d = new Date(fechaStr);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function getCalendarDays(year: number, month: number): (number | null)[] {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startOffset = (firstDay + 6) % 7; // lunes = 0
+    const startOffset = (firstDay + 6) % 7;
     const days: (number | null)[] = [];
     for (let i = 0; i < startOffset; i++) days.push(null);
     for (let d = 1; d <= daysInMonth; d++) days.push(d);
@@ -90,19 +87,18 @@ export default function MiCuentaPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="border-t-4 border-blue-500 rounded-full w-10 h-10 animate-spin" />
+                <div className="border-t-2 border-slate-300 rounded-full w-8 h-8 animate-spin" />
             </div>
         );
     }
 
     if (!alumno) {
-        return <div className="text-red-400 text-center py-16">Error al cargar tus datos.</div>;
+        return <div className="text-slate-400 text-center py-16 text-sm">Error al cargar tus datos.</div>;
     }
 
     const mesActual = MESES[now.getMonth()];
     const anioActual = now.getFullYear();
 
-    // Maps por fecha
     const asistenciasMap: Record<string, Asistencia[]> = {};
     alumno.asistencia.filter(a => a.presente).forEach(a => {
         const key = toLocalDateKey(a.fecha);
@@ -117,7 +113,6 @@ export default function MiCuentaPage() {
         pagosMap[key].push(p);
     });
 
-    // Resumen
     const asistenciasEsteMes = alumno.asistencia.filter(a => {
         const f = new Date(a.fecha);
         return a.presente && f.getMonth() === now.getMonth() && f.getFullYear() === anioActual;
@@ -133,7 +128,6 @@ export default function MiCuentaPage() {
         ).length;
     }
 
-    // Calendario
     const calDays = getCalendarDays(calYear, calMonth);
 
     function prevMonth() {
@@ -147,30 +141,30 @@ export default function MiCuentaPage() {
         else setCalMonth(m => m + 1);
     }
 
-    const selectedKey = selectedDay;
-    const selectedAsistencias = selectedKey ? (asistenciasMap[selectedKey] || []) : [];
-    const selectedPagos = selectedKey ? (pagosMap[selectedKey] || []) : [];
+    const selectedAsistencias = selectedDay ? (asistenciasMap[selectedDay] || []) : [];
+    const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
     return (
         <div className="max-w-lg mx-auto pb-10 px-4">
+
             {/* Header */}
-            <div className="flex items-center justify-between py-4 mb-2">
-                <div>
-                    <h1 className="text-xl font-bold text-white">
-                        Hola, {alumno.nombre} 👋
-                    </h1>
-                    <p className="text-slate-400 text-sm">{(alumno.gimnasioId as any)?.nombre}</p>
-                </div>
+            <div className="py-4 mb-4">
+                <h1 className="text-xl font-bold text-white">
+                    Hola, {alumno.nombre}
+                </h1>
+                <p className="text-slate-500 text-sm mt-0.5">{(alumno.gimnasioId as any)?.nombre}</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-slate-800 rounded-xl p-1 mb-5">
+            <div className="flex gap-1 bg-slate-800/60 rounded-xl p-1 mb-5">
                 {(['resumen', 'historial'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => setTab(t)}
-                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            tab === t ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            tab === t
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-300'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : 'Historial'}
@@ -178,60 +172,73 @@ export default function MiCuentaPage() {
                 ))}
             </div>
 
-            {/* ── RESUMEN ───────────────────────────────────────────── */}
+            {/* ── RESUMEN ── */}
             {tab === 'resumen' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
+
+                    {/* Asistencias + Cuota */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                            <div className="text-slate-400 text-xs mb-1">Asistencias este mes</div>
-                            <div className="text-3xl font-bold text-white">{asistenciasEsteMes.length}</div>
-                            <div className="text-slate-500 text-xs mt-1 capitalize">{mesActual}</div>
+                        <div className="bg-white rounded-2xl p-4">
+                            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mb-2">
+                                Asistencias
+                            </p>
+                            <p className="text-4xl font-bold text-slate-900">{asistenciasEsteMes.length}</p>
+                            <p className="text-slate-400 text-xs mt-1 capitalize">{mesActual}</p>
                         </div>
-                        <div className={`border rounded-xl p-4 ${pagoEsteMes ? 'bg-emerald-900/30 border-emerald-700' : 'bg-red-900/20 border-red-800'}`}>
-                            <div className="text-slate-400 text-xs mb-1">Cuota {mesActual}</div>
-                            <div className={`text-lg font-bold ${pagoEsteMes ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {pagoEsteMes ? '✓ Pagada' : '✗ Pendiente'}
+
+                        <div className="bg-white rounded-2xl p-4">
+                            <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mb-2">
+                                Cuota
+                            </p>
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                pagoEsteMes
+                                    ? 'bg-emerald-50 text-emerald-600'
+                                    : 'bg-red-50 text-red-500'
+                            }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${pagoEsteMes ? 'bg-emerald-500' : 'bg-red-400'}`} />
+                                {pagoEsteMes ? 'Al día' : 'Pendiente'}
                             </div>
                             {pagoEsteMes && (
-                                <div className="text-slate-400 text-xs mt-1">
+                                <p className="text-slate-400 text-xs mt-2">
                                     ${pagoEsteMes.tarifa.toLocaleString('es-AR')}
-                                </div>
+                                </p>
                             )}
                         </div>
                     </div>
 
+                    {/* Plan */}
                     {tienePlan && (
-                        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                        <div className="bg-white rounded-2xl p-4">
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-slate-300 text-sm font-semibold">Plan de entrenamiento</span>
-                                <span className="text-xs text-slate-500">{asistenciasEnPlan}/{plan.duracion} sesiones</span>
+                                <p className="text-slate-700 text-sm font-semibold">Plan de entrenamiento</p>
+                                <span className="text-xs text-slate-400">{asistenciasEnPlan}/{plan.duracion}</span>
                             </div>
-                            <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
+                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-2">
                                 <div
-                                    className="bg-blue-500 h-2 rounded-full transition-all"
+                                    className="bg-slate-800 h-1.5 rounded-full transition-all"
                                     style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }}
                                 />
                             </div>
-                            <div className="text-slate-400 text-xs">
+                            <p className="text-slate-400 text-xs">
                                 {plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}
-                            </div>
+                            </p>
                         </div>
                     )}
 
                     {plan?.terminado && (
-                        <div className="bg-emerald-900/30 border border-emerald-700 rounded-xl p-4 text-center">
-                            <div className="text-2xl mb-1">🏆</div>
-                            <div className="text-emerald-400 font-semibold text-sm">¡Plan completado!</div>
+                        <div className="bg-white rounded-2xl p-4 text-center">
+                            <p className="text-2xl mb-1">🏆</p>
+                            <p className="text-slate-800 font-semibold text-sm">¡Plan completado!</p>
                         </div>
                     )}
 
-                    {/* Últimas 5 asistencias */}
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
-                        <h3 className="text-slate-300 text-sm font-semibold mb-3">Últimas asistencias</h3>
+                    {/* Últimas asistencias */}
+                    <div className="bg-white rounded-2xl p-4">
+                        <h3 className="text-slate-700 text-sm font-semibold mb-3">Últimas asistencias</h3>
                         {Object.keys(asistenciasMap).length === 0 ? (
-                            <p className="text-slate-500 text-sm">Sin asistencias registradas.</p>
+                            <p className="text-slate-400 text-sm">Sin asistencias registradas.</p>
                         ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-2.5">
                                 {Object.entries(asistenciasMap)
                                     .sort(([a], [b]) => b.localeCompare(a))
                                     .slice(0, 5)
@@ -239,8 +246,10 @@ export default function MiCuentaPage() {
                                     .map(a => (
                                         <div key={a._id} className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className={`w-2 h-2 rounded-full ${ACTIVIDAD_COLOR[a.actividad] || 'bg-slate-500'}`} />
-                                                <span className="text-white text-sm">{a.actividad}</span>
+                                                <span className={`w-2 h-2 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-300'}`} />
+                                                <span className={`text-sm font-medium ${ACTIVIDAD_LABEL[a.actividad] || 'text-slate-600'}`}>
+                                                    {a.actividad}
+                                                </span>
                                             </div>
                                             <span className="text-slate-400 text-xs">
                                                 {new Date(a.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
@@ -250,37 +259,51 @@ export default function MiCuentaPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* Cerrar sesión */}
+                    <button
+                        onClick={() => signOut()}
+                        className="w-full bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-400 hover:text-slate-600 rounded-2xl py-3.5 text-sm font-medium transition-all"
+                    >
+                        Cerrar sesión
+                    </button>
                 </div>
             )}
 
-            {/* ── HISTORIAL (CALENDARIO) ────────────────────────────── */}
+            {/* ── HISTORIAL ── */}
             {tab === 'historial' && (
-                <div className="space-y-4">
-                    {/* Navegación mes */}
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <div className="space-y-3">
+
+                    {/* Calendario */}
+                    <div className="bg-white rounded-2xl p-4">
                         <div className="flex items-center justify-between mb-4">
-                            <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-700 text-slate-300 transition-colors">‹</button>
-                            <span className="text-white font-semibold capitalize">
+                            <button
+                                onClick={prevMonth}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 transition-colors text-lg"
+                            >
+                                ‹
+                            </button>
+                            <span className="text-slate-800 font-semibold capitalize text-sm">
                                 {MESES_CORTO[calMonth]} {calYear}
                             </span>
                             <button
                                 onClick={nextMonth}
                                 disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-700 text-slate-300 transition-colors disabled:opacity-30"
-                            >›</button>
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 transition-colors disabled:opacity-30 text-lg"
+                            >
+                                ›
+                            </button>
                         </div>
 
-                        {/* Cabecera días */}
-                        <div className="grid grid-cols-7 mb-1">
+                        <div className="grid grid-cols-7 mb-2">
                             {DIAS_SEMANA.map(d => (
-                                <div key={d} className="text-center text-slate-500 text-xs font-medium py-1">{d}</div>
+                                <div key={d} className="text-center text-slate-400 text-xs font-medium py-1">{d}</div>
                             ))}
                         </div>
 
-                        {/* Grilla */}
                         <div className="grid grid-cols-7 gap-y-1">
                             {calDays.map((day, i) => {
-                                if (!day) return <div key={`empty-${i}`} />;
+                                if (!day) return <div key={`e-${i}`} />;
 
                                 const key = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                                 const asists = asistenciasMap[key] || [];
@@ -293,32 +316,31 @@ export default function MiCuentaPage() {
                                     <button
                                         key={key}
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
-                                        className={`relative flex flex-col items-center py-1.5 rounded-lg transition-colors ${
+                                        className={`relative flex flex-col items-center py-1.5 rounded-xl transition-colors ${
                                             isSelected
-                                                ? 'bg-slate-600'
+                                                ? 'bg-slate-900'
                                                 : hasData
-                                                ? 'hover:bg-slate-700'
+                                                ? 'hover:bg-slate-100'
                                                 : 'cursor-default'
                                         }`}
                                     >
                                         <span className={`text-sm leading-none mb-1 ${
-                                            isToday
-                                                ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold'
-                                                : hasData ? 'text-white font-medium' : 'text-slate-500'
+                                            isSelected
+                                                ? 'text-white font-bold'
+                                                : isToday
+                                                ? 'bg-slate-900 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs'
+                                                : hasData
+                                                ? 'text-slate-800 font-semibold'
+                                                : 'text-slate-400'
                                         }`}>
                                             {day}
                                         </span>
-
-                                        {/* Puntos de actividades */}
                                         <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
                                             {asists.map((a, idx) => (
-                                                <span
-                                                    key={idx}
-                                                    className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_COLOR[a.actividad] || 'bg-slate-400'}`}
-                                                />
+                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-300'}`} />
                                             ))}
                                             {pagos.length > 0 && (
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                             )}
                                         </div>
                                     </button>
@@ -326,27 +348,26 @@ export default function MiCuentaPage() {
                             })}
                         </div>
 
-                        {/* Leyenda */}
-                        <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-700 flex-wrap">
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                                <span className="w-2 h-2 rounded-full bg-blue-500" />
                                 <span className="text-slate-400 text-xs">Musculación</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                                <span className="w-2 h-2 rounded-full bg-orange-400" />
                                 <span className="text-slate-400 text-xs">Intermitente</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                                 <span className="text-slate-400 text-xs">Pago</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Detalle del día seleccionado */}
+                    {/* Detalle día */}
                     {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0) && (
-                        <div className="bg-slate-800 border border-slate-600 rounded-xl p-4 space-y-3">
-                            <h3 className="text-white font-semibold text-sm">
+                        <div className="bg-white rounded-2xl p-4 space-y-3">
+                            <h3 className="text-slate-800 font-semibold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', {
                                     weekday: 'long', day: 'numeric', month: 'long'
                                 })}
@@ -354,20 +375,20 @@ export default function MiCuentaPage() {
 
                             {selectedAsistencias.map(a => (
                                 <div key={a._id} className="flex items-center gap-2">
-                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_COLOR[a.actividad] || 'bg-slate-400'}`} />
-                                    <span className={`text-sm font-medium ${ACTIVIDAD_TEXT[a.actividad] || 'text-slate-300'}`}>
+                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-300'}`} />
+                                    <span className={`text-sm font-medium ${ACTIVIDAD_LABEL[a.actividad] || 'text-slate-600'}`}>
                                         {a.actividad}
                                     </span>
                                 </div>
                             ))}
 
                             {selectedPagos.map(p => (
-                                <div key={p._id} className="flex items-center justify-between bg-emerald-900/20 border border-emerald-800/50 rounded-lg px-3 py-2">
+                                <div key={p._id} className="flex items-center justify-between bg-emerald-50 rounded-xl px-3 py-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                        <span className="text-emerald-300 text-sm font-medium capitalize">Pago — {p.mes}</span>
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                                        <span className="text-emerald-700 text-sm font-medium capitalize">Pago — {p.mes}</span>
                                     </div>
-                                    <span className="text-emerald-400 font-bold text-sm">
+                                    <span className="text-emerald-700 font-bold text-sm">
                                         ${p.tarifa.toLocaleString('es-AR')}
                                     </span>
                                 </div>
@@ -377,22 +398,22 @@ export default function MiCuentaPage() {
 
                     {/* Resumen del mes */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-                            <div className="text-2xl font-bold text-white">
+                        <div className="bg-white rounded-2xl p-4 text-center">
+                            <p className="text-3xl font-bold text-slate-900">
                                 {Object.entries(asistenciasMap)
                                     .filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
                                     .reduce((sum, [, a]) => sum + a.length, 0)}
-                            </div>
-                            <div className="text-slate-400 text-xs mt-0.5">asistencias</div>
+                            </p>
+                            <p className="text-slate-400 text-xs mt-1">asistencias</p>
                         </div>
-                        <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-                            <div className="text-2xl font-bold text-emerald-400">
+                        <div className="bg-white rounded-2xl p-4 text-center">
+                            <p className="text-3xl font-bold text-slate-900">
                                 ${Object.entries(pagosMap)
                                     .filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
                                     .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0)
                                     .toLocaleString('es-AR')}
-                            </div>
-                            <div className="text-slate-400 text-xs mt-0.5">pagado</div>
+                            </p>
+                            <p className="text-slate-400 text-xs mt-1">pagado</p>
                         </div>
                     </div>
                 </div>

@@ -116,10 +116,13 @@ export default function HomePage() {
     const [recargo, setRecargo] = useState<number | null>(null);
 
     useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push('/login');
+        }
         if (session?.user?.role === 'registro') {
             router.push('/alumnos/dni');
         }
-    }, [session, router]);
+    }, [session, status, router]);
 
     useEffect(() => {
         if (session && session.user?.role !== 'registro' && session.user?.role !== 'alumno') {
@@ -237,29 +240,7 @@ export default function HomePage() {
     }
 
     if (!session) {
-        return (
-            <div className="min-h-[80vh] flex items-center justify-center px-4">
-                <div className="w-full max-w-xs text-center space-y-8">
-                    <div className="space-y-3">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-                            <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold text-white tracking-tight">Gymmy</h1>
-                            <p className="text-slate-500 text-sm mt-1">Sistema de gestión deportiva</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => signIn()}
-                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-semibold rounded-2xl transition-all duration-150 shadow-lg shadow-emerald-900/30"
-                    >
-                        Iniciar sesión
-                    </button>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     const esDueño = session.user?.role === 'dueño';
