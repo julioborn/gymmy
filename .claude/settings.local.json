@@ -35,7 +35,11 @@
       "Bash(git pull *)",
       "Bash(git stash *)",
       "Bash(npx @capacitor/assets generate --iconPath public/icons/gymmy-android.png --android)",
-      "Bash(node scripts/seed-testers.js)"
+      "Bash(node scripts/seed-testers.js)",
+      "Bash(where java *)",
+      "Bash(java -version)",
+      "Bash(JAVA_HOME=\"C:/Users/julio/AppData/Local/Programs/Eclipse Adoptium/jdk-17.0.16.8-hotspot\" ./gradlew bundleRelease)",
+      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/java\" -version)"
     ]
   }
 }

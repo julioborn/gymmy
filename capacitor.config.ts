@@ -8,8 +8,10 @@ const config: CapacitorConfig = {
   appName: 'Gymmy',
   webDir: 'out',
   server: {
-    url: isProduction ? 'https://gymmy.com.ar' : 'http://192.168.1.91:3000',
-    cleartext: true,
+    url: isProduction
+      ? 'https://gymmy.com.ar'
+      : 'http://192.168.1.91:3000',
+    cleartext: !isProduction,
   },
   ios: {
     backgroundColor: '#0f172a',
