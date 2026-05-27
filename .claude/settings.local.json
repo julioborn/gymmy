@@ -39,7 +39,9 @@
       "Bash(where java *)",
       "Bash(java -version)",
       "Bash(JAVA_HOME=\"C:/Users/julio/AppData/Local/Programs/Eclipse Adoptium/jdk-17.0.16.8-hotspot\" ./gradlew bundleRelease)",
-      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/java\" -version)"
+      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/java\" -version)",
+      "Bash(pod install *)",
+      "Bash(git *)"
     ]
   }
 }
