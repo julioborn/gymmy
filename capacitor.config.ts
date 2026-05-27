@@ -1,5 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// Para desarrollo local, corré: npx cap sync (sin NODE_ENV=production)
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config: CapacitorConfig = {
@@ -7,13 +8,10 @@ const config: CapacitorConfig = {
   appName: 'Gymmy',
   webDir: 'out',
   server: {
-    url: isProduction
-      ? 'https://gymmy.com.ar'
-      : 'http://192.168.1.91:3000',
+    url: isProduction ? 'https://gymmy.com.ar' : 'http://192.168.1.91:3000',
     cleartext: true,
   },
   ios: {
-    // Dark background while the remote URL loads — prevents the white frozen screen
     backgroundColor: '#0f172a',
   },
   plugins: {

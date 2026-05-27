@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:sync": "NODE_ENV=production npx cap sync"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "^8.2.0",
