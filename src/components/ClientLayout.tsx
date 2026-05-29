@@ -56,32 +56,6 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         return () => clearTimeout(timer);
     }, [status]);
 
-    if (!sessionReady) {
-        return (
-            <Box sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#0f172a',
-            }}>
-                <CircularProgress sx={{ color: '#10b981' }} />
-            </Box>
-        );
-    }
-
-    const toggleMenu = () => setMenuOpen((v) => !v);
-
-    const menuLinks = (() => {
-        const role = session?.user?.role;
-        if (role === 'superadmin') return [];
-        if (role === 'admin' || role === 'dueño') return menuItems;
-        if (role === 'profesor') return menuItems.filter(
-            (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
-        );
-        return [];
-    })();
-
     useEffect(() => {
         const update = () => {
             if (navigator.onLine) {
@@ -96,6 +70,32 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         window.addEventListener('offline', update);
         return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
     }, []);
+
+    const toggleMenu = () => setMenuOpen((v) => !v);
+
+    const menuLinks = (() => {
+        const role = session?.user?.role;
+        if (role === 'superadmin') return [];
+        if (role === 'admin' || role === 'dueño') return menuItems;
+        if (role === 'profesor') return menuItems.filter(
+            (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
+        );
+        return [];
+    })();
+
+    if (!sessionReady) {
+        return (
+            <Box sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#0f172a',
+            }}>
+                <CircularProgress sx={{ color: '#10b981' }} />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
