@@ -39,12 +39,36 @@ const menuItems = [
 ];
 
 function LayoutWithSession({ children }: ClientLayoutProps) {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [menuOpen, setMenuOpen] = useState(false);
     useFCM();
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
+    const [sessionReady, setSessionReady] = useState(false);
     const pathname = usePathname();
+
+    useEffect(() => {
+        if (status !== 'loading') {
+            setSessionReady(true);
+            return;
+        }
+        const timer = setTimeout(() => setSessionReady(true), 8000);
+        return () => clearTimeout(timer);
+    }, [status]);
+
+    if (!sessionReady) {
+        return (
+            <Box sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#0f172a',
+            }}>
+                <CircularProgress sx={{ color: '#10b981' }} />
+            </Box>
+        );
+    }
 
     const toggleMenu = () => setMenuOpen((v) => !v);
 
