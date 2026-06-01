@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const { pathname } = req.nextUrl;
 
-    const publicPaths = ['/', '/login', '/manifest.json', '/sw.js', '/firebase-messaging-sw.js', '/favicon.ico', '/apple-touch-icon.png'];
+    const publicPaths = ['/', '/login', '/soporte', '/privacidad', '/eliminar-cuenta', '/manifest.json', '/sw.js', '/firebase-messaging-sw.js', '/favicon.ico', '/apple-touch-icon.png'];
     const isPublic = publicPaths.includes(pathname) ||
         pathname.startsWith('/icons') ||
         pathname.startsWith('/login/');
