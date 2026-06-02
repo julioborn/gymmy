@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useParams } from 'next/navigation';
 import { useAlumno } from '@/hooks/useAlumno';
 import { useEffect, useState } from 'react';

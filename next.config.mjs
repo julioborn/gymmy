@@ -5,7 +5,6 @@ const withPWA = nextPWA({
     register: true,
     skipWaiting: true,
     disable: process.env.NODE_ENV === "development",
-    // Inyecta el handler de Firebase en el SW generado por next-pwa
     additionalManifestEntries: [],
     customWorkerDir: 'worker',
 });

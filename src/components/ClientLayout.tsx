@@ -107,6 +107,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     backgroundColor: '#0f172a',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
                     boxShadow: '0 1px 12px rgba(0,0,0,0.4)',
+                    paddingTop: 'env(safe-area-inset-top)',
                 }}
             >
                 <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -185,7 +186,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 sx={{
                     '& .MuiDrawer-paper': {
                         width: 260,
-                        mt: '75px',
+                        mt: 'calc(75px + env(safe-area-inset-top))',
                         boxSizing: 'border-box',
                         backgroundColor: '#0f172a',
                         borderRight: '1px solid rgba(255,255,255,0.06)',
@@ -249,7 +250,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             </Drawer>
 
             {/* Content */}
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: '75px' }}>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 'calc(75px + env(safe-area-inset-top))' }}>
                 {children}
             </Box>
         </Box>

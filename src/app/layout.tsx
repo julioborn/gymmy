@@ -21,6 +21,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-900 min-h-screen">
+<body className="bg-slate-900 min-h-screen">
         <ErrorBoundary>
           <ClientLayout>{children}</ClientLayout>
         </ErrorBoundary>
