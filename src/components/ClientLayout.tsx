@@ -1,6 +1,6 @@
 'use client';
 
-import { SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -147,7 +147,19 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 style={{ paddingTop: 'env(safe-area-inset-top)' }}
             >
                 <div className="relative h-[75px] flex items-center justify-between px-4">
-                    <div className="w-8" />
+                    {showNav ? (
+                        <button
+                            onClick={() => signOut()}
+                            className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors active:scale-90"
+                            aria-label="Cerrar sesión"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                            </svg>
+                        </button>
+                    ) : (
+                        <div className="w-8" />
+                    )}
                     <img
                         src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
                         alt="Logo"
