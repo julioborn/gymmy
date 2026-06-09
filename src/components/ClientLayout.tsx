@@ -1,23 +1,15 @@
 'use client';
 
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useFCM } from '@/hooks/useFCM';
-import {
-    Drawer, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton,
-    ListItemText, Divider, Box, CircularProgress, Typography,
-    createTheme, CssBaseline, ThemeProvider,
-} from '@mui/material';
-import {
-    Home as HomeIcon, People as PeopleIcon, PersonAdd as PersonAddIcon,
-    MonetizationOn, BarChart as StatsIcon, ExitToApp as LogoutIcon,
-    Menu as MenuIcon, Close as CloseIcon,
-} from '@mui/icons-material';
-
-interface ClientLayoutProps { children: React.ReactNode; }
+import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
+
+interface ClientLayoutProps { children: React.ReactNode; }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
     return (
@@ -30,17 +22,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     );
 }
 
-const menuItems = [
-    { text: 'Inicio',            href: '/',                    icon: <HomeIcon /> },
-    { text: 'Lista de Alumnos',  href: '/alumnos',             icon: <PeopleIcon /> },
-    { text: 'Registrar Alumno',  href: '/alumnos/nuevo',       icon: <PersonAddIcon /> },
-    { text: 'Finanzas',          href: '/alumnos/finanzas',    icon: <MonetizationOn /> },
-    { text: 'Estadísticas',      href: '/alumnos/estadisticas',icon: <StatsIcon /> },
-];
-
 function LayoutWithSession({ children }: ClientLayoutProps) {
     const { data: session, status } = useSession();
-    const [menuOpen, setMenuOpen] = useState(false);
     useFCM();
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
@@ -68,191 +51,167 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         };
         window.addEventListener('online', update);
         window.addEventListener('offline', update);
-        return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
+        return () => {
+            window.removeEventListener('online', update);
+            window.removeEventListener('offline', update);
+        };
     }, []);
 
-    const toggleMenu = () => setMenuOpen((v) => !v);
+    const role = session?.user?.role;
+    const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
+    const isLoginPage = pathname.startsWith('/login');
+    const showNav = !isLoginPage && !isStaticPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
 
-    const menuLinks = (() => {
-        const role = session?.user?.role;
-        if (role === 'superadmin') return [];
-        if (role === 'admin' || role === 'dueño') return menuItems;
-        if (role === 'profesor') return menuItems.filter(
-            (item) => item.href !== '/alumnos/finanzas' && item.href !== '/alumnos/estadisticas'
-        );
-        return [];
+    const navItems = (() => {
+        if (!showNav) return [];
+        const base = [
+            {
+                href: '/',
+                label: 'Inicio',
+                isActive: (p: string) => p === '/',
+                icon: (
+                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                ),
+            },
+            {
+                href: '/alumnos',
+                label: 'Alumnos',
+                isActive: (p: string) =>
+                    p === '/alumnos' ||
+                    (p.startsWith('/alumnos/') &&
+                        !p.startsWith('/alumnos/nuevo') &&
+                        !p.startsWith('/alumnos/finanzas') &&
+                        !p.startsWith('/alumnos/estadisticas')),
+                icon: (
+                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                    </svg>
+                ),
+            },
+            {
+                href: '/alumnos/nuevo',
+                label: 'Registrar',
+                isActive: (p: string) => p.startsWith('/alumnos/nuevo'),
+                icon: (
+                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                    </svg>
+                ),
+            },
+        ];
+
+        if (role === 'dueño' || role === 'admin') {
+            base.push({
+                href: '/alumnos/finanzas',
+                label: 'Finanzas',
+                isActive: (p: string) => p.startsWith('/alumnos/finanzas'),
+                icon: (
+                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                ),
+            });
+            base.push({
+                href: '/alumnos/estadisticas',
+                label: 'Stats',
+                isActive: (p: string) => p.startsWith('/alumnos/estadisticas'),
+                icon: (
+                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                    </svg>
+                ),
+            });
+        }
+
+        return base;
     })();
 
     if (!sessionReady) {
         return (
-            <Box sx={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#0f172a',
-            }}>
+            <div
+                className="min-h-screen flex items-center justify-center"
+                style={{ backgroundColor: '#0f172a' }}
+            >
                 <CircularProgress sx={{ color: '#10b981' }} />
-            </Box>
+            </div>
         );
     }
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            {/* AppBar */}
-            <AppBar
-                position="fixed"
-                sx={{
-                    zIndex: (t) => t.zIndex.drawer + 1,
-                    backgroundColor: '#0f172a',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    boxShadow: '0 1px 12px rgba(0,0,0,0.4)',
-                    paddingTop: 'env(safe-area-inset-top)',
-                }}
+        <div className="flex flex-col min-h-screen">
+            {/* Top bar */}
+            <header
+                className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
+                style={{ paddingTop: 'env(safe-area-inset-top)' }}
             >
-                <Toolbar sx={{ height: 75, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {!pathname.startsWith('/login') && pathname !== '/soporte' && pathname !== '/privacidad' && pathname !== '/eliminar-cuenta' && (pathname !== '/' || !!session) ? (
-                        <IconButton
-                            edge="start"
-                            onClick={toggleMenu}
-                            sx={{
-                                color: '#94a3b8',
-                                '&:hover': { color: '#fff', backgroundColor: 'rgba(255,255,255,0.08)' },
-                                transition: 'all 0.2s',
-                            }}
-                        >
-                            {menuOpen ? <CloseIcon /> : <MenuIcon />}
-                        </IconButton>
-                    ) : (
-                        <Box sx={{ width: 48 }} />
-                    )}
-
-                    <Box
-                        component="img"
+                <div className="relative h-[75px] flex items-center justify-between px-4">
+                    <div className="w-8" />
+                    <img
                         src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
                         alt="Logo"
-                        sx={{
-                            height: 270,
-                            position: 'absolute',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            pointerEvents: 'none',
-                        }}
+                        className="pointer-events-none"
+                        style={{ height: 270, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
                     />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box
-                            sx={{
-                                width: 9,
-                                height: 9,
-                                borderRadius: '50%',
-                                backgroundColor: isOnline ? '#10b981' : '#ef4444',
-                                boxShadow: isOnline ? '0 0 8px #10b981' : '0 0 8px #ef4444',
-                                transition: 'all 0.3s',
-                            }}
-                        />
-                    </Box>
-                </Toolbar>
-            </AppBar>
+                    <div
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline
+                            ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]'
+                            : 'bg-red-400 shadow-[0_0_8px_#ef4444]'
+                            }`}
+                    />
+                </div>
+            </header>
 
             {/* Offline overlay */}
             {!isOnline && pathname !== '/alumnos/dni' && (
-                <Box sx={{
-                    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)',
-                    zIndex: 9999, display: 'flex', flexDirection: 'column',
-                    justifyContent: 'center', alignItems: 'center', color: 'white',
-                }}>
-                    <CircularProgress sx={{ color: '#10b981', mb: 2 }} />
-                    <Typography variant="h6" fontWeight={600}>Reconectando...</Typography>
-                </Box>
+                <div className="fixed inset-0 bg-black/85 z-[9999] flex flex-col justify-center items-center gap-4">
+                    <CircularProgress sx={{ color: '#10b981' }} />
+                    <p className="text-white text-lg font-semibold">Reconectando...</p>
+                </div>
             )}
 
             {/* Back-online toast */}
             {backOnlineMessage && pathname !== '/alumnos/dni' && (
-                <Box sx={{
-                    position: 'fixed', top: 90, left: '50%', transform: 'translateX(-50%)',
-                    backgroundColor: '#10b981', color: 'white', px: 3, py: 1,
-                    borderRadius: 3, zIndex: 1000, boxShadow: '0 4px 14px rgba(16,185,129,0.4)',
-                }}>
-                    <Typography variant="body2" fontWeight={700}>De vuelta en línea</Typography>
-                </Box>
+                <div className="fixed top-[90px] left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500 text-white text-sm font-bold px-6 py-2 rounded-2xl shadow-[0_4px_14px_rgba(16,185,129,0.4)]">
+                    De vuelta en línea
+                </div>
             )}
 
-            {/* Drawer */}
-            <Drawer
-                anchor="left"
-                open={menuOpen}
-                onClose={toggleMenu}
-                sx={{
-                    '& .MuiDrawer-paper': {
-                        width: 260,
-                        mt: 'calc(75px + env(safe-area-inset-top))',
-                        boxSizing: 'border-box',
-                        backgroundColor: '#0f172a',
-                        borderRight: '1px solid rgba(255,255,255,0.06)',
-                    },
-                }}
+            {/* Main content */}
+            <main
+                className="flex-1 p-3 mt-[75px]"
+                style={{ paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined }}
             >
-                <Box role="presentation" onClick={toggleMenu} onKeyDown={toggleMenu} sx={{ pt: 1.5 }}>
-                    <List disablePadding>
-                        {menuLinks.map((item) => {
-                            const isActive = pathname === item.href;
+                {children}
+            </main>
+
+            {/* Bottom navigation */}
+            {showNav && navItems.length > 0 && (
+                <nav
+                    className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-white/[0.06]"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+                >
+                    <div className="flex items-stretch">
+                        {navItems.map((item) => {
+                            const active = item.isActive(pathname);
                             return (
-                                <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                                    <ListItemButton
-                                        component="a"
-                                        href={item.href}
-                                        sx={{
-                                            px: 2.5, py: 1.4, mx: 1, borderRadius: 2,
-                                            backgroundColor: isActive ? 'rgba(16,185,129,0.12)' : 'transparent',
-                                            color: isActive ? '#10b981' : '#94a3b8',
-                                            borderLeft: isActive ? '3px solid #10b981' : '3px solid transparent',
-                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.06)', color: '#e2e8f0' },
-                                            transition: 'all 0.15s',
-                                            display: 'flex', alignItems: 'center', gap: 1.5,
-                                        }}
-                                    >
-                                        <Box sx={{ display: 'flex', fontSize: 20 }}>{item.icon}</Box>
-                                        <ListItemText
-                                            primary={item.text}
-                                            primaryTypographyProps={{ fontWeight: 600, fontSize: '0.875rem' }}
-                                        />
-                                    </ListItemButton>
-                                </ListItem>
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`relative flex-1 flex flex-col items-center justify-center pt-2.5 pb-2 gap-1 transition-colors ${active ? 'text-white' : 'text-slate-500 active:text-slate-300'}`}
+                                >
+                                    {active && (
+                                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-white rounded-full" />
+                                    )}
+                                    {item.icon}
+                                    <span className="text-[10px] font-semibold tracking-wide">{item.label}</span>
+                                </Link>
                             );
                         })}
-                    </List>
-
-                    <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.07)' }} />
-
-                    <List disablePadding>
-                        <ListItem disablePadding>
-                            <ListItemButton
-                                onClick={() => signOut()}
-                                sx={{
-                                    px: 2.5, py: 1.4, mx: 1, borderRadius: 2,
-                                    color: '#f87171',
-                                    borderLeft: '3px solid transparent',
-                                    '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' },
-                                    transition: 'all 0.15s',
-                                    display: 'flex', alignItems: 'center', gap: 1.5,
-                                }}
-                            >
-                                <LogoutIcon fontSize="small" />
-                                <ListItemText
-                                    primary="Cerrar Sesión"
-                                    primaryTypographyProps={{ fontWeight: 600, fontSize: '0.875rem' }}
-                                />
-                            </ListItemButton>
-                        </ListItem>
-                    </List>
-                </Box>
-            </Drawer>
-
-            {/* Content */}
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 'calc(75px + env(safe-area-inset-top))' }}>
-                {children}
-            </Box>
-        </Box>
+                    </div>
+                </nav>
+            )}
+        </div>
     );
 }

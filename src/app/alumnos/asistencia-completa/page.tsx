@@ -32,18 +32,18 @@ export default function HistorialAsistenciaPage() {
     }, []);
 
     return (
-        <div className="max-w-3xl mx-auto">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <h1 className="text-xl font-bold text-white">Historial Completo de Asistencia</h1>
+        <div className="max-w-3xl mx-auto space-y-4">
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-white">Historial de Asistencia</h1>
             </div>
-            <div className="bg-white rounded-b-2xl shadow-xl overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="bg-gradient-to-r from-slate-700 to-slate-600">
-                                <th className="px-4 py-3 text-left text-xs text-slate-200 font-bold uppercase">Nombre</th>
-                                <th className="px-4 py-3 text-left text-xs text-slate-200 font-bold uppercase">DNI</th>
-                                <th className="px-4 py-3 text-left text-xs text-slate-200 font-bold uppercase">Historial</th>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="px-4 py-3 text-left text-xs text-slate-500 font-bold uppercase">Nombre</th>
+                                <th className="px-4 py-3 text-left text-xs text-slate-500 font-bold uppercase">DNI</th>
+                                <th className="px-4 py-3 text-left text-xs text-slate-500 font-bold uppercase">Historial</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">

@@ -692,18 +692,17 @@ export default function ListaAlumnosPage() {
     }
 
     return (
-        <div className="w-full max-w-full lg:max-w-6xl mx-auto">
+        <div className="w-full max-w-full lg:max-w-6xl mx-auto space-y-4">
 
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-4 flex items-center justify-between">
-                <h1 className="text-xl font-bold text-white tracking-tight">Lista de Alumnos</h1>
+            <div className="px-1 pt-1 flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-white tracking-tight">Alumnos</h1>
                 {session?.user?.role === 'dueño' && (
                     <button
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-semibold transition-all duration-200 shadow-md"
+                        className="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
                         onClick={handleGenerateExcel}
                     >
-                        Balance
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="18" height="18" viewBox="0 0 48 48">
+                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 48 48">
                             <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
                             <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
                             <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
@@ -717,12 +716,13 @@ export default function ListaAlumnosPage() {
                             <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
                             <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
                         </svg>
+                        Balance
                     </button>
                 )}
             </div>
 
             {/* Body */}
-            <div className="bg-white rounded-b-2xl shadow-xl p-4 lg:p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
 
                 {/* Filtros */}
                 <Suspense fallback={<Loader />}>
@@ -769,12 +769,12 @@ export default function ListaAlumnosPage() {
                         <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
                             <table className="w-full text-sm text-left">
                                 <thead>
-                                    <tr className="bg-gradient-to-r from-slate-700 to-slate-600">
-                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Apellido</th>
-                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Nombre</th>
-                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Edad</th>
-                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Pago</th>
-                                        <th className="px-4 py-3 text-xs text-slate-200 font-bold uppercase tracking-wider">Plan</th>
+                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Apellido</th>
+                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Nombre</th>
+                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Edad</th>
+                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Pago</th>
+                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Plan</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -865,10 +865,10 @@ export default function ListaAlumnosPage() {
                 {alumnoSeleccionado && (
                     <div className="relative bg-white shadow-2xl rounded-2xl overflow-hidden outline-none">
                         {/* Header del modal */}
-                        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5">
+                        <div className="bg-slate-900 px-6 py-5">
                             <button
                                 onClick={() => setAlumnoSeleccionado(null)}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
                                 aria-label="Cerrar"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -880,11 +880,11 @@ export default function ListaAlumnosPage() {
                             </h2>
                             <div className="mt-1">
                                 {verificarPagoMesActual(alumnoSeleccionado.pagos) ? (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                                         Pago al día
                                     </span>
                                 ) : (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-300">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
                                         Debe este mes
                                     </span>
                                 )}

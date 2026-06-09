@@ -201,13 +201,13 @@ export default function AsistenciasPage() {
     const colorMap: Record<string, string> = { Musculación: 'bg-blue-100 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <h1 className="text-xl font-bold text-white">Asistencias</h1>
-                <p className="text-slate-300 text-sm mt-0.5">{alumno.nombre} {alumno.apellido}</p>
+        <div className="max-w-4xl mx-auto space-y-4">
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-white">Asistencias</h1>
+                <p className="text-slate-400 text-sm mt-0.5">{alumno.nombre} {alumno.apellido}</p>
             </div>
 
-            <div className="bg-white rounded-b-2xl shadow-xl p-5">
+            <div className="bg-white rounded-2xl shadow-sm p-5">
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-3 mb-4">
                     <div>

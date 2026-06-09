@@ -80,11 +80,11 @@ export default function Estadisticas() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <h1 className="text-xl font-bold text-white">Estadísticas</h1>
+        <div className="max-w-6xl mx-auto space-y-4">
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-white">Estadísticas</h1>
             </div>
-            <div className="bg-white rounded-b-2xl shadow-xl p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
                 <div className="grid gap-6">
                     <div>
                         <h3 className="text-base font-bold text-slate-700 mb-3">Top horarios Musculación</h3>

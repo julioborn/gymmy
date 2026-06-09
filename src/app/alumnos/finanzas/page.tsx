@@ -503,12 +503,12 @@ const ControlFinanciero = () => {
     const resultado = totalIngresosCombinados - totalGastos;
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <h1 className="text-xl font-bold text-white">Control Financiero</h1>
+        <div className="max-w-4xl mx-auto space-y-4">
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-white">Finanzas</h1>
             </div>
 
-            <div className="bg-white rounded-b-2xl shadow-xl p-6 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-3">
                     <select className={selectCls} value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}>

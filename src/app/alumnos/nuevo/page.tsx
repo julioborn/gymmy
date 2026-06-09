@@ -62,12 +62,12 @@ export default function NuevoAlumnoPage() {
     const labelCls = "block text-xs text-slate-500 font-semibold uppercase tracking-wide mb-1";
 
     return (
-        <div className="max-w-lg mx-auto">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <h1 className="text-xl font-bold text-white">Registrar Alumno</h1>
+        <div className="max-w-lg mx-auto space-y-4">
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-white">Registrar Alumno</h1>
             </div>
 
-            <div className="bg-white rounded-b-2xl shadow-xl p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Campos requeridos */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

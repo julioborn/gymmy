@@ -251,11 +251,11 @@ export default function HomePage() {
     const balanceColor = !data ? '' : data.balance >= 0 ? 'text-emerald-600' : 'text-red-600';
 
     return (
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto space-y-4">
 
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-0.5">
+            <div className="px-1 pt-1">
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-0.5">
                     {getGreeting()} · {fmtDate()}
                 </p>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -264,7 +264,7 @@ export default function HomePage() {
             </div>
 
             {/* Body */}
-            <div className="bg-white rounded-b-2xl shadow-xl p-4 lg:p-6 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm p-4 lg:p-6 space-y-6">
 
                 {/* KPI Cards */}
                 {loading ? (
@@ -438,3 +438,4 @@ export default function HomePage() {
         </div>
     );
 }
+

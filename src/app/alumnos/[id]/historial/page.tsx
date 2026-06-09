@@ -1261,11 +1261,11 @@ export default function HistorialAlumnoPage() {
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
 
     return (
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto space-y-4">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-2xl px-6 py-5">
+            <div className="px-1 pt-1">
                 <h1 className="text-2xl font-bold text-white">{alumno.nombre} {alumno.apellido}</h1>
-                <div className="mt-1.5">
+                <div className="mt-1">
                     {diasRestantes != null && diasRestantes > 0 ? (
                         <span className={`text-sm font-semibold ${obtenerColorSemaforo(diasRestantes)}`}>
                             Finaliza el plan en {diasRestantes} entrenamientos
@@ -1276,7 +1276,7 @@ export default function HistorialAlumnoPage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-b-2xl shadow-xl overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 {/* Toolbar */}
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-end">
                     <select
