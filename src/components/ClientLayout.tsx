@@ -149,7 +149,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 <div className="relative h-[75px] flex items-center justify-between px-4">
                     {showNav ? (
                         <button
-                            onClick={() => signOut()}
+                            onClick={() => { if (confirm('¿Cerrar sesión?')) signOut(); }}
                             className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors active:scale-90"
                             aria-label="Cerrar sesión"
                         >
