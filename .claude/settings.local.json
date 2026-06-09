@@ -41,7 +41,11 @@
       "Bash(JAVA_HOME=\"C:/Users/julio/AppData/Local/Programs/Eclipse Adoptium/jdk-17.0.16.8-hotspot\" ./gradlew bundleRelease)",
       "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/java\" -version)",
       "Bash(pod install *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "PowerShell(cd \"C:\\\\PROYECTOS\\\\gymmy\"; $env:NODE_ENV = \"production\"; npx cap sync 2>&1)",
+      "Bash(set \"JAVA_HOME=C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\")",
+      "Bash(gradlew.bat bundleRelease)",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\"; cd \"C:\\\\PROYECTOS\\\\gymmy\\\\android\"; .\\\\gradlew.bat bundleRelease 2>&1)"
     ]
   }
 }

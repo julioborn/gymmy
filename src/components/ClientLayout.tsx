@@ -115,7 +115,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             });
             base.push({
                 href: '/alumnos/estadisticas',
-                label: 'Stats',
+                label: 'Estadísticas',
                 isActive: (p: string) => p.startsWith('/alumnos/estadisticas'),
                 icon: (
                     <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
