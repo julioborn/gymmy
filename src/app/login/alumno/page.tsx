@@ -49,7 +49,7 @@ function ErrorBanner({ message }: { message: string }) {
     );
 }
 
-const inputCls = "w-full bg-white text-slate-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-slate-400";
+const inputCls = "w-full bg-white text-slate-900 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 placeholder:text-slate-400";
 const primaryBtn = "w-full bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-slate-900 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2";
 
 export default function AlumnoLoginPage() {
@@ -128,13 +128,11 @@ export default function AlumnoLoginPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ dni: step.dni, gimnasioId: step.gimnasioId, password }),
             });
-
             const data = await res.json();
             if (!res.ok) {
                 setError(data.error || 'Error al crear la cuenta.');
                 return;
             }
-
             await doLogin(step.dni, step.gimnasioId, password);
         } catch {
             setError('Error de conexión.');
@@ -164,12 +162,10 @@ export default function AlumnoLoginPage() {
             password: pwd,
             gimnasioId,
         });
-
         if (res?.error) {
             setError('Contraseña incorrecta.');
             return;
         }
-
         router.push('/mi-cuenta');
     }
 
@@ -209,20 +205,25 @@ export default function AlumnoLoginPage() {
                 {step.type === 'dni' && (
                     <>
                         <div className="mb-7">
-                            <h1 className="text-2xl font-bold text-white">Alumno</h1>
-                            <p className="text-slate-500 text-sm mt-1">Ingresá tu DNI para continuar</p>
+                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Alumno</p>
+                            <h1 className="text-2xl font-bold text-white">Ingresá tu DNI</h1>
                         </div>
 
-                        <form onSubmit={handleDNISubmit} className="space-y-2.5">
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={dniRaw}
-                                onChange={e => setDniRaw(formatDNI(e.target.value))}
-                                className={`${inputCls} text-center text-lg font-mono tracking-widest`}
-                                maxLength={10}
-                                placeholder="DNI"
-                            />
+                        <form onSubmit={handleDNISubmit} className="space-y-3">
+                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
+                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                    DNI
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={dniRaw}
+                                    onChange={e => setDniRaw(formatDNI(e.target.value))}
+                                    className={`${inputCls} text-center text-lg font-mono tracking-widest`}
+                                    maxLength={10}
+                                    placeholder="XX.XXX.XXX"
+                                />
+                            </div>
 
                             {error && <ErrorBanner message={error} />}
 
@@ -236,23 +237,28 @@ export default function AlumnoLoginPage() {
                 {/* ── PASO 2: seleccionar gimnasio ── */}
                 {step.type === 'gym-select' && (
                     <>
-                        <div className="mb-6">
+                        <div className="mb-7">
+                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Tu DNI está en más de un gimnasio</p>
                             <h1 className="text-2xl font-bold text-white">Seleccioná tu gimnasio</h1>
-                            <p className="text-slate-500 text-sm mt-1">Tu DNI está en más de un gimnasio</p>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                             {step.gyms.map(gym => (
                                 <button
                                     key={gym.gimnasioId}
                                     onClick={() => handleGymSelect(gym)}
-                                    className="w-full bg-white hover:bg-slate-100 active:scale-[0.98] text-slate-900 rounded-2xl px-5 py-4 text-left font-semibold text-sm transition-all flex items-center justify-between"
+                                    className="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.98] border border-slate-700/60 rounded-2xl px-4 py-4 text-left transition-all flex items-center gap-4"
                                 >
-                                    <div>
-                                        <p className="font-semibold text-sm">{gym.gimnasioNombre}</p>
-                                        <p className="text-slate-400 text-xs mt-0.5 font-normal">{gym.nombre} {gym.apellido}</p>
+                                    <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center shrink-0">
+                                        <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                                        </svg>
                                     </div>
-                                    <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-white text-sm">{gym.gimnasioNombre}</p>
+                                        <p className="text-slate-500 text-xs mt-0.5">{gym.nombre} {gym.apellido}</p>
+                                    </div>
+                                    <svg className="w-4 h-4 text-slate-600 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                     </svg>
                                 </button>
@@ -264,29 +270,37 @@ export default function AlumnoLoginPage() {
                 {/* ── PASO 3: primer acceso ── */}
                 {step.type === 'register' && (
                     <>
-                        <div className="mb-6">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-2">Primer acceso</p>
+                        <div className="mb-7">
+                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Primer acceso · {step.gimnasioNombre}</p>
                             <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
-                            <p className="text-slate-500 text-sm mt-1">{step.gimnasioNombre} · Creá tu contraseña</p>
+                            <p className="text-slate-400 text-sm mt-1">Creá tu contraseña para ingresar</p>
                         </div>
 
-                        <form onSubmit={handleRegister} className="space-y-2.5">
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                placeholder="Nueva contraseña"
-                                required
-                                className={inputCls}
-                            />
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={e => setConfirmPassword(e.target.value)}
-                                placeholder="Repetí la contraseña"
-                                required
-                                className={inputCls}
-                            />
+                        <form onSubmit={handleRegister} className="space-y-3">
+                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Nueva contraseña</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        placeholder="Mínimo 6 caracteres"
+                                        required
+                                        className={inputCls}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Repetir contraseña</label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={e => setConfirmPassword(e.target.value)}
+                                        placeholder="Repetí la contraseña"
+                                        required
+                                        className={inputCls}
+                                    />
+                                </div>
+                            </div>
 
                             {error && <ErrorBanner message={error} />}
 
@@ -299,7 +313,7 @@ export default function AlumnoLoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => step.type === 'register' && setStep({ type: 'login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre })}
-                                    className="text-white underline underline-offset-2 hover:text-slate-300"
+                                    className="text-slate-400 underline underline-offset-2 hover:text-slate-200"
                                 >
                                     Ingresá acá
                                 </button>
@@ -311,21 +325,25 @@ export default function AlumnoLoginPage() {
                 {/* ── PASO 4: login normal ── */}
                 {step.type === 'login' && (
                     <>
-                        <div className="mb-6">
+                        <div className="mb-7">
+                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">{step.gimnasioNombre}</p>
                             <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
-                            <p className="text-slate-500 text-sm mt-1">{step.gimnasioNombre}</p>
+                            <p className="text-slate-400 text-sm mt-1">Ingresá tu contraseña</p>
                         </div>
 
-                        <form onSubmit={handleLogin} className="space-y-2.5">
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                placeholder="Contraseña"
-                                required
-                                autoFocus
-                                className={inputCls}
-                            />
+                        <form onSubmit={handleLogin} className="space-y-3">
+                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
+                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Contraseña</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                    autoFocus
+                                    className={inputCls}
+                                />
+                            </div>
 
                             {error && <ErrorBanner message={error} />}
 
