@@ -56,14 +56,14 @@ export default function PrivacidadPage() {
             <section className="mb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">6. Eliminación de datos</h2>
                 <p className="text-sm">
-                    Podés solicitar la eliminación de tu cuenta y datos personales contactándote con el administrador de tu gimnasio o escribiéndonos a <strong className="text-white">gymmy.app.ar@gmail.com</strong>.
+                    Podés solicitar la eliminación de tu cuenta y datos personales contactándote con el administrador de tu gimnasio o escribiéndonos a <strong className="text-white">julio@estudioborn.com.ar</strong>.
                 </p>
             </section>
 
             <section className="mb-6">
                 <h2 className="text-lg font-semibold text-white mb-2">7. Contacto</h2>
                 <p className="text-sm">
-                    Para consultas sobre privacidad escribinos a <strong className="text-white">gymmy.app.ar@gmail.com</strong>.
+                    Para consultas sobre privacidad escribinos a <strong className="text-white">julio@estudioborn.com.ar</strong>.
                 </p>
             </section>
         </main>
