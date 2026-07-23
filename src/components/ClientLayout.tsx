@@ -61,6 +61,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
     const isLoginPage = pathname.startsWith('/login');
     const showNav = !isLoginPage && !isStaticPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
+    const showLogout = !isLoginPage && !isStaticPage && !!session;
 
     const navItems = (() => {
         if (!showNav) return [];
@@ -147,7 +148,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 style={{ paddingTop: 'env(safe-area-inset-top)' }}
             >
                 <div className="relative h-[75px] flex items-center justify-between px-4">
-                    {showNav ? (
+                    {showLogout ? (
                         <button
                             onClick={() => { if (confirm('¿Cerrar sesión?')) signOut(); }}
                             className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors active:scale-90"
