@@ -61,7 +61,14 @@ export default function PrivacidadPage() {
             </section>
 
             <section className="mb-6">
-                <h2 className="text-lg font-semibold text-white mb-2">7. Contacto</h2>
+                <h2 className="text-lg font-semibold text-white mb-2">7. Conservación de datos</h2>
+                <p className="text-sm">
+                    Los datos personales se conservan mientras la cuenta del usuario esté activa en el sistema. Ante una solicitud de eliminación de cuenta, todos los datos asociados se eliminan en un plazo de 30 días. Los datos de asistencia y pagos históricos pueden conservarse de forma anonimizada con fines estadísticos internos del gimnasio.
+                </p>
+            </section>
+
+            <section className="mb-6">
+                <h2 className="text-lg font-semibold text-white mb-2">8. Contacto</h2>
                 <p className="text-sm">
                     Para consultas sobre privacidad escribinos a <strong className="text-white">julio@estudioborn.com.ar</strong>.
                 </p>
