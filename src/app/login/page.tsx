@@ -115,7 +115,20 @@ export default function LoginPage() {
                 setError('Ingresá tu usuario o DNI.');
                 return;
             }
-            setStep({ type: 'staff-password', username: identifier.trim() });
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/auth/staff/check?username=${encodeURIComponent(identifier.trim())}`);
+                const data = await res.json();
+                if (!data.found) {
+                    setError('Usuario no encontrado.');
+                    return;
+                }
+                setStep({ type: 'staff-password', username: identifier.trim() });
+            } catch {
+                setError('Error de conexión. Intentá de nuevo.');
+            } finally {
+                setLoading(false);
+            }
         }
     }
 
