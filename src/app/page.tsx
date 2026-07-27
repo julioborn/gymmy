@@ -202,8 +202,14 @@ export default function HomePage() {
     if (!session) return null;
     if (session.user?.role === 'alumno') return null;
 
-    const esDueño = session.user?.role === 'dueño';
-    const visibleCards = NAV_CARDS.filter(c => !c.role || c.role === session.user?.role);
+    const userRole = session.user?.role ?? '';
+    const esDueño = userRole === 'dueño' || userRole === 'admin';
+    const visibleCards = NAV_CARDS.filter(c => {
+        if (!c.role) return true;
+        if (c.role === userRole) return true;
+        if (c.role === 'dueño' && userRole === 'admin') return true;
+        return false;
+    });
 
     const pagoColor = !data ? '' : data.porcentajePagados >= 80 ? 'text-emerald-600' : data.porcentajePagados >= 50 ? 'text-amber-600' : 'text-red-600';
     const pagoBarColor = !data ? 'bg-slate-200' : data.porcentajePagados >= 80 ? 'bg-emerald-500' : data.porcentajePagados >= 50 ? 'bg-amber-400' : 'bg-red-500';

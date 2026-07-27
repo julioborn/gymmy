@@ -64,7 +64,7 @@ const ControlFinanciero = () => {
     const [totalIngresosAdicionales, setTotalIngresosAdicionales] = useState<number>(0);
 
     useEffect(() => {
-        if (status !== 'loading' && session?.user?.role !== 'dueño') {
+        if (status !== 'loading' && !['dueño', 'admin'].includes(session?.user?.role ?? '')) {
             router.push('/');
         }
     }, [session, status, router]);
