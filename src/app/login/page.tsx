@@ -225,19 +225,6 @@ export default function LoginPage() {
     return (
         <div className="min-h-[calc(100vh-75px)] -m-3 bg-slate-900 flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
 
-            {/* Decorative blobs */}
-            <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-56 h-56 bg-slate-800 rounded-full translate-y-1/3 -translate-x-1/4 pointer-events-none" />
-
-            {/* Logo */}
-            <div className="relative z-10 mb-8 flex flex-col items-center">
-                <img
-                    src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
-                    alt="Gymmy"
-                    className="h-14 pointer-events-none select-none"
-                />
-            </div>
-
             {/* Card */}
             <div className="w-full max-w-xs relative z-10">
 
