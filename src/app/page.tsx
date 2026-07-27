@@ -50,7 +50,7 @@ const NAV_CARDS = [
         iconBg: 'bg-slate-700',
         role: null as string | null,
         icon: (
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
             </svg>
         ),
@@ -62,7 +62,7 @@ const NAV_CARDS = [
         iconBg: 'bg-emerald-500',
         role: null as string | null,
         icon: (
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
             </svg>
         ),
@@ -74,7 +74,7 @@ const NAV_CARDS = [
         iconBg: 'bg-amber-400',
         role: 'dueño' as string | null,
         icon: (
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
         ),
@@ -86,7 +86,7 @@ const NAV_CARDS = [
         iconBg: 'bg-blue-500',
         role: 'dueño' as string | null,
         icon: (
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
             </svg>
         ),
@@ -113,15 +113,9 @@ export default function HomePage() {
     const [recargo, setRecargo] = useState<number | null>(null);
 
     useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/login');
-        }
-        if (session?.user?.role === 'registro') {
-            router.push('/alumnos/dni');
-        }
-        if (session?.user?.role === 'alumno') {
-            router.push('/mi-cuenta');
-        }
+        if (status === 'unauthenticated') router.push('/login');
+        if (session?.user?.role === 'registro') router.push('/alumnos/dni');
+        if (session?.user?.role === 'alumno') router.push('/mi-cuenta');
     }, [session, status, router]);
 
     useEffect(() => {
@@ -138,10 +132,7 @@ export default function HomePage() {
         if (!session || session.user?.role === 'alumno') return;
         fetch('/api/tarifas')
             .then(r => r.json())
-            .then(d => {
-                setTarifas(d.tarifas || []);
-                if (d.recargo != null) setRecargo(d.recargo);
-            })
+            .then(d => { setTarifas(d.tarifas || []); if (d.recargo != null) setRecargo(d.recargo); })
             .catch(() => { });
         fetch('/api/recargo')
             .then(r => r.json())
@@ -176,20 +167,10 @@ export default function HomePage() {
         const nuevasTarifas = result.value as Tarifa[] | undefined;
         if (nuevasTarifas) {
             try {
-                const res = await fetch('/api/tarifas', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevasTarifas),
-                });
-                if (res.ok) {
-                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' });
-                    setTarifas(nuevasTarifas);
-                } else {
-                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' });
-                }
-            } catch {
-                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' });
-            }
+                const res = await fetch('/api/tarifas', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevasTarifas) });
+                if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' }); setTarifas(nuevasTarifas); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' }); }
         }
     };
 
@@ -207,27 +188,14 @@ export default function HomePage() {
             showCancelButton: true,
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            inputValidator: (value) => {
-                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
-                return null;
-            },
+            inputValidator: (value) => (!value || Number(value) <= 0) ? 'El monto debe ser un número mayor a 0' : null,
         });
         if (nuevoMonto && Number(nuevoMonto) !== recargo) {
             try {
-                const res = await fetch('/api/recargo', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
-                });
-                if (res.ok) {
-                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
-                    setRecargo(Number(nuevoMonto));
-                } else {
-                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
-                }
-            } catch {
-                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
-            }
+                const res = await fetch('/api/recargo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ monto: Number(nuevoMonto) }) });
+                if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' }); setRecargo(Number(nuevoMonto)); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' }); }
         }
     };
 
@@ -243,7 +211,7 @@ export default function HomePage() {
     const balanceBg = !data ? 'bg-slate-400' : data.balance >= 0 ? 'bg-emerald-500' : 'bg-red-500';
 
     return (
-        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
             <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5">
@@ -271,13 +239,13 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* KPI Cards */}
+            {/* KPI Cards — 2 col mobile, 4 col desktop */}
             {loading ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
                     {Array.from({ length: esDueño ? 4 : 3 }).map((_, i) => <SkeletonCard key={i} />)}
                 </div>
             ) : data && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
 
                     {/* Pagaron este mes */}
                     <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
@@ -291,10 +259,7 @@ export default function HomePage() {
                             <span className="text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-1 mb-2">
-                            <div
-                                className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`}
-                                style={{ width: `${data.porcentajePagados}%` }}
-                            />
+                            <div className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
                         </div>
                         <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pagaron este mes</p>
                     </div>
@@ -311,9 +276,7 @@ export default function HomePage() {
                             <span className="text-xs text-slate-400 font-medium">alumnos</span>
                         </div>
                         {data.horaPico ? (
-                            <p className="text-[11px] text-slate-500 mb-1">
-                                Pico: <span className="font-bold text-blue-600">{data.horaPico}</span>
-                            </p>
+                            <p className="text-[11px] text-slate-500 mb-1">Pico: <span className="font-bold text-blue-600">{data.horaPico}</span></p>
                         ) : (
                             <p className="text-[11px] text-slate-400 mb-1">Sin datos de hoy</p>
                         )}
@@ -328,9 +291,7 @@ export default function HomePage() {
                             </svg>
                         </div>
                         <div className="flex items-baseline gap-1 mb-2">
-                            <span className={`text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>
-                                {data.planesVenciendo.length}
-                            </span>
+                            <span className={`text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>{data.planesVenciendo.length}</span>
                             <span className="text-xs text-slate-400 font-medium">alumnos</span>
                         </div>
                         <p className={`text-[11px] font-semibold mb-1 ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
@@ -355,9 +316,7 @@ export default function HomePage() {
                                 {' · '}
                                 <span className="text-red-500 font-bold">−${fmt(data.gastosMes)}</span>
                             </p>
-                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Balance · {capitalize(data.mes)}
-                            </p>
+                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Balance · {capitalize(data.mes)}</p>
                         </div>
                     )}
                 </div>
@@ -376,85 +335,81 @@ export default function HomePage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {data.planesVenciendo.map(a => (
-                            <Link
-                                key={a._id}
-                                href={`/alumnos/${a._id}/historial`}
-                                className="flex items-center gap-2 bg-white border border-amber-200 hover:border-amber-400 rounded-xl px-3 py-2 transition-all group"
-                            >
+                            <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2 bg-white border border-amber-200 hover:border-amber-400 rounded-xl px-3 py-2 transition-all group">
                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
                                     {a.diasRestantes}
                                 </div>
-                                <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">
-                                    {a.apellido}, {a.nombre}
-                                </span>
+                                <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">{a.apellido}, {a.nombre}</span>
                             </Link>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Accesos rápidos */}
-            <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Accesos rápidos</p>
-                <div className="grid grid-cols-2 gap-3">
-                    {visibleCards.map((card) => (
-                        <Link
-                            key={card.href}
-                            href={card.href}
-                            className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col gap-3 active:scale-[0.97] transition-transform"
-                        >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconBg}`}>
-                                {card.icon}
-                            </div>
-                            <div>
-                                <p className="font-bold text-sm leading-tight text-slate-800">{card.label}</p>
-                                <p className="text-xs text-slate-500 mt-0.5">{card.desc}</p>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </div>
+            {/* Accesos rápidos + Configuración — side by side on desktop */}
+            <div className="flex flex-col md:flex-row md:items-start gap-4">
 
-            {/* Configuración */}
-            <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Configuración</p>
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-                    <button
-                        onClick={handleConfiguracionTarifas}
-                        className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
-                    >
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                            </svg>
-                        </div>
-                        <div className="text-left flex-1">
-                            <p className="font-semibold text-sm text-slate-800">Cuotas</p>
-                            <p className="text-xs text-slate-500">Precios por días/semana</p>
-                        </div>
-                        <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                        </svg>
-                    </button>
-                    <div className="border-t border-slate-100" />
-                    <button
-                        onClick={handleConfiguracionRecargos}
-                        className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
-                    >
-                        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                        </div>
-                        <div className="text-left flex-1">
-                            <p className="font-semibold text-sm text-slate-800">Recargo</p>
-                            <p className="text-xs text-slate-500">Monto por mora</p>
-                        </div>
-                        <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                        </svg>
-                    </button>
+                {/* Accesos rápidos */}
+                <div className="flex-1">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Accesos rápidos</p>
+                    {/* Mobile: compact horizontal cards (2 col). Desktop: icon-top cards (4 col) */}
+                    <div className={`grid gap-2 md:gap-3 ${visibleCards.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
+                        {visibleCards.map((card) => (
+                            <Link
+                                key={card.href}
+                                href={card.href}
+                                className="bg-white border border-slate-100 rounded-xl md:rounded-2xl shadow-sm active:scale-[0.97] transition-transform
+                                    flex items-center gap-2.5 p-3
+                                    md:flex-col md:items-start md:gap-3 md:p-4"
+                            >
+                                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ${card.iconBg}`}>
+                                    {card.icon}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-semibold text-xs md:text-sm leading-tight text-slate-800 truncate">{card.label}</p>
+                                    <p className="hidden md:block text-xs text-slate-500 mt-0.5">{card.desc}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Configuración */}
+                <div className="md:w-64 shrink-0">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Configuración</p>
+                    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                        <button onClick={handleConfiguracionTarifas} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                </svg>
+                            </div>
+                            <div className="text-left flex-1">
+                                <p className="font-semibold text-sm text-slate-800">Cuotas</p>
+                                <p className="text-xs text-slate-500">Precios por días/semana</p>
+                            </div>
+                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
+                            </svg>
+                        </button>
+                        <div className="border-t border-slate-100" />
+                        <button onClick={handleConfiguracionRecargos} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
+                            <div className="text-left flex-1">
+                                <p className="font-semibold text-sm text-slate-800">Recargo</p>
+                                <p className="text-xs text-slate-500">Monto por mora</p>
+                            </div>
+                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
         </div>
