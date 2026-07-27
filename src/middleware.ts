@@ -50,9 +50,9 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // Profesor: sin acceso a finanzas globales ni estadísticas
+    // Profesor: sin acceso a finanzas, estadísticas ni gestión de empleados
     if (token.role === 'profesor') {
-        const restricted = ['/alumnos/finanzas', '/alumnos/estadisticas'];
+        const restricted = ['/alumnos/finanzas', '/alumnos/estadisticas', '/empleados'];
         if (restricted.some(p => pathname.startsWith(p))) {
             const url = req.nextUrl.clone();
             url.pathname = '/';
