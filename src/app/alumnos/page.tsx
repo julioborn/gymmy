@@ -692,37 +692,65 @@ export default function ListaAlumnosPage() {
     }
 
     return (
-        <div className="w-full max-w-full lg:max-w-6xl mx-auto space-y-4">
+        <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
-            {/* Header */}
-            <div className="px-1 pt-1 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Alumnos</h1>
-                {session?.user?.role === 'dueño' && (
-                    <button
-                        className="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-                        onClick={handleGenerateExcel}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 48 48">
-                            <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
-                            <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
-                            <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
-                            <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
-                            <g>
-                                <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
-                                <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
-                                <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
-                                <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
-                            </g>
-                            <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
-                            <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
-                        </svg>
-                        Balance
-                    </button>
-                )}
+            {/* Banner */}
+            <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 bg-blue-500 rounded-2xl flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-bold text-white leading-tight">Alumnos</h1>
+                            {!isLoading && (
+                                <p className="text-slate-400 text-xs mt-0.5">{alumnos.length} inscriptos</p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <button
+                            className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold rounded-xl transition-all"
+                            onClick={handleConfiguracionTarifas}
+                        >
+                            Cuotas
+                        </button>
+                        <button
+                            className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold rounded-xl transition-all"
+                            onClick={handleConfiguracionRecargos}
+                        >
+                            Recargo
+                        </button>
+                        {session?.user?.role === 'dueño' && (
+                            <button
+                                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-[0.97]"
+                                onClick={handleGenerateExcel}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="14" height="14" viewBox="0 0 48 48">
+                                    <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
+                                    <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
+                                    <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
+                                    <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
+                                    <g>
+                                        <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
+                                        <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
+                                        <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
+                                        <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
+                                    </g>
+                                    <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
+                                    <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
+                                </svg>
+                                Balance
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Body */}
-            <div className="bg-white rounded-2xl shadow-sm p-4 lg:p-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 lg:p-6 space-y-4">
 
                 {/* Filtros */}
                 <Suspense fallback={<Loader />}>
@@ -744,22 +772,6 @@ export default function ListaAlumnosPage() {
                         }}
                     />
                 </Suspense>
-
-                {/* Config buttons */}
-                <div className="flex gap-2 mb-4">
-                    <button
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg border border-slate-200 transition-all duration-150"
-                        onClick={handleConfiguracionTarifas}
-                    >
-                        Cuotas
-                    </button>
-                    <button
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg border border-slate-200 transition-all duration-150"
-                        onClick={handleConfiguracionRecargos}
-                    >
-                        Recargo
-                    </button>
-                </div>
 
                 {/* Tabla */}
                 {isLoading ? (
@@ -852,6 +864,7 @@ export default function ListaAlumnosPage() {
                         />
                     </Suspense>
                 )}
+
             </div>
 
             {/* Modal detalle alumno */}
