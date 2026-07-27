@@ -62,7 +62,7 @@ export default function NuevoAlumnoPage() {
     const labelCls = "block text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-1";
 
     return (
-        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-4xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
             <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5 flex items-center gap-4">
@@ -78,6 +78,8 @@ export default function NuevoAlumnoPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
 
                 {/* Datos básicos */}
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
@@ -104,7 +106,7 @@ export default function NuevoAlumnoPage() {
                     </div>
                 </div>
 
-                {/* Información adicional */}
+                {/* Información adicional — second column on desktop */}
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Información adicional</p>
@@ -158,6 +160,8 @@ export default function NuevoAlumnoPage() {
                         </div>
                     </div>
                 </div>
+
+                </div>{/* end grid */}
 
                 <button type="submit" className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl transition shadow-sm">
                     Registrar Alumno
