@@ -773,68 +773,75 @@ export default function ListaAlumnosPage() {
                     />
                 </Suspense>
 
-                {/* Tabla */}
+                {/* Lista */}
                 {isLoading ? (
-                    <Loader />
+                    <div className="space-y-2">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="h-16 rounded-2xl bg-slate-100 animate-pulse" />
+                        ))}
+                    </div>
+                ) : alumnosFiltrados.length === 0 ? (
+                    <div className="py-14 text-center">
+                        <p className="text-slate-400 text-sm font-medium">No se encontraron alumnos</p>
+                    </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                            <table className="w-full text-sm text-left">
-                                <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-200">
-                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Apellido</th>
-                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Nombre</th>
-                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Edad</th>
-                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Pago</th>
-                                        <th className="px-4 py-3 text-xs text-slate-500 font-bold uppercase tracking-wider">Plan</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {paginatedAlumnos.map((alumno, idx) => {
-                                        const pagado = verificarPagoMesActual(alumno.pagos);
-                                        return (
-                                            <tr
-                                                key={alumno._id}
-                                                className={`cursor-pointer transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-slate-100`}
-                                                onClick={() => setAlumnoSeleccionado(alumno)}
-                                            >
-                                                <td className="px-4 py-3 font-semibold text-slate-800">{alumno.apellido}</td>
-                                                <td className="px-4 py-3 text-slate-700">{alumno.nombre}</td>
-                                                <td className="px-4 py-3 text-slate-500">{alumno.edad ?? '-'}</td>
-                                                <td className="px-4 py-3">
-                                                    {pagado ? (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
-                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                                                            </svg>
-                                                            Pagó
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
-                                                            </svg>
-                                                            Debe
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    {alumno.diasRestantes != null ? (
-                                                        <span className={`font-semibold text-sm ${alumno.diasRestantes === 0 ? 'text-red-600' : alumno.diasRestantes <= 5 ? 'text-amber-600' : 'text-slate-700'}`}>
-                                                            {alumno.diasRestantes} días
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-xs font-medium text-red-500">Sin plan</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                        <div className="space-y-2">
+                            {paginatedAlumnos.map((alumno) => {
+                                const pagado = verificarPagoMesActual(alumno.pagos);
+                                const dr = alumno.diasRestantes;
+                                const planText = dr != null
+                                    ? `${dr} día${dr !== 1 ? 's' : ''} de plan`
+                                    : 'Sin plan';
+                                const planColor = dr == null
+                                    ? 'text-red-400'
+                                    : dr === 0
+                                        ? 'text-red-500'
+                                        : dr <= 5
+                                            ? 'text-amber-500'
+                                            : 'text-slate-400';
+                                return (
+                                    <div
+                                        key={alumno._id}
+                                        className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all"
+                                        onClick={() => setAlumnoSeleccionado(alumno)}
+                                    >
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${pagado ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                                            {alumno.nombre?.[0]}{alumno.apellido?.[0]}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-slate-800 text-sm truncate">
+                                                {alumno.apellido}, {alumno.nombre}
+                                            </p>
+                                            <p className={`text-xs mt-0.5 ${planColor}`}>
+                                                {alumno.edad ? `${alumno.edad} años · ` : ''}{planText}
+                                            </p>
+                                        </div>
+                                        <div className="shrink-0 flex items-center gap-2">
+                                            {pagado ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Pagó
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Debe
+                                                </span>
+                                            )}
+                                            <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-
-                        <div className="flex justify-center mt-5">
+                        <div className="flex justify-center pt-2">
                             <Pagination
                                 count={Math.ceil(alumnosFiltrados.length / itemsPerPage)}
                                 page={page}
