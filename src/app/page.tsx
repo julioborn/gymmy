@@ -45,7 +45,7 @@ type DashboardData = {
 const NAV_CARDS = [
     {
         href: '/alumnos',
-        label: 'Lista de Alumnos',
+        label: 'Alumnos',
         desc: 'Ver y gestionar alumnos',
         iconBg: 'bg-slate-700',
         role: null as string | null,
@@ -57,7 +57,7 @@ const NAV_CARDS = [
     },
     {
         href: '/alumnos/nuevo',
-        label: 'Registrar Alumno',
+        label: 'Registrar',
         desc: 'Añadir nuevo alumno',
         iconBg: 'bg-emerald-500',
         role: null as string | null,
@@ -95,11 +95,11 @@ const NAV_CARDS = [
 
 function SkeletonCard() {
     return (
-        <div className="bg-white border border-slate-100 rounded-2xl p-4 animate-pulse shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-slate-200 mb-3" />
-            <div className="h-7 w-16 bg-slate-200 rounded mb-2" />
-            <div className="h-2 w-full bg-slate-100 rounded mb-1.5" />
-            <div className="h-2.5 w-20 bg-slate-100 rounded" />
+        <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 animate-pulse shadow-sm">
+            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-slate-200 mb-2 md:mb-3" />
+            <div className="h-5 md:h-7 w-12 md:w-16 bg-slate-200 rounded mb-2" />
+            <div className="h-1.5 w-full bg-slate-100 rounded mb-1.5" />
+            <div className="h-2 w-14 md:w-20 bg-slate-100 rounded" />
         </div>
     );
 }
@@ -239,69 +239,65 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* KPI Cards — 2 col mobile, 4 col desktop */}
+            {/* KPI Cards */}
             {loading ? (
-                <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
+                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-2 md:gap-3`}>
                     {Array.from({ length: esDueño ? 4 : 3 }).map((_, i) => (
-                        <div key={i} className={!esDueño && i === 2 ? 'col-span-2 md:col-span-1' : ''}>
-                            <SkeletonCard />
-                        </div>
+                        <SkeletonCard key={i} />
                     ))}
                 </div>
             ) : data && (
-                <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
+                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-2 md:gap-3`}>
 
                     {/* Pagaron este mes */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center mb-3 shadow-sm shadow-emerald-200">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-emerald-200">
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
-                        <div className="flex items-baseline gap-1 mb-2">
-                            <span className={`text-3xl font-bold ${pagoColor}`}>{data.pagados}</span>
-                            <span className="text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
+                        <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
+                            <span className={`text-xl md:text-3xl font-bold ${pagoColor}`}>{data.pagados}</span>
+                            <span className="text-[10px] md:text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-1 mb-2">
+                        <div className="w-full bg-slate-100 rounded-full h-1 mb-1.5 md:mb-2">
                             <div className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
                         </div>
-                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pagaron este mes</p>
+                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Pagaron</p>
                     </div>
 
                     {/* Asistencias hoy */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                        <div className="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center mb-3 shadow-sm shadow-blue-200">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-blue-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-blue-200">
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                         </div>
-                        <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-3xl font-bold text-slate-800">{data.asistenciasHoy}</span>
-                            <span className="text-xs text-slate-400 font-medium">alumnos</span>
+                        <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
+                            <span className="text-xl md:text-3xl font-bold text-slate-800">{data.asistenciasHoy}</span>
                         </div>
                         {data.horaPico ? (
-                            <p className="text-[11px] text-slate-500 mb-1">Pico: <span className="font-bold text-blue-600">{data.horaPico}</span></p>
+                            <p className="text-[10px] md:text-[11px] text-slate-500 mb-1">Pico: <span className="font-bold text-blue-600">{data.horaPico}</span></p>
                         ) : (
-                            <p className="text-[11px] text-slate-400 mb-1">Sin datos de hoy</p>
+                            <p className="text-[10px] md:text-[11px] text-slate-400 mb-1">Sin datos</p>
                         )}
-                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Asistencias hoy</p>
+                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias hoy</p>
                     </div>
 
-                    {/* Planes por vencer — full width on mobile when 3 cards (avoids orphan) */}
-                    <div className={`bg-white border border-slate-100 rounded-2xl p-4 shadow-sm ${!esDueño ? 'col-span-2 md:col-span-1' : ''}`}>
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 shadow-sm ${data.planesVenciendo.length > 0 ? 'bg-amber-400 shadow-amber-200' : 'bg-emerald-500 shadow-emerald-200'}`}>
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    {/* Planes por vencer */}
+                    <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                        <div className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 shadow-sm ${data.planesVenciendo.length > 0 ? 'bg-amber-400 shadow-amber-200' : 'bg-emerald-500 shadow-emerald-200'}`}>
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
-                        <div className="flex items-baseline gap-1 mb-2">
-                            <span className={`text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>{data.planesVenciendo.length}</span>
-                            <span className="text-xs text-slate-400 font-medium">alumnos</span>
+                        <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
+                            <span className={`text-xl md:text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>{data.planesVenciendo.length}</span>
                         </div>
-                        <p className={`text-[11px] font-semibold mb-1 ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                            {data.planesVenciendo.length === 0 ? 'Todo en orden ✓' : '≤ 5 clases'}
+                        <p className={`text-[10px] md:text-[11px] font-semibold mb-1 leading-tight ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                            {data.planesVenciendo.length === 0 ? 'Al día ✓' : '≤ 5 clases'}
                         </p>
-                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Planes por vencer</p>
+                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Planes</p>
                     </div>
 
                     {/* Balance del mes (solo dueño) */}
@@ -370,7 +366,7 @@ export default function HomePage() {
                                     {card.icon}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-semibold text-xs md:text-sm leading-tight text-slate-800 truncate">{card.label}</p>
+                                    <p className="font-semibold text-xs md:text-sm leading-tight text-slate-800">{card.label}</p>
                                     <p className="hidden md:block text-xs text-slate-500 mt-0.5">{card.desc}</p>
                                 </div>
                             </Link>
