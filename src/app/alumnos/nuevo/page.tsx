@@ -79,14 +79,12 @@ export default function NuevoAlumnoPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-
                 {/* Datos básicos */}
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Datos básicos</p>
                     </div>
-                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label className={labelCls}>Nombre</label>
                             <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className={inputCls} placeholder="Juan" required />
@@ -106,13 +104,13 @@ export default function NuevoAlumnoPage() {
                     </div>
                 </div>
 
-                {/* Información adicional — second column on desktop */}
+                {/* Información adicional */}
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Información adicional</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">Todos estos campos son opcionales</p>
                     </div>
-                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-5 grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div>
                             <label className={labelCls}>Teléfono</label>
                             <input type="text" value={telefono} onChange={(e) => setTelefono(e.target.value)} className={inputCls} placeholder="351 000 0000" />
@@ -142,26 +140,24 @@ export default function NuevoAlumnoPage() {
                             <label className={labelCls}>Hora de inicio</label>
                             <input type="time" value={horaExactaEntrenamiento} onChange={(e) => setHoraExactaEntrenamiento(e.target.value)} className={inputCls} />
                         </div>
-                        <div className="sm:col-span-2">
+                        <div className="col-span-2 md:col-span-3">
                             <label className={labelCls}>Historial deportivo</label>
                             <textarea value={historialDeportivo} onChange={(e) => setHistorialDeportivo(e.target.value)} className={`${inputCls} resize-none`} rows={2} placeholder="Deportes practicados, experiencia previa..." />
                         </div>
-                        <div className="sm:col-span-2">
+                        <div className="col-span-2 md:col-span-3">
                             <label className={labelCls}>Historial de vida</label>
                             <textarea value={historialDeVida} onChange={(e) => setHistorialDeVida(e.target.value)} className={`${inputCls} resize-none`} rows={2} placeholder="Contexto de salud general, hábitos..." />
                         </div>
-                        <div className="sm:col-span-2">
+                        <div className="col-span-2 md:col-span-3">
                             <label className={labelCls}>Objetivos</label>
                             <textarea value={objetivos} onChange={(e) => setObjetivos(e.target.value)} className={`${inputCls} resize-none`} rows={2} placeholder="Perder peso, ganar masa muscular..." />
                         </div>
-                        <div className="sm:col-span-2">
+                        <div className="col-span-2 md:col-span-3">
                             <label className={labelCls}>Patologías</label>
                             <textarea value={patologias} onChange={(e) => setPatologias(e.target.value)} className={`${inputCls} resize-none`} rows={2} placeholder="Lesiones, enfermedades crónicas..." />
                         </div>
                     </div>
                 </div>
-
-                </div>{/* end grid */}
 
                 <button type="submit" className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl transition shadow-sm">
                     Registrar Alumno
