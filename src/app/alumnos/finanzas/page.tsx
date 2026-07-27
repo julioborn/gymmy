@@ -558,17 +558,14 @@ const ControlFinanciero = () => {
             {/* KPI Summary */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500 mb-3" />
                     <p className="text-xl font-bold text-emerald-600 leading-tight">${totalIngresosCombinados.toLocaleString('es-ES')}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Ingresos</p>
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-red-500 mb-3" />
                     <p className="text-xl font-bold text-red-600 leading-tight">${totalGastos.toLocaleString('es-ES')}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Gastos</p>
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className={`w-7 h-7 rounded-lg ${resultado >= 0 ? 'bg-slate-700' : 'bg-red-500'} mb-3`} />
                     <p className={`text-xl font-bold leading-tight ${resultado >= 0 ? 'text-slate-800' : 'text-red-600'}`}>${resultado.toLocaleString('es-ES')}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Resultado</p>
                 </div>

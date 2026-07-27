@@ -104,22 +104,18 @@ export default function Estadisticas() {
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-slate-700 mb-3" />
                     <p className="text-2xl font-bold text-slate-800 leading-tight">{totalAsistencias}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Total asistencias</p>
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-blue-500 mb-3" />
                     <p className="text-2xl font-bold text-blue-600 leading-tight">{promedio}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Promedio / día</p>
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-amber-400 mb-3" />
                     <p className="text-2xl font-bold text-amber-600 leading-tight">{topHorarios[0]?.hora ?? '-'}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Hora pico</p>
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500 mb-3" />
                     <p className="text-lg font-bold text-emerald-600 leading-tight truncate">{actividadLider}</p>
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Actividad líder</p>
                 </div>
@@ -128,7 +124,7 @@ export default function Estadisticas() {
             {/* Charts — side by side on desktop */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-                    <h3 className="text-sm font-bold text-slate-700 mb-4">Top horarios Musculación</h3>
+                    <h3 className="text-sm font-bold text-slate-700 mb-4">Horarios Musculación</h3>
                     <TopHorariosChart topHorarios={topHorarios} />
                 </div>
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
