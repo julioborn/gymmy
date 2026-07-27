@@ -712,6 +712,15 @@ export default function ListaAlumnosPage() {
                     </div>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
                         <button
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white text-xs font-semibold rounded-xl transition-all"
+                            onClick={() => router.push('/alumnos/nuevo')}
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Registrar
+                        </button>
+                        <button
                             className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold rounded-xl transition-all"
                             onClick={handleConfiguracionTarifas}
                         >
