@@ -153,7 +153,7 @@ export default function MiCuentaPage() {
         .slice(0, 5);
 
     return (
-        <div className="max-w-lg mx-auto pt-5 pb-12 px-4">
+        <div className="max-w-lg mx-auto pt-10 pb-12 px-4">
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
@@ -296,7 +296,7 @@ export default function MiCuentaPage() {
                         ) : (
                             <div className="divide-y divide-slate-50">
                                 {ultimasAsistencias.map(([dateKey, asists]) => {
-                                    const [yr, mo, dy] = dateKey.split('-').map(Number);
+                                    const [, mo, dy] = dateKey.split('-').map(Number);
                                     return (
                                         <div key={dateKey} className="flex items-center gap-3 px-4 py-3">
                                             <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-slate-100">
