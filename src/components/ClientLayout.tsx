@@ -193,7 +193,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
                         alt="Logo"
                         className="pointer-events-none"
-                        style={{ height: 270, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
+                        style={{ height: 250, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
                     />
                     <div
                         className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline
