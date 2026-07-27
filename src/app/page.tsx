@@ -68,6 +68,18 @@ const NAV_CARDS = [
         ),
     },
     {
+        href: '/alumnos/asistencia',
+        label: 'Asistencia',
+        desc: 'Registrar asistencia',
+        iconBg: 'bg-violet-500',
+        role: null as string | null,
+        icon: (
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+        ),
+    },
+    {
         href: '/alumnos/finanzas',
         label: 'Finanzas',
         desc: 'Control de ingresos',
@@ -204,6 +216,7 @@ export default function HomePage() {
 
     const userRole = session.user?.role ?? '';
     const esDueño = userRole === 'dueño' || userRole === 'admin';
+    const esProfesor = userRole === 'profesor';
     const visibleCards = NAV_CARDS.filter(c => {
         if (!c.role) return true;
         if (c.role === userRole) return true;
@@ -247,30 +260,32 @@ export default function HomePage() {
 
             {/* KPI Cards */}
             {loading ? (
-                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-2 md:gap-3`}>
-                    {Array.from({ length: esDueño ? 4 : 3 }).map((_, i) => (
+                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : esProfesor ? 'grid-cols-2' : 'grid-cols-3'} gap-2 md:gap-3`}>
+                    {Array.from({ length: esDueño ? 4 : esProfesor ? 2 : 3 }).map((_, i) => (
                         <SkeletonCard key={i} />
                     ))}
                 </div>
             ) : data && (
-                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'} gap-2 md:gap-3`}>
+                <div className={`grid ${esDueño ? 'grid-cols-2 md:grid-cols-4' : esProfesor ? 'grid-cols-2' : 'grid-cols-3'} gap-2 md:gap-3`}>
 
-                    {/* Pagaron este mes */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-emerald-200">
-                            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
+                    {/* Pagaron este mes — oculto para profesor */}
+                    {!esProfesor && (
+                        <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-emerald-200">
+                                <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </div>
+                            <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
+                                <span className={`text-xl md:text-3xl font-bold ${pagoColor}`}>{data.pagados}</span>
+                                <span className="text-[10px] md:text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-1 mb-1.5 md:mb-2">
+                                <div className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
+                            </div>
+                            <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Pagaron</p>
                         </div>
-                        <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
-                            <span className={`text-xl md:text-3xl font-bold ${pagoColor}`}>{data.pagados}</span>
-                            <span className="text-[10px] md:text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
-                        </div>
-                        <div className="w-full bg-slate-100 rounded-full h-1 mb-1.5 md:mb-2">
-                            <div className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
-                        </div>
-                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Pagaron</p>
-                    </div>
+                    )}
 
                     {/* Asistencias hoy */}
                     <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
@@ -380,41 +395,43 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                {/* Configuración */}
-                <div className="md:w-64 shrink-0 flex flex-col">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Configuración</p>
-                    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex-1 flex flex-col">
-                        <button onClick={handleConfiguracionTarifas} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                {/* Configuración — solo dueño/admin */}
+                {!esProfesor && (
+                    <div className="md:w-64 shrink-0 flex flex-col">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Configuración</p>
+                        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex-1 flex flex-col">
+                            <button onClick={handleConfiguracionTarifas} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+                                    </svg>
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="font-semibold text-sm text-slate-800">Cuotas</p>
+                                    <p className="text-xs text-slate-500">Precios por días/semana</p>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
-                            </div>
-                            <div className="text-left flex-1">
-                                <p className="font-semibold text-sm text-slate-800">Cuotas</p>
-                                <p className="text-xs text-slate-500">Precios por días/semana</p>
-                            </div>
-                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                            </svg>
-                        </button>
-                        <div className="border-t border-slate-100" />
-                        <button onClick={handleConfiguracionRecargos} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </button>
+                            <div className="border-t border-slate-100" />
+                            <button onClick={handleConfiguracionRecargos} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="font-semibold text-sm text-slate-800">Recargo</p>
+                                    <p className="text-xs text-slate-500">Monto por mora</p>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
-                            </div>
-                            <div className="text-left flex-1">
-                                <p className="font-semibold text-sm text-slate-800">Recargo</p>
-                                <p className="text-xs text-slate-500">Monto por mora</p>
-                            </div>
-                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                            </svg>
-                        </button>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
             </div>
 

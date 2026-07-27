@@ -50,6 +50,19 @@ export async function middleware(req: NextRequest) {
         }
     }
 
+    // Profesor: sin acceso a datos financieros ni pagos de alumnos
+    if (token.role === 'profesor') {
+        const restricted = ['/alumnos/finanzas', '/alumnos/estadisticas'];
+        const isRestricted =
+            restricted.some(p => pathname.startsWith(p)) ||
+            /^\/alumnos\/[^/]+\/pagos/.test(pathname);
+        if (isRestricted) {
+            const url = req.nextUrl.clone();
+            url.pathname = '/';
+            return NextResponse.redirect(url);
+        }
+    }
+
     // Gym staff no puede acceder a /superadmin ni /mi-cuenta
     if (pathname.startsWith('/superadmin') || pathname.startsWith('/mi-cuenta')) {
         const url = req.nextUrl.clone();
