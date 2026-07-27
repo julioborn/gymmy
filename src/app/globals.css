@@ -340,13 +340,7 @@ body {
 /* Mobile */
 @media (max-width: 520px) {
   .swal-gymmy .swal2-actions {
-    flex-direction: column-reverse !important;
     padding: 0.75rem 1rem 1rem !important;
-  }
-
-  .sg-btn {
-    width: 100% !important;
-    text-align: center !important;
   }
 
   .swal-form-grid {
