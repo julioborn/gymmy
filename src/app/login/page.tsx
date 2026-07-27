@@ -226,7 +226,7 @@ export default function LoginPage() {
         <div className="min-h-[calc(100vh-75px)] -m-3 bg-slate-900 flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
 
             {/* Card */}
-            <div className="w-full relative z-10">
+            <div className="w-full max-w-md relative z-10">
 
                 {/* Back button */}
                 {step.type !== 'identifier' && (
