@@ -258,7 +258,7 @@ export default function HomePage() {
                 <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-0.5">
                     {getGreeting()} · {fmtDate()}
                 </p>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                     {capitalize(session.user?.username ?? 'Usuario')}
                 </h1>
             </div>

@@ -203,8 +203,8 @@ export default function AsistenciasPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-4">
             <div className="px-1 pt-1">
-                <h1 className="text-2xl font-bold text-white">Asistencias</h1>
-                <p className="text-slate-400 text-sm mt-0.5">{alumno.nombre} {alumno.apellido}</p>
+                <h1 className="text-2xl font-bold text-slate-900">Asistencias</h1>
+                <p className="text-slate-500 text-sm mt-0.5">{alumno.nombre} {alumno.apellido}</p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm p-5">

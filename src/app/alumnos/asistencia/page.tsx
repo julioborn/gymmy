@@ -101,7 +101,7 @@ export default function AsistenciaSemanaPage() {
     return (
         <div className="max-w-3xl mx-auto space-y-4">
             <div className="px-1 pt-1">
-                <h1 className="text-2xl font-bold text-white">Asistencia</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Asistencia</h1>
             </div>
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">

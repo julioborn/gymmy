@@ -41,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-<body className="bg-slate-900 min-h-screen">
+<body className="bg-slate-50 min-h-screen">
         <ErrorBoundary>
           <ClientLayout>{children}</ClientLayout>
         </ErrorBoundary>

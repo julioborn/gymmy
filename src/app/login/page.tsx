@@ -49,8 +49,8 @@ function ErrorBanner({ message }: { message: string }) {
     );
 }
 
-const inputCls = "w-full bg-white text-slate-900 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 placeholder:text-slate-400";
-const primaryBtn = "w-full bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-slate-900 py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2";
+const inputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 placeholder:text-slate-400";
+const primaryBtn = "w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -213,7 +213,7 @@ export default function LoginPage() {
             <div className="w-full max-w-xs">
 
                 {step.type !== 'identifier' && (
-                    <button onClick={reset} className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-sm transition-colors mb-8">
+                    <button onClick={reset} className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 text-sm transition-colors mb-8">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -225,12 +225,12 @@ export default function LoginPage() {
                 {step.type === 'identifier' && (
                     <>
                         <div className="mb-8">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Bienvenido</p>
-                            <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Bienvenido</p>
+                            <h1 className="text-2xl font-bold text-slate-900">Iniciar sesión</h1>
                         </div>
                         <form onSubmit={handleIdentifierSubmit} className="space-y-3">
-                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
-                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                            <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                                     Usuario o DNI
                                 </label>
                                 <input
@@ -256,13 +256,13 @@ export default function LoginPage() {
                 {step.type === 'staff-password' && (
                     <>
                         <div className="mb-7">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Personal</p>
-                            <h1 className="text-2xl font-bold text-white">{step.username}</h1>
-                            <p className="text-slate-400 text-sm mt-1">Ingresá tu contraseña</p>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Personal</p>
+                            <h1 className="text-2xl font-bold text-slate-900">{step.username}</h1>
+                            <p className="text-slate-500 text-sm mt-1">Ingresá tu contraseña</p>
                         </div>
                         <form onSubmit={handleStaffLogin} className="space-y-3">
-                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
-                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Contraseña</label>
+                            <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Contraseña</label>
                                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required autoFocus className={inputCls} />
                             </div>
                             {error && <ErrorBanner message={error} />}
@@ -277,14 +277,14 @@ export default function LoginPage() {
                 {step.type === 'gym-select' && (
                     <>
                         <div className="mb-7">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Tu DNI está en más de un gimnasio</p>
-                            <h1 className="text-2xl font-bold text-white">Seleccioná tu gimnasio</h1>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Tu DNI está en más de un gimnasio</p>
+                            <h1 className="text-2xl font-bold text-slate-900">Seleccioná tu gimnasio</h1>
                         </div>
                         <div className="space-y-2.5">
                             {step.gyms.map(gym => (
-                                <button key={gym.gimnasioId} onClick={() => handleGymSelect(gym)} className="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.98] border border-slate-700/60 rounded-2xl px-4 py-4 text-left transition-all flex items-center gap-4">
-                                    <div className="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center shrink-0">
-                                        <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <button key={gym.gimnasioId} onClick={() => handleGymSelect(gym)} className="w-full bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-200 rounded-2xl px-4 py-4 text-left transition-all flex items-center gap-4 shadow-sm">
+                                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                        <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                                         </svg>
                                     </div>
@@ -292,7 +292,7 @@ export default function LoginPage() {
                                         <p className="font-semibold text-white text-sm">{gym.gimnasioNombre}</p>
                                         <p className="text-slate-500 text-xs mt-0.5">{gym.nombre} {gym.apellido}</p>
                                     </div>
-                                    <svg className="w-4 h-4 text-slate-600 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                     </svg>
                                 </button>
@@ -305,18 +305,18 @@ export default function LoginPage() {
                 {step.type === 'alumno-register' && (
                     <>
                         <div className="mb-7">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Primer acceso · {step.gimnasioNombre}</p>
-                            <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
-                            <p className="text-slate-400 text-sm mt-1">Creá tu contraseña para ingresar</p>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Primer acceso · {step.gimnasioNombre}</p>
+                            <h1 className="text-2xl font-bold text-slate-900">Hola, {step.nombre}</h1>
+                            <p className="text-slate-500 text-sm mt-1">Creá tu contraseña para ingresar</p>
                         </div>
                         <form onSubmit={handleAlumnoRegister} className="space-y-3">
-                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                            <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Nueva contraseña</label>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Nueva contraseña</label>
                                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" required className={inputCls} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Repetir contraseña</label>
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Repetir contraseña</label>
                                     <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repetí la contraseña" required className={inputCls} />
                                 </div>
                             </div>
@@ -338,13 +338,13 @@ export default function LoginPage() {
                 {step.type === 'alumno-login' && (
                     <>
                         <div className="mb-7">
-                            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">{step.gimnasioNombre}</p>
-                            <h1 className="text-2xl font-bold text-white">Hola, {step.nombre}</h1>
-                            <p className="text-slate-400 text-sm mt-1">Ingresá tu contraseña</p>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">{step.gimnasioNombre}</p>
+                            <h1 className="text-2xl font-bold text-slate-900">Hola, {step.nombre}</h1>
+                            <p className="text-slate-500 text-sm mt-1">Ingresá tu contraseña</p>
                         </div>
                         <form onSubmit={handleAlumnoLogin} className="space-y-3">
-                            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4">
-                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Contraseña</label>
+                            <div className="bg-white border border-slate-200 rounded-2xl p-4">
+                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Contraseña</label>
                                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required autoFocus className={inputCls} />
                             </div>
                             {error && <ErrorBanner message={error} />}

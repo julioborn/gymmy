@@ -64,7 +64,7 @@ export default function NuevoAlumnoPage() {
     return (
         <div className="max-w-lg mx-auto space-y-4">
             <div className="px-1 pt-1">
-                <h1 className="text-2xl font-bold text-white">Registrar Alumno</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Registrar Alumno</h1>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm p-6">

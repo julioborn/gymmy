@@ -193,7 +193,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* Main content */}
             <main
-                className="flex-1 p-3 mt-[75px]"
+                className="flex-1 p-3 mt-[75px] bg-slate-50"
                 style={{ paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined }}
             >
                 {children}

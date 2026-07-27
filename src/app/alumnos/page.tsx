@@ -696,7 +696,7 @@ export default function ListaAlumnosPage() {
 
             {/* Header */}
             <div className="px-1 pt-1 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Alumnos</h1>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Alumnos</h1>
                 {session?.user?.role === 'dueño' && (
                     <button
                         className="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"

@@ -1264,7 +1264,7 @@ export default function HistorialAlumnoPage() {
         <div className="max-w-6xl mx-auto space-y-4">
             {/* Header */}
             <div className="px-1 pt-1">
-                <h1 className="text-2xl font-bold text-white">{alumno.nombre} {alumno.apellido}</h1>
+                <h1 className="text-2xl font-bold text-slate-900">{alumno.nombre} {alumno.apellido}</h1>
                 <div className="mt-1">
                     {diasRestantes != null && diasRestantes > 0 ? (
                         <span className={`text-sm font-semibold ${obtenerColorSemaforo(diasRestantes)}`}>
