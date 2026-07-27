@@ -242,7 +242,11 @@ export default function HomePage() {
             {/* KPI Cards — 2 col mobile, 4 col desktop */}
             {loading ? (
                 <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
-                    {Array.from({ length: esDueño ? 4 : 3 }).map((_, i) => <SkeletonCard key={i} />)}
+                    {Array.from({ length: esDueño ? 4 : 3 }).map((_, i) => (
+                        <div key={i} className={!esDueño && i === 2 ? 'col-span-2 md:col-span-1' : ''}>
+                            <SkeletonCard />
+                        </div>
+                    ))}
                 </div>
             ) : data && (
                 <div className={`grid grid-cols-2 ${esDueño ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3`}>
@@ -283,8 +287,8 @@ export default function HomePage() {
                         <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Asistencias hoy</p>
                     </div>
 
-                    {/* Planes por vencer */}
-                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                    {/* Planes por vencer — full width on mobile when 3 cards (avoids orphan) */}
+                    <div className={`bg-white border border-slate-100 rounded-2xl p-4 shadow-sm ${!esDueño ? 'col-span-2 md:col-span-1' : ''}`}>
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 shadow-sm ${data.planesVenciendo.length > 0 ? 'bg-amber-400 shadow-amber-200' : 'bg-emerald-500 shadow-emerald-200'}`}>
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
