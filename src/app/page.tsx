@@ -122,6 +122,9 @@ export default function HomePage() {
         if (session?.user?.role === 'registro') {
             router.push('/alumnos/dni');
         }
+        if (session?.user?.role === 'alumno') {
+            router.push('/mi-cuenta');
+        }
     }, [session, status, router]);
 
     useEffect(() => {
@@ -240,6 +243,10 @@ export default function HomePage() {
     }
 
     if (!session) {
+        return null;
+    }
+
+    if (session.user?.role === 'alumno') {
         return null;
     }
 
