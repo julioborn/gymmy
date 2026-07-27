@@ -197,9 +197,9 @@ export default function LoginPage() {
         router.push('/mi-cuenta');
     }
 
-    const inputCls = "w-full bg-white border border-slate-200 text-slate-900 rounded-xl pl-10 pr-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-400 transition-all";
-    const inputPassCls = "w-full bg-white border border-slate-200 text-slate-900 rounded-xl pl-10 pr-11 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-400 transition-all";
-    const primaryBtn = "w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20";
+    const inputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-11 pr-4 py-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-400 transition-all";
+    const inputPassCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-11 pr-12 py-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-400 transition-all";
+    const primaryBtn = "w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20";
 
     const UserIcon = (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -223,10 +223,10 @@ export default function LoginPage() {
     );
 
     return (
-        <div className="min-h-[calc(100vh-75px)] -m-3 bg-slate-900 flex flex-col items-center justify-center px-6 py-10 relative overflow-hidden">
+        <div className="min-h-[calc(100vh-75px)] -m-3 bg-slate-900 flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
 
             {/* Card */}
-            <div className="w-full max-w-xs relative z-10">
+            <div className="w-full relative z-10">
 
                 {/* Back button */}
                 {step.type !== 'identifier' && (
@@ -241,13 +241,13 @@ export default function LoginPage() {
                     </button>
                 )}
 
-                <div className="bg-white rounded-3xl shadow-2xl shadow-black/40 overflow-hidden">
+                <div className="bg-white rounded-3xl shadow-2xl shadow-black/50 overflow-hidden">
 
                     {/* ── Identificador ── */}
                     {step.type === 'identifier' && (
-                        <div className="p-6">
+                        <div className="p-7">
                             <p className="text-emerald-500 text-xs font-bold uppercase tracking-widest mb-1">Bienvenido</p>
-                            <h1 className="text-xl font-bold text-slate-900 mb-5">Iniciá sesión</h1>
+                            <h1 className="text-2xl font-bold text-slate-900 mb-6">Iniciá sesión</h1>
                             <form onSubmit={handleIdentifierSubmit} className="space-y-3">
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-500 mb-1.5">Usuario o DNI</label>
@@ -275,16 +275,16 @@ export default function LoginPage() {
 
                     {/* ── Contraseña staff ── */}
                     {step.type === 'staff-password' && (
-                        <div className="p-6">
-                            <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                        <div className="p-7">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                                     <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
                                 </div>
                                 <div>
                                     <p className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Personal</p>
-                                    <h1 className="text-lg font-bold text-slate-900 leading-tight">{step.username}</h1>
+                                    <h1 className="text-xl font-bold text-slate-900 leading-tight">{step.username}</h1>
                                 </div>
                             </div>
                             <form onSubmit={handleStaffLogin} className="space-y-3">
@@ -320,9 +320,9 @@ export default function LoginPage() {
 
                     {/* ── Seleccionar gimnasio ── */}
                     {step.type === 'gym-select' && (
-                        <div className="p-6">
+                        <div className="p-7">
                             <p className="text-emerald-500 text-xs font-bold uppercase tracking-widest mb-1">Múltiples gimnasios</p>
-                            <h1 className="text-xl font-bold text-slate-900 mb-5">¿Cuál es tu gimnasio?</h1>
+                            <h1 className="text-2xl font-bold text-slate-900 mb-6">¿Cuál es tu gimnasio?</h1>
                             <div className="space-y-2.5">
                                 {step.gyms.map(gym => (
                                     <button
@@ -350,16 +350,16 @@ export default function LoginPage() {
 
                     {/* ── Primer acceso alumno ── */}
                     {step.type === 'alumno-register' && (
-                        <div className="p-6">
-                            <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <div className="p-7">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                                     <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
                                 </div>
                                 <div>
                                     <p className="text-emerald-500 text-xs font-bold uppercase tracking-widest">{step.gimnasioNombre}</p>
-                                    <h1 className="text-lg font-bold text-slate-900 leading-tight">Hola, {step.nombre}</h1>
+                                    <h1 className="text-xl font-bold text-slate-900 leading-tight">Hola, {step.nombre}</h1>
                                 </div>
                             </div>
                             <p className="text-slate-500 text-sm mb-5">Es tu primer acceso. Creá una contraseña para tu cuenta.</p>
@@ -418,16 +418,16 @@ export default function LoginPage() {
 
                     {/* ── Login alumno ── */}
                     {step.type === 'alumno-login' && (
-                        <div className="p-6">
-                            <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <div className="p-7">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                                     <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
                                 </div>
                                 <div>
                                     <p className="text-emerald-500 text-xs font-bold uppercase tracking-widest">{step.gimnasioNombre}</p>
-                                    <h1 className="text-lg font-bold text-slate-900 leading-tight">Hola, {step.nombre}</h1>
+                                    <h1 className="text-xl font-bold text-slate-900 leading-tight">Hola, {step.nombre}</h1>
                                 </div>
                             </div>
                             <form onSubmit={handleAlumnoLogin} className="space-y-3">

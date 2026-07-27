@@ -153,7 +153,7 @@ export default function MiCuentaPage() {
         .slice(0, 5);
 
     return (
-        <div className="max-w-lg mx-auto pt-3 pb-12 px-4">
+        <div className="max-w-lg mx-auto pt-5 pb-12 px-4">
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
