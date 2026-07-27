@@ -18,8 +18,16 @@ export default function ActividadChart({ data }: Props) {
                     {
                         label: 'Asistencias',
                         data: data.map(d => d.cantidad),
-                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: data.map(d =>
+                            d.actividad === 'Musculación' ? 'rgba(59, 130, 246, 0.6)' :
+                            d.actividad === 'Intermitente' ? 'rgba(249, 115, 22, 0.6)' :
+                            'rgba(153, 102, 255, 0.6)'
+                        ),
+                        borderColor: data.map(d =>
+                            d.actividad === 'Musculación' ? 'rgba(59, 130, 246, 1)' :
+                            d.actividad === 'Intermitente' ? 'rgba(249, 115, 22, 1)' :
+                            'rgba(153, 102, 255, 1)'
+                        ),
                         borderWidth: 1,
                         borderRadius: 6,
                     },
