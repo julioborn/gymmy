@@ -281,7 +281,7 @@ export default function HomePage() {
                         ) : (
                             <p className="text-[10px] md:text-[11px] text-slate-400 mb-1">Sin datos</p>
                         )}
-                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias hoy</p>
+                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias</p>
                     </div>
 
                     {/* Planes por vencer */}
