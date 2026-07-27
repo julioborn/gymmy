@@ -40,14 +40,14 @@ const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
 const ACTIVIDAD_DOT: Record<string, string> = {
-    'Musculación': 'bg-violet-500',
+    'Musculación': 'bg-blue-500',
     'Intermitente': 'bg-orange-400',
-    'Otro': 'bg-slate-400',
+    'Otro': 'bg-yellow-400',
 };
 const ACTIVIDAD_PILL: Record<string, string> = {
-    'Musculación': 'bg-violet-50 text-violet-700 border border-violet-100',
+    'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
     'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
-    'Otro': 'bg-slate-100 text-slate-600 border border-slate-200',
+    'Otro': 'bg-yellow-50 text-yellow-700 border border-yellow-100',
 };
 
 function toLocalDateKey(fechaStr: string): string {
@@ -250,8 +250,8 @@ export default function MiCuentaPage() {
                         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-                                        <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                                         </svg>
                                     </div>
@@ -261,7 +261,7 @@ export default function MiCuentaPage() {
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
                                 <div
-                                    className="bg-amber-400 h-2 rounded-full transition-all"
+                                    className="bg-emerald-500 h-2 rounded-full transition-all"
                                     style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }}
                                 />
                             </div>
@@ -273,13 +273,13 @@ export default function MiCuentaPage() {
 
                     {/* Plan completado */}
                     {plan?.terminado && (
-                        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
                                 <span className="text-2xl">🏆</span>
                             </div>
                             <div>
-                                <p className="text-amber-800 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-amber-600 text-xs mt-0.5">Completaste todas las sesiones del plan</p>
+                                <p className="text-red-800 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-red-500 text-xs mt-0.5">Completaste todas las sesiones del plan</p>
                             </div>
                         </div>
                     )}
@@ -404,12 +404,16 @@ export default function MiCuentaPage() {
 
                         <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-violet-500" />
+                                <span className="w-2 h-2 rounded-full bg-blue-500" />
                                 <span className="text-slate-400 text-xs">Musculación</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-orange-400" />
                                 <span className="text-slate-400 text-xs">Intermitente</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                                <span className="text-slate-400 text-xs">Otro</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
