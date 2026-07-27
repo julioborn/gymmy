@@ -331,6 +331,12 @@ body {
 
 .swal-full-row { grid-column: 1 / -1 !important; }
 
+/* Animaciones más rápidas */
+.swal2-popup.swal2-show        { animation-duration: 0.12s !important; }
+.swal2-popup.swal2-hide        { animation-duration: 0.08s !important; }
+.swal2-container.swal2-backdrop-show { animation-duration: 0.1s  !important; }
+.swal2-container.swal2-backdrop-hide { animation-duration: 0.08s !important; }
+
 /* Mobile */
 @media (max-width: 520px) {
   .swal-gymmy .swal2-actions {
