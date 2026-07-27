@@ -184,7 +184,7 @@ export default function MiCuentaPage() {
 
     return (
         <div
-            className="max-w-lg mx-auto pt-16 pb-12 px-4"
+            className="max-w-lg mx-auto pt-4 pb-12 px-4"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
