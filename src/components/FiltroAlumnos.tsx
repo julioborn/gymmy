@@ -11,6 +11,12 @@ type FiltrosProps = {
     limpiarFiltros: () => void;
 };
 
+const Chevron = () => (
+    <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+);
+
 export default function FiltrosAlumnos({
     busqueda,
     setBusqueda,
@@ -52,80 +58,54 @@ export default function FiltrosAlumnos({
                 )}
             </div>
 
-            {/* Chips de filtros */}
-            <div className="flex flex-wrap gap-2 items-center">
-
-                {/* Pago */}
-                {[
-                    { value: '', label: 'Todos' },
-                    { value: 'pagado', label: 'Pagaron' },
-                    { value: 'no-pagado', label: 'Deben' },
-                ].map(({ value, label }) => (
-                    <button
-                        key={value}
-                        onClick={() => setFiltroPago(value)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${filtroPago === value
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                            }`}
+            {/* Selects */}
+            <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                    <select
+                        value={filtroPago}
+                        onChange={(e) => setFiltroPago(e.target.value)}
+                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
                     >
-                        {label}
-                    </button>
-                ))}
+                        <option value="">Pago</option>
+                        <option value="pagado">Pagaron</option>
+                        <option value="no-pagado">Deben</option>
+                    </select>
+                    <Chevron />
+                </div>
 
-                <span className="w-px h-5 bg-slate-200 mx-0.5" />
-
-                {/* Orden plan */}
-                {[
-                    { value: '', label: 'Plan ↕' },
-                    { value: 'asc', label: 'Plan ↑' },
-                    { value: 'desc', label: 'Plan ↓' },
-                ].map(({ value, label }) => (
-                    <button
-                        key={value}
-                        onClick={() => setOrdenDiasRestantes(value)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${ordenDiasRestantes === value
-                            ? 'bg-slate-800 text-white'
-                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                            }`}
+                <div className="relative flex-1">
+                    <select
+                        value={ordenDiasRestantes}
+                        onChange={(e) => setOrdenDiasRestantes(e.target.value)}
+                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
                     >
-                        {label}
-                    </button>
-                ))}
+                        <option value="">Plan</option>
+                        <option value="asc">Plan ↑</option>
+                        <option value="desc">Plan ↓</option>
+                    </select>
+                    <Chevron />
+                </div>
 
-                {/* Días por semana */}
                 {diasDisponibles.length > 0 && (
-                    <>
-                        <span className="w-px h-5 bg-slate-200 mx-0.5" />
-                        <button
-                            onClick={() => setFiltroDiasEntrena('')}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${filtroDiasEntrena === ''
-                                ? 'bg-slate-800 text-white'
-                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                                }`}
+                    <div className="relative flex-1">
+                        <select
+                            value={filtroDiasEntrena}
+                            onChange={(e) => setFiltroDiasEntrena(e.target.value)}
+                            className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
                         >
-                            Sem ↕
-                        </button>
-                        {diasDisponibles.map((d) => (
-                            <button
-                                key={d}
-                                onClick={() => setFiltroDiasEntrena(String(d))}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${filtroDiasEntrena === String(d)
-                                    ? 'bg-slate-800 text-white'
-                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                                    }`}
-                            >
-                                {d}d/sem
-                            </button>
-                        ))}
-                    </>
+                            <option value="">Días/sem</option>
+                            {diasDisponibles.map((d) => (
+                                <option key={d} value={d}>{d} días</option>
+                            ))}
+                        </select>
+                        <Chevron />
+                    </div>
                 )}
 
-                {/* Limpiar */}
                 {hayFiltros && (
                     <button
                         onClick={limpiarFiltros}
-                        className="ml-auto px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+                        className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap px-1"
                     >
                         Limpiar
                     </button>
