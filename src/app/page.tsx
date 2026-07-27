@@ -186,6 +186,45 @@ export default function HomePage() {
         }
     };
 
+    const handleConfiguracionMercadoPago = async () => {
+        let preview = '';
+        try {
+            const res = await fetch('/api/gimnasio/mp-token');
+            const d = await res.json();
+            if (d.hasToken) preview = `Token actual: ${d.preview}`;
+        } catch { /* ignorar */ }
+
+        const { value: nuevoToken } = await Swal.fire({
+            ...swalBase,
+            title: 'MercadoPago',
+            html: `
+                <p style="font-size:13px;color:#64748b;margin-bottom:12px;">
+                    ${preview ? `<span style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px;font-family:monospace;">${preview}</span><br><br>` : ''}
+                    Pegá tu Access Token de producción de MercadoPago.<br>
+                    Lo encontrás en <strong>mercadopago.com.ar → Tus integraciones</strong>.
+                </p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'APP_USR-...',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (v) => !v?.trim() ? 'El token no puede estar vacío' : null,
+        });
+
+        if (nuevoToken) {
+            try {
+                const res = await fetch('/api/gimnasio/mp-token', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: nuevoToken }),
+                });
+                if (res.ok) Swal.fire({ ...swalNotify, icon: 'success', title: 'Token guardado' });
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el token' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el token' }); }
+        }
+    };
+
     const handleConfiguracionRecargos = async () => {
         if (recargo === null) {
             await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
@@ -424,6 +463,21 @@ export default function HomePage() {
                                 <div className="text-left flex-1">
                                     <p className="font-semibold text-sm text-slate-800">Recargo</p>
                                     <p className="text-xs text-slate-500">Monto por mora</p>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
+                                </svg>
+                            </button>
+                            <div className="border-t border-slate-100" />
+                            <button onClick={handleConfiguracionMercadoPago} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                                <div className="w-9 h-9 rounded-xl bg-[#009EE3]/10 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-[#009EE3]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                                    </svg>
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="font-semibold text-sm text-slate-800">MercadoPago</p>
+                                    <p className="text-xs text-slate-500">Token de integración</p>
                                 </div>
                                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />

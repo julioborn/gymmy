@@ -78,6 +78,8 @@ export default function MiCuentaPage() {
     const [pullY, setPullY] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     const touchStartY = useRef(0);
+    const [loadingPago, setLoadingPago] = useState(false);
+    const [pagoResult, setPagoResult] = useState<'ok' | 'error' | 'pendiente' | null>(null);
 
     const now = new Date();
     const [calYear, setCalYear] = useState(now.getFullYear());
@@ -92,6 +94,12 @@ export default function MiCuentaPage() {
 
     useEffect(() => {
         fetchAlumno().catch(() => {}).finally(() => setLoading(false));
+        const params = new URLSearchParams(window.location.search);
+        const pago = params.get('pago');
+        if (pago === 'ok' || pago === 'error' || pago === 'pendiente') {
+            setPagoResult(pago as 'ok' | 'error' | 'pendiente');
+            window.history.replaceState({}, '', '/mi-cuenta');
+        }
     }, []);
 
     function onTouchStart(e: React.TouchEvent) {
@@ -161,6 +169,23 @@ export default function MiCuentaPage() {
     const initials = getInitials(alumno.nombre, alumno.apellido);
     const gimnasioNombre = (alumno.gimnasioId as any)?.nombre ?? '';
 
+    async function handlePagarMercadoPago() {
+        setLoadingPago(true);
+        try {
+            const res = await fetch('/api/pagos/mp/crear-preferencia', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) {
+                alert(data.error || 'No se pudo iniciar el pago');
+                return;
+            }
+            window.location.href = data.init_point;
+        } catch {
+            alert('Error al conectar con MercadoPago');
+        } finally {
+            setLoadingPago(false);
+        }
+    }
+
     function prevMonth() {
         setSelectedDay(null);
         if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
@@ -200,6 +225,42 @@ export default function MiCuentaPage() {
                     style={refreshing ? undefined : { transform: `rotate(${pullProgress * 270}deg)` }}
                 />
             </div>
+
+            {/* ── PAGO RESULT BANNER ── */}
+            {pagoResult && (
+                <div className={`mb-4 rounded-2xl px-4 py-3 flex items-center gap-3 ${
+                    pagoResult === 'ok'
+                        ? 'bg-emerald-50 border border-emerald-200'
+                        : pagoResult === 'pendiente'
+                        ? 'bg-amber-50 border border-amber-200'
+                        : 'bg-red-50 border border-red-200'
+                }`}>
+                    <span className="text-lg">
+                        {pagoResult === 'ok' ? '✅' : pagoResult === 'pendiente' ? '⏳' : '❌'}
+                    </span>
+                    <div className="flex-1">
+                        <p className={`text-sm font-bold ${
+                            pagoResult === 'ok' ? 'text-emerald-700' : pagoResult === 'pendiente' ? 'text-amber-700' : 'text-red-700'
+                        }`}>
+                            {pagoResult === 'ok' ? '¡Pago recibido!' : pagoResult === 'pendiente' ? 'Pago en proceso' : 'El pago no se completó'}
+                        </p>
+                        <p className={`text-xs mt-0.5 ${
+                            pagoResult === 'ok' ? 'text-emerald-600' : pagoResult === 'pendiente' ? 'text-amber-600' : 'text-red-500'
+                        }`}>
+                            {pagoResult === 'ok'
+                                ? 'Tu cuota quedó registrada. ¡Gracias!'
+                                : pagoResult === 'pendiente'
+                                ? 'Tu pago está siendo procesado. Se registrará en breve.'
+                                : 'Podés intentarlo de nuevo cuando quieras.'}
+                        </p>
+                    </div>
+                    <button onClick={() => setPagoResult(null)} className="text-slate-400 hover:text-slate-600">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
@@ -290,6 +351,24 @@ export default function MiCuentaPage() {
                             )}
                         </div>
                     </div>
+
+                    {/* Botón MercadoPago — solo si cuota pendiente */}
+                    {!pagoEsteMes && (
+                        <button
+                            onClick={handlePagarMercadoPago}
+                            disabled={loadingPago}
+                            className="w-full flex items-center justify-center gap-2.5 bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 text-white font-bold rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
+                        >
+                            {loadingPago ? (
+                                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                                </svg>
+                            )}
+                            <span>{loadingPago ? 'Redirigiendo...' : 'Pagar cuota con MercadoPago'}</span>
+                        </button>
+                    )}
 
                     {/* Plan de entrenamiento */}
                     {tienePlan && (
