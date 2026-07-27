@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Asistencia {
     _id: string;
@@ -69,22 +69,49 @@ function getInitials(nombre: string, apellido: string) {
     return `${nombre[0] ?? ''}${apellido[0] ?? ''}`.toUpperCase();
 }
 
+const PULL_THRESHOLD = 72;
+
 export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState<'resumen' | 'historial'>('resumen');
+    const [pullY, setPullY] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
+    const touchStartY = useRef(0);
 
     const now = new Date();
     const [calYear, setCalYear] = useState(now.getFullYear());
     const [calMonth, setCalMonth] = useState(now.getMonth());
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
+    async function fetchAlumno() {
+        const r = await fetch('/api/alumno/me');
+        const data = await r.json();
+        setAlumno(data);
+    }
+
     useEffect(() => {
-        fetch('/api/alumno/me')
-            .then(r => r.json())
-            .then(data => { setAlumno(data); setLoading(false); })
-            .catch(() => setLoading(false));
+        fetchAlumno().catch(() => {}).finally(() => setLoading(false));
     }, []);
+
+    function onTouchStart(e: React.TouchEvent) {
+        touchStartY.current = e.touches[0].clientY;
+    }
+
+    function onTouchMove(e: React.TouchEvent) {
+        if (refreshing || window.scrollY > 8) return;
+        const dy = e.touches[0].clientY - touchStartY.current;
+        if (dy > 0) setPullY(Math.min(dy, PULL_THRESHOLD + 24));
+    }
+
+    async function onTouchEnd() {
+        if (pullY >= PULL_THRESHOLD && !refreshing) {
+            setRefreshing(true);
+            try { await fetchAlumno(); } catch {}
+            setRefreshing(false);
+        }
+        setPullY(0);
+    }
 
     if (loading) {
         return (
@@ -152,8 +179,27 @@ export default function MiCuentaPage() {
         .sort(([a], [b]) => b.localeCompare(a))
         .slice(0, 5);
 
+    const pullProgress = Math.min(pullY / PULL_THRESHOLD, 1);
+    const indicatorH = refreshing ? 48 : Math.round(pullProgress * 48);
+
     return (
-        <div className="max-w-lg mx-auto pt-16 pb-12 px-4">
+        <div
+            className="max-w-lg mx-auto pt-4 pb-12 px-4"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
+
+            {/* ── PULL TO REFRESH INDICATOR ── */}
+            <div
+                className="flex items-center justify-center overflow-hidden transition-[height] duration-150"
+                style={{ height: indicatorH }}
+            >
+                <div
+                    className={`w-7 h-7 rounded-full border-2 border-slate-700 border-t-emerald-400 ${refreshing ? 'animate-spin' : 'transition-transform duration-75'}`}
+                    style={refreshing ? undefined : { transform: `rotate(${pullProgress * 270}deg)` }}
+                />
+            </div>
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
