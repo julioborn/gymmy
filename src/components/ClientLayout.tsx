@@ -1,8 +1,8 @@
 'use client';
 
 import { SessionProvider, signOut, useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFCM } from '@/hooks/useFCM';
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
@@ -10,6 +10,10 @@ import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
 interface ClientLayoutProps { children: React.ReactNode; }
+
+const PULL_THRESHOLD = 72;
+const SWIPE_THRESHOLD = 80;
+const EDGE_ZONE = 28;
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
     return (
@@ -24,22 +28,49 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
 function LayoutWithSession({ children }: ClientLayoutProps) {
     const { data: session, status } = useSession();
+    const router = useRouter();
     useFCM();
+
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
     const [sessionReady, setSessionReady] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
 
+    // ── Pull-to-refresh state ──
+    const [pullY, setPullY] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // ── Swipe-back state ──
+    const [swipeX, setSwipeX] = useState(0);
+    const [isSwipingBack, setIsSwipingBack] = useState(false);
+
+    // ── Gesture ref (shared mutable state for event closures) ──
+    const g = useRef({
+        startX: 0, startY: 0,
+        pullY: 0, swipeX: 0,
+        type: null as 'pull' | 'swipe' | null,
+        busy: false,
+    });
+
     useEffect(() => { setMenuOpen(false); }, [pathname]);
 
+    // Reset gestures on route change
     useEffect(() => {
-        if (status !== 'loading') {
-            setSessionReady(true);
-            return;
-        }
-        const timer = setTimeout(() => setSessionReady(true), 8000);
-        return () => clearTimeout(timer);
+        g.current.type = null;
+        g.current.pullY = 0;
+        g.current.swipeX = 0;
+        g.current.busy = false;
+        setPullY(0);
+        setSwipeX(0);
+        setIsSwipingBack(false);
+        setIsRefreshing(false);
+    }, [pathname]);
+
+    useEffect(() => {
+        if (status !== 'loading') { setSessionReady(true); return; }
+        const t = setTimeout(() => setSessionReady(true), 8000);
+        return () => clearTimeout(t);
     }, [status]);
 
     useEffect(() => {
@@ -54,11 +85,101 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         };
         window.addEventListener('online', update);
         window.addEventListener('offline', update);
-        return () => {
-            window.removeEventListener('online', update);
-            window.removeEventListener('offline', update);
-        };
+        return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
     }, []);
+
+    // ── Global touch gesture handlers ──
+    useEffect(() => {
+        const canSwipeBack = () => pathname !== '/' && !pathname.startsWith('/login');
+
+        function onStart(e: TouchEvent) {
+            const t = e.touches[0];
+            g.current.startX = t.clientX;
+            g.current.startY = t.clientY;
+            g.current.type = null;
+        }
+
+        function onMove(e: TouchEvent) {
+            if (g.current.busy) return;
+            const t = e.touches[0];
+            const dx = t.clientX - g.current.startX;
+            const dy = t.clientY - g.current.startY;
+
+            if (!g.current.type) {
+                const ax = Math.abs(dx), ay = Math.abs(dy);
+                if (ax < 4 && ay < 4) return;
+
+                if (canSwipeBack() && g.current.startX <= EDGE_ZONE && dx > 0 && ax > ay * 1.2) {
+                    g.current.type = 'swipe';
+                } else if (dy > 0 && ay > ax * 1.2 && window.scrollY <= 0) {
+                    g.current.type = 'pull';
+                } else {
+                    g.current.type = null;
+                    return;
+                }
+            }
+
+            if (g.current.type === 'pull') {
+                const pulled = Math.min(dy * 0.48, PULL_THRESHOLD + 32);
+                g.current.pullY = pulled;
+                setPullY(pulled);
+            } else if (g.current.type === 'swipe') {
+                const clamped = Math.min(dx, window.innerWidth * 0.5);
+                g.current.swipeX = clamped;
+                setSwipeX(clamped);
+                setIsSwipingBack(true);
+            }
+        }
+
+        function onEnd() {
+            const { type } = g.current;
+
+            if (type === 'pull') {
+                if (g.current.pullY >= PULL_THRESHOLD) {
+                    g.current.busy = true;
+                    setIsRefreshing(true);
+                    setPullY(PULL_THRESHOLD);
+                    router.refresh();
+                    window.dispatchEvent(new CustomEvent('gymmy:refresh'));
+                    setTimeout(() => {
+                        g.current.busy = false;
+                        setIsRefreshing(false);
+                        setPullY(0);
+                        g.current.pullY = 0;
+                    }, 1300);
+                } else {
+                    setPullY(0);
+                    g.current.pullY = 0;
+                }
+            } else if (type === 'swipe') {
+                if (g.current.swipeX >= SWIPE_THRESHOLD) {
+                    // Animate slide-out then navigate
+                    setSwipeX(window.innerWidth * 0.5);
+                    setTimeout(() => {
+                        router.back();
+                        setSwipeX(0);
+                        setIsSwipingBack(false);
+                        g.current.swipeX = 0;
+                    }, 180);
+                } else {
+                    setSwipeX(0);
+                    setIsSwipingBack(false);
+                    g.current.swipeX = 0;
+                }
+            }
+
+            g.current.type = null;
+        }
+
+        document.addEventListener('touchstart', onStart, { passive: true });
+        document.addEventListener('touchmove', onMove, { passive: true });
+        document.addEventListener('touchend', onEnd, { passive: true });
+        return () => {
+            document.removeEventListener('touchstart', onStart);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onEnd);
+        };
+    }, [pathname, router]);
 
     const role = session?.user?.role;
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
@@ -85,22 +206,11 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 isActive: (p: string) =>
                     p === '/alumnos' ||
                     (p.startsWith('/alumnos/') &&
-                        !p.startsWith('/alumnos/nuevo') &&
                         !p.startsWith('/alumnos/finanzas') &&
                         !p.startsWith('/alumnos/estadisticas')),
                 icon: (
                     <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                    </svg>
-                ),
-            },
-            {
-                href: '/alumnos/nuevo',
-                label: 'Registrar',
-                isActive: (p: string) => p.startsWith('/alumnos/nuevo'),
-                icon: (
-                    <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
                     </svg>
                 ),
             },
@@ -132,20 +242,21 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         return base;
     })();
 
+    const pullProgress = Math.min(pullY / PULL_THRESHOLD, 1);
+    const indicatorH = isRefreshing ? 48 : Math.round(pullProgress * 48);
+
     if (!sessionReady) {
         return (
-            <div
-                className="min-h-screen flex items-center justify-center"
-                style={{ backgroundColor: '#0f172a' }}
-            >
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
                 <CircularProgress sx={{ color: '#10b981' }} />
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Top bar */}
+        <div className="flex flex-col min-h-screen" style={{ overscrollBehavior: 'none' }}>
+
+            {/* ── HEADER ── */}
             <header
                 className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
                 style={{ paddingTop: 'env(safe-area-inset-top)' }}
@@ -189,22 +300,52 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     ) : (
                         <div className="w-8" />
                     )}
+
                     <img
                         src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
                         alt="Logo"
                         className="pointer-events-none"
                         style={{ height: 250, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
                     />
-                    <div
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline
-                            ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]'
-                            : 'bg-red-400 shadow-[0_0_8px_#ef4444]'
-                            }`}
-                    />
+
+                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-red-400 shadow-[0_0_8px_#ef4444]'}`} />
                 </div>
             </header>
 
-            {/* Offline overlay */}
+            {/* ── PULL-TO-REFRESH INDICATOR ── */}
+            <div
+                className="fixed left-0 right-0 z-[45] flex items-center justify-center overflow-hidden pointer-events-none"
+                style={{
+                    top: 'calc(75px + env(safe-area-inset-top, 0px))',
+                    height: indicatorH,
+                    transition: (!isRefreshing && pullY === 0) ? 'height 0.25s ease' : undefined,
+                    backgroundColor: '#f8fafc',
+                }}
+            >
+                <div
+                    className={`w-7 h-7 rounded-full border-2 border-slate-300 border-t-emerald-400 ${isRefreshing ? 'animate-spin' : 'transition-transform duration-75'}`}
+                    style={isRefreshing ? undefined : { transform: `rotate(${pullProgress * 270}deg)` }}
+                />
+            </div>
+
+            {/* ── SWIPE-BACK INDICATOR ── */}
+            {isSwipingBack && swipeX > 6 && (
+                <div
+                    className="fixed left-0 top-1/2 -translate-y-1/2 z-[45] pointer-events-none"
+                    style={{ opacity: Math.min(swipeX / (SWIPE_THRESHOLD * 0.75), 1) }}
+                >
+                    <div
+                        className="bg-slate-800/85 backdrop-blur-sm rounded-r-2xl pl-2 pr-3 py-4 shadow-xl"
+                        style={{ transform: `translateX(${Math.max((swipeX / SWIPE_THRESHOLD - 0.2) * 18, 0)}px)` }}
+                    >
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                        </svg>
+                    </div>
+                </div>
+            )}
+
+            {/* ── OFFLINE OVERLAY ── */}
             {!isOnline && pathname !== '/alumnos/dni' && (
                 <div className="fixed inset-0 bg-black/85 z-[9999] flex flex-col justify-center items-center gap-4">
                     <CircularProgress sx={{ color: '#10b981' }} />
@@ -212,22 +353,28 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 </div>
             )}
 
-            {/* Back-online toast */}
+            {/* ── BACK-ONLINE TOAST ── */}
             {backOnlineMessage && pathname !== '/alumnos/dni' && (
                 <div className="fixed top-[90px] left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500 text-white text-sm font-bold px-6 py-2 rounded-2xl shadow-[0_4px_14px_rgba(16,185,129,0.4)]">
                     De vuelta en línea
                 </div>
             )}
 
-            {/* Main content */}
+            {/* ── MAIN CONTENT ── */}
             <main
-                className="flex-1 p-3 mt-[75px] bg-slate-50"
-                style={{ paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined }}
+                className="flex-1 p-3 bg-slate-50"
+                style={{
+                    marginTop: 'calc(75px + env(safe-area-inset-top, 0px))',
+                    paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined,
+                    transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
+                    transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
+                    willChange: swipeX > 0 ? 'transform' : undefined,
+                }}
             >
                 {children}
             </main>
 
-            {/* Bottom navigation */}
+            {/* ── BOTTOM NAV ── */}
             {showNav && navItems.length > 0 && (
                 <nav
                     className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-white/[0.06]"
