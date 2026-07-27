@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import TopHorariosChart from '@/components/TopHorariosChart';
 import ActividadChart from '@/components/ActividadChart';
 
@@ -20,16 +20,19 @@ type Alumno = {
 };
 
 export default function Estadisticas() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [topHorarios, setTopHorarios] = useState<{ hora: string; frecuencia: number }[]>([]);
     const [porActividad, setPorActividad] = useState<{ actividad: string; cantidad: number }[]>([]);
     const [porDia, setPorDia] = useState<{ fecha: string; cantidad: number }[]>([]);
     const [promedio, setPromedio] = useState<number>(0);
 
-    if (session && session.user?.role !== 'dueño') {
-        redirect('/');
-    }
+    useEffect(() => {
+        if (status !== 'loading' && session?.user?.role !== 'dueño') {
+            router.push('/');
+        }
+    }, [session, status, router]);
 
     useEffect(() => {
         fetch('/api/alumnos')

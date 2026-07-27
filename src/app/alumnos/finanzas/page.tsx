@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import Swal from 'sweetalert2';
@@ -47,7 +47,8 @@ type Ingreso = {
 };
 
 const ControlFinanciero = () => {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [ingresosPorMes, setIngresosPorMes] = useState<number[]>([]);
     const [totalIngresos, setTotalIngresos] = useState<number>(0);
@@ -56,15 +57,17 @@ const ControlFinanciero = () => {
     const [topHorarios, setTopHorarios] = useState<{ hora: string; frecuencia: number }[]>([]);
     const [gastos, setGastos] = useState<Gasto[]>([]);
     const [totalGastos, setTotalGastos] = useState<number>(0);
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth()); // Mes actual
+    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
     const [gastosMensuales, setGastosMensuales] = useState<number[]>(new Array(12).fill(0));
     const [ingresosAdicionales, setIngresosAdicionales] = useState<Ingreso[]>([]);
     const [ingresosMensualesAdicionales, setIngresosMensualesAdicionales] = useState<number[]>(new Array(12).fill(0));
     const [totalIngresosAdicionales, setTotalIngresosAdicionales] = useState<number>(0);
 
-    if (session && session.user?.role !== 'dueño') {
-        redirect('/');
-    }
+    useEffect(() => {
+        if (status !== 'loading' && session?.user?.role !== 'dueño') {
+            router.push('/');
+        }
+    }, [session, status, router]);
 
     useEffect(() => {
         fetch('/api/alumnos')
