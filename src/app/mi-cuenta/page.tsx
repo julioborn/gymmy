@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { signOut, useSession } from 'next-auth/react';
 
 interface Asistencia {
     _id: string;
@@ -71,7 +70,6 @@ function getInitials(nombre: string, apellido: string) {
 }
 
 export default function MiCuentaPage() {
-    const { data: session } = useSession();
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState<'resumen' | 'historial'>('resumen');
@@ -150,13 +148,12 @@ export default function MiCuentaPage() {
     const selectedAsistencias = selectedDay ? (asistenciasMap[selectedDay] || []) : [];
     const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
-    const ultimasAsistencias = Object.entries(asistenciasMap)
+    const ultimasAsistencias: [string, Asistencia[]][] = Object.entries(asistenciasMap)
         .sort(([a], [b]) => b.localeCompare(a))
-        .slice(0, 5)
-        .flatMap(([, asists]) => asists);
+        .slice(0, 5);
 
     return (
-        <div className="max-w-lg mx-auto pb-12 px-4">
+        <div className="max-w-lg mx-auto pt-3 pb-12 px-4">
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
@@ -298,19 +295,21 @@ export default function MiCuentaPage() {
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-50">
-                                {ultimasAsistencias.map(a => {
-                                    const fecha = new Date(a.fecha);
-                                    const dia = fecha.getDate();
-                                    const mes = MESES_CORTO[fecha.getMonth()];
+                                {ultimasAsistencias.map(([dateKey, asists]) => {
+                                    const [yr, mo, dy] = dateKey.split('-').map(Number);
                                     return (
-                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3">
+                                        <div key={dateKey} className="flex items-center gap-3 px-4 py-3">
                                             <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-slate-100">
-                                                <span className="text-slate-800 font-bold text-sm leading-none">{dia}</span>
-                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{mes}</span>
+                                                <span className="text-slate-800 font-bold text-sm leading-none">{dy}</span>
+                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[mo - 1]}</span>
                                             </div>
-                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
-                                                {a.actividad}
-                                            </span>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {asists.map(a => (
+                                                    <span key={a._id} className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
+                                                        {a.actividad}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -318,16 +317,6 @@ export default function MiCuentaPage() {
                         )}
                     </div>
 
-                    {/* Cerrar sesión */}
-                    <button
-                        onClick={() => signOut()}
-                        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-red-50 active:scale-[0.98] border border-slate-200 hover:border-red-200 text-slate-400 hover:text-red-500 rounded-2xl py-3.5 text-sm font-semibold transition-all"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                        </svg>
-                        Cerrar sesión
-                    </button>
                 </div>
             )}
 
