@@ -276,11 +276,11 @@ export default function HomePage() {
                         <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
                             <span className="text-xl md:text-3xl font-bold text-slate-800">{data.asistenciasHoy}</span>
                         </div>
-                        {data.horaPico ? (
+                        {/* {data.horaPico ? (
                             <p className="text-[10px] md:text-[11px] text-slate-500 mb-1">Pico: <span className="font-bold text-blue-600">{data.horaPico}</span></p>
                         ) : (
                             <p className="text-[10px] md:text-[11px] text-slate-400 mb-1">Sin datos</p>
-                        )}
+                        )} */}
                         <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias</p>
                     </div>
 
@@ -294,9 +294,9 @@ export default function HomePage() {
                         <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
                             <span className={`text-xl md:text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>{data.planesVenciendo.length}</span>
                         </div>
-                        <p className={`text-[10px] md:text-[11px] font-semibold mb-1 leading-tight ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {/* <p className={`text-[10px] md:text-[11px] font-semibold mb-1 leading-tight ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
                             {data.planesVenciendo.length === 0 ? 'Al día ✓' : '≤ 5 clases'}
-                        </p>
+                        </p> */}
                         <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Planes</p>
                     </div>
 
