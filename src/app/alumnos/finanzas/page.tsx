@@ -51,10 +51,9 @@ const ControlFinanciero = () => {
     const router = useRouter();
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [ingresosPorMes, setIngresosPorMes] = useState<number[]>([]);
-    const [totalIngresos, setTotalIngresos] = useState<number>(0);
+    const [, setTotalIngresos] = useState<number>(0);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [availableYears, setAvailableYears] = useState<number[]>([]);
-    const [topHorarios, setTopHorarios] = useState<{ hora: string; frecuencia: number }[]>([]);
     const [gastos, setGastos] = useState<Gasto[]>([]);
     const [totalGastos, setTotalGastos] = useState<number>(0);
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
@@ -76,7 +75,6 @@ const ControlFinanciero = () => {
                 setAlumnos(data);
                 calcularAñosDisponibles(data);
                 calcularIngresosPorMes(alumnos, selectedYear, selectedMonth);
-                calcularTopHorarios(data);
             })
             .catch(() => { /* silenced */ });
     }, []);
@@ -120,41 +118,6 @@ const ControlFinanciero = () => {
             // Mostrar solo el total del mes seleccionado
             setTotalIngresos(ingresosMensuales[month] || 0);
         }
-    };
-
-    const calcularTopHorarios = (alumnos: Alumno[]) => {
-        const horarioFrecuencia: { [hora: string]: number } = {};
-
-        alumnos.forEach((alumno) => {
-            alumno.asistencia
-                .filter((asistencia) => asistencia.actividad === 'Musculación' && asistencia.presente)
-                .forEach((asistencia) => {
-                    const fecha = new Date(asistencia.fecha);
-                    const horas = fecha.getHours();
-                    const minutos = fecha.getMinutes();
-
-                    // Redondear el horario
-                    let horarioRedondeado: string;
-                    if (minutos < 15) {
-                        horarioRedondeado = `${horas.toString().padStart(2, '0')}:00`;
-                    } else if (minutos < 45) {
-                        horarioRedondeado = `${horas.toString().padStart(2, '0')}:30`;
-                    } else {
-                        horarioRedondeado = `${(horas + 1).toString().padStart(2, '0')}:00`;
-                    }
-
-                    // Contar la frecuencia
-                    horarioFrecuencia[horarioRedondeado] = (horarioFrecuencia[horarioRedondeado] || 0) + 1;
-                });
-        });
-
-        // Obtener el top 3 horarios más frecuentes
-        const top3 = Object.entries(horarioFrecuencia)
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 3)
-            .map(([hora, frecuencia]) => ({ hora, frecuencia }));
-
-        setTopHorarios(top3);
     };
 
     gastos.forEach(gasto => {

@@ -1,42 +1,42 @@
-// components/ActividadChart.tsx
 'use client';
 
 import { Bar } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 interface Props {
     data: { actividad: string; cantidad: number }[];
 }
 
 export default function ActividadChart({ data }: Props) {
-    const chartData = {
-        labels: data.map(d => d.actividad),
-        datasets: [
-            {
-                label: 'Cantidad de Asistencias',
-                data: data.map(d => d.cantidad),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            }
-        ]
-    };
-
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            title: { display: true, text: 'Asistencias por Actividad' }
-        }
-    };
-
-    return <Bar data={chartData} options={options} />;
+    return (
+        <Bar
+            data={{
+                labels: data.map(d => d.actividad),
+                datasets: [
+                    {
+                        label: 'Asistencias',
+                        data: data.map(d => d.cantidad),
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    },
+                ],
+            }}
+            options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: {},
+                },
+            }}
+            style={{ maxHeight: '220px' }}
+        />
+    );
 }
