@@ -50,13 +50,10 @@ export async function middleware(req: NextRequest) {
         }
     }
 
-    // Profesor: sin acceso a datos financieros ni pagos de alumnos
+    // Profesor: sin acceso a finanzas globales ni estadísticas
     if (token.role === 'profesor') {
         const restricted = ['/alumnos/finanzas', '/alumnos/estadisticas'];
-        const isRestricted =
-            restricted.some(p => pathname.startsWith(p)) ||
-            /^\/alumnos\/[^/]+\/pagos/.test(pathname);
-        if (isRestricted) {
+        if (restricted.some(p => pathname.startsWith(p))) {
             const url = req.nextUrl.clone();
             url.pathname = '/';
             return NextResponse.redirect(url);
