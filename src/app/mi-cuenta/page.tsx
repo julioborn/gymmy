@@ -156,7 +156,13 @@ export default function MiCuentaPage() {
                 setPagoResult('error');
                 return;
             }
-            window.location.href = data.init_point;
+            const a = document.createElement('a');
+            a.href = data.init_point;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         } catch {
             setPagoResult('error');
         } finally {
