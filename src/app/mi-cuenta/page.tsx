@@ -156,9 +156,10 @@ export default function MiCuentaPage() {
                 setPagoResult('error');
                 return;
             }
-            // iOS PWA necesita un <a> nativo en vez de window.location.href
+            // target="_blank" abre Safari en iOS PWA, que sí dispara Universal Links y abre la app de MP
             const a = document.createElement('a');
             a.href = data.init_point;
+            a.target = '_blank';
             a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
             a.click();
