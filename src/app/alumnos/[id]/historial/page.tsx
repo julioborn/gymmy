@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -579,6 +580,8 @@ export default function HistorialAlumnoPage() {
             fetchAlumno();
         }
     }, [id]);
+
+    usePaymentEvents(fetchAlumno);
 
     if (!alumno) {
         return <Loader />;

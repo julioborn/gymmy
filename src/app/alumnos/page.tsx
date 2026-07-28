@@ -1,6 +1,7 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
 import Modal from 'react-modal';
 import AlumnoActions from '@/components/AlumnoActions';
@@ -99,6 +100,8 @@ export default function ListaAlumnosPage() {
     useEffect(() => {
         fetchAlumnos();
     }, []);
+
+    usePaymentEvents(fetchAlumnos);
 
     const fetchTarifas = async () => {
         try {

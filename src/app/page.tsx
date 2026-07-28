@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -130,15 +131,20 @@ export default function HomePage() {
         if (session?.user?.role === 'alumno') router.push('/mi-cuenta');
     }, [session, status, router]);
 
+    const fetchDashboard = () => {
+        if (!session || session.user?.role === 'registro' || session.user?.role === 'alumno') return;
+        fetch('/api/dashboard')
+            .then(r => r.json())
+            .then(d => { if (d.ok) setData(d); })
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    };
+
     useEffect(() => {
-        if (session && session.user?.role !== 'registro' && session.user?.role !== 'alumno') {
-            fetch('/api/dashboard')
-                .then(r => r.json())
-                .then(d => { if (d.ok) setData(d); })
-                .catch(() => { })
-                .finally(() => setLoading(false));
-        }
+        fetchDashboard();
     }, [session]);
+
+    usePaymentEvents(fetchDashboard);
 
     useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
