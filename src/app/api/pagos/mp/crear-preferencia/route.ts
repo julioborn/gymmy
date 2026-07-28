@@ -57,9 +57,9 @@ export async function POST() {
             external_reference: String(alumnoId),
             notification_url: `${APP_URL}/api/pagos/mp/webhook?gid=${String(alumno.gimnasioId)}`,
             back_urls: {
-                success: `${APP_URL}/mi-cuenta?pago=ok`,
-                failure: `${APP_URL}/mi-cuenta?pago=error`,
-                pending: `${APP_URL}/mi-cuenta?pago=pendiente`,
+                success: `${APP_URL}/pago-resultado?status=ok`,
+                failure: `${APP_URL}/pago-resultado?status=error`,
+                pending: `${APP_URL}/pago-resultado?status=pendiente`,
             },
             auto_return: 'approved',
         },
