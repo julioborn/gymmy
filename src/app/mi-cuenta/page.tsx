@@ -156,14 +156,7 @@ export default function MiCuentaPage() {
                 setPagoResult('error');
                 return;
             }
-            // target="_blank" abre Safari en iOS PWA, que sí dispara Universal Links y abre la app de MP
-            const a = document.createElement('a');
-            a.href = data.init_point;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            window.location.href = data.init_point;
         } catch {
             setPagoResult('error');
         } finally {
