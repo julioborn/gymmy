@@ -64,24 +64,6 @@ export default function PagoResultadoPage() {
                     : 'El pago no se completó. Podés intentarlo de nuevo desde la app.'}
             </p>
 
-            {/* Botón volver */}
-            <a
-                href={APP_URL}
-                className={`w-full max-w-xs flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-white text-base transition-all ${
-                    isOk ? 'bg-emerald-500 hover:bg-emerald-400' :
-                    isPendiente ? 'bg-amber-500 hover:bg-amber-400' :
-                    'bg-slate-600 hover:bg-slate-500'
-                }`}
-            >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
-                </svg>
-                Volver a Gymmy
-            </a>
-
-            <p className="text-slate-600 text-xs mt-4">
-                O cerrá esta pestaña y abrí la app
-            </p>
         </div>
     );
 }
