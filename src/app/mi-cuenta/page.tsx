@@ -153,12 +153,18 @@ export default function MiCuentaPage() {
             const res = await fetch('/api/pagos/mp/crear-preferencia', { method: 'POST' });
             const data = await res.json();
             if (!res.ok) {
-                alert(data.error || 'No se pudo iniciar el pago');
+                setPagoResult('error');
                 return;
             }
-            window.location.href = data.init_point;
+            // iOS PWA necesita un <a> nativo en vez de window.location.href
+            const a = document.createElement('a');
+            a.href = data.init_point;
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         } catch {
-            alert('Error al conectar con MercadoPago');
+            setPagoResult('error');
         } finally {
             setLoadingPago(false);
         }
