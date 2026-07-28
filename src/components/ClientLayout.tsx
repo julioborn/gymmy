@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFCM } from '@/hooks/useFCM';
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import Swal from 'sweetalert2';
 
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
@@ -285,7 +286,27 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                     <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                                     <div className="absolute left-0 top-[calc(100%+6px)] w-56 bg-slate-800 border border-white/10 rounded-2xl shadow-2xl z-[51] overflow-hidden">
                                         <button
-                                            onClick={() => { setMenuOpen(false); if (confirm('¿Cerrar sesión?')) signOut(); }}
+                                            onClick={async () => {
+                                                setMenuOpen(false);
+                                                const result = await Swal.fire({
+                                                    title: 'Cerrar sesión',
+                                                    text: '¿Querés salir de tu cuenta?',
+                                                    icon: 'question',
+                                                    showCancelButton: true,
+                                                    confirmButtonText: 'Salir',
+                                                    cancelButtonText: 'Cancelar',
+                                                    confirmButtonColor: '#ef4444',
+                                                    cancelButtonColor: '#64748b',
+                                                    background: '#1e293b',
+                                                    color: '#f1f5f9',
+                                                    customClass: {
+                                                        popup: 'rounded-3xl',
+                                                        confirmButton: 'rounded-xl font-semibold',
+                                                        cancelButton: 'rounded-xl font-semibold',
+                                                    },
+                                                });
+                                                if (result.isConfirmed) signOut();
+                                            }}
                                             className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium"
                                         >
                                             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
