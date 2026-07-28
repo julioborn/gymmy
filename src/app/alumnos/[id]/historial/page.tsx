@@ -1313,9 +1313,10 @@ export default function HistorialAlumnoPage() {
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="lg:grid lg:grid-cols-[1.1fr_1fr]">
 
-                {/* Calendario */}
-                <div className="p-3 sm:p-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
+                {/* ── Columna izquierda: Calendario ── */}
+                <div className="p-3 sm:p-4 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-100 overflow-x-hidden">
 
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
@@ -1662,8 +1663,11 @@ export default function HistorialAlumnoPage() {
                     </div>
                 </div>
 
+                {/* ── Columna derecha: Tabs + Panels ── */}
+                <div className="lg:flex lg:flex-col">
+
                 {/* Tab nav */}
-                <div className="px-4 sm:px-6 flex border-b border-slate-100">
+                <div className="px-4 sm:px-5 flex border-b border-slate-100 flex-shrink-0">
                     {([
                         { key: 'asistencias', label: 'Asistencias' },
                         { key: 'planes',      label: 'Planes' },
@@ -1684,7 +1688,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Panels */}
-                <div ref={sectionRef} className="px-4 sm:px-6 py-5">
+                <div ref={sectionRef} className="px-4 sm:px-6 py-5 lg:flex-1 lg:overflow-y-auto">
 
                         {/* ── ASISTENCIAS ── */}
                         {activeTab === 'asistencias' && (
@@ -1970,6 +1974,8 @@ export default function HistorialAlumnoPage() {
                             </div>
                         )}
                     </div>
+                </div>{/* fin columna derecha */}
+            </div>{/* fin grid */}
             </div>
         </div>
     );
