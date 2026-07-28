@@ -109,6 +109,12 @@ export default function MiCuentaPage() {
         }
 
         fetchAlumno().catch(() => {}).finally(() => setLoading(false));
+
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') fetchAlumno().catch(() => {});
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
     }, []);
 
 
