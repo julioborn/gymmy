@@ -2,11 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-const APP_URL = 'https://www.gymmy.com.ar';
-
 export default function PagoResultadoPage() {
     const [status, setStatus] = useState<'ok' | 'error' | 'pendiente' | null>(null);
-    const [verified, setVerified] = useState(false);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -17,8 +14,6 @@ export default function PagoResultadoPage() {
 
         if (s === 'ok' && paymentId && alumnoId) {
             fetch(`/api/pagos/mp/verificar-publico?payment_id=${paymentId}&alumno_id=${alumnoId}`)
-                .then(r => r.json())
-                .then(data => { if (data.ok) setVerified(true); })
                 .catch(() => {});
         }
     }, []);
@@ -26,44 +21,48 @@ export default function PagoResultadoPage() {
     const isOk = status === 'ok';
     const isPendiente = status === 'pendiente';
 
+    const cardColor = isOk
+        ? 'bg-emerald-500'
+        : isPendiente
+        ? 'bg-amber-500'
+        : 'bg-red-500';
+
     return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-6 text-center">
+        <div className="min-h-[calc(100vh-75px)] flex items-center justify-center px-6">
+            <div className={`${cardColor} rounded-3xl px-8 py-10 flex flex-col items-center text-center max-w-xs w-full shadow-lg`}>
 
-            {/* Ícono */}
-            <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 ${
-                isOk ? 'bg-emerald-500/20' : isPendiente ? 'bg-amber-500/20' : 'bg-red-500/20'
-            }`}>
-                {isOk ? (
-                    <svg className="w-12 h-12 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                ) : isPendiente ? (
-                    <svg className="w-12 h-12 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                ) : (
-                    <svg className="w-12 h-12 text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                    </svg>
-                )}
+                {/* Ícono */}
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-5">
+                    {isOk ? (
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    ) : isPendiente ? (
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    ) : (
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    )}
+                </div>
+
+                {/* Título */}
+                <h1 className="text-white font-bold text-xl mb-2">
+                    {isOk ? '¡Pago exitoso!' : isPendiente ? 'Pago en proceso' : 'Pago no completado'}
+                </h1>
+
+                {/* Descripción */}
+                <p className="text-white/80 text-sm leading-relaxed">
+                    {isOk
+                        ? 'Tu cuota quedó registrada. Podés cerrar esta pestaña y volver a la app.'
+                        : isPendiente
+                        ? 'Tu pago está siendo procesado. Se registrará cuando se confirme.'
+                        : 'El pago no se completó. Intentalo de nuevo desde la app.'}
+                </p>
+
             </div>
-
-            {/* Título */}
-            <h1 className={`text-2xl font-bold mb-2 ${
-                isOk ? 'text-emerald-400' : isPendiente ? 'text-amber-400' : 'text-red-400'
-            }`}>
-                {isOk ? '¡Pago exitoso!' : isPendiente ? 'Pago en proceso' : 'Pago no completado'}
-            </h1>
-
-            {/* Descripción */}
-            <p className="text-slate-400 text-sm mb-8 max-w-xs leading-relaxed">
-                {isOk
-                    ? 'Tu cuota quedó registrada. Podés cerrar esta pestaña y volver a la app.'
-                    : isPendiente
-                    ? 'Tu pago está siendo procesado. Se registrará automáticamente cuando se confirme.'
-                    : 'El pago no se completó. Podés intentarlo de nuevo desde la app.'}
-            </p>
-
         </div>
     );
 }
