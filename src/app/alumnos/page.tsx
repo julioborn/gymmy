@@ -687,6 +687,52 @@ export default function ListaAlumnosPage() {
         }
     };
 
+    const handleResetPassword = async (alumno: any) => {
+        const { value: newPassword } = await Swal.fire({
+            ...swalBase,
+            title: 'Nueva contraseña',
+            html: `
+                <div class="swal-form-body">
+                    <p style="color:#475569;font-size:0.875rem;margin:0 0 1rem;">
+                        Establecé una nueva contraseña para <strong>${alumno.nombre} ${alumno.apellido}</strong>.
+                    </p>
+                    <label class="swal-form-label">Contraseña</label>
+                    <input type="password" id="swal-new-pwd" class="swal2-input" placeholder="Mínimo 6 caracteres">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const val = (document.getElementById('swal-new-pwd') as HTMLInputElement).value;
+                if (!val || val.length < 6) {
+                    Swal.showValidationMessage('Mínimo 6 caracteres');
+                    return false;
+                }
+                return val;
+            },
+        });
+
+        if (!newPassword) return;
+
+        try {
+            const res = await fetch(`/api/alumnos/${alumno._id}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: newPassword }),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Contraseña actualizada' });
+            } else {
+                const data = await res.json();
+                Swal.fire({ ...swalNotify, icon: 'error', title: data.error || 'Error al actualizar la contraseña' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' });
+        }
+    };
+
     function capitalizar(texto: string) {
         return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : '-';
     }
@@ -975,6 +1021,17 @@ export default function ListaAlumnosPage() {
                                         Editar
                                     </button>
                                 </div>
+                                {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                                    <button
+                                        onClick={() => handleResetPassword(alumnoSeleccionado)}
+                                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" />
+                                        </svg>
+                                        Resetear contraseña
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => eliminarAlumno(alumnoSeleccionado._id)}
                                     className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition-all"

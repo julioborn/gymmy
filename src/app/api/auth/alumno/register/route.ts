@@ -34,10 +34,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Alumno no encontrado' }, { status: 404 });
         }
 
-        if (alumno.password) {
-            return NextResponse.json({ error: 'Este alumno ya tiene contraseña configurada' }, { status: 400 });
-        }
-
         const hashed = await bcrypt.hash(password, 10);
 
         await db.collection('alumnos').updateOne(
