@@ -326,9 +326,9 @@ export default function MiCuentaPage() {
                             ) : (
                                 <>
                                     <img
-                                        src="/icons/MP_RGB_HANDSHAKE_pluma_horizontal.svg"
+                                        src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
                                         alt="MercadoPago"
-                                        className="h-6 w-auto"
+                                        className="h-8 w-auto"
                                     />
                                     <span className="text-slate-700 font-semibold text-sm">Pagar cuota</span>
                                 </>
