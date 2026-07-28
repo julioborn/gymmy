@@ -183,7 +183,7 @@ export default function MiCuentaPage() {
         .slice(0, 5);
 
     return (
-        <div className="max-w-lg mx-auto pt-16 pb-12 px-4">
+        <div className="max-w-lg mx-auto pt-10 pb-12 px-4">
 
             {/* ── PAGO RESULT BANNER ── */}
             {pagoResult && (
