@@ -89,13 +89,26 @@ export default function MiCuentaPage() {
     }
 
     useEffect(() => {
-        fetchAlumno().catch(() => {}).finally(() => setLoading(false));
         const params = new URLSearchParams(window.location.search);
         const pago = params.get('pago');
+        const paymentId = params.get('payment_id');
+
         if (pago === 'ok' || pago === 'error' || pago === 'pendiente') {
             setPagoResult(pago as 'ok' | 'error' | 'pendiente');
             window.history.replaceState({}, '', '/mi-cuenta');
+
+            // Fallback: si MP no llamó el webhook, verificar y registrar el pago directamente
+            if (pago === 'ok' && paymentId) {
+                fetch(`/api/pagos/mp/verificar?payment_id=${paymentId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.ok) fetchAlumno().catch(() => {});
+                    })
+                    .catch(() => {});
+            }
         }
+
+        fetchAlumno().catch(() => {}).finally(() => setLoading(false));
     }, []);
 
 
