@@ -357,16 +357,23 @@ export default function MiCuentaPage() {
                         <button
                             onClick={handlePagarMercadoPago}
                             disabled={loadingPago}
-                            className="w-full flex items-center justify-center gap-2.5 bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 text-white font-bold rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
+                            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 active:bg-slate-100 disabled:opacity-60 border border-slate-200 rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
                         >
                             {loadingPago ? (
-                                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                                <>
+                                    <div className="w-5 h-5 border-2 border-slate-300 border-t-[#009EE3] rounded-full animate-spin" />
+                                    <span className="text-slate-500 font-semibold text-sm">Redirigiendo...</span>
+                                </>
                             ) : (
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                                </svg>
+                                <>
+                                    <img
+                                        src="/icons/MP_RGB_HANDSHAKE_pluma_horizontal.svg"
+                                        alt="MercadoPago"
+                                        className="h-6 w-auto"
+                                    />
+                                    <span className="text-slate-700 font-semibold text-sm">Pagar cuota</span>
+                                </>
                             )}
-                            <span>{loadingPago ? 'Redirigiendo...' : 'Pagar cuota con MercadoPago'}</span>
                         </button>
                     )}
 

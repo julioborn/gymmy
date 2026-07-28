@@ -471,9 +471,7 @@ export default function HomePage() {
                             <div className="border-t border-slate-100" />
                             <button onClick={handleConfiguracionMercadoPago} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                                 <div className="w-9 h-9 rounded-xl bg-[#009EE3]/10 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-[#009EE3]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                                    </svg>
+                                    <img src="/icons/MP_RGB_HANDSHAKE_pluma_horizontal.svg" alt="MercadoPago" className="w-7 h-auto" />
                                 </div>
                                 <div className="text-left flex-1">
                                     <p className="font-semibold text-sm text-slate-800">MercadoPago</p>
