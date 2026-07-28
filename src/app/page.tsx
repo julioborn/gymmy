@@ -470,7 +470,7 @@ export default function HomePage() {
                             </button>
                             <div className="border-t border-slate-100" />
                             <button onClick={handleConfiguracionMercadoPago} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                                <div className="w-9 h-9 rounded-xl bg-[#009EE3]/10 flex items-center justify-center shrink-0">
+                                <div className="w-9 h-9 rounded-xl bg-[#009EE3] flex items-center justify-center shrink-0">
                                     <img src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg" alt="MercadoPago" className="w-7 h-auto" />
                                 </div>
                                 <div className="text-left flex-1">

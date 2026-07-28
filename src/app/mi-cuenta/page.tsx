@@ -316,22 +316,19 @@ export default function MiCuentaPage() {
                         <button
                             onClick={handlePagarMercadoPago}
                             disabled={loadingPago}
-                            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 active:bg-slate-100 disabled:opacity-60 border border-slate-200 rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
+                            className="w-full flex items-center justify-center gap-3 bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
                         >
                             {loadingPago ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-slate-300 border-t-[#009EE3] rounded-full animate-spin" />
-                                    <span className="text-slate-500 font-semibold text-sm">Redirigiendo...</span>
+                                    <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                                    <span className="text-white font-semibold text-sm">Redirigiendo...</span>
                                 </>
                             ) : (
-                                <>
-                                    <img
-                                        src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
-                                        alt="MercadoPago"
-                                        className="h-8 w-auto"
-                                    />
-                                    <span className="text-slate-700 font-semibold text-sm">Pagar cuota</span>
-                                </>
+                                <img
+                                    src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
+                                    alt="MercadoPago"
+                                    className="h-8 w-auto"
+                                />
                             )}
                         </button>
                     )}
