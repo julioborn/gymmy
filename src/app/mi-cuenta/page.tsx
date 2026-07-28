@@ -351,7 +351,7 @@ export default function MiCuentaPage() {
                                     <img
                                         src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
                                         alt="MercadoPago"
-                                        className="h-8 w-auto"
+                                        className="h-10 w-auto"
                                     />
                                 </>
                             )}
