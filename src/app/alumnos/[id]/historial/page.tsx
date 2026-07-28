@@ -2,7 +2,6 @@
 
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -580,8 +579,6 @@ export default function HistorialAlumnoPage() {
             fetchAlumno();
         }
     }, [id]);
-
-    usePaymentEvents(fetchAlumno);
 
     if (!alumno) {
         return <Loader />;
@@ -1264,59 +1261,41 @@ export default function HistorialAlumnoPage() {
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
-
-            {/* ── Header ── */}
-            <div className="flex items-center gap-3">
-                <Link
-                    href="/alumnos"
-                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition flex-shrink-0"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                    </svg>
-                </Link>
-
-                <div className="flex-1 min-w-0">
-                    <h1 className="text-lg font-bold text-slate-900 leading-tight truncate">
-                        {alumno.nombre} {alumno.apellido}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-slate-400">DNI {alumno.dni}</span>
-                        {diasRestantes != null && diasRestantes > 0 ? (
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                                diasRestantes > 10 ? 'bg-green-50 text-green-600' :
-                                diasRestantes > 5  ? 'bg-yellow-50 text-yellow-600' :
-                                                     'bg-red-50 text-red-500'
-                            }`}>
-                                {diasRestantes} entrenamientos restantes
-                            </span>
-                        ) : (
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">Sin plan activo</span>
-                        )}
-                    </div>
+        <div className="max-w-6xl mx-auto space-y-4">
+            {/* Header */}
+            <div className="px-1 pt-1">
+                <h1 className="text-2xl font-bold text-slate-900">{alumno.nombre} {alumno.apellido}</h1>
+                <div className="mt-1">
+                    {diasRestantes != null && diasRestantes > 0 ? (
+                        <span className={`text-sm font-semibold ${obtenerColorSemaforo(diasRestantes)}`}>
+                            Finaliza el plan en {diasRestantes} entrenamientos
+                        </span>
+                    ) : (
+                        <span className="text-sm text-red-400 font-medium">Sin plan activo</span>
+                    )}
                 </div>
-
-                <select
-                    className="flex-shrink-0 border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-600 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-200 cursor-pointer hover:bg-slate-50 transition"
-                    value=""
-                    onChange={(e) => {
-                        if (e.target.value === 'cuotas') handleConfiguracionTarifas();
-                        if (e.target.value === 'recargo') handleConfiguracionRecargos();
-                        e.target.value = '';
-                    }}
-                >
-                    <option value="" disabled>⚙ Ajustes</option>
-                    <option value="cuotas">Cuotas</option>
-                    <option value="recargo">Recargo</option>
-                </select>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="lg:grid lg:grid-cols-[1.1fr_1fr]">
+                {/* Toolbar */}
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-end">
+                    <select
+                        className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
+                        value=""
+                        onChange={(e) => {
+                            if (e.target.value === 'cuotas') handleConfiguracionTarifas();
+                            if (e.target.value === 'recargo') handleConfiguracionRecargos();
+                            e.target.value = '';
+                        }}
+                    >
+                        <option value="" disabled>Ajustes</option>
+                        <option value="cuotas">Cuotas</option>
+                        <option value="recargo">Recargo</option>
+                    </select>
+                </div>
 
-                {/* ── Columna izquierda: Calendario ── */}
-                <div className="p-3 sm:p-4 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-100 overflow-x-hidden">
+                {/* Calendario */}
+                <div className="p-3 sm:p-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
 
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
@@ -1663,11 +1642,8 @@ export default function HistorialAlumnoPage() {
                     </div>
                 </div>
 
-                {/* ── Columna derecha: Tabs + Panels ── */}
-                <div className="lg:flex lg:flex-col">
-
                 {/* Tab nav */}
-                <div className="px-4 sm:px-5 flex border-b border-slate-100 flex-shrink-0">
+                <div className="px-4 sm:px-6 flex border-b border-slate-100">
                     {([
                         { key: 'asistencias', label: 'Asistencias' },
                         { key: 'planes',      label: 'Planes' },
@@ -1688,7 +1664,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Panels */}
-                <div ref={sectionRef} className="px-4 sm:px-6 py-5 lg:flex-1 lg:overflow-y-auto">
+                <div ref={sectionRef} className="px-4 sm:px-6 py-5">
 
                         {/* ── ASISTENCIAS ── */}
                         {activeTab === 'asistencias' && (
@@ -1974,8 +1950,6 @@ export default function HistorialAlumnoPage() {
                             </div>
                         )}
                     </div>
-                </div>{/* fin columna derecha */}
-            </div>{/* fin grid */}
             </div>
         </div>
     );
