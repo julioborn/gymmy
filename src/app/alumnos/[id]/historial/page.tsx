@@ -1261,39 +1261,38 @@ export default function HistorialAlumnoPage() {
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
 
     return (
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-4">
             {/* Header */}
-            <div className="px-1 pt-1">
-                <h1 className="text-2xl font-bold text-slate-900">{alumno.nombre} {alumno.apellido}</h1>
-                <div className="mt-1">
-                    {diasRestantes != null && diasRestantes > 0 ? (
-                        <span className={`text-sm font-semibold ${obtenerColorSemaforo(diasRestantes)}`}>
-                            Finaliza el plan en {diasRestantes} entrenamientos
-                        </span>
-                    ) : (
-                        <span className="text-sm text-red-400 font-medium">Sin plan activo</span>
-                    )}
-                </div>
+            <div className="flex items-center gap-3 px-1 pt-1">
+                <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                </Link>
+                <h1 className="flex-1 min-w-0 text-xl font-bold text-slate-900 truncate">{alumno.nombre} {alumno.apellido}</h1>
+                {diasRestantes != null && diasRestantes > 0 ? (
+                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-emerald-50 text-emerald-600' : diasRestantes > 5 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                        {diasRestantes} entrenos
+                    </span>
+                ) : (
+                    <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-400">Sin plan</span>
+                )}
+                <select
+                    className="shrink-0 border border-slate-200 rounded-xl px-2.5 py-1.5 bg-white text-slate-600 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer shadow-sm"
+                    value=""
+                    onChange={(e) => {
+                        if (e.target.value === 'cuotas') handleConfiguracionTarifas();
+                        if (e.target.value === 'recargo') handleConfiguracionRecargos();
+                        e.target.value = '';
+                    }}
+                >
+                    <option value="" disabled>Ajustes</option>
+                    <option value="cuotas">Cuotas</option>
+                    <option value="recargo">Recargo</option>
+                </select>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                {/* Toolbar */}
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-end">
-                    <select
-                        className="border border-slate-200 rounded-lg px-2 py-1.5 bg-slate-50 text-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                        value=""
-                        onChange={(e) => {
-                            if (e.target.value === 'cuotas') handleConfiguracionTarifas();
-                            if (e.target.value === 'recargo') handleConfiguracionRecargos();
-                            e.target.value = '';
-                        }}
-                    >
-                        <option value="" disabled>Ajustes</option>
-                        <option value="cuotas">Cuotas</option>
-                        <option value="recargo">Recargo</option>
-                    </select>
-                </div>
-
                 {/* Calendario */}
                 <div className="p-3 sm:p-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
 
