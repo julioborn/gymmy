@@ -316,19 +316,22 @@ export default function MiCuentaPage() {
                         <button
                             onClick={handlePagarMercadoPago}
                             disabled={loadingPago}
-                            className="w-full flex items-center justify-center gap-3 bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 rounded-2xl px-4 py-3.5 transition-colors shadow-sm"
+                            className="w-full flex items-center justify-between bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 rounded-2xl px-5 py-4 transition-colors shadow-sm"
                         >
                             {loadingPago ? (
-                                <>
+                                <div className="flex items-center gap-3 w-full justify-center">
                                     <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                                     <span className="text-white font-semibold text-sm">Redirigiendo...</span>
-                                </>
+                                </div>
                             ) : (
-                                <img
-                                    src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
-                                    alt="MercadoPago"
-                                    className="h-8 w-auto"
-                                />
+                                <>
+                                    <span className="text-white font-bold text-base">Pagar cuota</span>
+                                    <img
+                                        src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg"
+                                        alt="MercadoPago"
+                                        className="h-12 w-auto"
+                                    />
+                                </>
                             )}
                         </button>
                     )}
