@@ -12,8 +12,10 @@ export default function PagoResultadoPage() {
         const alumnoId = params.get('external_reference');
         setStatus(s);
 
-        if (s === 'ok' && paymentId && alumnoId) {
-            fetch(`/api/pagos/mp/verificar-publico?payment_id=${paymentId}&alumno_id=${alumnoId}`)
+        const alumnoIdFinal = alumnoId || sessionStorage.getItem('mp_alumno_id');
+        if (s === 'ok' && paymentId && alumnoIdFinal) {
+            sessionStorage.removeItem('mp_alumno_id');
+            fetch(`/api/pagos/mp/verificar-publico?payment_id=${paymentId}&alumno_id=${alumnoIdFinal}`)
                 .catch(() => {});
         }
     }, []);

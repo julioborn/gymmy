@@ -169,6 +169,9 @@ export default function MiCuentaPage() {
                 setPagoResult('error');
                 return;
             }
+            if (data.alumnoId) {
+                sessionStorage.setItem('mp_alumno_id', data.alumnoId);
+            }
             const a = document.createElement('a');
             a.href = data.init_point;
             a.target = '_blank';

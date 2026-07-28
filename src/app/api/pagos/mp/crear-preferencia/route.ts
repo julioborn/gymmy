@@ -65,5 +65,5 @@ export async function POST() {
         },
     });
 
-    return NextResponse.json({ init_point: preference.init_point });
+    return NextResponse.json({ init_point: preference.init_point, alumnoId: String(alumnoId) });
 }
