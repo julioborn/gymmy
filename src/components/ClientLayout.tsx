@@ -324,7 +324,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
                     <Link href="/" className="absolute left-1/2 -translate-x-1/2">
                         <img
-                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
+                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
                             alt="Logo"
                             style={{ height: 210 }}
                         />
