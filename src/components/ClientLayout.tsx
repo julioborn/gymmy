@@ -322,12 +322,13 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <img
-                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
-                        alt="Logo"
-                        className="pointer-events-none"
-                        style={{ height: 250, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}
-                    />
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+                        <img
+                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1734807294/l-removebg-preview_1_ukxdkk.png"
+                            alt="Logo"
+                            style={{ height: 210 }}
+                        />
+                    </Link>
 
                     <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-red-400 shadow-[0_0_8px_#ef4444]'}`} />
                 </div>
