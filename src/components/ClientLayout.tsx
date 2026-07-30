@@ -326,7 +326,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <img
                             src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
                             alt="Logo"
-                            style={{ height: 210 }}
+                            style={{ height: 44 }}
                         />
                     </Link>
 
