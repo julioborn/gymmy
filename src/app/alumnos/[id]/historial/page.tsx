@@ -445,7 +445,7 @@ export default function HistorialAlumnoPage() {
             .map(tarifa => `
                 <div>
                     <label class="swal-form-label">Días ${tarifa.dias} por semana</label>
-                    <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
+                    <input type="text" inputmode="numeric" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
                 </div>
             `).join('');
 
@@ -457,9 +457,15 @@ export default function HistorialAlumnoPage() {
             showCancelButton: true,
             preConfirm: () => {
                 const updatedTarifas = tarifas.map((tarifa) => {
-                    const valor = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
-                    return { ...tarifa, valor: Number(valor) };
+                    const raw = (document.getElementById(`tarifa-${tarifa.dias}`) as HTMLInputElement).value;
+                    const valor = parseInt(raw.replace(/\D/g, ''), 10);
+                    if (isNaN(valor) || valor <= 0) {
+                        Swal.showValidationMessage(`El valor para ${tarifa.dias} día(s) debe ser un número mayor a 0`);
+                        return null;
+                    }
+                    return { ...tarifa, valor };
                 });
+                if (updatedTarifas.some(t => t === null)) return false;
                 return updatedTarifas;
             },
             confirmButtonText: 'Aceptar',
@@ -494,11 +500,11 @@ export default function HistorialAlumnoPage() {
                 <div class="swal-form-body">
                     <div style="margin-bottom:1rem;">
                         <label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label>
-                        <input type="number" id="recargo-diez" class="swal2-input" min="0" value="${recargoDiez}" placeholder="0">
+                        <input type="text" inputmode="numeric" id="recargo-diez" class="swal2-input" value="${recargoDiez}" placeholder="0">
                     </div>
                     <div>
                         <label class="swal-form-label">Recargo pasando el mes completo ($)</label>
-                        <input type="number" id="recargo-mes" class="swal2-input" min="0" value="${recargoMes}" placeholder="0">
+                        <input type="text" inputmode="numeric" id="recargo-mes" class="swal2-input" value="${recargoMes}" placeholder="0">
                     </div>
                 </div>
             `,
@@ -506,9 +512,11 @@ export default function HistorialAlumnoPage() {
             confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
-                const d = Number((document.getElementById('recargo-diez') as HTMLInputElement)?.value);
-                const m = Number((document.getElementById('recargo-mes') as HTMLInputElement)?.value);
-                if (isNaN(d) || d < 0 || isNaN(m) || m < 0) {
+                const rawD = (document.getElementById('recargo-diez') as HTMLInputElement)?.value ?? '';
+                const rawM = (document.getElementById('recargo-mes') as HTMLInputElement)?.value ?? '';
+                const d = parseInt(rawD.replace(/\D/g, ''), 10) || 0;
+                const m = parseInt(rawM.replace(/\D/g, ''), 10) || 0;
+                if (d < 0 || m < 0) {
                     Swal.showValidationMessage('Los montos deben ser números mayores o iguales a 0');
                     return false;
                 }
