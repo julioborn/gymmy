@@ -1,12 +1,14 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface IRecargo extends Document {
-    monto: number;
+    montoDiez: number;
+    montoMes: number;
     gimnasioId: mongoose.Types.ObjectId;
 }
 
 const RecargoSchema: Schema = new Schema({
-    monto: { type: Number, required: true },
+    montoDiez: { type: Number, required: true, default: 0 },
+    montoMes: { type: Number, required: true, default: 0 },
     gimnasioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gimnasio', required: true },
 });
 

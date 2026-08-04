@@ -117,7 +117,8 @@ export default function HistorialAlumnoPage() {
         list: 'Lista',
     });
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
-    const [recargo, setRecargo] = useState<number | null>(null);
+    const [recargoDiez, setRecargoDiez] = useState<number>(0);
+    const [recargoMes, setRecargoMes] = useState<number>(0);
     const [expandedYearsActividades, setExpandedYearsActividades] = useState<Record<string, boolean>>({});
     const [expandedMonthsActividades, setExpandedMonthsActividades] = useState<Record<string, Record<string, boolean>>>({});
     const [expandedYearsPagos, setExpandedYearsPagos] = useState<Record<string, boolean>>({});
@@ -414,7 +415,6 @@ export default function HistorialAlumnoPage() {
             const response = await fetch('/api/tarifas');
             const data = await response.json();
             setTarifas(data.tarifas || []);
-            if (data.recargo != null) setRecargo(data.recargo);
         } catch {
             // silently ignore, tarifas will be empty
         }
@@ -426,9 +426,10 @@ export default function HistorialAlumnoPage() {
 
     const fetchRecargo = async () => {
         try {
-            const response = await fetch('/api/recargo'); // Endpoint de recargo
+            const response = await fetch('/api/recargo');
             const data = await response.json();
-            setRecargo(data.monto || 0); // Asigna el valor del recargo al estado
+            setRecargoDiez(data.montoDiez ?? 0);
+            setRecargoMes(data.montoMes ?? 0);
         } catch {
             // silently ignore
         }
@@ -486,41 +487,51 @@ export default function HistorialAlumnoPage() {
     };
 
     const handleConfiguracionRecargos = async () => {
-        if (recargo === null) {
-            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
-            return;
-        }
-
-        const { value: nuevoMonto } = await Swal.fire({
+        const { value: result } = await Swal.fire({
             ...swalBase,
-            title: 'Configurar Recargo',
-            input: 'number',
-            inputLabel: 'Monto del recargo ($)',
-            inputValue: recargo,
+            title: 'Configurar Recargos',
+            html: `
+                <div class="swal-form-body">
+                    <div style="margin-bottom:1rem;">
+                        <label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label>
+                        <input type="number" id="recargo-diez" class="swal2-input" min="0" value="${recargoDiez}" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Recargo pasando el mes completo ($)</label>
+                        <input type="number" id="recargo-mes" class="swal2-input" min="0" value="${recargoMes}" placeholder="0">
+                    </div>
+                </div>
+            `,
             showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
-                return null;
-            },
-            confirmButtonText: 'Aceptar',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const d = Number((document.getElementById('recargo-diez') as HTMLInputElement)?.value);
+                const m = Number((document.getElementById('recargo-mes') as HTMLInputElement)?.value);
+                if (isNaN(d) || d < 0 || isNaN(m) || m < 0) {
+                    Swal.showValidationMessage('Los montos deben ser números mayores o iguales a 0');
+                    return false;
+                }
+                return { montoDiez: d, montoMes: m };
+            },
         });
 
-        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+        if (result) {
             try {
                 const response = await fetch('/api/recargo', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
+                    body: JSON.stringify(result),
                 });
                 if (response.ok) {
-                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
-                    setRecargo(Number(nuevoMonto));
+                    setRecargoDiez(result.montoDiez);
+                    setRecargoMes(result.montoMes);
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargos actualizados' });
                 } else {
-                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar los recargos' });
                 }
             } catch {
-                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' });
             }
         }
     };
@@ -900,6 +911,15 @@ export default function HistorialAlumnoPage() {
 
                 if (!metodoPago) return;
 
+                // Determinar qué recargo aplica según la fecha seleccionada
+                const [_yr, _mo, _dy] = selectInfo.startStr.split('-');
+                const fechaSel = new Date(Number(_yr), Number(_mo) - 1, Number(_dy));
+                const hoy = new Date();
+                const esMesPasado = fechaSel.getFullYear() < hoy.getFullYear() || (fechaSel.getFullYear() === hoy.getFullYear() && fechaSel.getMonth() < hoy.getMonth());
+                const esDespuesDel10 = !esMesPasado && hoy.getDate() > 10;
+                const recargoAplicable = esMesPasado ? recargoMes : esDespuesDel10 ? recargoDiez : 0;
+                const labelRecargo = esMesPasado ? `Recargo mes vencido ($${recargoMes.toFixed(2)})` : `Recargo por día 10 ($${recargoDiez.toFixed(2)})`;
+
                 const confirmacion = await Swal.fire({
                     ...swalBase,
                     title: 'Confirmar cobro',
@@ -910,15 +930,15 @@ export default function HistorialAlumnoPage() {
                                 Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
                                 Precio: <strong>$${tarifaSeleccionada.valor}</strong>
                             </p>
-                            ${recargo !== null ? `
+                            ${recargoAplicable > 0 ? `
                             <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
                                 <input type="checkbox" id="incluir-recargo" checked style="width:16px;height:16px;accent-color:#059669;">
-                                Aplicar recargo ($${recargo.toFixed(2)})
+                                ${labelRecargo}
                             </label>` : ''}
                         </div>
                     `,
                     preConfirm: () => {
-                        const incluirRecargo = (document.getElementById('incluir-recargo') as HTMLInputElement)?.checked;
+                        const incluirRecargo = (document.getElementById('incluir-recargo') as HTMLInputElement)?.checked ?? false;
                         return { incluirRecargo };
                     },
                     showCancelButton: true,
@@ -928,9 +948,7 @@ export default function HistorialAlumnoPage() {
 
                 if (confirmacion.isConfirmed) {
                     try {
-                        const incluirRecargo = document.getElementById('incluir-recargo') instanceof HTMLInputElement
-                            ? (document.getElementById('incluir-recargo') as HTMLInputElement).checked
-                            : false;
+                        const incluirRecargo = confirmacion.value?.incluirRecargo ?? false;
 
                         const [year, month, day] = selectInfo.startStr.split('-');
                         const _now = new Date();
@@ -943,7 +961,7 @@ export default function HistorialAlumnoPage() {
                             diasMusculacion: Number(diasMusculacion),
                             tarifa: tarifaSeleccionada.valor,
                             metodoPago,
-                            recargo: incluirRecargo ? recargo || 0 : 0,
+                            recargo: incluirRecargo ? recargoAplicable : 0,
                         };
 
                         const response = await fetch('/api/alumnos/pagos', {

@@ -13,7 +13,7 @@ export async function GET() {
     try {
         const recargo = await Recargo.findOne({ gimnasioId });
         if (!recargo) {
-            return NextResponse.json({ monto: 0 });
+            return NextResponse.json({ montoDiez: 0, montoMes: 0 });
         }
         return NextResponse.json(recargo);
     } catch {
@@ -30,15 +30,18 @@ export async function PUT(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { monto } = body;
+        const { montoDiez, montoMes } = body;
 
-        if (typeof monto !== 'number' || monto <= 0) {
-            return NextResponse.json({ error: 'El monto debe ser un número mayor a 0' }, { status: 400 });
+        if (typeof montoDiez !== 'number' || montoDiez < 0) {
+            return NextResponse.json({ error: 'montoDiez debe ser un número mayor o igual a 0' }, { status: 400 });
+        }
+        if (typeof montoMes !== 'number' || montoMes < 0) {
+            return NextResponse.json({ error: 'montoMes debe ser un número mayor o igual a 0' }, { status: 400 });
         }
 
         const recargo = await Recargo.findOneAndUpdate(
             { gimnasioId },
-            { monto, gimnasioId },
+            { montoDiez, montoMes, gimnasioId },
             { new: true, upsert: true }
         );
         return NextResponse.json(recargo);
