@@ -123,7 +123,8 @@ export default function HomePage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
-    const [recargo, setRecargo] = useState<number | null>(null);
+    const [recargoDiez, setRecargoDiez] = useState<number>(0);
+    const [recargoMes, setRecargoMes] = useState<number>(0);
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/login');
@@ -150,11 +151,11 @@ export default function HomePage() {
         if (!session || session.user?.role === 'alumno') return;
         fetch('/api/tarifas')
             .then(r => r.json())
-            .then(d => { setTarifas(d.tarifas || []); if (d.recargo != null) setRecargo(d.recargo); })
+            .then(d => { setTarifas(d.tarifas || []); })
             .catch(() => { });
         fetch('/api/recargo')
             .then(r => r.json())
-            .then(d => { if (d.monto != null) setRecargo(d.monto); })
+            .then(d => { setRecargoDiez(d.montoDiez ?? 0); setRecargoMes(d.montoMes ?? 0); })
             .catch(() => { });
     }, [session]);
 
@@ -232,27 +233,38 @@ export default function HomePage() {
     };
 
     const handleConfiguracionRecargos = async () => {
-        if (recargo === null) {
-            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
-            return;
-        }
-        const { value: nuevoMonto } = await Swal.fire({
+        const { value: result } = await Swal.fire({
             ...swalBase,
-            title: 'Configurar Recargo',
-            input: 'number',
-            inputLabel: 'Monto del recargo ($)',
-            inputValue: recargo,
+            title: 'Configurar Recargos',
+            html: `
+                <div class="swal-form-body">
+                    <div style="margin-bottom:1rem;">
+                        <label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label>
+                        <input type="text" inputmode="numeric" id="recargo-diez" class="swal2-input" value="${recargoDiez}" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Recargo pasando el mes completo ($)</label>
+                        <input type="text" inputmode="numeric" id="recargo-mes" class="swal2-input" value="${recargoMes}" placeholder="0">
+                    </div>
+                </div>
+            `,
             showCancelButton: true,
-            confirmButtonText: 'Aceptar',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
-            inputValidator: (value) => (!value || Number(value) <= 0) ? 'El monto debe ser un número mayor a 0' : null,
+            preConfirm: () => {
+                const rawD = (document.getElementById('recargo-diez') as HTMLInputElement)?.value ?? '';
+                const rawM = (document.getElementById('recargo-mes') as HTMLInputElement)?.value ?? '';
+                const d = parseInt(rawD.replace(/\D/g, ''), 10) || 0;
+                const m = parseInt(rawM.replace(/\D/g, ''), 10) || 0;
+                return { montoDiez: d, montoMes: m };
+            },
         });
-        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+        if (result) {
             try {
-                const res = await fetch('/api/recargo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ monto: Number(nuevoMonto) }) });
-                if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' }); setRecargo(Number(nuevoMonto)); }
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' }); }
+                const res = await fetch('/api/recargo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(result) });
+                if (res.ok) { setRecargoDiez(result.montoDiez); setRecargoMes(result.montoMes); Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargos actualizados' }); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar los recargos' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' }); }
         }
     };
 
@@ -468,7 +480,7 @@ export default function HomePage() {
                                 </div>
                                 <div className="text-left flex-1">
                                     <p className="font-semibold text-sm text-slate-800">Recargo</p>
-                                    <p className="text-xs text-slate-500">Monto por mora</p>
+                                    <p className="text-xs text-slate-500">Día 10 y mes vencido</p>
                                 </div>
                                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />

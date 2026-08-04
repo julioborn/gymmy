@@ -68,7 +68,8 @@ export default function ListaAlumnosPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [ordenDiasRestantes, setOrdenDiasRestantes] = useState('');
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
-    const [recargo, setRecargo] = useState<number | null>(null);
+    const [recargoDiez, setRecargoDiez] = useState<number>(0);
+    const [recargoMes, setRecargoMes] = useState<number>(0);
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
     const [page, setPage] = useState(1); // Página actual
@@ -111,7 +112,6 @@ export default function ListaAlumnosPage() {
             // ✔️ si data viene como { ok: true, tarifas: [...], recargo: 1000 }
             if (data.ok && Array.isArray(data.tarifas)) {
                 setTarifas(data.tarifas);
-                setRecargo(data.recargo || 0);
             }
         } catch {
             // silenced
@@ -128,7 +128,7 @@ export default function ListaAlumnosPage() {
             .map(tarifa => `
                 <div>
                     <label class="swal-form-label">Días ${tarifa.dias} por semana</label>
-                    <input type="number" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
+                    <input type="text" inputmode="numeric" id="tarifa-${tarifa.dias}" class="swal2-input" value="${tarifa.valor}">
                 </div>
             `).join('');
 
@@ -297,10 +297,18 @@ export default function ListaAlumnosPage() {
                             Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
                             Precio: <strong>$${tarifaSeleccionada.valor}</strong>
                         </p>
-                        <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
-                            <input type="checkbox" id="swal-aplicar-recargo" ${new Date().getDate() > 10 ? 'checked' : ''} style="width:16px;height:16px;accent-color:#059669;">
-                            Aplicar recargo ($${recargo?.toFixed(2) || 0})
-                        </label>
+                        ${(() => {
+                            const hoy = new Date();
+                            const esMesPasado = false; // en alumnos siempre es mes actual
+                            const esDespuesDel10 = hoy.getDate() > 10;
+                            const montoR = esMesPasado ? recargoMes : esDespuesDel10 ? recargoDiez : 0;
+                            const labelR = esMesPasado ? `Recargo mes vencido ($${recargoMes.toFixed(2)})` : `Recargo por día 10 ($${recargoDiez.toFixed(2)})`;
+                            return montoR > 0 ? `
+                            <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
+                                <input type="checkbox" id="swal-aplicar-recargo" checked style="width:16px;height:16px;accent-color:#059669;">
+                                ${labelR}
+                            </label>` : '';
+                        })()}
                     </div>
                 `,
                 preConfirm: () => {
@@ -319,7 +327,9 @@ export default function ListaAlumnosPage() {
                         .toLocaleString('es-ES', { month: 'long' })
                         .toLowerCase();
 
-                    const montoRecargo = aplicarRecargo ? recargo || 0 : 0;
+                    const hoyRec = new Date();
+                    const recargoAplicable = hoyRec.getDate() > 10 ? recargoDiez : 0;
+                    const montoRecargo = aplicarRecargo ? recargoAplicable : 0;
                     const total = tarifaSeleccionada.valor + montoRecargo;
 
                     const nuevoPago = {
@@ -475,49 +485,57 @@ export default function ListaAlumnosPage() {
         try {
             const response = await fetch('/api/recargo');
             const data = await response.json();
-            setRecargo(data.monto || 0);
+            setRecargoDiez(data.montoDiez ?? 0);
+            setRecargoMes(data.montoMes ?? 0);
         } catch {
             // silenced
         }
     };
 
     const handleConfiguracionRecargos = async () => {
-        if (recargo === null) {
-            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró el valor del recargo. Por favor, recarga la página.' });
-            return;
-        }
-
-        const { value: nuevoMonto } = await Swal.fire({
+        const { value: result } = await Swal.fire({
             ...swalBase,
-            title: 'Configurar Recargo',
-            input: 'number',
-            inputLabel: 'Monto del recargo ($)',
-            inputValue: recargo,
+            title: 'Configurar Recargos',
+            html: `
+                <div class="swal-form-body">
+                    <div style="margin-bottom:1rem;">
+                        <label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label>
+                        <input type="text" inputmode="numeric" id="recargo-diez" class="swal2-input" value="${recargoDiez}" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Recargo pasando el mes completo ($)</label>
+                        <input type="text" inputmode="numeric" id="recargo-mes" class="swal2-input" value="${recargoMes}" placeholder="0">
+                    </div>
+                </div>
+            `,
             showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value || Number(value) <= 0) return 'El monto debe ser un número mayor a 0';
-                return null;
-            },
-            confirmButtonText: 'Aceptar',
+            confirmButtonText: 'Guardar',
             cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const rawD = (document.getElementById('recargo-diez') as HTMLInputElement)?.value ?? '';
+                const rawM = (document.getElementById('recargo-mes') as HTMLInputElement)?.value ?? '';
+                const d = parseInt(rawD.replace(/\D/g, ''), 10) || 0;
+                const m = parseInt(rawM.replace(/\D/g, ''), 10) || 0;
+                return { montoDiez: d, montoMes: m };
+            },
         });
 
-        if (nuevoMonto && Number(nuevoMonto) !== recargo) {
+        if (result) {
             try {
                 const response = await fetch('/api/recargo', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ monto: Number(nuevoMonto) }),
+                    body: JSON.stringify(result),
                 });
-
                 if (response.ok) {
-                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargo actualizado' });
-                    setRecargo(Number(nuevoMonto));
+                    setRecargoDiez(result.montoDiez);
+                    setRecargoMes(result.montoMes);
+                    Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargos actualizados' });
                 } else {
-                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar el recargo' });
+                    Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar los recargos' });
                 }
             } catch {
-                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar el recargo' });
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' });
             }
         }
     };
