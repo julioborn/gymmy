@@ -26,6 +26,7 @@ interface PlanEntrenamiento {
 }
 
 interface Alumno {
+    _id: string;
     nombre: string;
     apellido: string;
     dni: string;
@@ -33,6 +34,34 @@ interface Alumno {
     pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento;
     gimnasioId: { nombre: string };
+}
+
+interface EjercicioAsignado {
+    nombre: string;
+    notas: string;
+    semana1_5: string;
+    semana2_6: string;
+    semana3: string;
+    semana4: string;
+    kg: string;
+    kgAlumno: string;
+    observacionesAlumno: string;
+}
+
+interface DiaAsignado {
+    titulo: string;
+    descripcion: string;
+    bloqueActivacion: string;
+    ejercicios: EjercicioAsignado[];
+}
+
+interface PlanEjAsignado {
+    _id: string;
+    nombre: string;
+    categoria: string;
+    descripcion: string;
+    entradaCalor: { ejercicios: { nombre: string; notas: string }[] };
+    dias: DiaAsignado[];
 }
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -73,11 +102,18 @@ function getInitials(nombre: string, apellido: string) {
 export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<'resumen' | 'historial'>('resumen');
+    const [tab, setTab] = useState<'resumen' | 'historial' | 'plan'>('resumen');
     const [loadingPago, setLoadingPago] = useState(false);
     const [pagoResult, setPagoResult] = useState<'ok' | 'error' | 'pendiente' | null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [aliasCopied, setAliasCopied] = useState(false);
+
+    // Plan de entrenamiento asignado
+    const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
+    const [loadingPlan, setLoadingPlan] = useState(false);
+    const [savingPlan, setSavingPlan] = useState(false);
+    const [planSaved, setPlanSaved] = useState(false);
+    const [openDias, setOpenDias] = useState<Record<number, boolean>>({});
 
     const now = new Date();
     const [calYear, setCalYear] = useState(now.getFullYear());
@@ -96,6 +132,52 @@ export default function MiCuentaPage() {
             const d = await r.json();
             setAliasGimnasio(d.alias ?? '');
         } catch { /* ignorar */ }
+    }
+
+    async function fetchPlan(alumnoId: string) {
+        setLoadingPlan(true);
+        try {
+            const r = await fetch(`/api/plan-alumno/alumno/${alumnoId}`);
+            const data = r.ok ? await r.json() : null;
+            setPlanEj(data);
+            if (data?.dias) {
+                const openMap: Record<number, boolean> = {};
+                data.dias.forEach((_: DiaAsignado, i: number) => { openMap[i] = i === 0; });
+                setOpenDias(openMap);
+            }
+        } finally {
+            setLoadingPlan(false);
+        }
+    }
+
+    async function handleSavePlan() {
+        if (!planEj || !alumno) return;
+        setSavingPlan(true);
+        try {
+            await fetch(`/api/plan-alumno/alumno/${alumno._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
+            });
+            setPlanSaved(true);
+            setTimeout(() => setPlanSaved(false), 2500);
+        } finally {
+            setSavingPlan(false);
+        }
+    }
+
+    function updateEjAlumno(dIdx: number, eIdx: number, field: 'kgAlumno' | 'observacionesAlumno', value: string) {
+        setPlanEj((prev) => {
+            if (!prev) return prev;
+            const dias = prev.dias.map((d, di) => {
+                if (di !== dIdx) return d;
+                return {
+                    ...d,
+                    ejercicios: d.ejercicios.map((e, ei) => ei === eIdx ? { ...e, [field]: value } : e),
+                };
+            });
+            return { ...prev, dias };
+        });
     }
 
     useEffect(() => {
@@ -298,17 +380,22 @@ export default function MiCuentaPage() {
 
             {/* ── TAB SWITCHER ── */}
             <div className="flex gap-1 bg-slate-100 rounded-2xl p-1 mb-5">
-                {(['resumen', 'historial'] as const).map(t => (
+                {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
-                        onClick={() => setTab(t)}
+                        onClick={() => {
+                            setTab(t);
+                            if (t === 'plan' && !planEj && !loadingPlan && alumno) {
+                                fetchPlan(alumno._id);
+                            }
+                        }}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                             tab === t
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-400 hover:text-slate-600'
                         }`}
                     >
-                        {t === 'resumen' ? 'Resumen' : 'Historial'}
+                        {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi plan'}
                     </button>
                 ))}
             </div>
@@ -647,6 +734,168 @@ export default function MiCuentaPage() {
                             <p className="text-slate-400 text-xs mt-1.5 font-medium">pagado</p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* ── MI PLAN ── */}
+            {tab === 'plan' && (
+                <div className="space-y-4">
+                    {loadingPlan && (
+                        <div className="flex justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-700" />
+                        </div>
+                    )}
+
+                    {!loadingPlan && !planEj && (
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
+                            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                </svg>
+                            </div>
+                            <p className="text-slate-600 font-semibold mb-1">Sin plan asignado</p>
+                            <p className="text-slate-400 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
+                        </div>
+                    )}
+
+                    {!loadingPlan && planEj && (
+                        <>
+                            {/* Plan header */}
+                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">{planEj.categoria}</p>
+                                        <h2 className="text-slate-900 font-bold text-base leading-tight">{planEj.nombre}</h2>
+                                        {planEj.descripcion && <p className="text-slate-400 text-sm mt-1">{planEj.descripcion}</p>}
+                                    </div>
+                                    <button
+                                        onClick={handleSavePlan}
+                                        disabled={savingPlan}
+                                        className={`shrink-0 px-4 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-60 ${
+                                            planSaved
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                                        }`}
+                                    >
+                                        {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Entrada en calor */}
+                            {planEj.entradaCalor.ejercicios.length > 0 && (
+                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+                                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Entrada en calor</h3>
+                                    <div className="space-y-1.5">
+                                        {planEj.entradaCalor.ejercicios.map((ej, i) => (
+                                            <div key={i} className="flex items-start gap-2">
+                                                <span className="text-sm text-slate-800 font-medium">{ej.nombre}</span>
+                                                {ej.notas && <span className="text-xs text-slate-400 mt-0.5">{ej.notas}</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Días */}
+                            {planEj.dias.map((dia, dIdx) => (
+                                <div key={dIdx} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <button
+                                        onClick={() => setOpenDias((prev) => ({ ...prev, [dIdx]: !prev[dIdx] }))}
+                                        className="w-full flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-left"
+                                    >
+                                        <svg className={`w-4 h-4 text-slate-400 transition-transform ${openDias[dIdx] ? '' : '-rotate-90'}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                                            Día {dIdx + 1}{dia.titulo ? ` — ${dia.titulo}` : ''}
+                                        </span>
+                                        {dia.descripcion && <span className="text-xs text-slate-400 ml-1">· {dia.descripcion}</span>}
+                                    </button>
+
+                                    {openDias[dIdx] && (
+                                        <div className="p-4 space-y-4">
+                                            {dia.bloqueActivacion && (
+                                                <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                                                    <p className="text-xs font-semibold text-amber-700 mb-1">Bloque de activación</p>
+                                                    <p className="text-sm text-amber-800">{dia.bloqueActivacion}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-3">
+                                                {dia.ejercicios.map((ej, eIdx) => (
+                                                    <div key={eIdx} className="border border-slate-100 rounded-xl p-3 space-y-2">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-slate-800">{ej.nombre}</p>
+                                                                {ej.notas && <p className="text-xs text-slate-400 mt-0.5">{ej.notas}</p>}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Series/semanas */}
+                                                        <div className="grid grid-cols-4 gap-1.5 text-xs">
+                                                            {[
+                                                                { label: 'Sem 1/5', value: ej.semana1_5 },
+                                                                { label: 'Sem 2/6', value: ej.semana2_6 },
+                                                                { label: 'Sem 3', value: ej.semana3 },
+                                                                { label: 'Sem 4', value: ej.semana4 },
+                                                            ].map(({ label, value }) => value ? (
+                                                                <div key={label} className="bg-slate-50 rounded-lg px-2 py-1.5 text-center">
+                                                                    <p className="text-slate-400 text-[10px] font-semibold">{label}</p>
+                                                                    <p className="text-slate-700 font-bold mt-0.5">{value}</p>
+                                                                </div>
+                                                            ) : null)}
+                                                        </div>
+
+                                                        {/* KG referencia (si el profe la puso) */}
+                                                        {ej.kg && (
+                                                            <p className="text-xs text-slate-400">
+                                                                Referencia: <span className="font-semibold text-slate-600">{ej.kg} kg</span>
+                                                            </p>
+                                                        )}
+
+                                                        {/* Student inputs */}
+                                                        <div className="flex gap-2 pt-1">
+                                                            <div className="flex-1">
+                                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Mis KG</label>
+                                                                <input
+                                                                    type="text"
+                                                                    inputMode="decimal"
+                                                                    placeholder="ej: 60"
+                                                                    value={ej.kgAlumno}
+                                                                    onChange={(e) => updateEjAlumno(dIdx, eIdx, 'kgAlumno', e.target.value)}
+                                                                    className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                                />
+                                                            </div>
+                                                            <div className="flex-[2]">
+                                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="ej: me costó la última rep"
+                                                                    value={ej.observacionesAlumno}
+                                                                    onChange={(e) => updateEjAlumno(dIdx, eIdx, 'observacionesAlumno', e.target.value)}
+                                                                    className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Save bottom button */}
+                            <button
+                                onClick={handleSavePlan}
+                                disabled={savingPlan}
+                                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl transition-colors disabled:opacity-60 shadow-sm"
+                            >
+                                {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar cambios'}
+                            </button>
+                        </>
+                    )}
                 </div>
             )}
         </div>

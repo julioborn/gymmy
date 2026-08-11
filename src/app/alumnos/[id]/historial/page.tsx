@@ -1303,6 +1303,12 @@ export default function HistorialAlumnoPage() {
                 ) : (
                     <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-400">Sin plan</span>
                 )}
+                <Link
+                    href={`/alumnos/${alumno._id}/plan`}
+                    className="shrink-0 px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+                >
+                    Plan
+                </Link>
                 <select
                     className="shrink-0 border border-slate-200 rounded-xl px-2.5 py-1.5 bg-white text-slate-600 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer shadow-sm"
                     value=""
