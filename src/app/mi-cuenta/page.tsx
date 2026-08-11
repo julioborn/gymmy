@@ -840,16 +840,16 @@ export default function MiCuentaPage() {
                                         <button
                                             key={i}
                                             onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
-                                            className={`flex-1 py-3 rounded-2xl text-sm font-bold transition-all border ${
+                                            className={`flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border ${
                                                 selectedDia === i
                                                     ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                                                     : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
                                             }`}
                                         >
-                                            <span className="block text-xs font-bold">{d.titulo || `Día ${i + 1}`}</span>
+                                            <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
                                             {d.descripcion && (
-                                                <span className={`block text-[10px] mt-0.5 ${selectedDia === i ? 'text-slate-400' : 'text-slate-400'}`}>
-                                                    {d.descripcion}
+                                                <span className={`text-[10px] mt-1 leading-none ${selectedDia === i ? 'text-slate-400' : 'text-slate-400'}`}>
+                                                    {d.descripcion.split(' + ')[0]}
                                                 </span>
                                             )}
                                         </button>
@@ -867,15 +867,15 @@ export default function MiCuentaPage() {
                                 {/* Exercise table */}
                                 {dia && (
                                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                        {/* Table header */}
-                                        <div className="grid grid-cols-[1fr_auto_auto] gap-0 border-b border-slate-100">
+                                        {/* Table header — columnas fijas para que todas las filas alineen */}
+                                        <div className="grid grid-cols-[1fr_96px_68px] border-b border-slate-100">
                                             <div className="px-4 py-2.5">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-3 py-2.5 text-center border-l border-slate-100 min-w-[90px]">
+                                            <div className="px-2 py-2.5 text-center border-l border-slate-100">
                                                 <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
                                             </div>
-                                            <div className="px-3 py-2.5 text-center border-l border-slate-100 min-w-[64px]">
+                                            <div className="px-2 py-2.5 text-center border-l border-slate-100">
                                                 <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
                                             </div>
                                         </div>
@@ -889,20 +889,20 @@ export default function MiCuentaPage() {
                                                     <div key={eIdx}>
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_auto_auto] gap-0 text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
+                                                            className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
                                                         >
-                                                            <div className="px-4 py-3">
+                                                            <div className="px-4 py-3 flex flex-col justify-center">
                                                                 <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
                                                                 {ej.kg && ej.kg !== '-' && (
                                                                     <p className="text-[11px] text-slate-400 mt-0.5">Ref: {ej.kg} kg</p>
                                                                 )}
                                                             </div>
-                                                            <div className="px-3 py-3 text-center border-l border-slate-100 min-w-[90px] flex items-center justify-center">
-                                                                <span className={`text-xs font-bold leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
+                                                            <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
+                                                                <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-3 py-3 text-center border-l border-slate-100 min-w-[64px] flex items-center justify-center">
+                                                            <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
                                                                 <span className={`text-sm font-bold ${ej.kgAlumno ? 'text-emerald-600' : 'text-slate-200'}`}>
                                                                     {ej.kgAlumno || '—'}
                                                                 </span>
