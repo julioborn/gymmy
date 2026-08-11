@@ -894,7 +894,7 @@ export default function MiCuentaPage() {
                                                             <div className="px-4 py-3 flex flex-col justify-center">
                                                                 <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
                                                                 {ej.kg && ej.kg !== '-' && (
-                                                                    <p className="text-[11px] text-slate-400 mt-0.5">Ref: {ej.kg} kg</p>
+                                                                    <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
                                                                 )}
                                                             </div>
                                                             <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
