@@ -125,6 +125,7 @@ export default function HomePage() {
     const [tarifas, setTarifas] = useState<Tarifa[]>([]);
     const [recargoDiez, setRecargoDiez] = useState<number>(0);
     const [recargoMes, setRecargoMes] = useState<number>(0);
+    const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/login');
@@ -156,6 +157,10 @@ export default function HomePage() {
         fetch('/api/recargo')
             .then(r => r.json())
             .then(d => { setRecargoDiez(d.montoDiez ?? 0); setRecargoMes(d.montoMes ?? 0); })
+            .catch(() => { });
+        fetch('/api/gimnasio/alias')
+            .then(r => r.json())
+            .then(d => { setAliasGimnasio(d.alias ?? ''); })
             .catch(() => { });
     }, [session]);
 
@@ -229,6 +234,32 @@ export default function HomePage() {
                 if (res.ok) Swal.fire({ ...swalNotify, icon: 'success', title: 'Token guardado' });
                 else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el token' });
             } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el token' }); }
+        }
+    };
+
+    const handleConfiguracionAlias = async () => {
+        const { value: nuevoAlias } = await Swal.fire({
+            ...swalBase,
+            title: 'Alias de pago',
+            html: `<p style="font-size:13px;color:#64748b;margin-bottom:12px;">Ingresá el alias de tu cuenta de Mercado Pago para que los alumnos puedan transferirte.</p>`,
+            input: 'text',
+            inputPlaceholder: 'ejemplo.gimnasio.mp',
+            inputValue: aliasGimnasio,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (v) => !v?.trim() ? 'El alias no puede estar vacío' : null,
+        });
+        if (nuevoAlias && nuevoAlias.trim() !== aliasGimnasio) {
+            try {
+                const res = await fetch('/api/gimnasio/alias', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alias: nuevoAlias.trim() }),
+                });
+                if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); }
         }
     };
 
@@ -487,6 +518,22 @@ export default function HomePage() {
                                 </svg>
                             </button>
                             <div className="border-t border-slate-100" />
+                            <button onClick={handleConfiguracionAlias} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                                    </svg>
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className="font-semibold text-sm text-slate-800">Alias de pago</p>
+                                    <p className="text-xs text-slate-500">{aliasGimnasio || 'Sin configurar'}</p>
+                                </div>
+                                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
+                                </svg>
+                            </button>
+                            {/* MP desactivado temporalmente
+                            <div className="border-t border-slate-100" />
                             <button onClick={handleConfiguracionMercadoPago} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
                                 <div className="w-9 h-9 rounded-xl bg-[#009EE3] flex items-center justify-center shrink-0">
                                     <img src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg" alt="MercadoPago" className="w-7 h-auto" />
@@ -499,6 +546,7 @@ export default function HomePage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
                             </button>
+                            */}
                         </div>
                     </div>
                 )}

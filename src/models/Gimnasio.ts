@@ -5,6 +5,7 @@ export interface IGimnasio extends Document {
     activo: boolean;
     fechaVencimiento?: Date;
     mercadopagoAccessToken?: string;
+    alias?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -14,6 +15,7 @@ const GimnasioSchema = new Schema<IGimnasio>({
     activo: { type: Boolean, default: true },
     fechaVencimiento: { type: Date },
     mercadopagoAccessToken: { type: String },
+    alias: { type: String },
 }, { timestamps: true });
 
 export default mongoose.models.Gimnasio || mongoose.model<IGimnasio>('Gimnasio', GimnasioSchema);
