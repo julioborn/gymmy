@@ -4,7 +4,7 @@ import PlanAlumno from '@/models/PlanAlumno';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
-// GET: return active plan for a student (used by student and by professor)
+// GET: plan activo del alumno
 export async function GET(_req: NextRequest, { params }: { params: { alumnoId: string } }) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -14,41 +14,44 @@ export async function GET(_req: NextRequest, { params }: { params: { alumnoId: s
     return NextResponse.json(plan || null);
 }
 
-// PATCH: student updates only their own kgAlumno and observacionesAlumno per exercise
+// PATCH: alumno guarda sus KG y observaciones
 export async function PATCH(req: NextRequest, { params }: { params: { alumnoId: string } }) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const { planId, dias } = await req.json();
-    if (!planId || !dias) return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
+    if (!planId || !Array.isArray(dias)) {
+        return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
+    }
 
     await connectMongoDB();
+
     const plan = await PlanAlumno.findOne({ _id: planId, alumnoId: params.alumnoId, activo: true });
     if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 });
 
-    // Only overwrite student-owned fields
-    const rawDias = plan.toObject().dias as {
-        titulo: string; descripcion: string; bloqueActivacion: string;
-        ejercicios: { nombre: string; notas: string; semana1: string; semana2: string; semana3: string; semana4: string; semana5: string; kg: string; kgAlumno: string; observacionesAlumno: string }[];
-    }[];
+    type ClientEj = { kgAlumno?: string; observacionesAlumno?: string };
+    type ClientDia = { ejercicios?: ClientEj[] };
 
-    plan.dias = rawDias.map((dia, i) => {
-        const updatedDia = dias[i];
-        if (!updatedDia) return dia;
-        return {
-            ...dia,
-            ejercicios: dia.ejercicios.map((ej, j) => {
-                const updatedEj = updatedDia.ejercicios?.[j];
-                if (!updatedEj) return ej;
-                return {
-                    ...ej,
-                    kgAlumno: updatedEj.kgAlumno ?? ej.kgAlumno,
-                    observacionesAlumno: updatedEj.observacionesAlumno ?? ej.observacionesAlumno,
-                };
-            }),
-        };
+    // Merge: only overwrite kgAlumno and observacionesAlumno, preserve everything else
+    const updatedDias = plan.toObject().dias.map((dia: Record<string, unknown>, i: number) => {
+        const clientDia = (dias as ClientDia[])[i];
+        if (!clientDia) return dia;
+        const ejercicios = (dia.ejercicios as Record<string, unknown>[]).map((ej: Record<string, unknown>, j: number) => {
+            const clientEj = clientDia.ejercicios?.[j];
+            if (!clientEj) return ej;
+            return {
+                ...ej,
+                kgAlumno: clientEj.kgAlumno ?? ej.kgAlumno,
+                observacionesAlumno: clientEj.observacionesAlumno ?? ej.observacionesAlumno,
+            };
+        });
+        return { ...dia, ejercicios };
     });
 
-    await plan.save();
+    await PlanAlumno.findOneAndUpdate(
+        { _id: planId, alumnoId: params.alumnoId, activo: true },
+        { $set: { dias: updatedDias } }
+    );
+
     return NextResponse.json({ ok: true });
 }
