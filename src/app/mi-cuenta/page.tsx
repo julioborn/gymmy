@@ -129,6 +129,7 @@ export default function MiCuentaPage() {
         const r = await fetch('/api/alumno/me');
         const data = await r.json();
         setAlumno(data);
+        return data as Alumno;
     }
 
     async function fetchAlias() {
@@ -223,7 +224,10 @@ export default function MiCuentaPage() {
             }
         }
 
-        fetchAlumno().catch(() => {}).finally(() => setLoading(false));
+        fetchAlumno()
+            .then(data => { if (data?._id) fetchPlan(data._id); })
+            .catch(() => {})
+            .finally(() => setLoading(false));
         fetchAlias();
 
         const onVisible = () => {
@@ -262,6 +266,8 @@ export default function MiCuentaPage() {
         if (!pagosMap[key]) pagosMap[key] = [];
         pagosMap[key].push(p);
     });
+
+    const planInicioKey = planEj?.fechaInicio ? toLocalDateKey(planEj.fechaInicio) : null;
 
     const asistenciasEsteMes = alumno.asistencia.filter(a => {
         const f = new Date(a.fecha);
@@ -406,12 +412,7 @@ export default function MiCuentaPage() {
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
-                        onClick={() => {
-                            setTab(t);
-                            if (t === 'plan' && !planEj && !loadingPlan && alumno) {
-                                fetchPlan(alumno._id);
-                            }
-                        }}
+                        onClick={() => setTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                             tab === t
                                 ? 'bg-white text-slate-900 shadow-sm'
@@ -645,9 +646,10 @@ export default function MiCuentaPage() {
                                 const key = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                                 const asists = asistenciasMap[key] || [];
                                 const pagos = pagosMap[key] || [];
+                                const isPlanStart = key === planInicioKey;
                                 const isToday = key === toLocalDateKey(now.toISOString());
                                 const isSelected = key === selectedDay;
-                                const hasData = asists.length > 0 || pagos.length > 0;
+                                const hasData = asists.length > 0 || pagos.length > 0 || isPlanStart;
 
                                 return (
                                     <button
@@ -656,6 +658,8 @@ export default function MiCuentaPage() {
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
                                             isSelected
                                                 ? 'bg-slate-900'
+                                                : isPlanStart
+                                                ? 'bg-violet-50 hover:bg-violet-100'
                                                 : hasData
                                                 ? 'hover:bg-slate-50'
                                                 : 'cursor-default'
@@ -666,6 +670,8 @@ export default function MiCuentaPage() {
                                                 ? 'text-white'
                                                 : isToday
                                                 ? 'bg-slate-900 text-white'
+                                                : isPlanStart
+                                                ? 'bg-violet-600 text-white'
                                                 : hasData
                                                 ? 'text-slate-800'
                                                 : 'text-slate-400'
@@ -702,17 +708,30 @@ export default function MiCuentaPage() {
                                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                                 <span className="text-slate-400 text-xs">Pago</span>
                             </div>
+                            {planInicioKey && (
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-violet-600" />
+                                    <span className="text-slate-400 text-xs">Inicio de plan</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Detalle día */}
-                    {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0) && (
+                    {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || selectedDay === planInicioKey) && (
                         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
                             <h3 className="text-slate-800 font-bold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', {
                                     weekday: 'long', day: 'numeric', month: 'long'
                                 })}
                             </h3>
+
+                            {selectedDay === planInicioKey && (
+                                <div className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-violet-600 flex-shrink-0" />
+                                    <span className="text-violet-700 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
+                                </div>
+                            )}
 
                             {selectedAsistencias.map(a => (
                                 <div key={a._id} className="flex items-center gap-2">
