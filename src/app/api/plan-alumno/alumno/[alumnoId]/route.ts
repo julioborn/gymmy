@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { alumnoId: 
     // Only overwrite student-owned fields
     const rawDias = plan.toObject().dias as {
         titulo: string; descripcion: string; bloqueActivacion: string;
-        ejercicios: { nombre: string; notas: string; semana1_5: string; semana2_6: string; semana3: string; semana4: string; kg: string; kgAlumno: string; observacionesAlumno: string }[];
+        ejercicios: { nombre: string; notas: string; semana1: string; semana2: string; semana3: string; semana4: string; semana5: string; kg: string; kgAlumno: string; observacionesAlumno: string }[];
     }[];
 
     plan.dias = rawDias.map((dia, i) => {

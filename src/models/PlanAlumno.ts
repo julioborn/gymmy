@@ -3,10 +3,11 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IEjercicioPlanAlumno {
     nombre: string;
     notas: string;
-    semana1_5: string;
-    semana2_6: string;
+    semana1: string;
+    semana2: string;
     semana3: string;
     semana4: string;
+    semana5: string;
     kg: string;
     kgAlumno: string;
     observacionesAlumno: string;
@@ -26,6 +27,8 @@ export interface IPlanAlumno extends Document {
     nombre: string;
     categoria: string;
     descripcion: string;
+    totalSemanas: number;
+    fechaInicio?: Date;
     entradaCalor: {
         ejercicios: { nombre: string; notas: string }[];
     };
@@ -38,10 +41,11 @@ export interface IPlanAlumno extends Document {
 const EjercicioSchema = new Schema({
     nombre: { type: String, default: '' },
     notas: { type: String, default: '' },
-    semana1_5: { type: String, default: '' },
-    semana2_6: { type: String, default: '' },
+    semana1: { type: String, default: '' },
+    semana2: { type: String, default: '' },
     semana3: { type: String, default: '' },
     semana4: { type: String, default: '' },
+    semana5: { type: String, default: '' },
     kg: { type: String, default: '' },
     kgAlumno: { type: String, default: '' },
     observacionesAlumno: { type: String, default: '' },
@@ -61,6 +65,8 @@ const PlanAlumnoSchema = new Schema<IPlanAlumno>({
     nombre: { type: String, required: true },
     categoria: { type: String, default: '' },
     descripcion: { type: String, default: '' },
+    totalSemanas: { type: Number, default: 4 },
+    fechaInicio: { type: Date },
     entradaCalor: {
         ejercicios: { type: [{ nombre: String, notas: String }], default: [] },
     },

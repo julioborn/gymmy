@@ -39,10 +39,11 @@ interface Alumno {
 interface EjercicioAsignado {
     nombre: string;
     notas: string;
-    semana1_5: string;
-    semana2_6: string;
+    semana1: string;
+    semana2: string;
     semana3: string;
     semana4: string;
+    semana5: string;
     kg: string;
     kgAlumno: string;
     observacionesAlumno: string;
@@ -60,6 +61,8 @@ interface PlanEjAsignado {
     nombre: string;
     categoria: string;
     descripcion: string;
+    totalSemanas: number;
+    fechaInicio?: string;
     entradaCalor: { ejercicios: { nombre: string; notas: string }[] };
     dias: DiaAsignado[];
 }
@@ -113,7 +116,9 @@ export default function MiCuentaPage() {
     const [loadingPlan, setLoadingPlan] = useState(false);
     const [savingPlan, setSavingPlan] = useState(false);
     const [planSaved, setPlanSaved] = useState(false);
-    const [openDias, setOpenDias] = useState<Record<number, boolean>>({});
+    const [selectedSemana, setSelectedSemana] = useState(1);
+    const [selectedDia, setSelectedDia] = useState(0);
+    const [expandedEj, setExpandedEj] = useState<number | null>(null);
 
     const now = new Date();
     const [calYear, setCalYear] = useState(now.getFullYear());
@@ -138,12 +143,14 @@ export default function MiCuentaPage() {
         setLoadingPlan(true);
         try {
             const r = await fetch(`/api/plan-alumno/alumno/${alumnoId}`);
-            const data = r.ok ? await r.json() : null;
+            const data: PlanEjAsignado | null = r.ok ? await r.json() : null;
             setPlanEj(data);
-            if (data?.dias) {
-                const openMap: Record<number, boolean> = {};
-                data.dias.forEach((_: DiaAsignado, i: number) => { openMap[i] = i === 0; });
-                setOpenDias(openMap);
+            if (data?.fechaInicio) {
+                const inicio = new Date(data.fechaInicio);
+                const hoy = new Date();
+                const diasTranscurridos = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+                const semanaActual = Math.min(Math.max(Math.floor(diasTranscurridos / 7) + 1, 1), data.totalSemanas || 5);
+                setSelectedSemana(semanaActual);
             }
         } finally {
             setLoadingPlan(false);
@@ -166,11 +173,11 @@ export default function MiCuentaPage() {
         }
     }
 
-    function updateEjAlumno(dIdx: number, eIdx: number, field: 'kgAlumno' | 'observacionesAlumno', value: string) {
+    function updateEjAlumno(eIdx: number, field: 'kgAlumno' | 'observacionesAlumno', value: string) {
         setPlanEj((prev) => {
             if (!prev) return prev;
             const dias = prev.dias.map((d, di) => {
-                if (di !== dIdx) return d;
+                if (di !== selectedDia) return d;
                 return {
                     ...d,
                     ejercicios: d.ejercicios.map((e, ei) => ei === eIdx ? { ...e, [field]: value } : e),
@@ -178,6 +185,22 @@ export default function MiCuentaPage() {
             });
             return { ...prev, dias };
         });
+    }
+
+    function getSemanaField(ej: EjercicioAsignado, sem: number): string {
+        const map: Record<number, keyof EjercicioAsignado> = {
+            1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5',
+        };
+        return (ej[map[sem]] as string) || '';
+    }
+
+    function getCurrentWeekLabel(plan: PlanEjAsignado): string {
+        if (!plan.fechaInicio) return '';
+        const inicio = new Date(plan.fechaInicio);
+        const hoy = new Date();
+        const dias = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+        const sem = Math.min(Math.max(Math.floor(dias / 7) + 1, 1), plan.totalSemanas || 5);
+        return sem.toString();
     }
 
     useEffect(() => {
@@ -739,7 +762,7 @@ export default function MiCuentaPage() {
 
             {/* ── MI PLAN ── */}
             {tab === 'plan' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {loadingPlan && (
                         <div className="flex justify-center py-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-700" />
@@ -747,7 +770,7 @@ export default function MiCuentaPage() {
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center mt-2">
                             <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <svg className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -758,144 +781,187 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {!loadingPlan && planEj && (
-                        <>
-                            {/* Plan header */}
-                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">{planEj.categoria}</p>
-                                        <h2 className="text-slate-900 font-bold text-base leading-tight">{planEj.nombre}</h2>
-                                        {planEj.descripcion && <p className="text-slate-400 text-sm mt-1">{planEj.descripcion}</p>}
-                                    </div>
-                                    <button
-                                        onClick={handleSavePlan}
-                                        disabled={savingPlan}
-                                        className={`shrink-0 px-4 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-60 ${
-                                            planSaved
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : 'bg-emerald-500 hover:bg-emerald-400 text-white'
-                                        }`}
-                                    >
-                                        {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar'}
-                                    </button>
-                                </div>
-                            </div>
+                    {!loadingPlan && planEj && (() => {
+                        const totalSem = planEj.totalSemanas || 5;
+                        const currentWeekStr = getCurrentWeekLabel(planEj);
+                        const currentWeekNum = parseInt(currentWeekStr) || 1;
+                        const dia = planEj.dias[selectedDia];
+                        const totalSesiones = totalSem * planEj.dias.length;
 
-                            {/* Entrada en calor */}
-                            {planEj.entradaCalor.ejercicios.length > 0 && (
-                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Entrada en calor</h3>
-                                    <div className="space-y-1.5">
-                                        {planEj.entradaCalor.ejercicios.map((ej, i) => (
-                                            <div key={i} className="flex items-start gap-2">
-                                                <span className="text-sm text-slate-800 font-medium">{ej.nombre}</span>
-                                                {ej.notas && <span className="text-xs text-slate-400 mt-0.5">{ej.notas}</span>}
-                                            </div>
-                                        ))}
+                        return (
+                            <>
+                                {/* Plan header card */}
+                                <div className="bg-slate-900 rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-wide">{planEj.categoria}</p>
+                                        <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
+                                        <p className="text-slate-500 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
+                                    </div>
+                                    <div className="shrink-0 text-center bg-emerald-500/20 rounded-xl px-3 py-2">
+                                        <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-wide">Semana</p>
+                                        <p className="text-emerald-300 font-bold text-xl leading-none">{currentWeekNum}</p>
+                                        <p className="text-emerald-500 text-[10px]">de {totalSem}</p>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Días */}
-                            {planEj.dias.map((dia, dIdx) => (
-                                <div key={dIdx} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                    <button
-                                        onClick={() => setOpenDias((prev) => ({ ...prev, [dIdx]: !prev[dIdx] }))}
-                                        className="w-full flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-left"
-                                    >
-                                        <svg className={`w-4 h-4 text-slate-400 transition-transform ${openDias[dIdx] ? '' : '-rotate-90'}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                        </svg>
-                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                                            Día {dIdx + 1}{dia.titulo ? ` — ${dia.titulo}` : ''}
-                                        </span>
-                                        {dia.descripcion && <span className="text-xs text-slate-400 ml-1">· {dia.descripcion}</span>}
-                                    </button>
-
-                                    {openDias[dIdx] && (
-                                        <div className="p-4 space-y-4">
-                                            {dia.bloqueActivacion && (
-                                                <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
-                                                    <p className="text-xs font-semibold text-amber-700 mb-1">Bloque de activación</p>
-                                                    <p className="text-sm text-amber-800">{dia.bloqueActivacion}</p>
-                                                </div>
-                                            )}
-
-                                            <div className="space-y-3">
-                                                {dia.ejercicios.map((ej, eIdx) => (
-                                                    <div key={eIdx} className="border border-slate-100 rounded-xl p-3 space-y-2">
-                                                        <div className="flex items-start justify-between gap-2">
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-slate-800">{ej.nombre}</p>
-                                                                {ej.notas && <p className="text-xs text-slate-400 mt-0.5">{ej.notas}</p>}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Series/semanas */}
-                                                        <div className="grid grid-cols-4 gap-1.5 text-xs">
-                                                            {[
-                                                                { label: 'Sem 1/5', value: ej.semana1_5 },
-                                                                { label: 'Sem 2/6', value: ej.semana2_6 },
-                                                                { label: 'Sem 3', value: ej.semana3 },
-                                                                { label: 'Sem 4', value: ej.semana4 },
-                                                            ].map(({ label, value }) => value ? (
-                                                                <div key={label} className="bg-slate-50 rounded-lg px-2 py-1.5 text-center">
-                                                                    <p className="text-slate-400 text-[10px] font-semibold">{label}</p>
-                                                                    <p className="text-slate-700 font-bold mt-0.5">{value}</p>
-                                                                </div>
-                                                            ) : null)}
-                                                        </div>
-
-                                                        {/* KG referencia (si el profe la puso) */}
-                                                        {ej.kg && (
-                                                            <p className="text-xs text-slate-400">
-                                                                Referencia: <span className="font-semibold text-slate-600">{ej.kg} kg</span>
-                                                            </p>
-                                                        )}
-
-                                                        {/* Student inputs */}
-                                                        <div className="flex gap-2 pt-1">
-                                                            <div className="flex-1">
-                                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Mis KG</label>
-                                                                <input
-                                                                    type="text"
-                                                                    inputMode="decimal"
-                                                                    placeholder="ej: 60"
-                                                                    value={ej.kgAlumno}
-                                                                    onChange={(e) => updateEjAlumno(dIdx, eIdx, 'kgAlumno', e.target.value)}
-                                                                    className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-[2]">
-                                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Observaciones</label>
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="ej: me costó la última rep"
-                                                                    value={ej.observacionesAlumno}
-                                                                    onChange={(e) => updateEjAlumno(dIdx, eIdx, 'observacionesAlumno', e.target.value)}
-                                                                    className="mt-1 w-full border border-slate-200 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                {/* Week selector */}
+                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                    <div className="flex gap-1.5">
+                                        {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
+                                            const isCurrent = sem === currentWeekNum;
+                                            const isSelected = sem === selectedSemana;
+                                            return (
+                                                <button
+                                                    key={sem}
+                                                    onClick={() => setSelectedSemana(sem)}
+                                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
+                                                        isSelected
+                                                            ? 'bg-slate-900 text-white shadow-sm'
+                                                            : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                                                    }`}
+                                                >
+                                                    {sem}
+                                                    {isCurrent && (
+                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white" />
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {selectedSemana === 5 && (
+                                        <p className="text-center text-[10px] text-slate-400 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
-                            ))}
 
-                            {/* Save bottom button */}
-                            <button
-                                onClick={handleSavePlan}
-                                disabled={savingPlan}
-                                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl transition-colors disabled:opacity-60 shadow-sm"
-                            >
-                                {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar cambios'}
-                            </button>
-                        </>
-                    )}
+                                {/* Day selector */}
+                                <div className="flex gap-1.5">
+                                    {planEj.dias.map((d, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
+                                            className={`flex-1 py-3 rounded-2xl text-sm font-bold transition-all border ${
+                                                selectedDia === i
+                                                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                                                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
+                                            }`}
+                                        >
+                                            <span className="block text-xs font-bold">{d.titulo || `Día ${i + 1}`}</span>
+                                            {d.descripcion && (
+                                                <span className={`block text-[10px] mt-0.5 ${selectedDia === i ? 'text-slate-400' : 'text-slate-400'}`}>
+                                                    {d.descripcion}
+                                                </span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Bloque activación */}
+                                {dia?.bloqueActivacion && (
+                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
+                                        <p className="text-xs font-bold text-amber-700 mb-1">Bloque de activación</p>
+                                        <p className="text-sm text-amber-800 leading-snug">{dia.bloqueActivacion}</p>
+                                    </div>
+                                )}
+
+                                {/* Exercise table */}
+                                {dia && (
+                                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                        {/* Table header */}
+                                        <div className="grid grid-cols-[1fr_auto_auto] gap-0 border-b border-slate-100">
+                                            <div className="px-4 py-2.5">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
+                                            </div>
+                                            <div className="px-3 py-2.5 text-center border-l border-slate-100 min-w-[90px]">
+                                                <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
+                                            </div>
+                                            <div className="px-3 py-2.5 text-center border-l border-slate-100 min-w-[64px]">
+                                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Rows */}
+                                        <div className="divide-y divide-slate-50">
+                                            {dia.ejercicios.map((ej, eIdx) => {
+                                                const semVal = getSemanaField(ej, selectedSemana);
+                                                const isExpanded = expandedEj === eIdx;
+                                                return (
+                                                    <div key={eIdx}>
+                                                        <button
+                                                            onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
+                                                            className="w-full grid grid-cols-[1fr_auto_auto] gap-0 text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
+                                                        >
+                                                            <div className="px-4 py-3">
+                                                                <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
+                                                                {ej.kg && ej.kg !== '-' && (
+                                                                    <p className="text-[11px] text-slate-400 mt-0.5">Ref: {ej.kg} kg</p>
+                                                                )}
+                                                            </div>
+                                                            <div className="px-3 py-3 text-center border-l border-slate-100 min-w-[90px] flex items-center justify-center">
+                                                                <span className={`text-xs font-bold leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
+                                                                    {semVal || '—'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="px-3 py-3 text-center border-l border-slate-100 min-w-[64px] flex items-center justify-center">
+                                                                <span className={`text-sm font-bold ${ej.kgAlumno ? 'text-emerald-600' : 'text-slate-200'}`}>
+                                                                    {ej.kgAlumno || '—'}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+
+                                                        {/* Expanded: input mis KG + observaciones */}
+                                                        {isExpanded && (
+                                                            <div className="px-4 pb-4 pt-1 bg-slate-50 border-t border-slate-100 space-y-2.5">
+                                                                {ej.notas && (
+                                                                    <p className="text-xs text-slate-500 italic">{ej.notas}</p>
+                                                                )}
+                                                                <div className="flex gap-2">
+                                                                    <div className="w-24">
+                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            inputMode="decimal"
+                                                                            placeholder="ej: 60"
+                                                                            value={ej.kgAlumno}
+                                                                            onChange={(e) => updateEjAlumno(eIdx, 'kgAlumno', e.target.value)}
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="ej: me costó la última rep..."
+                                                                            value={ej.observacionesAlumno}
+                                                                            onChange={(e) => updateEjAlumno(eIdx, 'observacionesAlumno', e.target.value)}
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Save button */}
+                                <button
+                                    onClick={handleSavePlan}
+                                    disabled={savingPlan}
+                                    className={`w-full py-3.5 font-bold rounded-2xl transition-all disabled:opacity-60 shadow-sm text-sm ${
+                                        planSaved
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                                    }`}
+                                >
+                                    {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar mis datos'}
+                                </button>
+                            </>
+                        );
+                    })()}
                 </div>
             )}
         </div>
