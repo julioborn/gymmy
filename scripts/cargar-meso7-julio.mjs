@@ -31,7 +31,7 @@ const plan = {
     activo: true,
     dias: [
         {
-            titulo: 'Día A',
+            titulo: 'Día 1',
             descripcion: 'Potencia + Fuerza superior',
             bloqueActivacion: '',
             ejercicios: [
@@ -63,9 +63,9 @@ const plan = {
                     '3de9',
                     '2de7',
                     '40'),
-                ej('Bíceps scott con mancuernas', '',
-                    '3 (13-12-10)',
-                    '3 (15-14-13)',
+                ej('Biceps scott con mancuernas', '',
+                    '3 (13 - 12 - 10)',
+                    '3 (15 - 14 - 13)',
                     '',
                     '',
                     '2de10',
@@ -73,7 +73,7 @@ const plan = {
             ],
         },
         {
-            titulo: 'Día B',
+            titulo: 'Día 2',
             descripcion: 'Cargada + Fuerza posterior',
             bloqueActivacion: '',
             ejercicios: [
@@ -84,14 +84,14 @@ const plan = {
                     '3 / 2.2.2 (x2)',
                     '3 / 2de2(x1)',
                     '50-60'),
-                ej('Peso muerto hexagonal — Trepada', '',
+                ej('Peso muerto hexagonal', '',
                     '5 / 3de7',
                     '5 / 3de5',
                     '5 / 3de6',
                     '5 / 3de7',
                     '5 / 2de5',
                     '110'),
-                ej('Peso muerto hexagonal — Complemento', '',
+                ej('Press plano con barra', '',
                     '6 / 3de8',
                     '6 / 3de6',
                     '6 / 3de7',
@@ -105,15 +105,15 @@ const plan = {
                     '3de15',
                     '2de12',
                     '12.5'),
-                ej('Press francés con barra — Bloque 1', '',
-                    '3 (16-14-13)',
+                ej('Press francés con barra', '',
+                    '3 (16 - 14 - 13)',
                     '',
                     '',
                     '',
                     '2de10',
                     '20'),
-                ej('Press francés con barra — Bloque 2', '',
-                    '3 (14-13-11)',
+                ej('Vuelos laterales', '',
+                    '3 (14 - 13 - 11)',
                     '',
                     '',
                     '',
@@ -122,11 +122,11 @@ const plan = {
             ],
         },
         {
-            titulo: 'Día C',
+            titulo: 'Día 3',
             descripcion: 'Potencia + Mixto',
             bloqueActivacion: '',
             ejercicios: [
-                ej('Extensiones con disco', '',
+                ej('Vitalizaciones con disco', '',
                     '3de8',
                     '3de8',
                     '3de10',
@@ -134,11 +134,11 @@ const plan = {
                     '2de8',
                     '10'),
                 ej('Saltos al cajón', '',
-                    '',
-                    '',
+                    '3de5',
+                    '6.5.5',
                     '6.6.5',
-                    '',
-                    '',
+                    '3de6',
+                    '2de5',
                     ''),
                 ej('Sentadilla pistol con mancuernas', '',
                     '3de5',
@@ -154,14 +154,14 @@ const plan = {
                     '3de9',
                     '2de7',
                     '65'),
-                ej('Buenos días zercher — Bloque 1', '',
+                ej('Buenos días zercher', '',
                     '3de5',
                     '6.5.5',
                     '6.6.5',
                     '3de6',
                     '2de5',
                     '40'),
-                ej('Buenos días zercher — Bloque 2', '',
+                ej('Press inclinado unilateral', '',
                     '3de7',
                     '9.7.7',
                     '9.9.7',
@@ -195,6 +195,10 @@ try {
     console.log('Meso 7 cargado. ID:', result.insertedId.toString());
     console.log('Inicio:', plan.fechaInicio.toLocaleDateString('es-AR'));
     console.log('Total semanas:', plan.totalSemanas, '| Días:', plan.dias.length, '| Sesiones totales:', plan.totalSemanas * plan.dias.length);
+    plan.dias.forEach((d, i) => {
+        console.log(`\n${d.titulo}:`);
+        d.ejercicios.forEach((e, j) => console.log(`  ${j+1}. ${e.nombre}`));
+    });
 } finally {
     await client.close();
 }
