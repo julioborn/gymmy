@@ -112,7 +112,7 @@ function SkeletonCard() {
             <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-slate-200 mb-2 md:mb-3" />
             <div className="h-5 md:h-7 w-12 md:w-16 bg-slate-200 rounded mb-2" />
             <div className="h-1.5 w-full bg-slate-100 rounded mb-1.5" />
-            <div className="h-2 w-14 md:w-20 bg-slate-100 rounded" />
+            <div className="h-2.5 w-14 md:w-20 bg-slate-100 rounded" />
         </div>
     );
 }
@@ -166,7 +166,7 @@ export default function HomePage() {
 
     const handleConfiguracionTarifas = async () => {
         if (tarifas.length === 0) {
-            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recarga la página.' });
+            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recargá la página.' });
             return;
         }
         const tarifaInputs = tarifas.map(t => `
@@ -195,71 +195,6 @@ export default function HomePage() {
                 if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' }); setTarifas(nuevasTarifas); }
                 else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' });
             } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' }); }
-        }
-    };
-
-    const handleConfiguracionMercadoPago = async () => {
-        let preview = '';
-        try {
-            const res = await fetch('/api/gimnasio/mp-token');
-            const d = await res.json();
-            if (d.hasToken) preview = `Token actual: ${d.preview}`;
-        } catch { /* ignorar */ }
-
-        const { value: nuevoToken } = await Swal.fire({
-            ...swalBase,
-            title: 'MercadoPago',
-            html: `
-                <p style="font-size:13px;color:#64748b;margin-bottom:12px;">
-                    ${preview ? `<span style="font-size:12px;background:#f1f5f9;padding:2px 8px;border-radius:6px;font-family:monospace;">${preview}</span><br><br>` : ''}
-                    Pegá tu Access Token de producción de MercadoPago.<br>
-                    Lo encontrás en <strong>mercadopago.com.ar → Tus integraciones</strong>.
-                </p>
-            `,
-            input: 'text',
-            inputPlaceholder: 'APP_USR-...',
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (v) => !v?.trim() ? 'El token no puede estar vacío' : null,
-        });
-
-        if (nuevoToken) {
-            try {
-                const res = await fetch('/api/gimnasio/mp-token', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: nuevoToken }),
-                });
-                if (res.ok) Swal.fire({ ...swalNotify, icon: 'success', title: 'Token guardado' });
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el token' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el token' }); }
-        }
-    };
-
-    const handleConfiguracionAlias = async () => {
-        const { value: nuevoAlias } = await Swal.fire({
-            ...swalBase,
-            title: 'Alias de pago',
-            html: `<p style="font-size:13px;color:#64748b;margin-bottom:12px;">Ingresá el alias de tu cuenta de Mercado Pago para que los alumnos puedan transferirte.</p>`,
-            input: 'text',
-            inputPlaceholder: 'ejemplo.gimnasio.mp',
-            inputValue: aliasGimnasio,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (v) => !v?.trim() ? 'El alias no puede estar vacío' : null,
-        });
-        if (nuevoAlias && nuevoAlias.trim() !== aliasGimnasio) {
-            try {
-                const res = await fetch('/api/gimnasio/alias', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ alias: nuevoAlias.trim() }),
-                });
-                if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); }
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); }
         }
     };
 
@@ -299,6 +234,32 @@ export default function HomePage() {
         }
     };
 
+    const handleConfiguracionAlias = async () => {
+        const { value: nuevoAlias } = await Swal.fire({
+            ...swalBase,
+            title: 'Alias de pago',
+            html: `<p style="font-size:13px;color:#64748b;margin-bottom:12px;">Ingresá el alias de tu cuenta de Mercado Pago para que los alumnos puedan transferirte.</p>`,
+            input: 'text',
+            inputPlaceholder: 'ejemplo.gimnasio.mp',
+            inputValue: aliasGimnasio,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (v) => !v?.trim() ? 'El alias no puede estar vacío' : null,
+        });
+        if (nuevoAlias && nuevoAlias.trim() !== aliasGimnasio) {
+            try {
+                const res = await fetch('/api/gimnasio/alias', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alias: nuevoAlias.trim() }),
+                });
+                if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' });
+            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); }
+        }
+    };
+
     if (!session) return null;
     if (session.user?.role === 'alumno') return null;
 
@@ -321,8 +282,12 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5">
-                <div className="flex items-center justify-between mb-4">
+            <div className="relative bg-slate-900 rounded-3xl px-6 pt-6 pb-5 overflow-hidden">
+                {/* Subtle depth rings */}
+                <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
+                <div className="pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full bg-emerald-500/10" />
+
+                <div className="flex items-center justify-between mb-4 relative">
                     <div className="flex-1 min-w-0">
                         <p className="text-slate-400 text-[11px] font-semibold uppercase tracking-widest mb-0.5">
                             {getGreeting()}
@@ -331,14 +296,14 @@ export default function HomePage() {
                             {capitalize(session.user?.username ?? 'Usuario')}
                         </h1>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-900/50 ml-3 shrink-0">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg ml-3 shrink-0">
                         <span className="text-xl font-bold text-white">
                             {(session.user?.username ?? 'U')[0].toUpperCase()}
                         </span>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="bg-white/10 text-white text-[11px] font-bold px-3 py-1 rounded-full capitalize">
+                <div className="flex items-center gap-2 flex-wrap relative">
+                    <span className="ring-1 ring-white/20 bg-white/10 text-white text-[11px] font-bold px-3 py-1 rounded-full capitalize">
                         {session.user?.role}
                     </span>
                     <span className="text-slate-600 text-[11px]">·</span>
@@ -359,25 +324,25 @@ export default function HomePage() {
                     {/* Pagaron este mes — oculto para profesor */}
                     {!esProfesor && (
                         <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-emerald-200">
+                            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-emerald-500 flex items-center justify-center mb-2 md:mb-3">
                                 <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
                             <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
                                 <span className={`text-xl md:text-3xl font-bold ${pagoColor}`}>{data.pagados}</span>
-                                <span className="text-[10px] md:text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
+                                <span className="text-xs text-slate-400 font-medium">/ {data.totalAlumnos}</span>
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-1 mb-1.5 md:mb-2">
                                 <div className={`h-1 rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
                             </div>
-                            <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Pagaron</p>
+                            <p className="text-[11px] md:text-xs font-semibold text-slate-400 uppercase tracking-wide leading-tight">Pagaron</p>
                         </div>
                     )}
 
                     {/* Asistencias hoy */}
                     <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-blue-500 flex items-center justify-center mb-2 md:mb-3 shadow-sm shadow-blue-200">
+                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-blue-500 flex items-center justify-center mb-2 md:mb-3">
                             <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
@@ -385,17 +350,12 @@ export default function HomePage() {
                         <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
                             <span className="text-xl md:text-3xl font-bold text-slate-800">{data.asistenciasHoy}</span>
                         </div>
-                        {/* {data.horaPico ? (
-                            <p className="text-[10px] md:text-[11px] text-slate-500 mb-1">Pico: <span className="font-bold text-blue-600">{data.horaPico}</span></p>
-                        ) : (
-                            <p className="text-[10px] md:text-[11px] text-slate-400 mb-1">Sin datos</p>
-                        )} */}
-                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias</p>
+                        <p className="text-[11px] md:text-xs font-semibold text-slate-400 uppercase tracking-wide leading-tight">Asistencias hoy</p>
                     </div>
 
                     {/* Planes por vencer */}
                     <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                        <div className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 shadow-sm ${data.planesVenciendo.length > 0 ? 'bg-amber-400 shadow-amber-200' : 'bg-emerald-500 shadow-emerald-200'}`}>
+                        <div className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 ${data.planesVenciendo.length > 0 ? 'bg-amber-400' : 'bg-emerald-500'}`}>
                             <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
@@ -403,29 +363,26 @@ export default function HomePage() {
                         <div className="flex items-baseline gap-1 mb-1.5 md:mb-2">
                             <span className={`text-xl md:text-3xl font-bold ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>{data.planesVenciendo.length}</span>
                         </div>
-                        {/* <p className={`text-[10px] md:text-[11px] font-semibold mb-1 leading-tight ${data.planesVenciendo.length === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                            {data.planesVenciendo.length === 0 ? 'Al día ✓' : '≤ 5 clases'}
-                        </p> */}
-                        <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 uppercase tracking-wide leading-tight">Planes</p>
+                        <p className="text-[11px] md:text-xs font-semibold text-slate-400 uppercase tracking-wide leading-tight">Venciendo</p>
                     </div>
 
-                    {/* Balance del mes (solo dueño) */}
+                    {/* Balance del mes — solo dueño */}
                     {esDueño && (
-                        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 shadow-sm ${balanceBg}`}>
-                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                            <div className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 ${balanceBg}`}>
+                                <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                             </div>
-                            <div className="flex items-baseline gap-0.5 mb-1">
-                                <span className={`text-2xl font-bold ${balanceColor}`}>${fmt(data.balance)}</span>
+                            <div className="flex items-baseline gap-0.5 mb-1.5">
+                                <span className={`text-xl md:text-2xl font-bold ${balanceColor}`}>${fmt(data.balance)}</span>
                             </div>
-                            <p className="text-[11px] text-slate-500 leading-relaxed mb-1">
-                                <span className="text-emerald-600 font-bold">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</span>
-                                {' · '}
-                                <span className="text-red-500 font-bold">−${fmt(data.gastosMes)}</span>
-                            </p>
-                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Balance · {capitalize(data.mes)}</p>
+                            <div className="flex items-center gap-1.5 mb-1.5">
+                                <span className="text-[11px] text-emerald-600 font-semibold">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</span>
+                                <span className="text-slate-300 text-[11px]">/</span>
+                                <span className="text-[11px] text-red-500 font-semibold">−${fmt(data.gastosMes)}</span>
+                            </div>
+                            <p className="text-[11px] md:text-xs font-semibold text-slate-400 uppercase tracking-wide">{capitalize(data.mes)}</p>
                         </div>
                     )}
                 </div>
@@ -440,7 +397,9 @@ export default function HomePage() {
                                 <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
                             </svg>
                         </div>
-                        <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">Planes por vencer</p>
+                        <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">
+                            {data.planesVenciendo.length === 1 ? '1 plan por vencer' : `${data.planesVenciendo.length} planes por vencer`}
+                        </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {data.planesVenciendo.map(a => (
@@ -455,13 +414,12 @@ export default function HomePage() {
                 </div>
             )}
 
-            {/* Accesos rápidos + Configuración — side by side on desktop, same height */}
+            {/* Accesos rápidos + Configuración */}
             <div className="flex flex-col md:flex-row md:items-stretch gap-4">
 
                 {/* Accesos rápidos */}
                 <div className="flex-1">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Accesos rápidos</p>
-                    {/* Mobile: compact horizontal cards (2 col). Desktop: icon-top cards (4 col) */}
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Accesos rápidos</p>
                     <div className={`grid gap-2 md:gap-3 ${visibleCards.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
                         {visibleCards.map((card) => (
                             <Link
@@ -486,67 +444,58 @@ export default function HomePage() {
                 {/* Configuración — solo dueño/admin */}
                 {!esProfesor && (
                     <div className="md:w-64 shrink-0 flex flex-col">
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-0.5">Configuración</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Configuración</p>
                         <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex-1 flex flex-col">
-                            <button onClick={handleConfiguracionTarifas} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+
+                            <button onClick={handleConfiguracionTarifas} className="flex-1 w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
+                                <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
                                     </svg>
                                 </div>
-                                <div className="text-left flex-1">
+                                <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-sm text-slate-800">Cuotas</p>
-                                    <p className="text-xs text-slate-500">Precios por días/semana</p>
+                                    <p className="text-xs text-slate-400">Precios por días/semana</p>
                                 </div>
                                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
                             </button>
+
                             <div className="border-t border-slate-100" />
-                            <button onClick={handleConfiguracionRecargos} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+
+                            <button onClick={handleConfiguracionRecargos} className="flex-1 w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
+                                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
                                 </div>
-                                <div className="text-left flex-1">
+                                <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-sm text-slate-800">Recargo</p>
-                                    <p className="text-xs text-slate-500">Día 10 y mes vencido</p>
+                                    <p className="text-xs text-slate-400">Día 10 y mes vencido</p>
                                 </div>
                                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
                             </button>
+
                             <div className="border-t border-slate-100" />
-                            <button onClick={handleConfiguracionAlias} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+
+                            <button onClick={handleConfiguracionAlias} className="flex-1 w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                                     </svg>
                                 </div>
-                                <div className="text-left flex-1">
+                                <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-sm text-slate-800">Alias de pago</p>
-                                    <p className="text-xs text-slate-500">{aliasGimnasio || 'Sin configurar'}</p>
+                                    <p className="text-xs text-slate-400 truncate">{aliasGimnasio || 'Sin configurar'}</p>
                                 </div>
                                 <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
                                 </svg>
                             </button>
-                            {/* MP desactivado temporalmente
-                            <div className="border-t border-slate-100" />
-                            <button onClick={handleConfiguracionMercadoPago} className="flex-1 w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                                <div className="w-9 h-9 rounded-xl bg-[#009EE3] flex items-center justify-center shrink-0">
-                                    <img src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg" alt="MercadoPago" className="w-7 h-auto" />
-                                </div>
-                                <div className="text-left flex-1">
-                                    <p className="font-semibold text-sm text-slate-800">MercadoPago</p>
-                                    <p className="text-xs text-slate-500">Token de integración</p>
-                                </div>
-                                <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                                </svg>
-                            </button>
-                            */}
+
                         </div>
                     </div>
                 )}
