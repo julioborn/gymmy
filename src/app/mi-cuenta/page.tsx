@@ -866,11 +866,6 @@ export default function MiCuentaPage() {
                                             }`}
                                         >
                                             <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
-                                            {d.descripcion && (
-                                                <span className={`text-[10px] mt-1 leading-none ${selectedDia === i ? 'text-slate-400' : 'text-slate-400'}`}>
-                                                    {d.descripcion.split(' + ')[0]}
-                                                </span>
-                                            )}
                                         </button>
                                     ))}
                                 </div>
