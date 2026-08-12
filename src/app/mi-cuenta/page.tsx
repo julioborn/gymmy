@@ -101,6 +101,45 @@ function getInitials(nombre: string, apellido: string) {
     return `${nombre[0] ?? ''}${apellido[0] ?? ''}`.toUpperCase();
 }
 
+function IconCheck({ className }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+        </svg>
+    );
+}
+
+function IconX({ className }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+    );
+}
+
+function IconClock({ className }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+    );
+}
+
+function IconTrophy({ className }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+        </svg>
+    );
+}
+
+function IconChevron({ className }: { className?: string }) {
+    return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+    );
+}
 
 export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
@@ -111,7 +150,6 @@ export default function MiCuentaPage() {
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [aliasCopied, setAliasCopied] = useState(false);
 
-    // Plan de entrenamiento asignado
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
     const [savingPlan, setSavingPlan] = useState(false);
@@ -174,6 +212,27 @@ export default function MiCuentaPage() {
         }
     }
 
+    async function handlePagarMercadoPago() {
+        setLoadingPago(true);
+        try {
+            const res = await fetch('/api/pagos/mp/crear-preferencia', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) { setPagoResult('error'); return; }
+            if (data.alumnoId) sessionStorage.setItem('mp_alumno_id', data.alumnoId);
+            const a = document.createElement('a');
+            a.href = data.init_point;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch {
+            setPagoResult('error');
+        } finally {
+            setLoadingPago(false);
+        }
+    }
+
     function updateEjAlumno(eIdx: number, field: 'kgAlumno' | 'observacionesAlumno', value: string) {
         setPlanEj((prev) => {
             if (!prev) return prev;
@@ -212,14 +271,10 @@ export default function MiCuentaPage() {
         if (pago === 'ok' || pago === 'error' || pago === 'pendiente') {
             setPagoResult(pago as 'ok' | 'error' | 'pendiente');
             window.history.replaceState({}, '', '/mi-cuenta');
-
-            // Fallback: si MP no llamó el webhook, verificar y registrar el pago directamente
             if (pago === 'ok' && paymentId) {
                 fetch(`/api/pagos/mp/verificar?payment_id=${paymentId}`)
                     .then(r => r.json())
-                    .then(data => {
-                        if (data.ok) fetchAlumno().catch(() => {});
-                    })
+                    .then(data => { if (data.ok) fetchAlumno().catch(() => {}); })
                     .catch(() => {});
             }
         }
@@ -236,7 +291,6 @@ export default function MiCuentaPage() {
         document.addEventListener('visibilitychange', onVisible);
         return () => document.removeEventListener('visibilitychange', onVisible);
     }, []);
-
 
     if (loading) {
         return (
@@ -288,32 +342,6 @@ export default function MiCuentaPage() {
     const initials = getInitials(alumno.nombre, alumno.apellido);
     const gimnasioNombre = (alumno.gimnasioId as any)?.nombre ?? '';
 
-    async function handlePagarMercadoPago() {
-        setLoadingPago(true);
-        try {
-            const res = await fetch('/api/pagos/mp/crear-preferencia', { method: 'POST' });
-            const data = await res.json();
-            if (!res.ok) {
-                setPagoResult('error');
-                return;
-            }
-            if (data.alumnoId) {
-                sessionStorage.setItem('mp_alumno_id', data.alumnoId);
-            }
-            const a = document.createElement('a');
-            a.href = data.init_point;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } catch {
-            setPagoResult('error');
-        } finally {
-            setLoadingPago(false);
-        }
-    }
-
     function prevMonth() {
         setSelectedDay(null);
         if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
@@ -344,9 +372,13 @@ export default function MiCuentaPage() {
                         ? 'bg-amber-50 border border-amber-200'
                         : 'bg-red-50 border border-red-200'
                 }`}>
-                    <span className="text-lg">
-                        {pagoResult === 'ok' ? '✅' : pagoResult === 'pendiente' ? '⏳' : '❌'}
-                    </span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                        pagoResult === 'ok' ? 'bg-emerald-100' : pagoResult === 'pendiente' ? 'bg-amber-100' : 'bg-red-100'
+                    }`}>
+                        {pagoResult === 'ok' && <IconCheck className="w-4 h-4 text-emerald-600" />}
+                        {pagoResult === 'pendiente' && <IconClock className="w-4 h-4 text-amber-600" />}
+                        {pagoResult === 'error' && <IconX className="w-4 h-4 text-red-500" />}
+                    </div>
                     <div className="flex-1">
                         <p className={`text-sm font-bold ${
                             pagoResult === 'ok' ? 'text-emerald-700' : pagoResult === 'pendiente' ? 'text-amber-700' : 'text-red-700'
@@ -363,18 +395,16 @@ export default function MiCuentaPage() {
                                 : 'Podés intentarlo de nuevo cuando quieras.'}
                         </p>
                     </div>
-                    <button onClick={() => setPagoResult(null)} className="text-slate-400 hover:text-slate-600">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
+                    <button onClick={() => setPagoResult(null)} className="text-slate-400 hover:text-slate-600 p-1">
+                        <IconX className="w-4 h-4" />
                     </button>
                 </div>
             )}
 
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
-                <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/5" />
-                <div className="absolute top-4 -right-2 w-16 h-16 rounded-full bg-white/5" />
+                <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
+                <div className="pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full bg-emerald-500/10" />
 
                 <div className="flex items-center gap-4 relative">
                     <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -393,8 +423,8 @@ export default function MiCuentaPage() {
                     </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 relative">
-                    <span className="bg-white/10 text-slate-300 text-xs font-medium px-3 py-1 rounded-full">
+                <div className="mt-4 flex items-center gap-2 flex-wrap relative">
+                    <span className="ring-1 ring-white/20 bg-white/10 text-slate-300 text-xs font-medium px-3 py-1 rounded-full">
                         DNI {alumno.dni}
                     </span>
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
@@ -437,7 +467,7 @@ export default function MiCuentaPage() {
                                 </svg>
                             </div>
                             <p className="text-3xl font-bold text-slate-900 leading-none">{asistenciasEsteMes.length}</p>
-                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">Asistencias en {mesActual}</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">en {mesActual}</p>
                         </div>
 
                         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
@@ -452,7 +482,7 @@ export default function MiCuentaPage() {
                                 {pagoEsteMes ? 'Al día' : 'Pendiente'}
                             </p>
                             {pagoEsteMes ? (
-                                <p className="text-slate-400 text-xs mt-1.5 font-medium">
+                                <p className="text-slate-700 text-sm font-bold mt-1.5">
                                     ${pagoEsteMes.tarifa.toLocaleString('es-AR')}
                                 </p>
                             ) : (
@@ -478,9 +508,7 @@ export default function MiCuentaPage() {
                                     >
                                         {aliasCopied ? (
                                             <>
-                                                <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                                </svg>
+                                                <IconCheck className="w-3.5 h-3.5 text-emerald-500" />
                                                 <span className="text-emerald-600">Copiado</span>
                                             </>
                                         ) : (
@@ -507,27 +535,6 @@ export default function MiCuentaPage() {
                             </a>
                         </div>
                     )}
-                    {/* MP checkout desactivado temporalmente
-                    {!pagoEsteMes && (
-                        <button
-                            onClick={handlePagarMercadoPago}
-                            disabled={loadingPago}
-                            className="w-full flex items-center justify-between bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 rounded-2xl px-5 py-4 transition-colors shadow-sm"
-                        >
-                            {loadingPago ? (
-                                <div className="flex items-center gap-3 w-full justify-center">
-                                    <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                                    <span className="text-white font-semibold text-sm">Redirigiendo...</span>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className="text-white font-bold text-base">Pagar cuota</span>
-                                    <img src="/icons/MP_RGB_HANDSHAKE_pluma_vertical.svg" alt="MercadoPago" className="h-10 w-auto" />
-                                </>
-                            )}
-                        </button>
-                    )}
-                    */}
 
                     {/* Plan de entrenamiento */}
                     {tienePlan && (
@@ -557,13 +564,13 @@ export default function MiCuentaPage() {
 
                     {/* Plan completado */}
                     {plan?.terminado && (
-                        <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                                <span className="text-2xl">🏆</span>
+                        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div>
-                                <p className="text-red-800 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-red-500 text-xs mt-0.5">Completaste todas las sesiones del plan</p>
+                                <p className="text-emerald-800 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-emerald-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                             </div>
                         </div>
                     )}
@@ -620,7 +627,7 @@ export default function MiCuentaPage() {
                                 </svg>
                             </button>
                             <span className="text-slate-800 font-bold capitalize text-sm">
-                                {MESES_CORTO[calMonth]} {calYear}
+                                {MESES[calMonth]} {calYear}
                             </span>
                             <button
                                 onClick={nextMonth}
@@ -764,7 +771,7 @@ export default function MiCuentaPage() {
                                     .filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
                                     .reduce((sum, [, a]) => sum + a.length, 0)}
                             </p>
-                            <p className="text-slate-400 text-xs mt-1.5 font-medium">asistencias</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">asistencias en {MESES_CORTO[calMonth]}</p>
                         </div>
                         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
                             <p className="text-3xl font-bold text-slate-900">
@@ -773,7 +780,7 @@ export default function MiCuentaPage() {
                                     .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0)
                                     .toLocaleString('es-AR')}
                             </p>
-                            <p className="text-slate-400 text-xs mt-1.5 font-medium">pagado</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">pagado en {MESES_CORTO[calMonth]}</p>
                         </div>
                     </div>
                 </div>
@@ -784,12 +791,12 @@ export default function MiCuentaPage() {
                 <div className="space-y-3">
                     {loadingPlan && (
                         <div className="flex justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-700" />
+                            <div className="border-t-2 border-r-2 border-emerald-400 rounded-full w-8 h-8 animate-spin" />
                         </div>
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center mt-2">
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center mt-2">
                             <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <svg className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -809,23 +816,23 @@ export default function MiCuentaPage() {
 
                         return (
                             <>
-                                {/* Plan header card */}
+                                {/* Plan header */}
                                 <div className="bg-slate-900 rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-wide">{planEj.categoria}</p>
+                                        <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
                                         <p className="text-slate-500 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
                                     </div>
                                     <div className="shrink-0 text-center bg-emerald-500/20 rounded-xl px-3 py-2">
-                                        <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-wide">Semana</p>
+                                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Semana</p>
                                         <p className="text-emerald-300 font-bold text-xl leading-none">{currentWeekNum}</p>
-                                        <p className="text-emerald-500 text-[10px]">de {totalSem}</p>
+                                        <p className="text-emerald-500 text-xs">de {totalSem}</p>
                                     </div>
                                 </div>
 
                                 {/* Week selector */}
                                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === currentWeekNum;
@@ -849,7 +856,7 @@ export default function MiCuentaPage() {
                                         })}
                                     </div>
                                     {selectedSemana === 5 && (
-                                        <p className="text-center text-[10px] text-slate-400 mt-2 font-medium">Semana de descarga</p>
+                                        <p className="text-center text-xs text-slate-400 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
 
@@ -881,16 +888,16 @@ export default function MiCuentaPage() {
                                 {/* Exercise table */}
                                 {dia && (
                                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                        {/* Table header — columnas fijas para que todas las filas alineen */}
+                                        {/* Header */}
                                         <div className="grid grid-cols-[1fr_96px_68px] border-b border-slate-100">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
                                             <div className="px-2 py-2.5 text-center border-l border-slate-100">
-                                                <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
+                                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
                                             </div>
                                             <div className="px-2 py-2.5 text-center border-l border-slate-100">
-                                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
+                                                <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
                                             </div>
                                         </div>
 
@@ -905,11 +912,14 @@ export default function MiCuentaPage() {
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
                                                             className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
                                                         >
-                                                            <div className="px-4 py-3 flex flex-col justify-center">
-                                                                <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
-                                                                {ej.kg && ej.kg !== '-' && (
-                                                                    <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
-                                                                )}
+                                                            <div className="px-4 py-3 flex items-center gap-2">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
+                                                                    {ej.kg && ej.kg !== '-' && (
+                                                                        <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
+                                                                    )}
+                                                                </div>
+                                                                <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
                                                             <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
                                                                 <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
@@ -925,30 +935,30 @@ export default function MiCuentaPage() {
 
                                                         {/* Expanded: input mis KG + observaciones */}
                                                         {isExpanded && (
-                                                            <div className="px-4 pb-4 pt-1 bg-slate-50 border-t border-slate-100 space-y-2.5">
+                                                            <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-slate-100 space-y-3">
                                                                 {ej.notas && (
                                                                     <p className="text-xs text-slate-500 italic">{ej.notas}</p>
                                                                 )}
                                                                 <div className="flex gap-2">
                                                                     <div className="w-24">
-                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
                                                                         <input
                                                                             type="text"
                                                                             inputMode="decimal"
                                                                             placeholder="ej: 60"
                                                                             value={ej.kgAlumno}
                                                                             onChange={(e) => updateEjAlumno(eIdx, 'kgAlumno', e.target.value)}
-                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
                                                                         />
                                                                     </div>
                                                                     <div className="flex-1">
-                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
                                                                         <input
                                                                             type="text"
                                                                             placeholder="ej: me costó la última rep..."
                                                                             value={ej.observacionesAlumno}
                                                                             onChange={(e) => updateEjAlumno(eIdx, 'observacionesAlumno', e.target.value)}
-                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -968,7 +978,7 @@ export default function MiCuentaPage() {
                                     className={`w-full py-3.5 font-bold rounded-2xl transition-all disabled:opacity-60 shadow-sm text-sm ${
                                         planSaved
                                             ? 'bg-emerald-100 text-emerald-700'
-                                            : 'bg-emerald-500 hover:bg-emerald-400 text-white'
+                                            : 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
                                     }`}
                                 >
                                     {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar mis datos'}
