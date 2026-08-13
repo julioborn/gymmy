@@ -78,10 +78,10 @@ const ACTIVIDAD_DOT: Record<string, string> = {
     'Otro': 'bg-yellow-400',
 };
 const COMBO_PALETTE = [
-    { border: '#f4a347', labelColor: '#b36000', dotColor: '#f4a347' },
-    { border: '#34d399', labelColor: '#047857', dotColor: '#34d399' },
-    { border: '#60a5fa', labelColor: '#1d4ed8', dotColor: '#60a5fa' },
-    { border: '#a78bfa', labelColor: '#6d28d9', dotColor: '#a78bfa' },
+    { bg: 'rgba(244, 163, 71, 0.09)', labelColor: '#b36000', dotColor: '#f4a347' },
+    { bg: 'rgba(52, 211, 153, 0.09)', labelColor: '#047857', dotColor: '#34d399' },
+    { bg: 'rgba(96, 165, 250, 0.09)', labelColor: '#1d4ed8', dotColor: '#60a5fa' },
+    { bg: 'rgba(167, 139, 250, 0.09)', labelColor: '#6d28d9', dotColor: '#a78bfa' },
 ];
 
 const ACTIVIDAD_PILL: Record<string, string> = {
@@ -935,7 +935,7 @@ export default function MiCuentaPage() {
                                                 return (
                                                     <div
                                                         key={eIdx}
-                                                        style={combo ? { borderLeft: `3px solid ${combo.border}` } : undefined}
+                                                        style={combo ? { backgroundColor: combo.bg } : undefined}
                                                     >
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
