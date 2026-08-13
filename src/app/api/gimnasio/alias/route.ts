@@ -9,8 +9,8 @@ export async function GET() {
     const { gimnasioId } = auth.session.user;
 
     await connectMongoDB();
-    const gym = await Gimnasio.findById(gimnasioId).select('alias');
-    return NextResponse.json({ alias: gym?.alias ?? '' });
+    const gym = await Gimnasio.findById(gimnasioId).select('alias nombre');
+    return NextResponse.json({ alias: gym?.alias ?? '', nombre: gym?.nombre ?? '' });
 }
 
 export async function PUT(req: NextRequest) {

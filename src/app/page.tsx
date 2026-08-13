@@ -126,6 +126,7 @@ export default function HomePage() {
     const [recargoDiez, setRecargoDiez] = useState<number>(0);
     const [recargoMes, setRecargoMes] = useState<number>(0);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
+    const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/login');
@@ -160,7 +161,7 @@ export default function HomePage() {
             .catch(() => { });
         fetch('/api/gimnasio/alias')
             .then(r => r.json())
-            .then(d => { setAliasGimnasio(d.alias ?? ''); })
+            .then(d => { setAliasGimnasio(d.alias ?? ''); setGimnasioNombre(d.nombre ?? ''); })
             .catch(() => { });
     }, [session]);
 
@@ -273,6 +274,7 @@ export default function HomePage() {
         return false;
     });
 
+    const isSporttime = gimnasioNombre.toLowerCase().includes('sport');
     const pagoColor = !data ? '' : data.porcentajePagados >= 80 ? 'text-emerald-600' : data.porcentajePagados >= 50 ? 'text-amber-600' : 'text-red-600';
     const pagoBarColor = !data ? 'bg-slate-200' : data.porcentajePagados >= 80 ? 'bg-emerald-500' : data.porcentajePagados >= 50 ? 'bg-amber-400' : 'bg-red-500';
     const balanceColor = !data ? '' : data.balance >= 0 ? 'text-emerald-600' : 'text-red-600';
@@ -285,7 +287,7 @@ export default function HomePage() {
             <div className="relative bg-slate-900 rounded-3xl px-6 pt-6 pb-5 overflow-hidden">
                 {/* Subtle depth rings */}
                 <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full bg-emerald-500/10" />
+                <div className={`pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full ${isSporttime ? 'bg-[#d1e08b]/10' : 'bg-emerald-500/10'}`} />
 
                 <div className="flex items-center justify-between mb-4 relative">
                     <div className="flex-1 min-w-0">
@@ -296,7 +298,7 @@ export default function HomePage() {
                             {capitalize(session.user?.username ?? 'Usuario')}
                         </h1>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg ml-3 shrink-0">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ml-3 shrink-0 ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`}>
                         <span className="text-xl font-bold text-white">
                             {(session.user?.username ?? 'U')[0].toUpperCase()}
                         </span>
@@ -308,6 +310,10 @@ export default function HomePage() {
                     </span>
                     <span className="text-slate-600 text-[11px]">·</span>
                     <span className="text-slate-400 text-[11px] capitalize">{fmtDate()}</span>
+                    {isSporttime && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src="/sporttime2.jpg" alt="Sport Time" className="h-7 w-auto rounded-md ml-auto object-contain opacity-95" />
+                    )}
                 </div>
             </div>
 

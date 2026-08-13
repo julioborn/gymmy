@@ -341,6 +341,7 @@ export default function MiCuentaPage() {
     const calDays = getCalendarDays(calYear, calMonth);
     const initials = getInitials(alumno.nombre, alumno.apellido);
     const gimnasioNombre = (alumno.gimnasioId as any)?.nombre ?? '';
+    const isSporttime = gimnasioNombre.toLowerCase().includes('sport');
 
     function prevMonth() {
         setSelectedDay(null);
@@ -404,13 +405,13 @@ export default function MiCuentaPage() {
             {/* ── PROFILE BANNER ── */}
             <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
                 <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full bg-emerald-500/10" />
+                <div className={`pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full ${isSporttime ? 'bg-[#d1e08b]/10' : 'bg-emerald-500/10'}`} />
 
                 <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`}>
                         <span className="text-white font-bold text-xl tracking-wide">{initials}</span>
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <h1 className="text-white font-bold text-lg leading-tight truncate">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
@@ -421,6 +422,10 @@ export default function MiCuentaPage() {
                             <span className="text-slate-400 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
+                    {isSporttime && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src="/sporttime2.jpg" alt="Sport Time" className="h-10 w-auto rounded-lg shrink-0 object-contain opacity-95" />
+                    )}
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
@@ -823,10 +828,10 @@ export default function MiCuentaPage() {
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
                                         <p className="text-slate-500 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
                                     </div>
-                                    <div className="shrink-0 text-center bg-emerald-500/20 rounded-xl px-3 py-2">
-                                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Semana</p>
-                                        <p className="text-emerald-300 font-bold text-xl leading-none">{currentWeekNum}</p>
-                                        <p className="text-emerald-500 text-xs">de {totalSem}</p>
+                                    <div className={`shrink-0 text-center rounded-xl px-3 py-2 ${isSporttime ? 'bg-[#d1e08b]/20' : 'bg-emerald-500/20'}`}>
+                                        <p className={`text-xs font-bold uppercase tracking-wide ${isSporttime ? 'text-[#d1e08b]' : 'text-emerald-400'}`}>Semana</p>
+                                        <p className={`font-bold text-xl leading-none ${isSporttime ? 'text-[#edf5bc]' : 'text-emerald-300'}`}>{currentWeekNum}</p>
+                                        <p className={`text-xs ${isSporttime ? 'text-[#b8cc60]' : 'text-emerald-500'}`}>de {totalSem}</p>
                                     </div>
                                 </div>
 
@@ -849,7 +854,7 @@ export default function MiCuentaPage() {
                                                 >
                                                     {sem}
                                                     {isCurrent && (
-                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white" />
+                                                        <span className={`absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
                                                     )}
                                                 </button>
                                             );
