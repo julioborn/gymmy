@@ -607,11 +607,16 @@ export default function MiCuentaPage() {
                                                 <span className="text-slate-800 font-bold text-sm leading-none">{dy}</span>
                                                 <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[mo - 1]}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-1.5">
+                                            <div className="flex flex-wrap gap-2">
                                                 {asists.map(a => (
-                                                    <span key={a._id} className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
-                                                        {a.actividad}
-                                                    </span>
+                                                    <div key={a._id} className="flex items-center gap-1.5">
+                                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
+                                                            {a.actividad}
+                                                        </span>
+                                                        <span className="text-xs text-slate-400 font-medium">
+                                                            {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
                                                 ))}
                                             </div>
                                         </div>
