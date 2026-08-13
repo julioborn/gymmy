@@ -47,6 +47,7 @@ interface EjercicioAsignado {
     kg: string;
     kgAlumno: string;
     observacionesAlumno: string;
+    grupoCombo: string;
 }
 
 interface DiaAsignado {
@@ -76,6 +77,13 @@ const ACTIVIDAD_DOT: Record<string, string> = {
     'Intermitente': 'bg-orange-400',
     'Otro': 'bg-yellow-400',
 };
+const COMBO_PALETTE = [
+    { border: '#f4a347', labelColor: '#b36000', dotColor: '#f4a347' },
+    { border: '#34d399', labelColor: '#047857', dotColor: '#34d399' },
+    { border: '#60a5fa', labelColor: '#1d4ed8', dotColor: '#60a5fa' },
+    { border: '#a78bfa', labelColor: '#6d28d9', dotColor: '#a78bfa' },
+];
+
 const ACTIVIDAD_PILL: Record<string, string> = {
     'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
     'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
@@ -819,6 +827,15 @@ export default function MiCuentaPage() {
                         const dia = planEj.dias[selectedDia];
                         const totalSesiones = totalSem * planEj.dias.length;
 
+                        // Build combo color index map for current día
+                        const comboIdx: Record<string, number> = {};
+                        let nextComboIdx = 0;
+                        (dia?.ejercicios ?? []).forEach((e: EjercicioAsignado) => {
+                            if (e.grupoCombo && comboIdx[e.grupoCombo] === undefined) {
+                                comboIdx[e.grupoCombo] = nextComboIdx++;
+                            }
+                        });
+
                         return (
                             <>
                                 {/* Plan header */}
@@ -911,14 +928,27 @@ export default function MiCuentaPage() {
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
                                                 const isExpanded = expandedEj === eIdx;
+                                                const ci = ej.grupoCombo ? (comboIdx[ej.grupoCombo] ?? -1) : -1;
+                                                const combo = ci >= 0 ? COMBO_PALETTE[ci % COMBO_PALETTE.length] : null;
+                                                const prevEj = dia.ejercicios[eIdx - 1];
+                                                const isFirstInCombo = combo && (!prevEj?.grupoCombo || prevEj.grupoCombo !== ej.grupoCombo);
                                                 return (
-                                                    <div key={eIdx}>
+                                                    <div
+                                                        key={eIdx}
+                                                        style={combo ? { borderLeft: `3px solid ${combo.border}` } : undefined}
+                                                    >
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
                                                             className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
                                                         >
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
+                                                                    {isFirstInCombo && combo && (
+                                                                        <div className="flex items-center gap-1 mb-0.5">
+                                                                            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: combo.dotColor }} />
+                                                                            <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: combo.labelColor }}>Combinado</span>
+                                                                        </div>
+                                                                    )}
                                                                     <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
                                                                     {ej.kg && ej.kg !== '-' && (
                                                                         <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>

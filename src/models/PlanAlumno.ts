@@ -11,6 +11,7 @@ export interface IEjercicioPlanAlumno {
     kg: string;
     kgAlumno: string;
     observacionesAlumno: string;
+    grupoCombo: string; // '' = individual, '1'/'2'/'3' = ejercicios combinados del mismo grupo
 }
 
 export interface IDiaPlanAlumno {
@@ -49,6 +50,7 @@ const EjercicioSchema = new Schema({
     kg: { type: String, default: '' },
     kgAlumno: { type: String, default: '' },
     observacionesAlumno: { type: String, default: '' },
+    grupoCombo: { type: String, default: '' },
 }, { _id: false });
 
 const DiaSchema = new Schema({
