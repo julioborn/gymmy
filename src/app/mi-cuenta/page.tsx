@@ -208,13 +208,15 @@ export default function MiCuentaPage() {
         if (!planEj || !alumno) return;
         setSavingPlan(true);
         try {
-            await fetch(`/api/plan-alumno/alumno/${alumno._id}`, {
+            const res = await fetch(`/api/plan-alumno/alumno/${alumno._id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
             });
-            setPlanSaved(true);
-            setTimeout(() => setPlanSaved(false), 2500);
+            if (res.ok) {
+                setPlanSaved(true);
+                setTimeout(() => setPlanSaved(false), 2500);
+            }
         } finally {
             setSavingPlan(false);
         }
@@ -864,17 +866,26 @@ export default function MiCuentaPage() {
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === currentWeekNum;
                                             const isSelected = sem === selectedSemana;
+                                            const isPast = sem < currentWeekNum;
                                             return (
                                                 <button
                                                     key={sem}
                                                     onClick={() => setSelectedSemana(sem)}
-                                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
+                                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
                                                         isSelected
                                                             ? 'bg-slate-900 text-white shadow-sm'
+                                                            : isPast
+                                                            ? 'bg-slate-50 text-slate-400'
                                                             : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                                                     }`}
                                                 >
                                                     {sem}
+                                                    {isPast && !isSelected && (
+                                                        <span
+                                                            className="absolute inset-0 pointer-events-none"
+                                                            style={{ background: 'linear-gradient(to top right, transparent calc(50% - 1px), rgba(239,68,68,0.55) calc(50% - 1px), rgba(239,68,68,0.55) calc(50% + 1px), transparent calc(50% + 1px))' }}
+                                                        />
+                                                    )}
                                                     {isCurrent && (
                                                         <span className={`absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
                                                     )}

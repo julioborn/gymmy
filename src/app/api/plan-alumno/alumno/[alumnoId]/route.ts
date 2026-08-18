@@ -4,6 +4,8 @@ import PlanAlumno from '@/models/PlanAlumno';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
+export const dynamic = 'force-dynamic';
+
 // GET: plan activo del alumno
 export async function GET(_req: NextRequest, { params }: { params: { alumnoId: string } }) {
     const session = await getServerSession(authOptions);
