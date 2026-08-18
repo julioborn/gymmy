@@ -31,21 +31,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { alumnoId: 
     const plan = await PlanAlumno.findOne({ _id: planId, alumnoId: params.alumnoId, activo: true });
     if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 });
 
-    type ClientEj = { kgAlumno?: string; observacionesAlumno?: string };
+    type ClientEj = Record<string, string | undefined>;
     type ClientDia = { ejercicios?: ClientEj[] };
 
-    // Merge: only overwrite kgAlumno and observacionesAlumno, preserve everything else
+    // Merge: only overwrite per-semana kg and observaciones, preserve everything else
     const updatedDias = plan.toObject().dias.map((dia: Record<string, unknown>, i: number) => {
         const clientDia = (dias as ClientDia[])[i];
         if (!clientDia) return dia;
         const ejercicios = (dia.ejercicios as Record<string, unknown>[]).map((ej: Record<string, unknown>, j: number) => {
             const clientEj = clientDia.ejercicios?.[j];
             if (!clientEj) return ej;
-            return {
-                ...ej,
-                kgAlumno: clientEj.kgAlumno ?? ej.kgAlumno,
-                observacionesAlumno: clientEj.observacionesAlumno ?? ej.observacionesAlumno,
-            };
+            const merged: Record<string, string> = {};
+            for (let s = 1; s <= 5; s++) {
+                const kk = `kgAlumno${s}`;
+                const ok = `observacionesAlumno${s}`;
+                merged[kk] = clientEj[kk] ?? (ej[kk] as string) ?? '';
+                merged[ok] = clientEj[ok] ?? (ej[ok] as string) ?? '';
+            }
+            return { ...ej, ...merged };
         });
         return { ...dia, ejercicios };
     });

@@ -18,7 +18,10 @@ const GIMNASIO_ID = new ObjectId('6a0bc7b9aeb5691869fbc112');
 const ej = (nombre, notas, s1, s2, s3, s4, s5, kg, combo = '') => ({
     nombre, notas,
     semana1: s1, semana2: s2, semana3: s3, semana4: s4, semana5: s5,
-    kg, kgAlumno: '', observacionesAlumno: '', grupoCombo: combo,
+    kg,
+    kgAlumno1: '', kgAlumno2: '', kgAlumno3: '', kgAlumno4: '', kgAlumno5: '',
+    observacionesAlumno1: '', observacionesAlumno2: '', observacionesAlumno3: '', observacionesAlumno4: '', observacionesAlumno5: '',
+    grupoCombo: combo,
 });
 
 const plan = {

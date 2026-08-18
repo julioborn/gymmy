@@ -9,9 +9,17 @@ export interface IEjercicioPlanAlumno {
     semana4: string;
     semana5: string;
     kg: string;
-    kgAlumno: string;
-    observacionesAlumno: string;
-    grupoCombo: string; // '' = individual, '1'/'2'/'3' = ejercicios combinados del mismo grupo
+    kgAlumno1: string;
+    kgAlumno2: string;
+    kgAlumno3: string;
+    kgAlumno4: string;
+    kgAlumno5: string;
+    observacionesAlumno1: string;
+    observacionesAlumno2: string;
+    observacionesAlumno3: string;
+    observacionesAlumno4: string;
+    observacionesAlumno5: string;
+    grupoCombo: string;
 }
 
 export interface IDiaPlanAlumno {
@@ -48,8 +56,16 @@ const EjercicioSchema = new Schema({
     semana4: { type: String, default: '' },
     semana5: { type: String, default: '' },
     kg: { type: String, default: '' },
-    kgAlumno: { type: String, default: '' },
-    observacionesAlumno: { type: String, default: '' },
+    kgAlumno1: { type: String, default: '' },
+    kgAlumno2: { type: String, default: '' },
+    kgAlumno3: { type: String, default: '' },
+    kgAlumno4: { type: String, default: '' },
+    kgAlumno5: { type: String, default: '' },
+    observacionesAlumno1: { type: String, default: '' },
+    observacionesAlumno2: { type: String, default: '' },
+    observacionesAlumno3: { type: String, default: '' },
+    observacionesAlumno4: { type: String, default: '' },
+    observacionesAlumno5: { type: String, default: '' },
     grupoCombo: { type: String, default: '' },
 }, { _id: false });
 

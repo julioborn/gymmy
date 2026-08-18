@@ -45,8 +45,16 @@ interface EjercicioAsignado {
     semana4: string;
     semana5: string;
     kg: string;
-    kgAlumno: string;
-    observacionesAlumno: string;
+    kgAlumno1: string;
+    kgAlumno2: string;
+    kgAlumno3: string;
+    kgAlumno4: string;
+    kgAlumno5: string;
+    observacionesAlumno1: string;
+    observacionesAlumno2: string;
+    observacionesAlumno3: string;
+    observacionesAlumno4: string;
+    observacionesAlumno5: string;
     grupoCombo: string;
 }
 
@@ -243,7 +251,7 @@ export default function MiCuentaPage() {
         }
     }
 
-    function updateEjAlumno(eIdx: number, field: 'kgAlumno' | 'observacionesAlumno', value: string) {
+    function updateEjAlumno(eIdx: number, field: string, value: string) {
         setPlanEj((prev) => {
             if (!prev) return prev;
             const dias = prev.dias.map((d, di) => {
@@ -978,9 +986,14 @@ export default function MiCuentaPage() {
                                                                 </span>
                                                             </div>
                                                             <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
-                                                                <span className={`text-sm font-bold ${ej.kgAlumno ? 'text-emerald-600' : 'text-slate-200'}`}>
-                                                                    {ej.kgAlumno || '—'}
-                                                                </span>
+                                                                {(() => {
+                                                                    const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
+                                                                    return (
+                                                                        <span className={`text-sm font-bold ${kgVal ? 'text-emerald-600' : 'text-slate-200'}`}>
+                                                                            {kgVal || '—'}
+                                                                        </span>
+                                                                    );
+                                                                })()}
                                                             </div>
                                                         </button>
 
@@ -992,23 +1005,23 @@ export default function MiCuentaPage() {
                                                                 )}
                                                                 <div className="flex gap-2">
                                                                     <div className="w-24">
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG — Sem {selectedSemana}</label>
                                                                         <input
                                                                             type="text"
                                                                             inputMode="decimal"
                                                                             placeholder="ej: 60"
-                                                                            value={ej.kgAlumno}
-                                                                            onChange={(e) => updateEjAlumno(eIdx, 'kgAlumno', e.target.value)}
+                                                                            value={(ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
+                                                                            onChange={(e) => updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, e.target.value)}
                                                                             className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
                                                                         />
                                                                     </div>
                                                                     <div className="flex-1">
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones — Sem {selectedSemana}</label>
                                                                         <input
                                                                             type="text"
                                                                             placeholder="ej: me costó la última rep..."
-                                                                            value={ej.observacionesAlumno}
-                                                                            onChange={(e) => updateEjAlumno(eIdx, 'observacionesAlumno', e.target.value)}
+                                                                            value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
+                                                                            onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
                                                                             className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
                                                                         />
                                                                     </div>
