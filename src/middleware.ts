@@ -9,7 +9,8 @@ export async function middleware(req: NextRequest) {
     const publicPaths = ['/', '/login', '/soporte', '/privacidad', '/eliminar-cuenta', '/pago-resultado', '/manifest.json', '/sw.js', '/firebase-messaging-sw.js', '/favicon.ico', '/apple-touch-icon.png'];
     const isPublic = publicPaths.includes(pathname) ||
         pathname.startsWith('/icons') ||
-        pathname.startsWith('/login/');
+        pathname.startsWith('/login/') ||
+        pathname.startsWith('/registro/');
 
     if (isPublic) return NextResponse.next();
 
