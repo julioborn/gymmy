@@ -194,7 +194,7 @@ export default function MiCuentaPage() {
         } catch { /* ignorar */ }
     }
 
-    async function fetchPlan(alumnoId: string) {
+    async function fetchPlan(alumnoId: string, alumnoData?: Alumno) {
         setLoadingPlan(true);
         try {
             const r = await fetch(`/api/plan-alumno/alumno/${alumnoId}`);
@@ -206,6 +206,12 @@ export default function MiCuentaPage() {
                 const diasTranscurridos = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
                 const semanaActual = Math.min(Math.max(Math.floor(diasTranscurridos / 7) + 1, 1), data.totalSemanas || 5);
                 setSelectedSemana(semanaActual);
+                if (alumnoData && data.dias.length > 0) {
+                    const sessionsDone = alumnoData.asistencia.filter(a =>
+                        a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio
+                    ).length;
+                    setSelectedDia(sessionsDone % data.dias.length);
+                }
             }
         } finally {
             setLoadingPlan(false);
@@ -298,7 +304,7 @@ export default function MiCuentaPage() {
         }
 
         fetchAlumno()
-            .then(data => { if (data?._id) fetchPlan(data._id); })
+            .then(data => { if (data?._id) fetchPlan(data._id, data); })
             .catch(() => {})
             .finally(() => setLoading(false));
         fetchAlias();
@@ -847,6 +853,15 @@ export default function MiCuentaPage() {
                             }
                         });
 
+                        // Current day index based on musculación attendance since plan start
+                        const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
+                        const sessionsDone = planInicio && alumno
+                            ? alumno.asistencia.filter(a =>
+                                a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio
+                              ).length
+                            : 0;
+                        const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
+
                         return (
                             <>
                                 {/* Plan header */}
@@ -905,19 +920,34 @@ export default function MiCuentaPage() {
 
                                 {/* Day selector */}
                                 <div className="flex gap-1.5">
-                                    {planEj.dias.map((d, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
-                                            className={`flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border ${
-                                                selectedDia === i
-                                                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                                                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
-                                            }`}
-                                        >
-                                            <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
-                                        </button>
-                                    ))}
+                                    {planEj.dias.map((d, i) => {
+                                        const isDayDone = selectedSemana < currentWeekNum
+                                            || (selectedSemana === currentWeekNum && i < currentDayIdx);
+                                        const isCurrentDay = selectedSemana === currentWeekNum && i === currentDayIdx;
+                                        return (
+                                            <button
+                                                key={i}
+                                                onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
+                                                className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
+                                                    selectedDia === i
+                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                                                        : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
+                                                }`}
+                                            >
+                                                <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
+                                                {isDayDone && selectedDia !== i && (
+                                                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
+                                                        <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                                        </svg>
+                                                    </span>
+                                                )}
+                                                {isCurrentDay && selectedDia !== i && (
+                                                    <span className={`absolute top-1 right-1 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
 
                                 {/* Bloque activación */}
