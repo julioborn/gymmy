@@ -417,26 +417,30 @@ export default function MiCuentaPage() {
     // Week-navigable attendance
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
     const planInicioDate = planEj?.fechaInicio ? new Date(planEj.fechaInicio) : null;
-    let currentWeekStartMs: number;
-    if (planInicioDate) {
-        const weeksSinceStart = Math.floor((now.getTime() - planInicioDate.getTime()) / msPerWeek);
-        currentWeekStartMs = planInicioDate.getTime() + Math.max(0, weeksSinceStart) * msPerWeek;
-    } else {
-        const d = new Date(now);
-        d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-        d.setHours(0, 0, 0, 0);
-        currentWeekStartMs = d.getTime();
-    }
-    const weekStartMs = currentWeekStartMs - asistWeekOffset * msPerWeek;
+    // Always use calendar week (Mon–Sun), never aligned to plan start date
+    const todayMonday = new Date(now);
+    todayMonday.setDate(todayMonday.getDate() - ((todayMonday.getDay() + 6) % 7));
+    todayMonday.setHours(0, 0, 0, 0);
+    const currentCalWeekMs = todayMonday.getTime();
+
+    const weekStartMs = currentCalWeekMs - asistWeekOffset * msPerWeek;
     const weekEndMs = weekStartMs + msPerWeek;
     const weekStart = new Date(weekStartMs);
     const weekEnd = new Date(weekEndMs);
+
+    // Plan week number = how many calendar weeks since the Monday of plan start week
+    let planWeekNum: number | null = null;
+    if (planInicioDate) {
+        const planMonday = new Date(planInicioDate);
+        planMonday.setDate(planMonday.getDate() - ((planMonday.getDay() + 6) % 7));
+        planMonday.setHours(0, 0, 0, 0);
+        const n = Math.floor((weekStartMs - planMonday.getTime()) / msPerWeek) + 1;
+        planWeekNum = n >= 1 ? n : null;
+    }
+
     const asistenciasEnSemana = [...alumno.asistencia]
         .filter(a => { const d = new Date(a.fecha); return a.presente && d >= weekStart && d < weekEnd; })
         .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-    const planWeekNum = planInicioDate
-        ? Math.floor((weekStartMs - planInicioDate.getTime()) / msPerWeek) + 1
-        : null;
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
