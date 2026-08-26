@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 
 interface GymInfo {
     nombre: string;
@@ -128,13 +127,11 @@ export default function RegistroPage() {
                 <div className="text-center mb-10">
                     {isSporttime && (
                         <div className="flex justify-center mb-6">
-                            <Image
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                                 src="/sporttime2.jpg"
                                 alt="Sporttime"
-                                width={160}
-                                height={80}
-                                className="object-contain rounded-2xl"
-                                priority
+                                style={{ width: 160, height: 'auto', borderRadius: 16, objectFit: 'contain' }}
                             />
                         </div>
                     )}
