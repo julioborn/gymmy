@@ -160,7 +160,21 @@ function IconChevron({ className }: { className?: string }) {
 export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<'resumen' | 'historial' | 'plan'>('resumen');
+    const validTabs = ['resumen', 'historial', 'plan'] as const;
+    type Tab = typeof validTabs[number];
+    const getInitialTab = (): Tab => {
+        if (typeof window !== 'undefined') {
+            const hash = window.location.hash.replace('#', '') as Tab;
+            if (validTabs.includes(hash)) return hash;
+        }
+        return 'resumen';
+    };
+    const [tab, setTab] = useState<Tab>(getInitialTab);
+
+    const changeTab = (t: Tab) => {
+        setTab(t);
+        window.location.hash = t;
+    };
     const [loadingPago, setLoadingPago] = useState(false);
     const [pagoResult, setPagoResult] = useState<'ok' | 'error' | 'pendiente' | null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
@@ -508,14 +522,14 @@ export default function MiCuentaPage() {
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
-                        onClick={() => setTab(t)}
+                        onClick={() => changeTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                             tab === t
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-400 hover:text-slate-600'
                         }`}
                     >
-                        {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi plan'}
+                        {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
                     </button>
                 ))}
             </div>
