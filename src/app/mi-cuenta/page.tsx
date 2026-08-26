@@ -176,6 +176,7 @@ export default function MiCuentaPage() {
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
 
     const now = new Date();
+    const [asistWeekOffset, setAsistWeekOffset] = useState(0);
     const [calYear, setCalYear] = useState(now.getFullYear());
     const [calMonth, setCalMonth] = useState(now.getMonth());
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -399,9 +400,31 @@ export default function MiCuentaPage() {
     const selectedAsistencias = selectedDay ? (asistenciasMap[selectedDay] || []) : [];
     const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
-    const ultimasAsistencias: [string, Asistencia[]][] = Object.entries(asistenciasMap)
-        .sort(([a], [b]) => b.localeCompare(a))
-        .slice(0, 5);
+    // Week-navigable attendance
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const planInicioDate = planEj?.fechaInicio ? new Date(planEj.fechaInicio) : null;
+    let currentWeekStartMs: number;
+    if (planInicioDate) {
+        const weeksSinceStart = Math.floor((now.getTime() - planInicioDate.getTime()) / msPerWeek);
+        currentWeekStartMs = planInicioDate.getTime() + Math.max(0, weeksSinceStart) * msPerWeek;
+    } else {
+        const d = new Date(now);
+        d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+        d.setHours(0, 0, 0, 0);
+        currentWeekStartMs = d.getTime();
+    }
+    const weekStartMs = currentWeekStartMs - asistWeekOffset * msPerWeek;
+    const weekEndMs = weekStartMs + msPerWeek;
+    const weekStart = new Date(weekStartMs);
+    const weekEnd = new Date(weekEndMs);
+    const asistenciasEnSemana = [...alumno.asistencia]
+        .filter(a => { const d = new Date(a.fecha); return a.presente && d >= weekStart && d < weekEnd; })
+        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    const planWeekNum = planInicioDate
+        ? Math.floor((weekStartMs - planInicioDate.getTime()) / msPerWeek) + 1
+        : null;
+    const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
+    const diasPorSemana = planEj?.dias?.length ?? 0;
 
     return (
         <div className="max-w-lg mx-auto pt-8 pb-12 px-4">
@@ -618,40 +641,78 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {/* Últimas asistencias */}
+                    {/* Asistencias por semana navegable */}
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                        <div className="px-4 pt-4 pb-3 border-b border-slate-50">
-                            <h3 className="text-slate-800 text-sm font-bold">Últimas asistencias</h3>
+                        {/* Nav header */}
+                        <div className="px-3 pt-3 pb-2.5 border-b border-slate-50 flex items-center justify-between gap-2">
+                            <button
+                                onClick={() => setAsistWeekOffset(o => o + 1)}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </button>
+                            <div className="text-center min-w-0">
+                                <p className="text-slate-800 text-sm font-bold leading-tight">
+                                    {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
+                                </p>
+                                <p className="text-slate-400 text-xs mt-0.5">
+                                    {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
+                                disabled={asistWeekOffset === 0}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0 disabled:opacity-30"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </button>
                         </div>
-                        {ultimasAsistencias.length === 0 ? (
-                            <div className="px-4 py-8 text-center">
-                                <p className="text-slate-400 text-sm">Sin asistencias registradas aún.</p>
+
+                        {/* Entries */}
+                        {asistenciasEnSemana.length === 0 ? (
+                            <div className="px-4 py-7 text-center">
+                                <p className="text-slate-400 text-sm">Sin asistencias esta semana.</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-50">
-                                {ultimasAsistencias.map(([dateKey, asists]) => {
-                                    const [, mo, dy] = dateKey.split('-').map(Number);
+                                {asistenciasEnSemana.map(a => {
+                                    const d = new Date(a.fecha);
                                     return (
-                                        <div key={dateKey} className="flex items-center gap-3 px-4 py-3">
+                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3">
                                             <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-slate-100">
-                                                <span className="text-slate-800 font-bold text-sm leading-none">{dy}</span>
-                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[mo - 1]}</span>
+                                                <span className="text-slate-800 font-bold text-sm leading-none">{d.getDate()}</span>
+                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {asists.map(a => (
-                                                    <div key={a._id} className="flex items-center gap-1.5">
-                                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
-                                                            {a.actividad}
-                                                        </span>
-                                                        <span className="text-xs text-slate-400 font-medium">
-                                                            {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                            <div className="flex-1 flex items-center gap-2 flex-wrap">
+                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
+                                                    {a.actividad}
+                                                </span>
+                                                <span className="text-xs text-slate-400 font-medium">
+                                                    {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
                                             </div>
                                         </div>
                                     );
                                 })}
+                            </div>
+                        )}
+
+                        {/* Plan progress bar for this week */}
+                        {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
+                            <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                                <div className="flex gap-1 flex-1">
+                                    {Array.from({ length: diasPorSemana }, (_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-1.5 flex-1 rounded-full ${i < musculacionEnSemana ? 'bg-emerald-400' : 'bg-slate-200'}`}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-xs text-slate-400 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
                         )}
                     </div>
