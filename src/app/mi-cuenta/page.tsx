@@ -1022,6 +1022,10 @@ export default function MiCuentaPage() {
                                                                     {ej.kg && ej.kg !== '-' && (
                                                                         <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
                                                                     )}
+                                                                    {(() => {
+                                                                        const obs = (ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
+                                                                        return obs ? <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{obs}</p> : null;
+                                                                    })()}
                                                                 </div>
                                                                 <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
