@@ -337,7 +337,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <img
                             src="/icons/icon-192x192.png"
                             alt="Gymmy"
-                            style={{ height: 30, width: 30, objectFit: 'contain', filter: 'invert(1)', opacity: 0.9 }}
+                            style={{ height: 38, width: 38, objectFit: 'contain', filter: 'invert(1)', mixBlendMode: 'screen', opacity: 0.95 }}
                         />
                         {session?.user?.gimnasioLogoUrl && (
                             <>
@@ -345,7 +345,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                 <img
                                     src={session.user.gimnasioLogoUrl}
                                     alt={session.user.gimnasioNombre ?? ''}
-                                    style={{ height: 42, maxWidth: 110, objectFit: 'contain' }}
+                                    style={{ height: 50, maxWidth: 120, objectFit: 'contain' }}
                                 />
                             </>
                         )}
@@ -353,7 +353,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                             <img
                                 src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
                                 alt="Gymmy"
-                                style={{ height: 28, opacity: 0.85 }}
+                                style={{ height: 32, opacity: 0.9 }}
                             />
                         )}
                     </Link>
