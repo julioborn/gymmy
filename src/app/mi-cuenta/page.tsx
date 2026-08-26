@@ -171,7 +171,6 @@ export default function MiCuentaPage() {
     const [savingPlan, setSavingPlan] = useState(false);
     const [planSaved, setPlanSaved] = useState(false);
     const [savingEj, setSavingEj] = useState<number | null>(null);
-    const [savedEj, setSavedEj] = useState<number | null>(null);
     const [selectedSemana, setSelectedSemana] = useState(1);
     const [selectedDia, setSelectedDia] = useState(0);
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
@@ -248,8 +247,7 @@ export default function MiCuentaPage() {
                 body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
             });
             if (res.ok) {
-                setSavedEj(ejIdx);
-                setTimeout(() => setSavedEj(null), 2000);
+                setExpandedEj(null);
             }
         } finally {
             setSavingEj(null);
@@ -1074,13 +1072,9 @@ export default function MiCuentaPage() {
                                                                 <button
                                                                     onClick={() => handleSaveEjercicio(eIdx)}
                                                                     disabled={savingEj === eIdx}
-                                                                    className={`w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 ${
-                                                                        savedEj === eIdx
-                                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                                            : 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
-                                                                    }`}
+                                                                    className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white"
                                                                 >
-                                                                    {savingEj === eIdx ? 'Guardando...' : savedEj === eIdx ? 'Guardado ✓' : 'Guardar'}
+                                                                    {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
                                                                 </button>
                                                             </div>
                                                         )}
@@ -1091,18 +1085,6 @@ export default function MiCuentaPage() {
                                     </div>
                                 )}
 
-                                {/* Save button */}
-                                <button
-                                    onClick={handleSavePlan}
-                                    disabled={savingPlan}
-                                    className={`w-full py-3.5 font-bold rounded-2xl transition-all disabled:opacity-60 shadow-sm text-sm ${
-                                        planSaved
-                                            ? 'bg-emerald-100 text-emerald-700'
-                                            : 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
-                                    }`}
-                                >
-                                    {savingPlan ? 'Guardando...' : planSaved ? 'Guardado ✓' : 'Guardar mis datos'}
-                                </button>
                             </>
                         );
                     })()}
