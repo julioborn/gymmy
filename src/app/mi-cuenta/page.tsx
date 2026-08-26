@@ -1004,9 +1004,8 @@ export default function MiCuentaPage() {
                                                                     <div>
                                                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
                                                                         <input
-                                                                            type="text"
-                                                                            inputMode="decimal"
-                                                                            placeholder="ej: 60"
+                                                                            type="number"
+                                                                            inputMode="numeric"
                                                                             value={(ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, e.target.value)}
                                                                             className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
@@ -1016,7 +1015,6 @@ export default function MiCuentaPage() {
                                                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
                                                                         <input
                                                                             type="text"
-                                                                            placeholder="ej: me costó la última rep..."
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
                                                                             className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 bg-white"
