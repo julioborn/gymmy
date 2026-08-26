@@ -298,11 +298,21 @@ export default function HomePage() {
                             {capitalize(session.user?.username ?? 'Usuario')}
                         </h1>
                     </div>
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ml-3 shrink-0 ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`}>
-                        <span className="text-xl font-bold text-white">
-                            {(session.user?.username ?? 'U')[0].toUpperCase()}
-                        </span>
-                    </div>
+                    {(session.user as any)?.gimnasioLogoUrl ? (
+                        <div className="ml-3 shrink-0">
+                            <img
+                                src={(session.user as any).gimnasioLogoUrl}
+                                alt={(session.user as any).gimnasioNombre ?? ''}
+                                style={{ height: 52, maxWidth: 100, objectFit: 'contain', borderRadius: 14 }}
+                            />
+                        </div>
+                    ) : (
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ml-3 shrink-0 ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`}>
+                            <span className="text-xl font-bold text-white">
+                                {(session.user?.username ?? 'U')[0].toUpperCase()}
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap relative">
                     <span className="ring-1 ring-white/20 bg-white/10 text-white text-[11px] font-bold px-3 py-1 rounded-full capitalize">

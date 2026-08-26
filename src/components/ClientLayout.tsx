@@ -333,29 +333,12 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2">
                         <img
-                            src="/icons/icon-192x192.png"
+                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
                             alt="Gymmy"
-                            style={{ height: 38, width: 38, objectFit: 'contain', filter: 'invert(1)', mixBlendMode: 'screen', opacity: 0.95 }}
+                            style={{ height: 38 }}
                         />
-                        {session?.user?.gimnasioLogoUrl && (
-                            <>
-                                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, fontWeight: 300, lineHeight: 1 }}>×</span>
-                                <img
-                                    src={session.user.gimnasioLogoUrl}
-                                    alt={session.user.gimnasioNombre ?? ''}
-                                    style={{ height: 50, maxWidth: 120, objectFit: 'contain' }}
-                                />
-                            </>
-                        )}
-                        {!session?.user?.gimnasioLogoUrl && (
-                            <img
-                                src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
-                                alt="Gymmy"
-                                style={{ height: 32, opacity: 0.9 }}
-                            />
-                        )}
                     </Link>
 
                     <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-red-400 shadow-[0_0_8px_#ef4444]'}`} />
