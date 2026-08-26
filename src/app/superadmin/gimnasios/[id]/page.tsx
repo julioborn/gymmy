@@ -17,6 +17,7 @@ interface Gimnasio {
     activo: boolean;
     fechaVencimiento?: string;
     alias?: string;
+    logoUrl?: string;
     totalAlumnos: number;
     usuarios: Usuario[];
     createdAt: string;
@@ -43,6 +44,7 @@ export default function GimnasioDetailPage() {
 
     const [editNombre, setEditNombre] = useState('');
     const [editAlias, setEditAlias] = useState('');
+    const [editLogoUrl, setEditLogoUrl] = useState('');
     const [editFechaVencimiento, setEditFechaVencimiento] = useState('');
 
     const [nuevoUser, setNuevoUser] = useState({ username: '', password: '', role: 'registro' });
@@ -64,6 +66,7 @@ export default function GimnasioDetailPage() {
             setGimnasio(data);
             setEditNombre(data.nombre);
             setEditAlias(data.alias ?? '');
+            setEditLogoUrl(data.logoUrl ?? '');
             setEditFechaVencimiento(
                 data.fechaVencimiento
                     ? new Date(data.fechaVencimiento).toISOString().split('T')[0]
@@ -78,7 +81,7 @@ export default function GimnasioDetailPage() {
         await fetch(`/api/superadmin/gimnasios/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre: editNombre, alias: editAlias || null, fechaVencimiento: editFechaVencimiento || null }),
+            body: JSON.stringify({ nombre: editNombre, alias: editAlias || null, logoUrl: editLogoUrl || null, fechaVencimiento: editFechaVencimiento || null }),
         });
         await fetchGimnasio();
         setSaving(false);
@@ -207,6 +210,18 @@ export default function GimnasioDetailPage() {
                             <p className="text-slate-400 text-xs mt-1.5 pl-1">
                                 URL: /registro/{editAlias}
                             </p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-slate-500 text-xs font-medium mb-1.5">Logo URL (header de la app)</label>
+                        <input
+                            value={editLogoUrl}
+                            onChange={e => setEditLogoUrl(e.target.value.trim())}
+                            placeholder="ej: /sporttime2.jpg o https://..."
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                        />
+                        {editLogoUrl && (
+                            <img src={editLogoUrl} alt="preview" style={{ height: 36, marginTop: 8, objectFit: 'contain', borderRadius: 6 }} />
                         )}
                     </div>
                     <div>

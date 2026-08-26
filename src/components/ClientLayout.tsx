@@ -333,12 +333,24 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+                        {/* Gymmy G */}
                         <img
                             src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
-                            alt="Logo"
-                            style={{ height: 44 }}
+                            alt="Gymmy"
+                            style={{ height: 28, opacity: 0.85 }}
                         />
+                        {/* Gym logo */}
+                        {session?.user?.gimnasioLogoUrl && (
+                            <>
+                                <span style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)', display: 'block', borderRadius: 1 }} />
+                                <img
+                                    src={session.user.gimnasioLogoUrl}
+                                    alt={session.user.gimnasioNombre ?? ''}
+                                    style={{ height: 34, maxWidth: 100, objectFit: 'contain' }}
+                                />
+                            </>
+                        )}
                     </Link>
 
                     <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-red-400 shadow-[0_0_8px_#ef4444]'}`} />

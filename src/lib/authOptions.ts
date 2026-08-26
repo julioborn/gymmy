@@ -40,11 +40,21 @@ export const authOptions: AuthOptions = {
                 const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
                 if (!isPasswordValid) throw new Error("Credenciales inválidas");
 
+                let gimnasioNombre: string | null = null;
+                let gimnasioLogoUrl: string | null = null;
+                if (user.gimnasioId) {
+                    const gym = await db.collection("gimnasios").findOne({ _id: user.gimnasioId });
+                    gimnasioNombre = gym?.nombre || null;
+                    gimnasioLogoUrl = gym?.logoUrl || null;
+                }
+
                 return {
                     id: user._id.toString(),
                     username: user.username,
                     role: user.role,
                     gimnasioId: user.gimnasioId?.toString() || null,
+                    gimnasioNombre,
+                    gimnasioLogoUrl,
                 };
             },
         }),
@@ -76,11 +86,15 @@ export const authOptions: AuthOptions = {
                 const isValid = await bcrypt.compare(credentials.password, alumno.password);
                 if (!isValid) throw new Error("Credenciales inválidas");
 
+                const gym = await db.collection("gimnasios").findOne({ _id: alumno.gimnasioId });
+
                 return {
                     id: alumno._id.toString(),
                     username: `${alumno.nombre} ${alumno.apellido}`,
                     role: "alumno",
                     gimnasioId: alumno.gimnasioId.toString(),
+                    gimnasioNombre: gym?.nombre || null,
+                    gimnasioLogoUrl: gym?.logoUrl || null,
                 };
             },
         }),
@@ -97,6 +111,8 @@ export const authOptions: AuthOptions = {
                 session.user.username = token.username as string;
                 session.user.role = token.role as string;
                 session.user.gimnasioId = (token.gimnasioId as string) || null;
+                session.user.gimnasioNombre = (token.gimnasioNombre as string) || null;
+                session.user.gimnasioLogoUrl = (token.gimnasioLogoUrl as string) || null;
             }
             return session;
         },
@@ -106,6 +122,8 @@ export const authOptions: AuthOptions = {
                 token.username = user.username;
                 token.role = user.role;
                 token.gimnasioId = user.gimnasioId || null;
+                token.gimnasioNombre = user.gimnasioNombre || null;
+                token.gimnasioLogoUrl = user.gimnasioLogoUrl || null;
             }
             return token;
         },
