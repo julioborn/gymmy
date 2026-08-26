@@ -333,23 +333,28 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5">
-                        {/* Gymmy G */}
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
                         <img
-                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
+                            src="/icons/icon-192x192.png"
                             alt="Gymmy"
-                            style={{ height: 28, opacity: 0.85 }}
+                            style={{ height: 30, width: 30, objectFit: 'contain', filter: 'invert(1)', opacity: 0.9 }}
                         />
-                        {/* Gym logo */}
                         {session?.user?.gimnasioLogoUrl && (
                             <>
-                                <span style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.15)', display: 'block', borderRadius: 1 }} />
+                                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, fontWeight: 300, lineHeight: 1 }}>×</span>
                                 <img
                                     src={session.user.gimnasioLogoUrl}
                                     alt={session.user.gimnasioNombre ?? ''}
-                                    style={{ height: 34, maxWidth: 100, objectFit: 'contain' }}
+                                    style={{ height: 42, maxWidth: 110, objectFit: 'contain' }}
                                 />
                             </>
+                        )}
+                        {!session?.user?.gimnasioLogoUrl && (
+                            <img
+                                src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
+                                alt="Gymmy"
+                                style={{ height: 28, opacity: 0.85 }}
+                            />
                         )}
                     </Link>
 
