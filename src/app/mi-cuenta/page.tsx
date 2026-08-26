@@ -170,6 +170,8 @@ export default function MiCuentaPage() {
     const [loadingPlan, setLoadingPlan] = useState(false);
     const [savingPlan, setSavingPlan] = useState(false);
     const [planSaved, setPlanSaved] = useState(false);
+    const [savingEj, setSavingEj] = useState<number | null>(null);
+    const [savedEj, setSavedEj] = useState<number | null>(null);
     const [selectedSemana, setSelectedSemana] = useState(1);
     const [selectedDia, setSelectedDia] = useState(0);
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
@@ -233,6 +235,24 @@ export default function MiCuentaPage() {
             }
         } finally {
             setSavingPlan(false);
+        }
+    }
+
+    async function handleSaveEjercicio(ejIdx: number) {
+        if (!planEj || !alumno) return;
+        setSavingEj(ejIdx);
+        try {
+            const res = await fetch(`/api/plan-alumno/alumno/${alumno._id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
+            });
+            if (res.ok) {
+                setSavedEj(ejIdx);
+                setTimeout(() => setSavedEj(null), 2000);
+            }
+        } finally {
+            setSavingEj(null);
         }
     }
 
@@ -899,7 +919,7 @@ export default function MiCuentaPage() {
                                                     }`}
                                                 >
                                                     {sem}
-                                                    {isPast && !isSelected && (
+                                                    {isPast && (
                                                         <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
                                                             <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -935,14 +955,14 @@ export default function MiCuentaPage() {
                                                 }`}
                                             >
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
-                                                {isDayDone && selectedDia !== i && (
+                                                {isDayDone && (
                                                     <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
                                                         <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                                         </svg>
                                                     </span>
                                                 )}
-                                                {isCurrentDay && selectedDia !== i && (
+                                                {isCurrentDay && !isDayDone && (
                                                     <span className={`absolute top-1 right-1 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
                                                 )}
                                             </button>
@@ -1051,6 +1071,17 @@ export default function MiCuentaPage() {
                                                                         />
                                                                     </div>
                                                                 </div>
+                                                                <button
+                                                                    onClick={() => handleSaveEjercicio(eIdx)}
+                                                                    disabled={savingEj === eIdx}
+                                                                    className={`w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 ${
+                                                                        savedEj === eIdx
+                                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                                            : 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
+                                                                    }`}
+                                                                >
+                                                                    {savingEj === eIdx ? 'Guardando...' : savedEj === eIdx ? 'Guardado ✓' : 'Guardar'}
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </div>
