@@ -14,7 +14,7 @@ export async function GET() {
 
     await connectMongoDB();
 
-    const alumno = await Alumno.findById(alumnoId).populate('gimnasioId', 'nombre');
+    const alumno = await Alumno.findById(alumnoId).populate('gimnasioId', 'nombre logoUrl');
 
     if (!alumno) {
         return NextResponse.json({ error: 'Alumno no encontrado' }, { status: 404 });
