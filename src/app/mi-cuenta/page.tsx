@@ -885,10 +885,11 @@ export default function MiCuentaPage() {
                                                 >
                                                     {sem}
                                                     {isPast && !isSelected && (
-                                                        <span
-                                                            className="absolute inset-0 pointer-events-none"
-                                                            style={{ background: 'linear-gradient(to top right, transparent calc(50% - 1px), rgba(239,68,68,0.55) calc(50% - 1px), rgba(239,68,68,0.55) calc(50% + 1px), transparent calc(50% + 1px))' }}
-                                                        />
+                                                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
+                                                            <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                                            </svg>
+                                                        </span>
                                                     )}
                                                     {isCurrent && (
                                                         <span className={`absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
