@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import { swalNotify } from '@/utils/swalConfig';
 import Keyboard from 'react-simple-keyboard';
@@ -9,7 +9,9 @@ import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexe
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
+    const dniRef = useRef(''); // always-fresh value, avoids stale closure in onKeyPress
     const [actividad, setActividad] = useState('Musculación');
+    const isLoadingRef = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [keyboard, setKeyboard] = useState<any>(null);
@@ -27,15 +29,19 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const handleKeyboardChange = (input: string) => {
-        const formattedInput = formatDNIWithDots(input); // Formatear el input con puntos
-        setDni(formattedInput); // Actualizar el estado con el DNI formateado
-        if (keyboard) keyboard.setInput(formattedInput); // Actualizar el valor en el teclado virtual
+        const formattedInput = formatDNIWithDots(input);
+        dniRef.current = formattedInput;
+        setDni(formattedInput);
+        if (keyboard) keyboard.setInput(formattedInput);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const cleanDNI = dni.replace(/\./g, ''); // Eliminar puntos antes de enviar
+        // Guard: prevent double submission
+        if (isLoadingRef.current) return;
+
+        const cleanDNI = dniRef.current.replace(/\./g, ''); // read from ref, never stale
 
         if (cleanDNI.length < 7 || cleanDNI.length > 8) {
             Swal.fire({
@@ -47,6 +53,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             return;
         }
 
+        isLoadingRef.current = true;
         setIsLoading(true);
         const fecha = new Date().toISOString();
 
@@ -86,6 +93,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 timer: 4000,
             });
 
+            dniRef.current = '';
             setDni('');
             if (keyboard) keyboard.setInput('');
         } catch (error: any) {
@@ -115,9 +123,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 });
             }
 
+            dniRef.current = '';
             setDni('');
             if (keyboard) keyboard.setInput('');
         } finally {
+            isLoadingRef.current = false;
             setIsLoading(false);
         }
     };
@@ -138,7 +148,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     body: JSON.stringify(ingreso),
                 });
 
-                if (response.ok) {
+                // Delete if registered OK, or if it was already registered (avoid infinite retry)
+                if (response.ok || response.status === 400) {
                     await deleteIngreso(ingreso.id);
                 }
             } catch {
