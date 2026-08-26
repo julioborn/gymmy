@@ -310,10 +310,6 @@ export default function HomePage() {
                     </span>
                     <span className="text-slate-600 text-[11px]">·</span>
                     <span className="text-slate-400 text-[11px] capitalize">{fmtDate()}</span>
-                    {isSporttime && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src="/sporttime2.jpg" alt="Sport Time" className="h-7 w-auto rounded-md ml-auto object-contain opacity-95" />
-                    )}
                 </div>
             </div>
 

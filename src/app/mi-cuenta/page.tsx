@@ -440,10 +440,6 @@ export default function MiCuentaPage() {
                             <span className="text-slate-400 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
-                    {isSporttime && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src="/sporttime2.jpg" alt="Sport Time" className="h-10 w-auto rounded-lg shrink-0 object-contain opacity-95" />
-                    )}
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
