@@ -1654,7 +1654,7 @@ export default function HistorialAlumnoPage() {
                                     );
                                 }
                                 if (tipo === 'actividad') {
-                                    const hora = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
+                                    const hora = arg.event.start ? new Date(arg.event.start).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
                                     return (
                                         <div className="flex items-center justify-between w-full h-full text-xs cursor-pointer px-1 gap-1 overflow-hidden">
                                             <div className="flex items-center gap-1 min-w-0">

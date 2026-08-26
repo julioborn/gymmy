@@ -710,7 +710,7 @@ export default function MiCuentaPage() {
                                                     {a.actividad}
                                                 </span>
                                                 <span className="text-xs text-slate-400 font-medium">
-                                                    {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                    {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
                                             </div>
                                         </div>

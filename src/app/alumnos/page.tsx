@@ -570,7 +570,7 @@ export default function ListaAlumnosPage() {
                     );
                 })
                 .map((asistencia: { fecha: string | number | Date }) =>
-                    new Date(asistencia.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                    new Date(asistencia.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
                 );
 
             if (horarios.length === 0) return '-'; // Si no hay asistencias, devolver '-'
