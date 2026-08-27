@@ -420,31 +420,6 @@ export default function RegistroPage() {
                                     ))}
                                 </div>
                             </div>
-                            <div>
-                                <label className={labelClass}>Hora exacta <span className={optionalClass}>opcional</span></label>
-                                <input type="time" value={form.horaExactaEntrenamiento}
-                                    onChange={e => setField('horaExactaEntrenamiento', e.target.value)} className={inputClass} />
-                            </div>
-                            <div>
-                                <label className={labelClass}>Historial deportivo <span className={optionalClass}>opcional</span></label>
-                                <textarea rows={3} value={form.historialDeportivo}
-                                    onChange={e => setField('historialDeportivo', e.target.value)}
-                                    className={inputClass + ' resize-none'} />
-                            </div>
-                            {form.tieneCondicion !== 'si' && (
-                                <div>
-                                    <label className={labelClass}>Patologías / lesiones <span className={optionalClass}>opcional</span></label>
-                                    <textarea rows={3} value={form.patologias}
-                                        onChange={e => setField('patologias', e.target.value)}
-                                        className={inputClass + ' resize-none'} />
-                                </div>
-                            )}
-                            <div>
-                                <label className={labelClass}>Objetivos <span className={optionalClass}>opcional</span></label>
-                                <textarea rows={3} value={form.objetivos}
-                                    onChange={e => setField('objetivos', e.target.value)}
-                                    className={inputClass + ' resize-none'} />
-                            </div>
                         </div>
 
                         {error && <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-red-700 text-base font-medium">{error}</div>}
