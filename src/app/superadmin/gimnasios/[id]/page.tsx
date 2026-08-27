@@ -19,6 +19,10 @@ interface Gimnasio {
     alias?: string;
     slug?: string;
     logoUrl?: string;
+    logoHeaderUrl?: string;
+    temaFondo?: string;
+    temaAcento?: string;
+    temaAcento2?: string;
     totalAlumnos: number;
     usuarios: Usuario[];
     createdAt: string;
@@ -47,6 +51,10 @@ export default function GimnasioDetailPage() {
     const [editAlias, setEditAlias] = useState('');
     const [editSlug, setEditSlug] = useState('');
     const [editLogoUrl, setEditLogoUrl] = useState('');
+    const [editLogoHeaderUrl, setEditLogoHeaderUrl] = useState('');
+    const [editTemaFondo, setEditTemaFondo] = useState('');
+    const [editTemaAcento, setEditTemaAcento] = useState('');
+    const [editTemaAcento2, setEditTemaAcento2] = useState('');
     const [editFechaVencimiento, setEditFechaVencimiento] = useState('');
 
     const [nuevoUser, setNuevoUser] = useState({ username: '', password: '', role: 'registro' });
@@ -70,6 +78,10 @@ export default function GimnasioDetailPage() {
             setEditAlias(data.alias ?? '');
             setEditSlug(data.slug ?? '');
             setEditLogoUrl(data.logoUrl ?? '');
+            setEditLogoHeaderUrl(data.logoHeaderUrl ?? '');
+            setEditTemaFondo(data.temaFondo ?? '');
+            setEditTemaAcento(data.temaAcento ?? '');
+            setEditTemaAcento2(data.temaAcento2 ?? '');
             setEditFechaVencimiento(
                 data.fechaVencimiento
                     ? new Date(data.fechaVencimiento).toISOString().split('T')[0]
@@ -84,7 +96,7 @@ export default function GimnasioDetailPage() {
         await fetch(`/api/superadmin/gimnasios/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre: editNombre, alias: editAlias || null, slug: editSlug || null, logoUrl: editLogoUrl || null, fechaVencimiento: editFechaVencimiento || null }),
+            body: JSON.stringify({ nombre: editNombre, alias: editAlias || null, slug: editSlug || null, logoUrl: editLogoUrl || null, logoHeaderUrl: editLogoHeaderUrl || null, temaFondo: editTemaFondo || null, temaAcento: editTemaAcento || null, temaAcento2: editTemaAcento2 || null, fechaVencimiento: editFechaVencimiento || null }),
         });
         await fetchGimnasio();
         setSaving(false);
@@ -225,15 +237,75 @@ export default function GimnasioDetailPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-slate-500 text-xs font-medium mb-1.5">Logo URL (header de la app)</label>
+                        <label className="block text-slate-500 text-xs font-medium mb-1.5">Logo URL (formulario de registro)</label>
                         <input
                             value={editLogoUrl}
                             onChange={e => setEditLogoUrl(e.target.value.trim())}
-                            placeholder="ej: /sporttime2.jpg o https://..."
+                            placeholder="https://res.cloudinary.com/..."
                             className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
                         />
                         {editLogoUrl && (
                             <img src={editLogoUrl} alt="preview" style={{ height: 36, marginTop: 8, objectFit: 'contain', borderRadius: 6 }} />
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-slate-500 text-xs font-medium mb-1.5">Logo sin fondo URL (header de la app)</label>
+                        <input
+                            value={editLogoHeaderUrl}
+                            onChange={e => setEditLogoHeaderUrl(e.target.value.trim())}
+                            placeholder="https://res.cloudinary.com/... (PNG transparente)"
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                        />
+                        {editLogoHeaderUrl && (
+                            <div style={{ background: '#111', borderRadius: 8, padding: 8, marginTop: 8, display: 'inline-block' }}>
+                                <img src={editLogoHeaderUrl} alt="preview header" style={{ height: 36, objectFit: 'contain' }} />
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-slate-500 text-xs font-medium mb-2">Tema de colores</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <div>
+                                <p className="text-slate-400 text-xs mb-1">Fondo</p>
+                                <div className="flex items-center gap-2">
+                                    <input type="color" value={editTemaFondo || '#0f172a'}
+                                        onChange={e => setEditTemaFondo(e.target.value)}
+                                        className="w-9 h-9 rounded-lg cursor-pointer border border-slate-200" />
+                                    <input value={editTemaFondo} onChange={e => setEditTemaFondo(e.target.value)}
+                                        placeholder="#0f172a"
+                                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-slate-400 text-xs mb-1">Acento 1</p>
+                                <div className="flex items-center gap-2">
+                                    <input type="color" value={editTemaAcento || '#10b981'}
+                                        onChange={e => setEditTemaAcento(e.target.value)}
+                                        className="w-9 h-9 rounded-lg cursor-pointer border border-slate-200" />
+                                    <input value={editTemaAcento} onChange={e => setEditTemaAcento(e.target.value)}
+                                        placeholder="#10b981"
+                                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-slate-400 text-xs mb-1">Acento 2</p>
+                                <div className="flex items-center gap-2">
+                                    <input type="color" value={editTemaAcento2 || '#10b981'}
+                                        onChange={e => setEditTemaAcento2(e.target.value)}
+                                        className="w-9 h-9 rounded-lg cursor-pointer border border-slate-200" />
+                                    <input value={editTemaAcento2} onChange={e => setEditTemaAcento2(e.target.value)}
+                                        placeholder="opcional"
+                                        className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
+                                </div>
+                            </div>
+                        </div>
+                        {(editTemaFondo || editTemaAcento || editTemaAcento2) && (
+                            <div className="mt-2 rounded-xl px-4 py-2.5 flex items-center gap-3 text-white text-sm font-semibold"
+                                style={{ background: editTemaFondo || '#0f172a' }}>
+                                <span style={{ color: editTemaAcento || '#10b981' }}>●</span>
+                                Preview tema
+                                {editTemaAcento2 && <span style={{ color: editTemaAcento2 }}>●</span>}
+                            </div>
                         )}
                     </div>
                     <div>

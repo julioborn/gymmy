@@ -51,7 +51,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     await connectMongoDB();
 
     try {
-        const { nombre, activo, fechaVencimiento, alias, slug, logoUrl } = await req.json();
+        const { nombre, activo, fechaVencimiento, alias, slug, logoUrl, logoHeaderUrl, temaFondo, temaAcento, temaAcento2 } = await req.json();
 
         const gimnasio = await Gimnasio.findByIdAndUpdate(
             params.id,
@@ -64,6 +64,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                 ...(alias !== undefined && { alias: alias ? alias.trim() : null }),
                 ...(slug !== undefined && { slug: slug ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '') : null }),
                 ...(logoUrl !== undefined && { logoUrl: logoUrl || null }),
+                ...(logoHeaderUrl !== undefined && { logoHeaderUrl: logoHeaderUrl || null }),
+                ...(temaFondo !== undefined && { temaFondo: temaFondo || null }),
+                ...(temaAcento !== undefined && { temaAcento: temaAcento || null }),
+                ...(temaAcento2 !== undefined && { temaAcento2: temaAcento2 || null }),
             },
             { new: true }
         );

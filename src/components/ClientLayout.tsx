@@ -12,6 +12,14 @@ const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
 interface ClientLayoutProps { children: React.ReactNode; }
 
+interface GymTema {
+    nombre: string;
+    logoUrl: string | null;
+    temaFondo: string | null;
+    temaAcento: string | null;
+    temaAcento2: string | null;
+}
+
 const PULL_THRESHOLD = 72;
 const SWIPE_THRESHOLD = 80;
 const EDGE_ZONE = 28;
@@ -182,6 +190,21 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         };
     }, [pathname, router]);
 
+    const [gymTema, setGymTema] = useState<GymTema | null>(null);
+
+    useEffect(() => {
+        if (!sessionReady || !session?.user?.gimnasioId) return;
+        fetch('/api/gimnasio/tema')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) setGymTema(data); })
+            .catch(() => {});
+    }, [sessionReady, session?.user?.gimnasioId]);
+
+    const navBg   = gymTema?.temaFondo  ?? '#0f172a';
+    const acento  = gymTema?.temaAcento ?? '#10b981';
+    const acento2 = gymTema?.temaAcento2 ?? null;
+    const gymLogo = gymTema?.logoUrl    ?? null;
+
     const role = session?.user?.role;
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
     const isLoginPage = pathname.startsWith('/login');
@@ -271,8 +294,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── HEADER ── */}
             <header
-                className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
-                style={{ paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
+                className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
+                style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
             >
                 <div className="relative h-[75px] flex items-center justify-between px-4">
                     {showMenu ? (
@@ -335,14 +358,22 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     )}
 
                     <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-                        <img
-                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
-                            alt="Gymmy"
-                            style={{ height: 38 }}
-                        />
+                        {gymLogo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={gymLogo} alt={gymTema?.nombre ?? 'Gimnasio'}
+                                style={{ maxHeight: 46, maxWidth: 160, objectFit: 'contain' }} />
+                        ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
+                                alt="Gymmy" style={{ height: 38 }} />
+                        )}
                     </Link>
 
-                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isOnline ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-red-400 shadow-[0_0_8px_#ef4444]'}`} />
+                    <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
+                        style={isOnline
+                            ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
+                            : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
+                        } />
                 </div>
             </header>
 
@@ -357,8 +388,11 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 }}
             >
                 <div
-                    className={`w-7 h-7 rounded-full border-2 border-slate-300 border-t-emerald-400 ${isRefreshing ? 'animate-spin' : 'transition-transform duration-75'}`}
-                    style={isRefreshing ? undefined : { transform: `rotate(${pullProgress * 270}deg)` }}
+                    className={`w-7 h-7 rounded-full border-2 border-slate-300 ${isRefreshing ? 'animate-spin' : 'transition-transform duration-75'}`}
+                    style={{
+                        borderTopColor: acento,
+                        ...(isRefreshing ? {} : { transform: `rotate(${pullProgress * 270}deg)` }),
+                    }}
                 />
             </div>
 
@@ -389,7 +423,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── BACK-ONLINE TOAST ── */}
             {backOnlineMessage && pathname !== '/alumnos/dni' && (
-                <div className="fixed top-[90px] left-1/2 -translate-x-1/2 z-[1000] bg-emerald-500 text-white text-sm font-bold px-6 py-2 rounded-2xl shadow-[0_4px_14px_rgba(16,185,129,0.4)]">
+                <div className="fixed top-[90px] left-1/2 -translate-x-1/2 z-[1000] text-white text-sm font-bold px-6 py-2 rounded-2xl"
+                    style={{ background: acento2 ?? acento, boxShadow: `0 4px 14px ${(acento2 ?? acento)}66` }}>
                     De vuelta en línea
                 </div>
             )}
@@ -411,8 +446,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             {/* ── BOTTOM NAV ── */}
             {showNav && navItems.length > 0 && (
                 <nav
-                    className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-white/[0.06]"
-                    style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+                    className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.06]"
+                    style={{ background: navBg, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
                 >
                     <div className="flex items-stretch">
                         {navItems.map((item) => {
@@ -424,10 +459,14 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                     className={`relative flex-1 flex flex-col items-center justify-center pt-2.5 pb-2 gap-1 transition-colors ${active ? 'text-white' : 'text-slate-500 active:text-slate-300'}`}
                                 >
                                     {active && (
-                                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-white rounded-full" />
+                                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full"
+                                            style={{ background: acento }} />
                                     )}
                                     {item.icon}
-                                    <span className="text-[10px] font-semibold tracking-wide">{item.label}</span>
+                                    <span className="text-[10px] font-semibold tracking-wide"
+                                        style={active ? { color: acento } : undefined}>
+                                        {item.label}
+                                    </span>
                                 </Link>
                             );
                         })}

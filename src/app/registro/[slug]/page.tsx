@@ -196,7 +196,7 @@ export default function RegistroPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header */}
-            <div className="bg-white border-b border-slate-100 px-6 pt-10 pb-6">
+            <div className="px-6 pt-10 pb-6" style={{ background: '#000' }}>
                 {gym.logoUrl && (
                     <div className="flex justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
