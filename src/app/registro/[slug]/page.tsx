@@ -56,7 +56,7 @@ export default function RegistroPage() {
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(setGym)
             .catch(() => setNotFound(true));
-    }, [alias]);
+    }, [slug]);
 
     const isSporttime = gym?.nombre?.toLowerCase().includes('sport');
     const accent = isSporttime ? '#f4a347' : '#10b981';
