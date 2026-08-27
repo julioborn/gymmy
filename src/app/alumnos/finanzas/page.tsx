@@ -542,9 +542,9 @@ const ControlFinanciero = () => {
                     <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
                         <div>
                             <h3 className="text-sm font-bold text-slate-700">Ingresos Adicionales</h3>
-                            <p className="text-xs text-slate-400">Total: <span className="font-bold text-blue-600">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
+                            <p className="text-xs text-slate-400">Total: <span className="font-bold text-slate-900">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
                         </div>
-                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition">
+                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition">
                             + Agregar
                         </button>
                     </div>
@@ -563,7 +563,7 @@ const ControlFinanciero = () => {
                                     <tr key={ingreso._id} className="hover:bg-slate-50 transition">
                                         <td className="px-4 py-2.5 text-slate-600 text-xs">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
                                         <td className="px-4 py-2.5 text-slate-700 text-xs">{ingreso.detalle}</td>
-                                        <td className="px-4 py-2.5 text-right font-bold text-blue-600 text-xs">${ingreso.importe.toLocaleString('es-ES')}</td>
+                                        <td className="px-4 py-2.5 text-right font-bold text-slate-900 text-xs">${ingreso.importe.toLocaleString('es-ES')}</td>
                                         <td className="px-4 py-2.5 text-right">
                                             <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className="p-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition mr-1"><FaEdit size={11} /></button>
                                             <button onClick={() => handleEliminarIngreso(ingreso._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition"><FaTrashAlt size={11} /></button>

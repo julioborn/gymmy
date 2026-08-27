@@ -72,7 +72,7 @@ const NAV_CARDS = [
         href: '/empleados',
         label: 'Empleados',
         desc: 'Gestionar equipo',
-        iconBg: 'bg-indigo-500',
+        iconBg: 'bg-slate-800',
         role: 'dueño' as string | null,
         icon: (
             <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -96,7 +96,7 @@ const NAV_CARDS = [
         href: '/alumnos/estadisticas',
         label: 'Estadísticas',
         desc: 'Métricas del gimnasio',
-        iconBg: 'bg-blue-500',
+        iconBg: 'bg-slate-800',
         role: 'dueño' as string | null,
         icon: (
             <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -354,7 +354,7 @@ export default function HomePage() {
 
                     {/* Asistencias hoy */}
                     <div className="bg-white border border-slate-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-blue-500 flex items-center justify-center mb-2 md:mb-3">
+                        <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-slate-800 flex items-center justify-center mb-2 md:mb-3">
                             <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
@@ -494,8 +494,8 @@ export default function HomePage() {
                             <div className="border-t border-slate-100" />
 
                             <button onClick={handleConfiguracionAlias} className="flex-1 w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
                                     </svg>
                                 </div>

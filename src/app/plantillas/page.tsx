@@ -42,7 +42,7 @@ const CATEGORIAS = [
 
 const CATEGORIA_COLORS: Record<string, string> = {
     'Fuerza': 'bg-red-100 text-red-700',
-    'Hipertrofia': 'bg-blue-100 text-blue-700',
+    'Hipertrofia': 'bg-slate-100 text-slate-700',
     'Rehabilitación': 'bg-amber-100 text-amber-700',
     'Resistencia': 'bg-orange-100 text-orange-700',
     'Pérdida de peso': 'bg-emerald-100 text-emerald-700',

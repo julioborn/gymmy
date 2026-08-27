@@ -196,7 +196,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
                         disabled={isLoading}
                     >
                         Musculación

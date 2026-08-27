@@ -65,7 +65,7 @@ type Tarifa = {
 };
 
 const DIAS_CAL = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-blue-500', 'Intermitente': 'bg-orange-500', 'Otro': 'bg-yellow-400' };
+const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-slate-800', 'Intermitente': 'bg-orange-500', 'Otro': 'bg-yellow-400' };
 
 function toLocalKey(fechaStr: string): string {
     const d = new Date(fechaStr);
@@ -1361,14 +1361,14 @@ export default function HistorialAlumnoPage() {
                                         const isToday = key === mobTodayKey;
                                         const isSelected = key === mobSelectedDay;
                                         const hasData = asists.length > 0 || pags.length > 0;
-                                        const dotColors: Record<string, string> = { Musculación: 'bg-blue-500', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
+                                        const dotColors: Record<string, string> = { Musculación: 'bg-slate-800', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
                                         return (
                                             <button
                                                 key={key}
                                                 onClick={() => setMobSelectedDay(isSelected ? null : key)}
                                                 className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-slate-200 transition-colors overflow-hidden ${
                                                     isSelected
-                                                        ? 'bg-blue-50'
+                                                        ? 'bg-slate-100'
                                                         : planDaysMap[key] === 'active'
                                                         ? 'bg-emerald-50 hover:bg-emerald-100'
                                                         : planDaysMap[key] === 'completed'
@@ -1464,7 +1464,7 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 {/* Legend */}
                                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 flex-wrap sm:px-5">
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-slate-500 text-xs">Musculación</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-800" /><span className="text-slate-500 text-xs">Musculación</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-slate-500 text-xs">Intermitente</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-500 text-xs">Otro</span></div>
                                     <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-700 rounded-[3px] text-white text-[10px] font-semibold">Pago</span></div>
@@ -1486,7 +1486,7 @@ export default function HistorialAlumnoPage() {
                                         <p className="text-slate-400 text-sm text-center py-3">Sin registros para este día.</p>
                                     )}
                                     {(asistenciasMapMob[mobSelectedDay] || []).map((a: Asistencia) => {
-                                        const badgeMap: Record<string, string> = { Musculación: 'bg-blue-100 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                        const badgeMap: Record<string, string> = { Musculación: 'bg-slate-100 text-slate-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
                                         return (
                                             <div key={a._id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
                                                 <div className="flex items-center gap-2">
@@ -1494,7 +1494,7 @@ export default function HistorialAlumnoPage() {
                                                     <span className="text-slate-400 text-xs">{new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <button onClick={() => handleEditAsistenciaMob(a)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition" title="Editar">
+                                                    <button onClick={() => handleEditAsistenciaMob(a)} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition" title="Editar">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
                                                     </button>
                                                     <button onClick={() => handleEliminarAsistencia(a._id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar">
@@ -1756,7 +1756,7 @@ export default function HistorialAlumnoPage() {
                                     <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {asistenciasFiltradas.map((a: Asistencia) => {
                                             const f = new Date(a.fecha);
-                                            const colorMap: Record<string, string> = { Musculación: 'bg-blue-100 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                            const colorMap: Record<string, string> = { Musculación: 'bg-slate-100 text-slate-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
                                             const badgeCls = colorMap[a.actividad] || 'bg-slate-100 text-slate-700';
                                             return (
                                                 <div key={a._id} className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition group">
@@ -1950,7 +1950,7 @@ export default function HistorialAlumnoPage() {
                                 {pagosPanelFiltrados.length > 0 ? (
                                     <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {pagosPanelFiltrados.map((p: Pago, idx: number) => {
-                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-100 text-emerald-700' : p.metodoPago === 'transferencia' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500';
+                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-100 text-emerald-700' : p.metodoPago === 'transferencia' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-500';
                                             return (
                                                 <div key={p._id || idx} className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition group">
                                                     <div className="flex items-center gap-3 min-w-0 flex-1">

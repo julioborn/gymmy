@@ -21,14 +21,14 @@ const ROLE_LABEL: Record<string, string> = {
 
 const ROLE_BADGE: Record<string, string> = {
     dueño: 'bg-slate-700 text-white',
-    admin: 'bg-indigo-100 text-indigo-700 border border-indigo-200',
+    admin: 'bg-slate-100 text-slate-700 border border-slate-200',
     profesor: 'bg-violet-100 text-violet-700 border border-violet-200',
     registro: 'bg-amber-100 text-amber-700 border border-amber-200',
 };
 
 const ROLE_AVATAR: Record<string, string> = {
     dueño: 'bg-slate-700',
-    admin: 'bg-indigo-500',
+    admin: 'bg-slate-800',
     profesor: 'bg-violet-500',
     registro: 'bg-amber-400',
 };
@@ -225,7 +225,7 @@ export default function EmpleadosPage() {
     if (status === 'loading' || loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500" />
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-700" />
             </div>
         );
     }
@@ -236,7 +236,7 @@ export default function EmpleadosPage() {
             {/* Banner */}
             <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-indigo-500 rounded-2xl flex items-center justify-center shrink-0">
+                    <div className="w-11 h-11 bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
                         <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                         </svg>

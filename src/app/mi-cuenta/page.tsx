@@ -81,7 +81,7 @@ const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
 const ACTIVIDAD_DOT: Record<string, string> = {
-    'Musculación': 'bg-blue-500',
+    'Musculación': 'bg-slate-800',
     'Intermitente': 'bg-orange-400',
     'Otro': 'bg-yellow-400',
 };
@@ -93,7 +93,7 @@ const COMBO_PALETTE = [
 ];
 
 const ACTIVIDAD_PILL: Record<string, string> = {
-    'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
+    'Musculación': 'bg-slate-100 text-slate-700 border border-slate-200',
     'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
     'Otro': 'bg-yellow-50 text-yellow-700 border border-yellow-100',
 };
@@ -838,7 +838,7 @@ export default function MiCuentaPage() {
 
                         <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100 flex-wrap">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                <span className="w-2 h-2 rounded-full bg-slate-800" />
                                 <span className="text-slate-400 text-xs">Musculación</span>
                             </div>
                             <div className="flex items-center gap-1.5">
