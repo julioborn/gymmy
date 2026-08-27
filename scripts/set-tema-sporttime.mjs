@@ -24,7 +24,7 @@ const r = await db.collection('gimnasios').updateOne(
             temaFondo: '#0a0a0a',
             temaAcento: '#f4a347',
             temaAcento2: '#16a34a',
-            logoHeaderUrl: 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1787860407/F49775EC-B007-4F53-B373-6AA4846E0DE3_lbsimy.png',
+            logoHeaderUrl: 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png',
         }
     }
 );
