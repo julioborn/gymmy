@@ -173,10 +173,10 @@ export default function RegistroPage() {
         color: val ? '#0f172a' : '#94a3b8',
     });
 
-    const labelClass = "block text-sm font-semibold text-slate-600 mb-1.5";
+    const labelClass = "block text-base font-semibold text-slate-700 mb-1.5";
 
     const errBox = error ? (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl px-5 py-3 text-red-600 text-sm font-medium">{error}</div>
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl px-5 py-3 text-red-600 text-base font-medium">{error}</div>
     ) : null;
 
     const BtnBack = () => (
@@ -219,9 +219,9 @@ export default function RegistroPage() {
                 {/* ── PASO 1: Datos personales ── */}
                 {step === 1 && (
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 1 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 1 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Tus datos</h2>
-                        <p className="text-slate-500 text-sm mb-6">Completá tu información para crear la cuenta.</p>
+                        <p className="text-slate-600 text-base mb-6">Completá tu información para crear la cuenta.</p>
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -286,14 +286,14 @@ export default function RegistroPage() {
                             </div>
 
                             <div>
-                                <label className={labelClass}>Horario <span className="ml-2 text-xs font-normal text-slate-400">opcional</span></label>
+                                <label className={labelClass}>Horario <span className="ml-2 text-sm font-normal text-slate-400">opcional</span></label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['mañana', 'siesta', 'tarde'] as const).map(h => {
                                         const sel = form.horarioEntrenamiento === h;
                                         return (
                                             <button key={h} type="button"
                                                 onClick={() => setField('horarioEntrenamiento', sel ? '' : h)}
-                                                className="py-3 rounded-xl text-sm font-semibold border-2 transition-all capitalize"
+                                                className="py-3 rounded-xl text-base font-semibold border-2 transition-all capitalize"
                                                 style={{
                                                     borderColor: sel ? orange : '#e2e8f0',
                                                     background: sel ? `${orange}18` : 'white',
@@ -315,9 +315,9 @@ export default function RegistroPage() {
                 {/* ── PASO 2: Objetivo ── */}
                 {step === 2 && (
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 2 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 2 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">¿Cuál es tu objetivo?</h2>
-                        <p className="text-slate-500 text-sm mb-6">Elegí la opción que mejor te describe.</p>
+                        <p className="text-slate-600 text-base mb-6">Elegí la opción que mejor te describe.</p>
                         <div className="space-y-3">
                             {AREAS.map(a => {
                                 const sel = form.areaElegida === a.value;
@@ -329,7 +329,7 @@ export default function RegistroPage() {
                                             <span className="text-2xl mt-0.5 leading-none">{a.emoji}</span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="font-bold text-base" style={{ color: sel ? orange : '#1e293b' }}>{a.label}</p>
-                                                <p className="text-slate-500 text-sm mt-0.5 leading-snug">{a.desc}</p>
+                                                <p className="text-slate-600 text-[15px] mt-0.5 leading-snug">{a.desc}</p>
                                             </div>
                                             <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center"
                                                 style={{ borderColor: sel ? orange : '#cbd5e1' }}>
@@ -348,9 +348,9 @@ export default function RegistroPage() {
                 {/* ── PASO 3: Condición ── */}
                 {step === 3 && (
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 3 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 3 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Condición física</h2>
-                        <p className="text-slate-500 text-sm mb-6">¿Tenés alguna lesión, dolor o condición que debamos tener en cuenta?</p>
+                        <p className="text-slate-600 text-base mb-6">¿Tenés alguna lesión, dolor o condición que debamos tener en cuenta?</p>
                         <div className="flex gap-3 mb-5">
                             {(['no', 'si'] as const).map(op => {
                                 const sel = form.tieneCondicion === op;
@@ -375,7 +375,7 @@ export default function RegistroPage() {
                                     value={form.condicionDetalle}
                                     onChange={e => setField('condicionDetalle', e.target.value)}
                                     style={{ ...inputStyle(form.condicionDetalle), resize: 'none' as const }} />
-                                <p className="text-slate-400 text-xs mt-2 pl-1">Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.</p>
+                                <p className="text-slate-500 text-sm mt-2 pl-1">Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.</p>
                             </div>
                         )}
                         {errBox}
@@ -386,9 +386,9 @@ export default function RegistroPage() {
                 {/* ── PASO 4: Nivel ── */}
                 {step === 4 && (
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 4 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 4 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Nivel de experiencia</h2>
-                        <p className="text-slate-500 text-sm mb-6">¿Cuánta experiencia tenés entrenando?</p>
+                        <p className="text-slate-600 text-base mb-6">¿Cuánta experiencia tenés entrenando?</p>
                         <div className="space-y-3">
                             {NIVELES.map(n => {
                                 const sel = form.nivelExperiencia === n.value;
@@ -399,7 +399,7 @@ export default function RegistroPage() {
                                         <div className="flex items-center justify-between gap-3">
                                             <div>
                                                 <p className="font-bold text-base" style={{ color: sel ? orange : '#1e293b' }}>{n.label}</p>
-                                                <p className="text-slate-500 text-sm mt-0.5">{n.desc}</p>
+                                                <p className="text-slate-600 text-[15px] mt-0.5">{n.desc}</p>
                                             </div>
                                             <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
                                                 style={{ borderColor: sel ? orange : '#cbd5e1' }}>
@@ -418,9 +418,9 @@ export default function RegistroPage() {
                 {/* ── PASO 5: Días + submit ── */}
                 {step === 5 && (
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 5 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 5 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Días de entrenamiento</h2>
-                        <p className="text-slate-500 text-sm mb-6">¿Cuántos días por semana vas a entrenar?</p>
+                        <p className="text-slate-600 text-base mb-6">¿Cuántos días por semana vas a entrenar?</p>
                         <div className="grid grid-cols-4 gap-3">
                             {DIAS_SEMANA.map(d => {
                                 const sel = form.diasEntrenaSemana === d;
@@ -437,7 +437,7 @@ export default function RegistroPage() {
                                 );
                             })}
                         </div>
-                        <p className="text-slate-400 text-sm text-center mt-3">días por semana</p>
+                        <p className="text-slate-500 text-base text-center mt-3">días por semana</p>
                         {errBox}
                         <div className="flex items-center gap-3 mt-6">
                             <BtnBack />
