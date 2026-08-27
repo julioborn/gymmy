@@ -168,27 +168,18 @@ export default function RegistroPage() {
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-lg mx-auto px-4 pt-10 pb-16">
 
-                {/* Logos */}
-                <div className="flex items-center justify-center gap-4 mb-6">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src="/icons/gymmy-android.png"
-                        alt="Gymmy"
-                        style={{ height: 36, width: 36, objectFit: 'contain', borderRadius: 8 }}
-                    />
-                    {gym.logoUrl && (
-                        <>
-                            <div style={{ width: 1, height: 36, background: '#e2e8f0' }} />
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={gym.logoUrl}
-                                alt={gym.nombre}
-                                style={{ height: 40, maxWidth: 120, objectFit: 'contain' }}
-                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                        </>
-                    )}
-                </div>
+                {/* Logo del gimnasio */}
+                {gym.logoUrl && (
+                    <div className="flex justify-center mb-6">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={gym.logoUrl}
+                            alt={gym.nombre}
+                            style={{ maxWidth: 180, objectFit: 'contain' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                    </div>
+                )}
 
                 {/* Título */}
                 <div className="text-center mb-8">
