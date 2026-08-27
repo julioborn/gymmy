@@ -23,6 +23,10 @@ const NIVELES: { value: NivelExp; label: string; desc: string }[] = [
 const DIAS = [2, 3, 4, 5];
 const TOTAL_STEPS = 5;
 
+function toTitleCase(str: string) {
+    return str.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+}
+
 export default function RegistroPage() {
     const { slug } = useParams<{ slug: string }>();
     const [gym, setGym] = useState<GymInfo | null>(null);
@@ -30,18 +34,13 @@ export default function RegistroPage() {
     const [step, setStep] = useState(1);
 
     const [form, setForm] = useState({
-        // paso 1 — datos personales
         nombre: '', apellido: '', dni: '', fechaNacimiento: '',
-        telefono: '', email: '', password: '',
+        telefono: '', email: '',
         horarioEntrenamiento: '',
-        // paso 2 — objetivo
         areaElegida: '' as Area | '',
-        // paso 3 — condición
         tieneCondicion: '' as 'si' | 'no' | '',
         condicionDetalle: '',
-        // paso 4 — nivel
         nivelExperiencia: '' as NivelExp | '',
-        // paso 5 — días
         diasEntrenaSemana: 0,
     });
 
@@ -56,7 +55,6 @@ export default function RegistroPage() {
             .catch(() => setNotFound(true));
     }, [slug]);
 
-    // Colores del gimnasio
     const isSporttime = gym?.nombre?.toLowerCase().includes('sport');
     const orange = isSporttime ? '#f4a347' : '#10b981';
     const green  = isSporttime ? '#16a34a' : '#059669';
@@ -68,17 +66,15 @@ export default function RegistroPage() {
 
     function nextStep() {
         if (step === 1) {
-            if (!form.nombre.trim())        { setError('Ingresá tu nombre.');                          return; }
-            if (!form.apellido.trim())      { setError('Ingresá tu apellido.');                        return; }
-            if (!form.dni.trim())           { setError('Ingresá tu DNI.');                             return; }
-            if (!form.fechaNacimiento)      { setError('Ingresá tu fecha de nacimiento.');             return; }
-            if (!form.email.trim())         { setError('Ingresá tu email.');                           return; }
-            if (!form.password)             { setError('Ingresá una contraseña.');                     return; }
-            if (form.password.length < 6)  { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
+            if (!form.nombre.trim())    { setError('Ingresá tu nombre.');           return; }
+            if (!form.apellido.trim())  { setError('Ingresá tu apellido.');         return; }
+            if (!form.dni.trim())       { setError('Ingresá tu DNI.');              return; }
+            if (!form.fechaNacimiento)  { setError('Ingresá tu fecha de nacimiento.'); return; }
+            if (!form.email.trim())     { setError('Ingresá tu email.');            return; }
         }
-        if (step === 2 && !form.areaElegida)       { setError('Por favor seleccioná tu objetivo.');  return; }
-        if (step === 3 && !form.tieneCondicion)    { setError('Por favor respondé la pregunta.');    return; }
-        if (step === 4 && !form.nivelExperiencia)  { setError('Por favor seleccioná tu nivel.');     return; }
+        if (step === 2 && !form.areaElegida)      { setError('Por favor seleccioná tu objetivo.'); return; }
+        if (step === 3 && !form.tieneCondicion)   { setError('Por favor respondé la pregunta.');   return; }
+        if (step === 4 && !form.nivelExperiencia) { setError('Por favor seleccioná tu nivel.');    return; }
         setError('');
         setStep(s => s + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -107,7 +103,6 @@ export default function RegistroPage() {
                     fechaNacimiento: form.fechaNacimiento,
                     telefono: form.telefono,
                     email: form.email,
-                    password: form.password,
                     area: areaFinal,
                     nivelExperiencia: form.nivelExperiencia,
                     diasEntrenaSemana: form.diasEntrenaSemana,
@@ -125,8 +120,6 @@ export default function RegistroPage() {
         }
     }
 
-    // ── Estados base ─────────────────────────────────────────────────────
-
     if (notFound) return (
         <div className="min-h-screen bg-white flex items-center justify-center px-4">
             <p className="text-slate-400 text-lg">Gimnasio no encontrado.</p>
@@ -135,7 +128,7 @@ export default function RegistroPage() {
 
     if (!gym) return (
         <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full border-t-2 animate-spin" style={{ borderColor: orange }} />
+            <div className="w-10 h-10 rounded-full border-t-2 animate-spin" style={{ borderColor: '#f4a347' }} />
         </div>
     );
 
@@ -155,31 +148,46 @@ export default function RegistroPage() {
         </div>
     );
 
-    const inputClass = "w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 text-base text-slate-900 focus:outline-none transition-colors";
+    const inputBase: React.CSSProperties = {
+        width: '100%', boxSizing: 'border-box',
+        background: 'white', border: '1.5px solid #e2e8f0',
+        borderRadius: 16, padding: '14px 18px',
+        fontSize: 16, color: '#0f172a',
+        outline: 'none', transition: 'border-color 0.15s',
+        display: 'block',
+    };
+    const inputFilled = (val: string): React.CSSProperties =>
+        val ? { ...inputBase, borderColor: orange } : inputBase;
+
     const labelClass = "block text-sm font-semibold text-slate-600 mb-1.5";
     const optionalClass = "ml-2 text-xs font-normal text-slate-400";
+
     const errBox = error ? (
         <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl px-5 py-3 text-red-600 text-sm font-medium">{error}</div>
     ) : null;
 
-    const btnNext = (label = 'Siguiente →') => (
-        <button type="button" onClick={nextStep}
-            className="flex-1 py-4 rounded-2xl text-base font-bold text-white transition-all active:scale-[0.98]"
-            style={{ background: green }}>
-            {label}
+    // Botón volver: pequeño, circular
+    const BtnBack = () => (
+        <button type="button" onClick={prevStep}
+            className="w-12 h-12 flex items-center justify-center rounded-2xl text-slate-500 bg-slate-100 active:bg-slate-200 transition-all flex-shrink-0 text-lg font-bold">
+            ←
         </button>
     );
-    const btnBack = (
-        <button type="button" onClick={prevStep}
-            className="py-4 px-5 rounded-2xl text-base font-bold text-slate-500 bg-slate-100 active:bg-slate-200 transition-all">
-            ←
+
+    // Botón siguiente: ancho completo, verde
+    const BtnNext = ({ label = 'Siguiente →', onClick }: { label?: string; onClick?: () => void }) => (
+        <button type="button" onClick={onClick ?? nextStep}
+            disabled={submitting}
+            className="w-full py-5 rounded-2xl text-lg font-bold text-white transition-all active:scale-[0.98] disabled:opacity-60"
+            style={{ background: green }}>
+            {label}
         </button>
     );
 
     return (
         <div className="min-h-screen bg-slate-50">
 
-            {/* Header con logo */}
+            {/* Header */}
             <div className="bg-white border-b border-slate-100 px-6 pt-10 pb-6">
                 {gym.logoUrl && (
                     <div className="flex justify-center mb-4">
@@ -200,7 +208,7 @@ export default function RegistroPage() {
             <div className="max-w-lg mx-auto px-4 pt-6 pb-16">
 
                 {/* Barra de progreso */}
-                <div className="flex items-center gap-1.5 mb-6">
+                <div className="flex items-center gap-1.5 mb-7">
                     {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
                         <div key={i} className="h-1.5 flex-1 rounded-full transition-all duration-300"
                             style={{ background: i < step ? orange : '#e2e8f0' }} />
@@ -220,13 +228,15 @@ export default function RegistroPage() {
                                     <label className={labelClass}>Nombre</label>
                                     <input type="text" autoComplete="given-name" value={form.nombre}
                                         onChange={e => setField('nombre', e.target.value)}
-                                        className={inputClass} style={{ borderColor: form.nombre ? orange : undefined }} />
+                                        onBlur={e => setField('nombre', toTitleCase(e.target.value))}
+                                        style={inputFilled(form.nombre)} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Apellido</label>
                                     <input type="text" autoComplete="family-name" value={form.apellido}
                                         onChange={e => setField('apellido', e.target.value)}
-                                        className={inputClass} style={{ borderColor: form.apellido ? orange : undefined }} />
+                                        onBlur={e => setField('apellido', toTitleCase(e.target.value))}
+                                        style={inputFilled(form.apellido)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -234,36 +244,29 @@ export default function RegistroPage() {
                                     <label className={labelClass}>DNI</label>
                                     <input type="text" inputMode="numeric" autoComplete="off" value={form.dni}
                                         onChange={e => setField('dni', e.target.value.replace(/\D/g, ''))}
-                                        className={inputClass} style={{ borderColor: form.dni ? orange : undefined }} />
+                                        style={inputFilled(form.dni)} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Fecha de nacimiento</label>
                                     <input type="date" value={form.fechaNacimiento}
                                         onChange={e => setField('fechaNacimiento', e.target.value)}
-                                        className={inputClass} style={{ borderColor: form.fechaNacimiento ? orange : undefined }} />
+                                        style={{ ...inputFilled(form.fechaNacimiento), width: '100%', boxSizing: 'border-box' }} />
                                 </div>
                             </div>
                             <div>
                                 <label className={labelClass}>Teléfono <span className={optionalClass}>opcional</span></label>
                                 <input type="tel" inputMode="tel" autoComplete="tel" value={form.telefono}
                                     onChange={e => setField('telefono', e.target.value)}
-                                    className={inputClass} style={{ borderColor: form.telefono ? orange : undefined }} />
+                                    style={inputFilled(form.telefono)} />
                             </div>
                             <div>
                                 <label className={labelClass}>Email</label>
                                 <input type="email" inputMode="email" autoComplete="email" value={form.email}
                                     onChange={e => setField('email', e.target.value)}
-                                    className={inputClass} style={{ borderColor: form.email ? orange : undefined }} />
+                                    style={inputFilled(form.email)} />
                             </div>
                             <div>
-                                <label className={labelClass}>Contraseña</label>
-                                <input type="password" autoComplete="new-password" value={form.password}
-                                    onChange={e => setField('password', e.target.value)}
-                                    className={inputClass} style={{ borderColor: form.password ? orange : undefined }} />
-                                <p className="text-slate-400 text-xs mt-1 pl-1">Mínimo 6 caracteres.</p>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Horario de entrenamiento <span className={optionalClass}>opcional</span></label>
+                                <label className={labelClass}>Horario <span className={optionalClass}>opcional</span></label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['mañana', 'siesta', 'tarde'] as const).map(h => {
                                         const sel = form.horarioEntrenamiento === h;
@@ -285,7 +288,7 @@ export default function RegistroPage() {
                         </div>
 
                         {errBox}
-                        <div className="mt-6">{btnNext()}</div>
+                        <div className="mt-6"><BtnNext /></div>
                     </div>
                 )}
 
@@ -310,7 +313,7 @@ export default function RegistroPage() {
                                                 <p className="font-bold text-base" style={{ color: sel ? orange : '#1e293b' }}>{a.label}</p>
                                                 <p className="text-slate-500 text-sm mt-0.5 leading-snug">{a.desc}</p>
                                             </div>
-                                            <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all"
+                                            <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center"
                                                 style={{ borderColor: sel ? orange : '#cbd5e1' }}>
                                                 {sel && <div className="w-2.5 h-2.5 rounded-full" style={{ background: orange }} />}
                                             </div>
@@ -321,7 +324,10 @@ export default function RegistroPage() {
                         </div>
 
                         {errBox}
-                        <div className="flex gap-3 mt-6">{btnBack}{btnNext()}</div>
+                        <div className="flex items-center gap-3 mt-6">
+                            <BtnBack />
+                            <div className="flex-1"><BtnNext /></div>
+                        </div>
                     </div>
                 )}
 
@@ -357,8 +363,7 @@ export default function RegistroPage() {
                                     placeholder="Describí tu lesión, dolor o condición..."
                                     value={form.condicionDetalle}
                                     onChange={e => setField('condicionDetalle', e.target.value)}
-                                    className={inputClass + ' resize-none'}
-                                    style={{ borderColor: form.condicionDetalle ? orange : undefined }}
+                                    style={{ ...inputBase, resize: 'none', borderColor: form.condicionDetalle ? orange : '#e2e8f0' }}
                                 />
                                 <p className="text-slate-400 text-xs mt-2 pl-1">
                                     Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.
@@ -367,7 +372,10 @@ export default function RegistroPage() {
                         )}
 
                         {errBox}
-                        <div className="flex gap-3 mt-6">{btnBack}{btnNext()}</div>
+                        <div className="flex items-center gap-3 mt-6">
+                            <BtnBack />
+                            <div className="flex-1"><BtnNext /></div>
+                        </div>
                     </div>
                 )}
 
@@ -402,16 +410,19 @@ export default function RegistroPage() {
                         </div>
 
                         {errBox}
-                        <div className="flex gap-3 mt-6">{btnBack}{btnNext()}</div>
+                        <div className="flex items-center gap-3 mt-6">
+                            <BtnBack />
+                            <div className="flex-1"><BtnNext /></div>
+                        </div>
                     </div>
                 )}
 
-                {/* ── PASO 5: Días de entrenamiento + submit ── */}
+                {/* ── PASO 5: Días + submit ── */}
                 {step === 5 && (
                     <div>
                         <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 5 de {TOTAL_STEPS}</p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Días de entrenamiento</h2>
-                        <p className="text-slate-500 text-sm mb-6">¿Cuántos días por semana vas a entrenar musculación?</p>
+                        <p className="text-slate-500 text-sm mb-6">¿Cuántos días por semana vas a entrenar?</p>
 
                         <div className="grid grid-cols-4 gap-3">
                             {DIAS.map(d => {
@@ -433,13 +444,11 @@ export default function RegistroPage() {
                         <p className="text-slate-400 text-sm text-center mt-3">días por semana</p>
 
                         {errBox}
-                        <div className="flex gap-3 mt-6">
-                            {btnBack}
-                            <button type="button" onClick={handleSubmit} disabled={submitting}
-                                className="flex-1 py-4 rounded-2xl text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-60"
-                                style={{ background: green }}>
-                                {submitting ? 'Registrando...' : 'Crear mi cuenta ✓'}
-                            </button>
+                        <div className="flex items-center gap-3 mt-6">
+                            <BtnBack />
+                            <div className="flex-1">
+                                <BtnNext label={submitting ? 'Registrando...' : 'Crear mi cuenta ✓'} onClick={handleSubmit} />
+                            </div>
                         </div>
                     </div>
                 )}
