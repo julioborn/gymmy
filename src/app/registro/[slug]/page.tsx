@@ -172,18 +172,19 @@ export default function RegistroPage() {
                 <div className="flex items-center justify-center gap-4 mb-6">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
+                        src="/icons/gymmy-android.png"
                         alt="Gymmy"
-                        style={{ height: 32, objectFit: 'contain' }}
+                        style={{ height: 36, width: 36, objectFit: 'contain', borderRadius: 8 }}
                     />
                     {gym.logoUrl && (
                         <>
-                            <div style={{ width: 1, height: 32, background: '#e2e8f0' }} />
+                            <div style={{ width: 1, height: 36, background: '#e2e8f0' }} />
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={gym.logoUrl}
                                 alt={gym.nombre}
-                                style={{ height: 36, maxWidth: 110, objectFit: 'contain' }}
+                                style={{ height: 40, maxWidth: 120, objectFit: 'contain' }}
+                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                         </>
                     )}
