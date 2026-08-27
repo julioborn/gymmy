@@ -509,13 +509,6 @@ export default function MiCuentaPage() {
                             <span className="text-slate-400 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
-                    {alumno.gimnasioId?.logoUrl && (
-                        <img
-                            src={alumno.gimnasioId.logoUrl}
-                            alt={gimnasioNombre}
-                            style={{ height: 48, maxWidth: 90, objectFit: 'contain', borderRadius: 12, flexShrink: 0 }}
-                        />
-                    )}
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
