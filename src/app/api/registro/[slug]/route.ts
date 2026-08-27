@@ -7,11 +7,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
     await connectMongoDB();
-    const gym = await Gimnasio.findOne({ slug: params.slug }).select('nombre slug activo logoUrl');
+    const gym = await Gimnasio.findOne({ slug: params.slug }).select('nombre slug activo logoUrl logoHeaderUrl');
     if (!gym || !gym.activo) {
         return NextResponse.json({ error: 'Gimnasio no encontrado' }, { status: 404 });
     }
-    return NextResponse.json({ nombre: gym.nombre, alias: gym.slug, logoUrl: gym.logoUrl ?? null });
+    return NextResponse.json({ nombre: gym.nombre, alias: gym.slug, logoUrl: gym.logoHeaderUrl ?? gym.logoUrl ?? null });
 }
 
 export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
