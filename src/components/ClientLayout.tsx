@@ -185,6 +185,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const role = session?.user?.role;
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
     const isLoginPage = pathname.startsWith('/login');
+    const isRegistroPage = pathname.startsWith('/registro/');
     const showNav = !isLoginPage && !isStaticPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
     const showMenu = !isLoginPage && !isStaticPage && !!session;
 
@@ -271,7 +272,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             {/* ── HEADER ── */}
             <header
                 className="fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
-                style={{ paddingTop: 'env(safe-area-inset-top)' }}
+                style={{ paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
             >
                 <div className="relative h-[75px] flex items-center justify-between px-4">
                     {showMenu ? (
@@ -397,7 +398,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             <main
                 className="flex-1 p-3 bg-slate-50"
                 style={{
-                    marginTop: 'calc(75px + env(safe-area-inset-top, 0px))',
+                    marginTop: isRegistroPage ? 0 : 'calc(75px + env(safe-area-inset-top, 0px))',
                     paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined,
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,

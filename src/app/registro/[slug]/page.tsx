@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-interface GymInfo { nombre: string; alias: string; }
+interface GymInfo { nombre: string; alias: string; logoUrl?: string | null; }
 type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion';
 type NivelExp = 'nunca' | 'alguna_vez' | 'hace_tiempo';
 
@@ -168,15 +168,29 @@ export default function RegistroPage() {
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-lg mx-auto px-4 pt-10 pb-16">
 
-                {/* Logo + nombre */}
-                <div className="text-center mb-8">
-                    {isSporttime && (
-                        <div className="flex justify-center mb-5">
+                {/* Logos */}
+                <div className="flex items-center justify-center gap-4 mb-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
+                        alt="Gymmy"
+                        style={{ height: 32, objectFit: 'contain' }}
+                    />
+                    {gym.logoUrl && (
+                        <>
+                            <div style={{ width: 1, height: 32, background: '#e2e8f0' }} />
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/sporttime2.jpg" alt="Sporttime"
-                                style={{ width: 160, height: 'auto', borderRadius: 16, objectFit: 'contain' }} />
-                        </div>
+                            <img
+                                src={gym.logoUrl}
+                                alt={gym.nombre}
+                                style={{ height: 36, maxWidth: 110, objectFit: 'contain' }}
+                            />
+                        </>
                     )}
+                </div>
+
+                {/* Título */}
+                <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-slate-900 leading-tight">
                         Registrate en <span style={{ color: accent }}>{gym.nombre}</span>
                     </h1>

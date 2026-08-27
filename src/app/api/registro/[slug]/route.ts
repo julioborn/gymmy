@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 // GET: fetch gym info by alias (public)
 export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
     await connectMongoDB();
-    const gym = await Gimnasio.findOne({ slug: params.slug }).select('nombre slug activo');
+    const gym = await Gimnasio.findOne({ slug: params.slug }).select('nombre slug activo logoUrl');
     if (!gym || !gym.activo) {
         return NextResponse.json({ error: 'Gimnasio no encontrado' }, { status: 404 });
     }
-    return NextResponse.json({ nombre: gym.nombre, alias: gym.slug });
+    return NextResponse.json({ nombre: gym.nombre, alias: gym.slug, logoUrl: gym.logoUrl ?? null });
 }
 
 // POST: register a new student (public)
