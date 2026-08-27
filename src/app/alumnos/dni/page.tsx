@@ -184,7 +184,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
             <div className="mb-6 text-center">
                 <div
-                    className="border border-slate-600 bg-slate-900 rounded-xl py-4 px-6 text-3xl font-bold text-white tracking-widest shadow-inner min-h-[56px]"
+                    className="border border-slate-600 bg-[#111] rounded-xl py-4 px-6 text-3xl font-bold text-white tracking-widest shadow-inner min-h-[56px]"
                     style={{ fontFamily: "'Courier New', monospace", display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                     {dni || <span className="invisible">XX.XXX.XXX</span>}
@@ -196,7 +196,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     <button
                         type="button"
                         onClick={() => setActividad('Musculación')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-[#111] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
                         disabled={isLoading}
                     >
                         Musculación

@@ -275,7 +275,7 @@ export default function PlanAlumnoPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header */}
-            <div className="bg-slate-900 text-white px-4 pt-6 pb-8 rounded-b-3xl shadow-lg">
+            <div className="bg-[#111] text-white px-4 pt-6 pb-8 rounded-b-3xl shadow-lg">
                 <div className="max-w-2xl mx-auto flex items-center gap-3">
                     <Link
                         href={`/alumnos/${alumnoId}/historial`}
@@ -317,7 +317,7 @@ export default function PlanAlumnoPage() {
                         <div className="flex flex-col sm:flex-row gap-2 justify-center">
                             <button
                                 onClick={() => setShowPlantillasModal(true)}
-                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl transition-colors"
+                                className="px-5 py-2.5 bg-[#111] hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-colors"
                             >
                                 Usar plantilla
                             </button>

@@ -762,7 +762,7 @@ export default function ListaAlumnosPage() {
         <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5">
+            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-4">
                         <div className="w-11 h-11 bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
@@ -961,7 +961,7 @@ export default function ListaAlumnosPage() {
                 {alumnoSeleccionado && (
                     <div className="relative bg-white shadow-2xl rounded-2xl overflow-hidden outline-none">
                         {/* Header del modal */}
-                        <div className="bg-slate-900 px-6 py-5">
+                        <div className="bg-[#111] px-6 py-5">
                             <button
                                 onClick={() => setAlumnoSeleccionado(null)}
                                 className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
@@ -1033,7 +1033,7 @@ export default function ListaAlumnosPage() {
                                     </button>
                                     <button
                                         onClick={() => handleEditarAlumno(alumnoSeleccionado)}
-                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl transition-all"
+                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#111] hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-all"
                                     >
                                         <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />

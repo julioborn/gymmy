@@ -69,7 +69,7 @@ export default function NuevoGimnasioPage() {
                         onChange={handleChange}
                         required
                         placeholder="Ej: Gimnasio Fuerza Total"
-                        className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-[#111] border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
                     />
                 </div>
 
@@ -87,7 +87,7 @@ export default function NuevoGimnasioPage() {
                                 onChange={handleChange}
                                 required
                                 placeholder="Ej: admin_fuerza"
-                                className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                                className="w-full bg-[#111] border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
                             />
                         </div>
 
@@ -102,7 +102,7 @@ export default function NuevoGimnasioPage() {
                                 onChange={handleChange}
                                 required
                                 placeholder="Contraseña segura"
-                                className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                                className="w-full bg-[#111] border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
                             />
                         </div>
                     </div>
@@ -117,7 +117,7 @@ export default function NuevoGimnasioPage() {
                         type="date"
                         value={form.fechaVencimiento}
                         onChange={handleChange}
-                        className="w-full bg-slate-900 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-[#111] border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
                     />
                 </div>
 

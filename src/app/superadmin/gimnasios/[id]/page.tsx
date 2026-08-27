@@ -327,7 +327,7 @@ export default function GimnasioDetailPage() {
                     <button
                         onClick={handleGuardar}
                         disabled={saving}
-                        className="bg-slate-900 hover:bg-slate-700 disabled:opacity-50 active:scale-[0.97] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                        className="bg-[#111] hover:bg-zinc-800 disabled:opacity-50 active:scale-[0.97] text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all"
                     >
                         {saving ? 'Guardando...' : 'Guardar'}
                     </button>
@@ -377,7 +377,7 @@ export default function GimnasioDetailPage() {
                                             <button
                                                 type="submit"
                                                 disabled={savingUser}
-                                                className="flex-1 bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white py-2 rounded-xl text-sm font-semibold transition-all"
+                                                className="flex-1 bg-[#111] hover:bg-zinc-800 disabled:opacity-50 text-white py-2 rounded-xl text-sm font-semibold transition-all"
                                             >
                                                 {savingUser ? 'Guardando...' : 'Guardar'}
                                             </button>
@@ -452,7 +452,7 @@ export default function GimnasioDetailPage() {
                     <button
                         type="submit"
                         disabled={addingUser}
-                        className="w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 active:scale-[0.97] text-white py-2.5 rounded-xl text-sm font-semibold transition-all"
+                        className="w-full bg-[#111] hover:bg-zinc-800 disabled:opacity-50 active:scale-[0.97] text-white py-2.5 rounded-xl text-sm font-semibold transition-all"
                     >
                         {addingUser ? 'Agregando...' : 'Agregar usuario'}
                     </button>

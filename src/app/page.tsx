@@ -284,7 +284,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="relative bg-slate-900 rounded-3xl px-6 pt-6 pb-5 overflow-hidden">
+            <div className="relative bg-[#111] rounded-3xl px-6 pt-6 pb-5 overflow-hidden">
                 {/* Subtle depth rings */}
                 <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
                 <div className={`pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full ${isSporttime ? 'bg-[#d1e08b]/10' : 'bg-emerald-500/10'}`} />

@@ -192,6 +192,10 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
     const [gymTema, setGymTema] = useState<GymTema | null>(null);
 
+    // Logo flip animation
+    const [logoShown, setLogoShown]       = useState<string | null>(null);
+    const [logoAnimating, setLogoAnimating] = useState(false);
+
     useEffect(() => {
         if (!sessionReady || !session?.user?.gimnasioId) return;
         fetch('/api/gimnasio/tema')
@@ -204,6 +208,18 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const acento  = gymTema?.temaAcento ?? '#10b981';
     const acento2 = gymTema?.temaAcento2 ?? null;
     const gymLogo = gymTema?.logoUrl    ?? null;
+
+    // Trigger flip when gym logo arrives or changes
+    useEffect(() => {
+        if (gymLogo === logoShown) return;
+        setLogoAnimating(true);
+        const t = setTimeout(() => {
+            setLogoShown(gymLogo);
+            setLogoAnimating(false);
+        }, 200);
+        return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gymLogo]);
 
     const role = session?.user?.role;
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
@@ -357,16 +373,25 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-                        {gymLogo ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={gymLogo} alt={gymTema?.nombre ?? 'Gimnasio'}
-                                style={{ maxHeight: 46, maxWidth: 160, objectFit: 'contain' }} />
-                        ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
-                                alt="Gymmy" style={{ height: 38 }} />
-                        )}
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+                        style={{ perspective: '600px' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={logoShown
+                                ? logoShown
+                                : 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png'}
+                            alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'Gymmy'}
+                            style={{
+                                maxHeight: logoShown ? 56 : 38,
+                                maxWidth: logoShown ? 190 : 120,
+                                objectFit: 'contain',
+                                transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
+                                opacity: logoAnimating ? 0 : 1,
+                                transition: logoAnimating
+                                    ? 'transform 0.18s ease-in, opacity 0.15s ease-in'
+                                    : 'transform 0.24s ease-out, opacity 0.22s ease-out, max-height 0.22s ease',
+                            }}
+                        />
                     </Link>
 
                     <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"

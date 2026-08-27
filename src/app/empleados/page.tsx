@@ -234,7 +234,7 @@ export default function EmpleadosPage() {
         <div className="max-w-4xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5 flex items-center justify-between gap-4">
+            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="w-11 h-11 bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
                         <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">

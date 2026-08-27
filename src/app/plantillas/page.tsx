@@ -125,7 +125,7 @@ export default function PlantillasPage() {
         <div className="max-w-4xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Header */}
-            <div className="bg-slate-900 rounded-3xl px-5 pt-5 pb-4">
+            <div className="bg-[#111] rounded-3xl px-5 pt-5 pb-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <Link

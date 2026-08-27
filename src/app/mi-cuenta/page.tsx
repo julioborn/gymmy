@@ -490,7 +490,7 @@ export default function MiCuentaPage() {
             )}
 
             {/* ── PROFILE BANNER ── */}
-            <div className="relative bg-slate-900 rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
+            <div className="relative bg-[#111] rounded-3xl px-5 pt-6 pb-5 mb-5 overflow-hidden">
                 <div className="pointer-events-none absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/[0.03]" />
                 <div className={`pointer-events-none absolute -bottom-8 -right-2 w-24 h-24 rounded-full ${isSporttime ? 'bg-[#d1e08b]/10' : 'bg-emerald-500/10'}`} />
 
@@ -802,7 +802,7 @@ export default function MiCuentaPage() {
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
                                             isSelected
-                                                ? 'bg-slate-900'
+                                                ? 'bg-[#111]'
                                                 : isPlanStart
                                                 ? 'bg-violet-50 hover:bg-violet-100'
                                                 : hasData
@@ -814,7 +814,7 @@ export default function MiCuentaPage() {
                                             isSelected
                                                 ? 'text-white'
                                                 : isToday
-                                                ? 'bg-slate-900 text-white'
+                                                ? 'bg-[#111] text-white'
                                                 : isPlanStart
                                                 ? 'bg-violet-600 text-white'
                                                 : hasData
@@ -977,7 +977,7 @@ export default function MiCuentaPage() {
                         return (
                             <>
                                 {/* Plan header */}
-                                <div className="bg-slate-900 rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
                                         <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
@@ -1004,7 +1004,7 @@ export default function MiCuentaPage() {
                                                     onClick={() => setSelectedSemana(sem)}
                                                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
                                                         isSelected
-                                                            ? 'bg-slate-900 text-white shadow-sm'
+                                                            ? 'bg-[#111] text-white shadow-sm'
                                                             : isPast
                                                             ? 'bg-slate-50 text-slate-400'
                                                             : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
@@ -1042,7 +1042,7 @@ export default function MiCuentaPage() {
                                                 onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
-                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                                                        ? 'bg-[#111] text-white border-slate-900 shadow-sm'
                                                         : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
                                                 }`}
                                             >

@@ -477,7 +477,7 @@ const ControlFinanciero = () => {
         <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="bg-slate-900 rounded-3xl px-6 pt-6 pb-5">
+            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-4">
                         <div className="w-11 h-11 bg-amber-400 rounded-2xl flex items-center justify-center shrink-0">
@@ -544,7 +544,7 @@ const ControlFinanciero = () => {
                             <h3 className="text-sm font-bold text-slate-700">Ingresos Adicionales</h3>
                             <p className="text-xs text-slate-400">Total: <span className="font-bold text-slate-900">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
                         </div>
-                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-slate-900 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition">
+                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-[#111] hover:bg-zinc-800 text-white text-xs font-semibold rounded-xl transition">
                             + Agregar
                         </button>
                     </div>

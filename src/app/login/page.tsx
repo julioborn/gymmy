@@ -223,7 +223,7 @@ export default function LoginPage() {
     );
 
     return (
-        <div className="min-h-[calc(100vh-75px)] -m-3 bg-slate-900 flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+        <div className="min-h-[calc(100vh-75px)] -m-3 bg-[#111] flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
 
             {/* Card */}
             <div className="w-full max-w-md relative z-10">
