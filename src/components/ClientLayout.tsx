@@ -200,7 +200,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             .catch(() => {});
     }, [sessionReady, session?.user?.gimnasioId]);
 
-    const navBg   = gymTema?.temaFondo  ?? '#0f172a';
+    const navBg   = gymTema?.temaFondo  ?? '#0a0a0a';
     const acento  = gymTema?.temaAcento ?? '#10b981';
     const acento2 = gymTema?.temaAcento2 ?? null;
     const gymLogo = gymTema?.logoUrl    ?? null;
@@ -283,7 +283,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
     if (!sessionReady) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0a0a0a' }}>
                 <CircularProgress sx={{ color: '#10b981' }} />
             </div>
         );

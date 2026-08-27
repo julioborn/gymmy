@@ -27,7 +27,7 @@ export default class ErrorBoundary extends React.Component<
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#0f172a',
+                        backgroundColor: '#0a0a0a',
                         color: '#e2e8f0',
                         fontFamily: 'system-ui, sans-serif',
                         padding: '24px',

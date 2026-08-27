@@ -268,11 +268,11 @@ export default function GimnasioDetailPage() {
                             <div>
                                 <p className="text-slate-400 text-xs mb-1">Fondo</p>
                                 <div className="flex items-center gap-2">
-                                    <input type="color" value={editTemaFondo || '#0f172a'}
+                                    <input type="color" value={editTemaFondo || '#0a0a0a'}
                                         onChange={e => setEditTemaFondo(e.target.value)}
                                         className="w-9 h-9 rounded-lg cursor-pointer border border-slate-200" />
                                     <input value={editTemaFondo} onChange={e => setEditTemaFondo(e.target.value)}
-                                        placeholder="#0f172a"
+                                        placeholder="#0a0a0a"
                                         className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-2 py-1.5 text-xs focus:outline-none" />
                                 </div>
                             </div>
@@ -301,7 +301,7 @@ export default function GimnasioDetailPage() {
                         </div>
                         {(editTemaFondo || editTemaAcento || editTemaAcento2) && (
                             <div className="mt-2 rounded-xl px-4 py-2.5 flex items-center gap-3 text-white text-sm font-semibold"
-                                style={{ background: editTemaFondo || '#0f172a' }}>
+                                style={{ background: editTemaFondo || '#0a0a0a' }}>
                                 <span style={{ color: editTemaAcento || '#10b981' }}>●</span>
                                 Preview tema
                                 {editTemaAcento2 && <span style={{ color: editTemaAcento2 }}>●</span>}
