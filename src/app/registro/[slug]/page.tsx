@@ -25,7 +25,7 @@ const DIAS = [2, 3, 4, 5];
 const TOTAL_STEPS = 5;
 
 export default function RegistroPage() {
-    const { alias } = useParams<{ alias: string }>();
+    const { slug } = useParams<{ slug: string }>();
     const [gym, setGym] = useState<GymInfo | null>(null);
     const [notFound, setNotFound] = useState(false);
     const [step, setStep] = useState(1);
@@ -52,7 +52,7 @@ export default function RegistroPage() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetch(`/api/registro/${alias}`)
+        fetch(`/api/registro/${slug}`)
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(setGym)
             .catch(() => setNotFound(true));
@@ -98,7 +98,7 @@ export default function RegistroPage() {
         setSubmitting(true);
         setError('');
         try {
-            const res = await fetch(`/api/registro/${alias}`, {
+            const res = await fetch(`/api/registro/${slug}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

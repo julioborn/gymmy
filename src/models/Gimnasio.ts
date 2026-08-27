@@ -6,6 +6,7 @@ export interface IGimnasio extends Document {
     fechaVencimiento?: Date;
     mercadopagoAccessToken?: string;
     alias?: string;
+    slug?: string;
     logoUrl?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -17,6 +18,7 @@ const GimnasioSchema = new Schema<IGimnasio>({
     fechaVencimiento: { type: Date },
     mercadopagoAccessToken: { type: String },
     alias: { type: String },
+    slug: { type: String },
     logoUrl: { type: String },
 }, { timestamps: true });
 

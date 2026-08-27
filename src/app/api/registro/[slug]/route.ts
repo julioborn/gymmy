@@ -7,20 +7,20 @@ import bcrypt from 'bcryptjs';
 export const dynamic = 'force-dynamic';
 
 // GET: fetch gym info by alias (public)
-export async function GET(_req: NextRequest, { params }: { params: { alias: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: { slug: string } }) {
     await connectMongoDB();
-    const gym = await Gimnasio.findOne({ alias: params.alias }).select('nombre alias activo');
+    const gym = await Gimnasio.findOne({ slug: params.slug }).select('nombre slug activo');
     if (!gym || !gym.activo) {
         return NextResponse.json({ error: 'Gimnasio no encontrado' }, { status: 404 });
     }
-    return NextResponse.json({ nombre: gym.nombre, alias: gym.alias });
+    return NextResponse.json({ nombre: gym.nombre, alias: gym.slug });
 }
 
 // POST: register a new student (public)
-export async function POST(req: NextRequest, { params }: { params: { alias: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
     await connectMongoDB();
 
-    const gym = await Gimnasio.findOne({ alias: params.alias }).select('_id activo');
+    const gym = await Gimnasio.findOne({ slug: params.slug }).select('_id activo');
     if (!gym || !gym.activo) {
         return NextResponse.json({ error: 'Gimnasio no encontrado' }, { status: 404 });
     }
@@ -34,6 +34,8 @@ export async function POST(req: NextRequest, { params }: { params: { alias: stri
         email,
         password,
         area,
+        nivelExperiencia,
+        diasEntrenaSemana,
         horarioEntrenamiento,
         horaExactaEntrenamiento,
         historialDeportivo,
@@ -61,6 +63,8 @@ export async function POST(req: NextRequest, { params }: { params: { alias: stri
         email: email.trim().toLowerCase(),
         password: hashed,
         area: area || null,
+        nivelExperiencia: nivelExperiencia || null,
+        diasEntrenaSemana: diasEntrenaSemana ? Number(diasEntrenaSemana) : null,
         horarioEntrenamiento: horarioEntrenamiento || null,
         horaExactaEntrenamiento: horaExactaEntrenamiento?.trim() || null,
         historialDeportivo: historialDeportivo?.trim() || '',
