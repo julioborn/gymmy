@@ -24,12 +24,12 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
 
     const {
         nombre, apellido, dni, fechaNacimiento,
-        telefono, email,
+        telefono,
         area, nivelExperiencia, diasEntrenaSemana,
         horarioEntrenamiento, patologias,
     } = await req.json();
 
-    if (!nombre || !apellido || !dni || !fechaNacimiento || !email) {
+    if (!nombre || !apellido || !dni || !fechaNacimiento || !telefono) {
         return NextResponse.json({ error: 'Completá los campos obligatorios' }, { status: 400 });
     }
 
@@ -43,8 +43,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
         apellido: apellido.trim(),
         dni: dni.trim(),
         fechaNacimiento: new Date(fechaNacimiento),
-        telefono: telefono?.trim() || null,
-        email: email.trim().toLowerCase(),
+        telefono: telefono.trim(),
         area: area || null,
         nivelExperiencia: nivelExperiencia || null,
         diasEntrenaSemana: diasEntrenaSemana ? Number(diasEntrenaSemana) : null,

@@ -186,7 +186,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
     const isLoginPage = pathname.startsWith('/login');
     const isRegistroPage = pathname.startsWith('/registro/');
-    const showNav = !isLoginPage && !isStaticPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
+    const showNav = !isLoginPage && !isStaticPage && !isRegistroPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
     const showMenu = !isLoginPage && !isStaticPage && !!session;
 
     const navItems = (() => {
@@ -399,7 +399,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 className="flex-1 p-3 bg-slate-50"
                 style={{
                     marginTop: isRegistroPage ? 0 : 'calc(75px + env(safe-area-inset-top, 0px))',
-                    paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined,
+                    paddingBottom: (showNav && !isRegistroPage) ? 'calc(4rem + env(safe-area-inset-bottom, 0px))' : undefined,
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,
