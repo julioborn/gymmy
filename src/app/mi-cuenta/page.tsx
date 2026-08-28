@@ -383,12 +383,14 @@ export default function MiCuentaPage() {
     });
 
     const planInicioKey = planEj?.fechaInicio ? toLocalDateKey(planEj.fechaInicio) : null;
-    const planEndKey = planEj?.fechaInicio && planEj?.totalSemanas
-        ? (() => {
-            const end = new Date(planEj.fechaInicio);
-            end.setDate(end.getDate() + planEj.totalSemanas * 7 - 1);
-            return toLocalDateKey(end.toISOString());
-        })()
+
+    // Último día de musculación registrado dentro del plan (define hasta dónde llega el fondo violeta)
+    const lastMusculacionKey = planInicioKey
+        ? Object.entries(asistenciasMap)
+            .filter(([key, asists]) => key >= planInicioKey && asists.some(a => a.actividad === 'Musculación'))
+            .map(([key]) => key)
+            .sort()
+            .pop() ?? null
         : null;
 
     const asistenciasEsteMes = alumno.asistencia.filter(a => {
@@ -792,8 +794,8 @@ export default function MiCuentaPage() {
                                 const asists = asistenciasMap[key] || [];
                                 const pagos = pagosMap[key] || [];
                                 const isPlanStart = key === planInicioKey;
-                                const isPlanDay = !isPlanStart && !!planInicioKey && !!planEndKey
-                                    && key >= planInicioKey && key <= planEndKey;
+                                const isPlanDay = !isPlanStart && !!planInicioKey && !!lastMusculacionKey
+                                    && key >= planInicioKey && key <= lastMusculacionKey;
                                 const isToday = key === toLocalDateKey(now.toISOString());
                                 const isSelected = key === selectedDay;
                                 const hasData = asists.length > 0 || pagos.length > 0 || isPlanStart;
@@ -864,7 +866,7 @@ export default function MiCuentaPage() {
                                     <span className="text-slate-400 text-xs">Inicio de plan</span>
                                 </div>
                             )}
-                            {planEndKey && (
+                            {lastMusculacionKey && (
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(109,40,217,0.15)' }} />
                                     <span className="text-slate-400 text-xs">Días de plan</span>
