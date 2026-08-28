@@ -198,7 +198,7 @@ export default function AsistenciasPage() {
     };
 
     const inputCls = "border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
-    const colorMap: Record<string, string> = { Musculación: 'bg-slate-100 text-slate-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+    const colorMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
 
     return (
         <div className="max-w-4xl mx-auto space-y-4">

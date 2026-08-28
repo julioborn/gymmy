@@ -65,7 +65,7 @@ type Tarifa = {
 };
 
 const DIAS_CAL = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-slate-800', 'Intermitente': 'bg-orange-500', 'Otro': 'bg-yellow-400' };
+const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-blue-600', 'Intermitente': 'bg-orange-500', 'Otro': 'bg-yellow-400' };
 
 function toLocalKey(fechaStr: string): string {
     const d = new Date(fechaStr);
@@ -1361,7 +1361,7 @@ export default function HistorialAlumnoPage() {
                                         const isToday = key === mobTodayKey;
                                         const isSelected = key === mobSelectedDay;
                                         const hasData = asists.length > 0 || pags.length > 0;
-                                        const dotColors: Record<string, string> = { Musculación: 'bg-slate-800', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
+                                        const dotColors: Record<string, string> = { Musculación: 'bg-blue-600', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
                                         return (
                                             <button
                                                 key={key}
@@ -1464,7 +1464,7 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 {/* Legend */}
                                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 flex-wrap sm:px-5">
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-800" /><span className="text-slate-500 text-xs">Musculación</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-500 text-xs">Musculación</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-slate-500 text-xs">Intermitente</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-500 text-xs">Otro</span></div>
                                     <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-700 rounded-[3px] text-white text-[10px] font-semibold">Pago</span></div>
@@ -1486,7 +1486,7 @@ export default function HistorialAlumnoPage() {
                                         <p className="text-slate-400 text-sm text-center py-3">Sin registros para este día.</p>
                                     )}
                                     {(asistenciasMapMob[mobSelectedDay] || []).map((a: Asistencia) => {
-                                        const badgeMap: Record<string, string> = { Musculación: 'bg-slate-100 text-slate-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                        const badgeMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
                                         return (
                                             <div key={a._id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
                                                 <div className="flex items-center gap-2">
@@ -1756,7 +1756,7 @@ export default function HistorialAlumnoPage() {
                                     <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {asistenciasFiltradas.map((a: Asistencia) => {
                                             const f = new Date(a.fecha);
-                                            const colorMap: Record<string, string> = { Musculación: 'bg-slate-100 text-slate-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                            const colorMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
                                             const badgeCls = colorMap[a.actividad] || 'bg-slate-100 text-slate-700';
                                             return (
                                                 <div key={a._id} className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition group">
