@@ -186,9 +186,9 @@ export default function LoginPage() {
         router.push('/mi-cuenta');
     }
 
-    const inputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl px-4 py-4 text-lg font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-normal transition-all";
-    const passInputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-4 pr-12 py-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 placeholder:text-slate-300 transition-all";
-    const primaryBtn = "w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20";
+    const inputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl px-4 py-4 text-lg font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-normal transition-all";
+    const passInputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-4 pr-12 py-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 placeholder:text-slate-300 transition-all";
+    const primaryBtn = "w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md shadow-slate-900/10";
 
     return (
         <div className="min-h-[calc(100vh-75px)] -m-3 flex flex-col items-center justify-center px-4 py-10 bg-slate-50">
@@ -212,7 +212,7 @@ export default function LoginPage() {
                 <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/80 overflow-hidden border border-slate-100">
 
                     {/* Accent strip */}
-                    <div className="h-1 w-full bg-emerald-500" />
+                    <div className="h-1 w-full bg-slate-900" />
 
                     {/* ── DNI ── */}
                     {step.type === 'identifier' && (
@@ -248,7 +248,7 @@ export default function LoginPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
                                 </div>
-                                <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-0.5">Personal</p>
+                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-0.5">Personal</p>
                                 <h1 className="text-xl font-bold text-slate-900">{step.username}</h1>
                             </div>
                             <form onSubmit={handleStaffLogin} className="space-y-3">
@@ -286,7 +286,7 @@ export default function LoginPage() {
                                     <button
                                         key={gym.gimnasioId}
                                         onClick={() => handleGymSelect(gym)}
-                                        className="w-full bg-slate-50 hover:bg-emerald-50 active:scale-[0.98] border border-slate-200 hover:border-emerald-200 rounded-2xl px-4 py-3.5 text-left transition-all flex items-center gap-3"
+                                        className="w-full bg-slate-50 hover:bg-slate-100 active:scale-[0.98] border border-slate-200 hover:border-slate-300 rounded-2xl px-4 py-3.5 text-left transition-all flex items-center gap-3"
                                     >
                                         <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
                                             <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -311,15 +311,14 @@ export default function LoginPage() {
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-6">
                                 {step.gimnasioLogoUrl ? (
-                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-14 w-auto object-contain mx-auto mb-4" />
+                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                         </svg>
                                     </div>
                                 )}
-                                <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-0.5">{step.gimnasioNombre}</p>
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                                 <p className="text-slate-400 text-sm mt-1">Primer acceso — creá tu contraseña</p>
                             </div>
@@ -359,7 +358,7 @@ export default function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={() => step.type === 'alumno-register' && setStep({ type: 'alumno-login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
-                                        className="text-emerald-600 font-semibold hover:text-emerald-500"
+                                        className="text-slate-900 font-semibold hover:text-slate-600"
                                     >
                                         Ingresá acá
                                     </button>
@@ -373,15 +372,14 @@ export default function LoginPage() {
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-6">
                                 {step.gimnasioLogoUrl ? (
-                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-14 w-auto object-contain mx-auto mb-4" />
+                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                         </svg>
                                     </div>
                                 )}
-                                <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-0.5">{step.gimnasioNombre}</p>
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                             </div>
                             <form onSubmit={handleAlumnoLogin} className="space-y-3">
@@ -408,7 +406,7 @@ export default function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
-                                        className="text-emerald-600 font-semibold hover:text-emerald-500"
+                                        className="text-slate-900 font-semibold hover:text-slate-600"
                                     >
                                         Crear nueva
                                     </button>
