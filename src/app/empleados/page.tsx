@@ -10,6 +10,10 @@ type Empleado = {
     _id: string;
     username: string;
     role: string;
+    nombre?: string;
+    apellido?: string;
+    dni?: string;
+    fechaNacimiento?: string;
 };
 
 const ROLE_LABEL: Record<string, string> = {
@@ -274,7 +278,15 @@ export default function EmpleadosPage() {
                 <div className="space-y-2">
                     {empleados.map(emp => {
                         const isMe = emp._id === myId;
-                        const initials = emp.username.slice(0, 2).toUpperCase();
+                        const displayName = emp.nombre && emp.apellido
+                            ? `${emp.nombre} ${emp.apellido}`
+                            : emp.nombre || emp.username;
+                        const initials = emp.nombre
+                            ? `${emp.nombre[0]}${emp.apellido?.[0] ?? ''}`.toUpperCase()
+                            : emp.username.slice(0, 2).toUpperCase();
+                        const nacimiento = emp.fechaNacimiento
+                            ? new Date(emp.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            : null;
                         return (
                             <div
                                 key={emp._id}
@@ -282,7 +294,7 @@ export default function EmpleadosPage() {
                             >
                                 {/* Avatar */}
                                 <div
-                                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white text-xs font-bold ${ROLE_AVATAR[emp.role] ?? 'bg-slate-500'}`}
+                                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white text-xs font-bold ${ROLE_AVATAR[emp.role] ?? 'bg-slate-500'}`}
                                 >
                                     {initials}
                                 </div>
@@ -290,18 +302,26 @@ export default function EmpleadosPage() {
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-slate-800 font-semibold text-sm">{emp.username}</span>
+                                        <span className="text-slate-800 font-semibold text-sm">{displayName}</span>
                                         {isMe && (
-                                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full leading-none">
+                                            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full leading-none">
                                                 Vos
                                             </span>
                                         )}
                                     </div>
-                                    <span
-                                        className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg mt-1 ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}
-                                    >
-                                        {ROLE_LABEL[emp.role] ?? emp.role}
-                                    </span>
+                                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                        <span
+                                            className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}
+                                        >
+                                            {ROLE_LABEL[emp.role] ?? emp.role}
+                                        </span>
+                                        {emp.dni && (
+                                            <span className="text-[11px] text-slate-400">DNI {emp.dni.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3')}</span>
+                                        )}
+                                        {nacimiento && (
+                                            <span className="text-[11px] text-slate-400">{nacimiento}</span>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Acciones */}

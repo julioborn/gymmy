@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
     }
 
-    const { username, role: nuevoRol, password } = await req.json();
+    const { username, role: nuevoRol, password, nombre, apellido, dni, fechaNacimiento } = await req.json();
 
     if (!username?.trim() || !nuevoRol) {
         return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
@@ -43,7 +43,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ error: 'Empleado no encontrado' }, { status: 404 });
         }
 
-        // Check username uniqueness if changed
         if (username.trim() !== empleado.username) {
             const conflict = await db.collection('usuarios').findOne({ username: username.trim() });
             if (conflict) {
@@ -52,9 +51,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         }
 
         const update: Record<string, unknown> = { username: username.trim(), role: nuevoRol };
-        if (password) {
-            update.password = await bcrypt.hash(password, 10);
-        }
+        if (password) update.password = await bcrypt.hash(password, 10);
+        if (nombre) update.nombre = nombre.trim();
+        if (apellido) update.apellido = apellido.trim();
+        if (dni) update.dni = dni.trim();
+        if (fechaNacimiento) update.fechaNacimiento = new Date(fechaNacimiento);
 
         await db.collection('usuarios').updateOne(
             { _id: new ObjectId(params.id) },
