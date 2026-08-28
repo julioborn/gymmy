@@ -79,45 +79,45 @@ export default function LoginPage() {
     async function handleIdentifierSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
-        const clean = identifier.replace(/\D/g, '');
-        const isAlumno = /^\d+$/.test(identifier.replace(/\./g, '')) && clean.length >= 7 && clean.length <= 8;
+        if (!identifier.trim()) { setError('Ingresá tu usuario o DNI.'); return; }
 
-        if (isAlumno) {
-            setLoading(true);
-            try {
-                const res = await fetch(`/api/auth/alumno/check?dni=${clean}`);
-                const data = await res.json();
-                if (!data.found) {
+        const clean = identifier.replace(/\D/g, '');
+        const looksLikeDNI = /^\d+$/.test(identifier.replace(/\./g, '')) && clean.length >= 7 && clean.length <= 8;
+
+        setLoading(true);
+        try {
+            // Always check staff first — a staff user may have a numeric username (e.g. DNI)
+            const staffRes = await fetch(`/api/auth/staff/check?username=${encodeURIComponent(identifier.trim())}`);
+            const staffData = await staffRes.json();
+            if (staffData.found) {
+                setStep({ type: 'staff-password', username: identifier.trim() });
+                return;
+            }
+
+            // Not a staff user — try alumno lookup if it looks like a DNI
+            if (looksLikeDNI) {
+                const alumnoRes = await fetch(`/api/auth/alumno/check?dni=${clean}`);
+                const alumnoData = await alumnoRes.json();
+                if (!alumnoData.found) {
                     setError('No encontramos ese DNI en ningún gimnasio. Consultá con tu profesor.');
                     return;
                 }
-                if (data.multiple) {
-                    setStep({ type: 'gym-select', gyms: data.gyms, dniRaw: identifier });
+                if (alumnoData.multiple) {
+                    setStep({ type: 'gym-select', gyms: alumnoData.gyms, dniRaw: identifier });
                     return;
                 }
-                if (data.hasPassword) {
-                    setStep({ type: 'alumno-login', nombre: data.nombre, apellido: data.apellido, dni: clean, gimnasioId: data.gimnasioId, gimnasioNombre: data.gimnasioNombre });
+                if (alumnoData.hasPassword) {
+                    setStep({ type: 'alumno-login', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre });
                 } else {
-                    setStep({ type: 'alumno-register', nombre: data.nombre, apellido: data.apellido, dni: clean, gimnasioId: data.gimnasioId, gimnasioNombre: data.gimnasioNombre });
+                    setStep({ type: 'alumno-register', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre });
                 }
-            } catch {
-                setError('Error de conexión. Intentá de nuevo.');
-            } finally {
-                setLoading(false);
+            } else {
+                setError('Usuario no encontrado.');
             }
-        } else {
-            if (!identifier.trim()) { setError('Ingresá tu usuario o DNI.'); return; }
-            setLoading(true);
-            try {
-                const res = await fetch(`/api/auth/staff/check?username=${encodeURIComponent(identifier.trim())}`);
-                const data = await res.json();
-                if (!data.found) { setError('Usuario no encontrado.'); return; }
-                setStep({ type: 'staff-password', username: identifier.trim() });
-            } catch {
-                setError('Error de conexión. Intentá de nuevo.');
-            } finally {
-                setLoading(false);
-            }
+        } catch {
+            setError('Error de conexión. Intentá de nuevo.');
+        } finally {
+            setLoading(false);
         }
     }
 
