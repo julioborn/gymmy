@@ -7,12 +7,13 @@ type Step =
     | { type: 'identifier' }
     | { type: 'staff-password'; username: string }
     | { type: 'gym-select'; gyms: GymOption[]; dniRaw: string }
-    | { type: 'alumno-register'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string }
-    | { type: 'alumno-login'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string };
+    | { type: 'alumno-register'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null }
+    | { type: 'alumno-login'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null };
 
 interface GymOption {
     gimnasioId: string;
     gimnasioNombre: string;
+    gimnasioLogoUrl: string | null;
     nombre: string;
     apellido: string;
     hasPassword: boolean;
@@ -98,9 +99,9 @@ export default function LoginPage() {
                 return;
             }
             if (alumnoData.hasPassword) {
-                setStep({ type: 'alumno-login', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre });
+                setStep({ type: 'alumno-login', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre, gimnasioLogoUrl: alumnoData.gimnasioLogoUrl ?? null });
             } else {
-                setStep({ type: 'alumno-register', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre });
+                setStep({ type: 'alumno-register', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre, gimnasioLogoUrl: alumnoData.gimnasioLogoUrl ?? null });
             }
         } catch {
             setError('Error de conexión. Intentá de nuevo.');
@@ -136,9 +137,9 @@ export default function LoginPage() {
     function handleGymSelect(gym: GymOption) {
         const clean = dni.replace(/\D/g, '');
         if (gym.hasPassword) {
-            setStep({ type: 'alumno-login', nombre: gym.nombre, apellido: gym.apellido, dni: clean, gimnasioId: gym.gimnasioId, gimnasioNombre: gym.gimnasioNombre });
+            setStep({ type: 'alumno-login', nombre: gym.nombre, apellido: gym.apellido, dni: clean, gimnasioId: gym.gimnasioId, gimnasioNombre: gym.gimnasioNombre, gimnasioLogoUrl: gym.gimnasioLogoUrl });
         } else {
-            setStep({ type: 'alumno-register', nombre: gym.nombre, apellido: gym.apellido, dni: clean, gimnasioId: gym.gimnasioId, gimnasioNombre: gym.gimnasioNombre });
+            setStep({ type: 'alumno-register', nombre: gym.nombre, apellido: gym.apellido, dni: clean, gimnasioId: gym.gimnasioId, gimnasioNombre: gym.gimnasioNombre, gimnasioLogoUrl: gym.gimnasioLogoUrl });
         }
     }
 
@@ -194,16 +195,6 @@ export default function LoginPage() {
 
             <div className="w-full max-w-[360px]">
 
-                {/* Logo */}
-                <div className="flex justify-center mb-8">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1748904925/gymmy-logo_kqdnlp.png"
-                        alt="Gymmy"
-                        style={{ height: 40, width: 'auto', objectFit: 'contain' }}
-                    />
-                </div>
-
                 {/* Back */}
                 {step.type !== 'identifier' && (
                     <button
@@ -228,7 +219,6 @@ export default function LoginPage() {
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-7">
                                 <h1 className="text-2xl font-bold text-slate-900">Ingresá tu DNI</h1>
-                                <p className="text-slate-400 text-sm mt-1">Sin puntos ni espacios</p>
                             </div>
                             <form onSubmit={handleDniSubmit} className="space-y-3">
                                 <input
@@ -320,11 +310,15 @@ export default function LoginPage() {
                     {step.type === 'alumno-register' && (
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-6">
-                                <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                                    <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                    </svg>
-                                </div>
+                                {step.gimnasioLogoUrl ? (
+                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-14 w-auto object-contain mx-auto mb-4" />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                        </svg>
+                                    </div>
+                                )}
                                 <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-0.5">{step.gimnasioNombre}</p>
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                                 <p className="text-slate-400 text-sm mt-1">Primer acceso — creá tu contraseña</p>
@@ -364,7 +358,7 @@ export default function LoginPage() {
                                     ¿Ya tenés contraseña?{' '}
                                     <button
                                         type="button"
-                                        onClick={() => step.type === 'alumno-register' && setStep({ type: 'alumno-login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre })}
+                                        onClick={() => step.type === 'alumno-register' && setStep({ type: 'alumno-login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
                                         className="text-emerald-600 font-semibold hover:text-emerald-500"
                                     >
                                         Ingresá acá
@@ -378,11 +372,15 @@ export default function LoginPage() {
                     {step.type === 'alumno-login' && (
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-6">
-                                <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                                    <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                    </svg>
-                                </div>
+                                {step.gimnasioLogoUrl ? (
+                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-14 w-auto object-contain mx-auto mb-4" />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                        </svg>
+                                    </div>
+                                )}
                                 <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-0.5">{step.gimnasioNombre}</p>
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                             </div>
@@ -409,7 +407,7 @@ export default function LoginPage() {
                                     ¿Olvidaste tu contraseña?{' '}
                                     <button
                                         type="button"
-                                        onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre })}
+                                        onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
                                         className="text-emerald-600 font-semibold hover:text-emerald-500"
                                     >
                                         Crear nueva
