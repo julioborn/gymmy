@@ -177,9 +177,7 @@ export default function MiCuentaPage() {
     };
     const [loadingPago, setLoadingPago] = useState(false);
     const [pagoResult, setPagoResult] = useState<'ok' | 'error' | 'pendiente' | null>(null);
-    const [pagoError, setPagoError] = useState<string | null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
-    const [tieneMP, setTieneMP] = useState(false);
     const [aliasCopied, setAliasCopied] = useState(false);
 
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
@@ -204,13 +202,11 @@ export default function MiCuentaPage() {
         return data as Alumno;
     }
 
-    async function fetchPagoConfig() {
+    async function fetchAlias() {
         try {
-            const r = await fetch('/api/alumno/pago-config');
-            if (!r.ok) return;
+            const r = await fetch('/api/gimnasio/alias');
             const d = await r.json();
             setAliasGimnasio(d.alias ?? '');
-            setTieneMP(!!d.tieneMP);
         } catch { /* ignorar */ }
     }
 
@@ -278,15 +274,11 @@ export default function MiCuentaPage() {
     }
 
     async function handlePagarMercadoPago() {
-        setPagoError(null);
         setLoadingPago(true);
         try {
             const res = await fetch('/api/pagos/mp/crear-preferencia', { method: 'POST' });
             const data = await res.json();
-            if (!res.ok) {
-                setPagoError(data.error ?? 'No se pudo iniciar el pago.');
-                return;
-            }
+            if (!res.ok) { setPagoResult('error'); return; }
             if (data.alumnoId) sessionStorage.setItem('mp_alumno_id', data.alumnoId);
             const a = document.createElement('a');
             a.href = data.init_point;
@@ -296,7 +288,7 @@ export default function MiCuentaPage() {
             a.click();
             document.body.removeChild(a);
         } catch {
-            setPagoError('Error de conexión. Intentá de nuevo.');
+            setPagoResult('error');
         } finally {
             setLoadingPago(false);
         }
@@ -352,7 +344,7 @@ export default function MiCuentaPage() {
             .then(data => { if (data?._id) fetchPlan(data._id, data); })
             .catch(() => {})
             .finally(() => setLoading(false));
-        fetchPagoConfig();
+        fetchAlias();
 
         const onVisible = () => {
             if (document.visibilityState === 'visible') fetchAlumno().catch(() => {});
@@ -594,66 +586,48 @@ export default function MiCuentaPage() {
                         </div>
                     </div>
 
-                    {/* Opciones de pago — solo si cuota pendiente */}
-                    {!pagoEsteMes && (aliasGimnasio || tieneMP) && (
+                    {/* Pagar por transferencia — solo si cuota pendiente */}
+                    {!pagoEsteMes && aliasGimnasio && (
                         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                            {/* Alias / transferencia */}
-                            {aliasGimnasio && (
-                                <div className="px-5 py-4 border-b border-slate-100">
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Transferí tu cuota</p>
-                                    <div className="flex items-center justify-between gap-3">
-                                        <span className="text-slate-800 font-bold text-base truncate">{aliasGimnasio}</span>
-                                        <button
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(aliasGimnasio);
-                                                setAliasCopied(true);
-                                                setTimeout(() => setAliasCopied(false), 2000);
-                                            }}
-                                            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition text-slate-600 text-xs font-semibold"
-                                        >
-                                            {aliasCopied ? (
-                                                <>
-                                                    <IconCheck className="w-3.5 h-3.5 text-emerald-500" />
-                                                    <span className="text-emerald-600">Copiado</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
-                                                    </svg>
-                                                    Copiar alias
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* MercadoPago Checkout Pro */}
-                            {tieneMP && (
-                                <div className="px-5 py-4">
-                                    {pagoError && (
-                                        <p className="text-red-500 text-xs mb-3 text-center font-medium">{pagoError}</p>
-                                    )}
+                            <div className="px-5 py-4 border-b border-slate-100">
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Transferí tu cuota</p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="text-slate-800 font-bold text-base truncate">{aliasGimnasio}</span>
                                     <button
-                                        onClick={handlePagarMercadoPago}
-                                        disabled={loadingPago}
-                                        className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] disabled:opacity-60 transition-colors"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(aliasGimnasio);
+                                            setAliasCopied(true);
+                                            setTimeout(() => setAliasCopied(false), 2000);
+                                        }}
+                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition text-slate-600 text-xs font-semibold"
                                     >
-                                        {loadingPago ? (
-                                            <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                                        {aliasCopied ? (
+                                            <>
+                                                <IconCheck className="w-3.5 h-3.5 text-emerald-500" />
+                                                <span className="text-emerald-600">Copiado</span>
+                                            </>
                                         ) : (
                                             <>
-                                                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.27c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.95z"/>
+                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                                                 </svg>
-                                                <span className="text-white font-bold text-sm">Pagar con Mercado Pago</span>
+                                                Copiar alias
                                             </>
                                         )}
                                     </button>
-                                    <p className="text-center text-slate-400 text-[11px] mt-2">Te redirigimos al checkout seguro de MP</p>
                                 </div>
-                            )}
+                            </div>
+                            <a
+                                href="https://www.mercadopago.com.ar"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 px-5 py-3.5 bg-[#009EE3] hover:bg-[#0088CC] active:bg-[#007AB8] transition-colors"
+                            >
+                                <span className="text-white font-semibold text-sm">Abrir Mercado Pago</span>
+                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
                         </div>
                     )}
 
