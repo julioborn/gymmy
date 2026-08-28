@@ -22,9 +22,20 @@ export async function GET(req: Request) {
     try {
         const user = await db.collection('usuarios').findOne(
             { username },
-            { projection: { _id: 1 } }
+            { projection: { _id: 1, gimnasioId: 1 } }
         );
-        return NextResponse.json({ found: !!user });
+        if (!user) return NextResponse.json({ found: false });
+
+        let gimnasioLogoUrl: string | null = null;
+        if (user.gimnasioId) {
+            const gym = await db.collection('gimnasios').findOne(
+                { _id: user.gimnasioId },
+                { projection: { logoHeaderUrl: 1, logoUrl: 1 } }
+            );
+            gimnasioLogoUrl = gym?.logoHeaderUrl || gym?.logoUrl || null;
+        }
+
+        return NextResponse.json({ found: true, gimnasioLogoUrl });
     } finally {
         await client.close();
     }

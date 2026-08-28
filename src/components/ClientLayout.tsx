@@ -373,12 +373,24 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+                        style={{ perspective: '600px' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png"
-                            alt="Gymmy"
-                            style={{ maxHeight: 38, maxWidth: 120, objectFit: 'contain' }}
+                            src={logoShown
+                                ? logoShown
+                                : 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png'}
+                            alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'Gymmy'}
+                            style={{
+                                maxHeight: logoShown ? 68 : 38,
+                                maxWidth: logoShown ? 220 : 120,
+                                objectFit: 'contain',
+                                transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
+                                opacity: logoAnimating ? 0 : 1,
+                                transition: logoAnimating
+                                    ? 'transform 0.18s ease-in, opacity 0.15s ease-in'
+                                    : 'transform 0.24s ease-out, opacity 0.22s ease-out, max-height 0.22s ease',
+                            }}
                         />
                     </Link>
 

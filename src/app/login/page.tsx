@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 type Step =
     | { type: 'identifier' }
-    | { type: 'staff-password'; username: string }
+    | { type: 'staff-password'; username: string; gimnasioLogoUrl: string | null }
     | { type: 'gym-select'; gyms: GymOption[]; dniRaw: string }
     | { type: 'alumno-register'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null }
     | { type: 'alumno-login'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null };
@@ -83,7 +83,7 @@ export default function LoginPage() {
             const staffRes = await fetch(`/api/auth/staff/check?username=${clean}`);
             const staffData = await staffRes.json();
             if (staffData.found) {
-                setStep({ type: 'staff-password', username: clean });
+                setStep({ type: 'staff-password', username: clean, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null });
                 return;
             }
 
@@ -243,13 +243,16 @@ export default function LoginPage() {
                     {step.type === 'staff-password' && (
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-7">
-                                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                                    <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                    </svg>
-                                </div>
-                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-0.5">Personal</p>
-                                <h1 className="text-xl font-bold text-slate-900">{step.username}</h1>
+                                {step.gimnasioLogoUrl ? (
+                                    <img src={step.gimnasioLogoUrl} alt="Gimnasio" className="h-20 w-auto object-contain mx-auto mb-4" />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                        </svg>
+                                    </div>
+                                )}
+                                <h1 className="text-xl font-bold text-slate-900">Ingresá tu contraseña</h1>
                             </div>
                             <form onSubmit={handleStaffLogin} className="space-y-3">
                                 <div className="relative">
