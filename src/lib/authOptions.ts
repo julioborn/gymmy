@@ -55,6 +55,8 @@ export const authOptions: AuthOptions = {
                     gimnasioId: user.gimnasioId?.toString() || null,
                     gimnasioNombre,
                     gimnasioLogoUrl,
+                    nombre: user.nombre || null,
+                    apellido: user.apellido || null,
                 };
             },
         }),
@@ -90,11 +92,13 @@ export const authOptions: AuthOptions = {
 
                 return {
                     id: alumno._id.toString(),
-                    username: `${alumno.nombre} ${alumno.apellido}`,
+                    username: alumno.dni,
                     role: "alumno",
                     gimnasioId: alumno.gimnasioId.toString(),
                     gimnasioNombre: gym?.nombre || null,
                     gimnasioLogoUrl: gym?.logoUrl || null,
+                    nombre: alumno.nombre || null,
+                    apellido: alumno.apellido || null,
                 };
             },
         }),
@@ -113,6 +117,8 @@ export const authOptions: AuthOptions = {
                 session.user.gimnasioId = (token.gimnasioId as string) || null;
                 session.user.gimnasioNombre = (token.gimnasioNombre as string) || null;
                 session.user.gimnasioLogoUrl = (token.gimnasioLogoUrl as string) || null;
+                session.user.nombre = (token.nombre as string) || null;
+                session.user.apellido = (token.apellido as string) || null;
             }
             return session;
         },
@@ -124,6 +130,8 @@ export const authOptions: AuthOptions = {
                 token.gimnasioId = user.gimnasioId || null;
                 token.gimnasioNombre = user.gimnasioNombre || null;
                 token.gimnasioLogoUrl = user.gimnasioLogoUrl || null;
+                token.nombre = user.nombre || null;
+                token.apellido = user.apellido || null;
             }
             return token;
         },

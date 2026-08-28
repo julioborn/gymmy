@@ -8,6 +8,8 @@ declare module "next-auth" {
             username: string;
             role: string;
             gimnasioId: string | null;
+            nombre: string | null;
+            apellido: string | null;
         };
     }
 
@@ -16,6 +18,8 @@ declare module "next-auth" {
         username: string;
         role: string;
         gimnasioId: string | null;
+        nombre: string | null;
+        apellido: string | null;
     }
 }
 
@@ -25,5 +29,7 @@ declare module "next-auth/jwt" {
         username: string;
         role: string;
         gimnasioId: string | null;
+        nombre: string | null;
+        apellido: string | null;
     }
 }
