@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
-import '@/models/Gimnasio'; // registrar el schema para populate
+import Gimnasio from '@/models/Gimnasio';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     // Dos queries separadas: una con populate para datos generales,
     // otra con +password para el campo que tiene select:false
     const [alumnos, alumnosConPwd] = await Promise.all([
-        Alumno.find({ dni }).populate('gimnasioId', 'nombre activo'),
+        Alumno.find({ dni }).populate({ path: 'gimnasioId', model: Gimnasio, select: 'nombre activo logoUrl logoHeaderUrl' }),
         Alumno.find({ dni }).select('+password').lean(),
     ]);
 
@@ -37,14 +37,16 @@ export async function GET(req: Request) {
 
     if (activos.length === 1) {
         const a = activos[0];
+        const gym = a.gimnasioId as any;
         return NextResponse.json({
             found: true,
             multiple: false,
             nombre: a.nombre,
             apellido: a.apellido,
             hasPassword: pwdMap[a._id.toString()] ?? false,
-            gimnasioId: (a.gimnasioId as any)._id.toString(),
-            gimnasioNombre: (a.gimnasioId as any).nombre,
+            gimnasioId: gym._id.toString(),
+            gimnasioNombre: gym.nombre,
+            gimnasioLogoUrl: gym.logoHeaderUrl || gym.logoUrl || null,
         });
     }
 
@@ -55,6 +57,7 @@ export async function GET(req: Request) {
         gyms: activos.map((a: any) => ({
             gimnasioId: (a.gimnasioId as any)._id.toString(),
             gimnasioNombre: (a.gimnasioId as any).nombre,
+            gimnasioLogoUrl: (a.gimnasioId as any).logoHeaderUrl || (a.gimnasioId as any).logoUrl || null,
             nombre: a.nombre,
             apellido: a.apellido,
             hasPassword: pwdMap[a._id.toString()] ?? false,
