@@ -86,16 +86,16 @@ const ACTIVIDAD_DOT: Record<string, string> = {
     'Otro': 'bg-yellow-400',
 };
 const COMBO_PALETTE = [
-    { bg: 'rgba(244, 163, 71, 0.09)', labelColor: '#f4a347', dotColor: '#f4a347' },
-    { bg: 'rgba(52, 211, 153, 0.09)', labelColor: '#34d399', dotColor: '#34d399' },
-    { bg: 'rgba(96, 165, 250, 0.09)', labelColor: '#60a5fa', dotColor: '#60a5fa' },
-    { bg: 'rgba(167, 139, 250, 0.09)', labelColor: '#a78bfa', dotColor: '#a78bfa' },
+    { bg: 'rgba(244, 163, 71, 0.07)', labelColor: '#d97706', dotColor: '#d97706' },
+    { bg: 'rgba(16, 185, 129, 0.07)', labelColor: '#059669', dotColor: '#059669' },
+    { bg: 'rgba(59, 130, 246, 0.07)', labelColor: '#2563eb', dotColor: '#2563eb' },
+    { bg: 'rgba(139, 92, 246, 0.07)', labelColor: '#7c3aed', dotColor: '#7c3aed' },
 ];
 
 const ACTIVIDAD_PILL: Record<string, string> = {
-    'Musculación': 'bg-blue-500/20 text-blue-300 border border-blue-500/20',
-    'Intermitente': 'bg-orange-500/20 text-orange-300 border border-orange-500/20',
-    'Otro': 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/20',
+    'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
+    'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
+    'Otro': 'bg-yellow-50 text-yellow-700 border border-yellow-100',
 };
 
 function toLocalDateKey(fechaStr: string): string {
@@ -356,7 +356,7 @@ export default function MiCuentaPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="border-t-2 border-r-2 border-emerald-400 rounded-full w-8 h-8 animate-spin" />
+                <div className="border-t-2 border-r-2 border-emerald-500 rounded-full w-8 h-8 animate-spin" />
             </div>
         );
     }
@@ -460,26 +460,26 @@ export default function MiCuentaPage() {
             {pagoResult && (
                 <div className={`mb-4 rounded-2xl px-4 py-3 flex items-center gap-3 ${
                     pagoResult === 'ok'
-                        ? 'bg-emerald-500/10 border border-emerald-500/20'
+                        ? 'bg-emerald-50 border border-emerald-200'
                         : pagoResult === 'pendiente'
-                        ? 'bg-amber-500/10 border border-amber-500/20'
-                        : 'bg-red-500/10 border border-red-500/20'
+                        ? 'bg-amber-50 border border-amber-200'
+                        : 'bg-red-50 border border-red-200'
                 }`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        pagoResult === 'ok' ? 'bg-emerald-500/20' : pagoResult === 'pendiente' ? 'bg-amber-500/20' : 'bg-red-500/20'
+                        pagoResult === 'ok' ? 'bg-emerald-100' : pagoResult === 'pendiente' ? 'bg-amber-100' : 'bg-red-100'
                     }`}>
-                        {pagoResult === 'ok' && <IconCheck className="w-4 h-4 text-emerald-400" />}
-                        {pagoResult === 'pendiente' && <IconClock className="w-4 h-4 text-amber-400" />}
-                        {pagoResult === 'error' && <IconX className="w-4 h-4 text-red-400" />}
+                        {pagoResult === 'ok' && <IconCheck className="w-4 h-4 text-emerald-600" />}
+                        {pagoResult === 'pendiente' && <IconClock className="w-4 h-4 text-amber-600" />}
+                        {pagoResult === 'error' && <IconX className="w-4 h-4 text-red-500" />}
                     </div>
                     <div className="flex-1">
                         <p className={`text-sm font-bold ${
-                            pagoResult === 'ok' ? 'text-emerald-300' : pagoResult === 'pendiente' ? 'text-amber-300' : 'text-red-300'
+                            pagoResult === 'ok' ? 'text-emerald-800' : pagoResult === 'pendiente' ? 'text-amber-800' : 'text-red-700'
                         }`}>
                             {pagoResult === 'ok' ? '¡Pago recibido!' : pagoResult === 'pendiente' ? 'Pago en proceso' : 'El pago no se completó'}
                         </p>
                         <p className={`text-xs mt-0.5 ${
-                            pagoResult === 'ok' ? 'text-emerald-400' : pagoResult === 'pendiente' ? 'text-amber-400' : 'text-red-400'
+                            pagoResult === 'ok' ? 'text-emerald-600' : pagoResult === 'pendiente' ? 'text-amber-600' : 'text-red-500'
                         }`}>
                             {pagoResult === 'ok'
                                 ? 'Tu cuota quedó registrada. ¡Gracias!'
@@ -488,7 +488,7 @@ export default function MiCuentaPage() {
                                 : 'Podés intentarlo de nuevo cuando quieras.'}
                         </p>
                     </div>
-                    <button onClick={() => setPagoResult(null)} className="text-slate-500 hover:text-slate-300 p-1">
+                    <button onClick={() => setPagoResult(null)} className="text-slate-400 hover:text-slate-600 p-1">
                         <IconX className="w-4 h-4" />
                     </button>
                 </div>
@@ -531,15 +531,15 @@ export default function MiCuentaPage() {
             </div>
 
             {/* ── TAB SWITCHER ── */}
-            <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1 mb-5">
+            <div className="flex gap-1 bg-slate-100 rounded-2xl p-1 mb-5">
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => changeTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                             tab === t
-                                ? 'bg-[#2d2d2d] text-white shadow-sm'
-                                : 'text-slate-500 hover:text-slate-300'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-400 hover:text-slate-600'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
@@ -551,58 +551,52 @@ export default function MiCuentaPage() {
             {tab === 'resumen' && (
                 <div className="space-y-4">
 
-                    {/* Stats row */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06]">
-                            <div className="w-8 h-8 rounded-xl bg-violet-500/20 flex items-center justify-center mb-3">
-                                <svg className="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm">
+                            <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center mb-3">
+                                <svg className="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                                 </svg>
                             </div>
-                            <p className="text-3xl font-bold text-white leading-none">{asistenciasEsteMes.length}</p>
-                            <p className="text-slate-500 text-xs mt-1.5 font-medium capitalize">en {mesActual}</p>
+                            <p className="text-3xl font-bold text-slate-900 leading-none">{asistenciasEsteMes.length}</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">en {mesActual}</p>
                         </div>
 
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06]">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${
-                                pagoEsteMes ? 'bg-emerald-500/20' : 'bg-red-500/20'
-                            }`}>
-                                <svg className={`w-4 h-4 ${pagoEsteMes ? 'text-emerald-400' : 'text-red-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${pagoEsteMes ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                                <svg className={`w-4 h-4 ${pagoEsteMes ? 'text-emerald-600' : 'text-red-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
                                 </svg>
                             </div>
-                            <p className={`text-sm font-bold leading-none ${pagoEsteMes ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <p className={`text-sm font-bold leading-none ${pagoEsteMes ? 'text-emerald-600' : 'text-red-500'}`}>
                                 {pagoEsteMes ? 'Al día' : 'Pendiente'}
                             </p>
                             {pagoEsteMes ? (
-                                <p className="text-white text-sm font-bold mt-1.5">
-                                    ${pagoEsteMes.tarifa.toLocaleString('es-AR')}
-                                </p>
+                                <p className="text-slate-900 text-sm font-bold mt-1.5">${pagoEsteMes.tarifa.toLocaleString('es-AR')}</p>
                             ) : (
-                                <p className="text-slate-500 text-xs mt-1.5 font-medium capitalize">{mesActual}</p>
+                                <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">{mesActual}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Pagar por transferencia */}
                     {!pagoEsteMes && aliasGimnasio && (
-                        <div className="bg-[#111] rounded-2xl border border-white/[0.06] overflow-hidden">
-                            <div className="px-5 py-4 border-b border-white/[0.06]">
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Transferí tu cuota</p>
+                        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
+                            <div className="px-5 py-4 border-b border-black/[0.06]">
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Transferí tu cuota</p>
                                 <div className="flex items-center justify-between gap-3">
-                                    <span className="text-white font-bold text-base truncate">{aliasGimnasio}</span>
+                                    <span className="text-slate-900 font-bold text-base truncate">{aliasGimnasio}</span>
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(aliasGimnasio);
                                             setAliasCopied(true);
                                             setTimeout(() => setAliasCopied(false), 2000);
                                         }}
-                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 transition text-slate-300 text-xs font-semibold"
+                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 text-xs font-semibold"
                                     >
                                         {aliasCopied ? (
                                             <>
-                                                <IconCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                                <span className="text-emerald-400">Copiado</span>
+                                                <IconCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                                <span className="text-emerald-700">Copiado</span>
                                             </>
                                         ) : (
                                             <>
@@ -629,68 +623,65 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {/* Plan de entrenamiento */}
                     {tienePlan && (
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06]">
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                                        <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                                         </svg>
                                     </div>
-                                    <span className="text-white text-sm font-semibold">Plan activo</span>
+                                    <span className="text-slate-800 text-sm font-semibold">Plan activo</span>
                                 </div>
-                                <span className="text-xs text-slate-500 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                                <span className="text-xs text-slate-400 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
                                 <div
                                     className="bg-emerald-500 h-2 rounded-full transition-all"
                                     style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }}
                                 />
                             </div>
-                            <p className="text-slate-500 text-xs">
+                            <p className="text-slate-400 text-xs">
                                 {plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}
                             </p>
                         </div>
                     )}
 
-                    {/* Plan completado */}
                     {plan?.terminado && (
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                <IconTrophy className="w-6 h-6 text-emerald-400" />
+                        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div>
-                                <p className="text-emerald-300 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-emerald-500 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                <p className="text-emerald-800 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-emerald-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                             </div>
                         </div>
                     )}
 
-                    {/* Asistencias por semana navegable */}
-                    <div className="bg-[#111] rounded-2xl border border-white/[0.06] overflow-hidden">
-                        <div className="px-3 pt-3 pb-2.5 border-b border-white/[0.05] flex items-center justify-between gap-2">
+                    <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
+                        <div className="px-3 pt-3 pb-2.5 border-b border-black/[0.05] flex items-center justify-between gap-2">
                             <button
                                 onClick={() => setAsistWeekOffset(o => o + 1)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-colors flex-shrink-0"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
                             <div className="text-center min-w-0">
-                                <p className="text-white text-sm font-bold leading-tight">
+                                <p className="text-slate-800 text-sm font-bold leading-tight">
                                     {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
                                 </p>
-                                <p className="text-slate-500 text-xs mt-0.5">
+                                <p className="text-slate-400 text-xs mt-0.5">
                                     {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
                                 disabled={asistWeekOffset === 0}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-colors flex-shrink-0 disabled:opacity-30"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0 disabled:opacity-30"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -700,23 +691,23 @@ export default function MiCuentaPage() {
 
                         {asistenciasEnSemana.length === 0 ? (
                             <div className="px-4 py-7 text-center">
-                                <p className="text-slate-500 text-sm">Sin asistencias esta semana.</p>
+                                <p className="text-slate-400 text-sm">Sin asistencias esta semana.</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/[0.04]">
+                            <div className="divide-y divide-slate-100">
                                 {asistenciasEnSemana.map(a => {
                                     const d = new Date(a.fecha);
                                     return (
                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/[0.05] flex flex-col items-center justify-center flex-shrink-0 border border-white/[0.06]">
-                                                <span className="text-white font-bold text-sm leading-none">{d.getDate()}</span>
-                                                <span className="text-slate-500 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
+                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-black/[0.06]">
+                                                <span className="text-slate-800 font-bold text-sm leading-none">{d.getDate()}</span>
+                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
                                             </div>
                                             <div className="flex-1 flex items-center gap-2 flex-wrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-slate-300'}`}>
+                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
                                                     {a.actividad}
                                                 </span>
-                                                <span className="text-xs text-slate-500 font-medium">
+                                                <span className="text-xs text-slate-400 font-medium">
                                                     {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
                                             </div>
@@ -727,45 +718,34 @@ export default function MiCuentaPage() {
                         )}
 
                         {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
-                            <div className="px-4 py-2.5 bg-white/[0.03] border-t border-white/[0.05] flex items-center gap-2">
+                            <div className="px-4 py-2.5 bg-slate-50 border-t border-black/[0.05] flex items-center gap-2">
                                 <div className="flex gap-1 flex-1">
                                     {Array.from({ length: diasPorSemana }, (_, i) => (
-                                        <div
-                                            key={i}
-                                            className={`h-1.5 flex-1 rounded-full ${i < musculacionEnSemana ? 'bg-emerald-400' : 'bg-white/10'}`}
-                                        />
+                                        <div key={i} className={`h-1.5 flex-1 rounded-full ${i < musculacionEnSemana ? 'bg-emerald-400' : 'bg-slate-200'}`} />
                                     ))}
                                 </div>
-                                <span className="text-xs text-slate-500 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
+                                <span className="text-xs text-slate-400 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
                         )}
                     </div>
-
                 </div>
             )}
 
             {/* ── HISTORIAL ── */}
             {tab === 'historial' && (
                 <div className="space-y-4">
-
-                    {/* Calendario */}
-                    <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06]">
+                    <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <button
-                                onClick={prevMonth}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-colors"
-                            >
+                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
-                            <span className="text-white font-bold capitalize text-sm">
-                                {MESES[calMonth]} {calYear}
-                            </span>
+                            <span className="text-slate-900 font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
                             <button
                                 onClick={nextMonth}
                                 disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-colors disabled:opacity-30"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors disabled:opacity-30"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -775,14 +755,13 @@ export default function MiCuentaPage() {
 
                         <div className="grid grid-cols-7 mb-1">
                             {DIAS_SEMANA.map(d => (
-                                <div key={d} className="text-center text-slate-500 text-xs font-semibold py-1">{d}</div>
+                                <div key={d} className="text-center text-slate-400 text-xs font-semibold py-1">{d}</div>
                             ))}
                         </div>
 
                         <div className="grid grid-cols-7 gap-y-1">
                             {calDays.map((day, i) => {
                                 if (!day) return <div key={`e-${i}`} />;
-
                                 const key = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                                 const asists = asistenciasMap[key] || [];
                                 const pagos = pagosMap[key] || [];
@@ -799,132 +778,88 @@ export default function MiCuentaPage() {
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
                                             isSelected
-                                                ? 'bg-white/15'
+                                                ? 'bg-slate-100'
                                                 : isPlanStart
-                                                ? 'bg-violet-500/25 hover:bg-violet-500/35'
+                                                ? 'bg-violet-100 hover:bg-violet-200'
                                                 : isPlanDay
-                                                ? 'hover:bg-violet-500/20'
+                                                ? 'hover:bg-violet-50'
                                                 : hasData
-                                                ? 'hover:bg-white/[0.06]'
+                                                ? 'hover:bg-slate-50'
                                                 : 'cursor-default'
                                         }`}
-                                        style={isPlanDay && !isSelected ? { background: 'rgba(109,40,217,0.10)' } : undefined}
+                                        style={isPlanDay && !isSelected ? { background: 'rgba(139,92,246,0.06)' } : undefined}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                                            isSelected
-                                                ? 'text-white'
-                                                : isToday
-                                                ? 'bg-white text-[#111]'
-                                                : isPlanStart
-                                                ? 'bg-violet-500 text-white'
-                                                : hasData
-                                                ? 'text-slate-200'
-                                                : 'text-slate-600'
+                                            isSelected ? 'text-slate-900'
+                                            : isToday ? 'bg-[#111] text-white'
+                                            : isPlanStart ? 'bg-violet-600 text-white'
+                                            : hasData ? 'text-slate-800'
+                                            : 'text-slate-400'
                                         }`}>
                                             {day}
                                         </span>
                                         <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
                                             {asists.map((a, idx) => (
-                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-500'}`} />
+                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
                                             ))}
-                                            {pagos.length > 0 && (
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                            )}
+                                            {pagos.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                                         </div>
                                     </button>
                                 );
                             })}
                         </div>
 
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.06] flex-wrap">
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                                <span className="text-slate-500 text-xs">Musculación</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-orange-400" />
-                                <span className="text-slate-500 text-xs">Intermitente</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                                <span className="text-slate-500 text-xs">Otro</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <span className="text-slate-500 text-xs">Pago</span>
-                            </div>
-                            {planInicioKey && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-violet-500" />
-                                    <span className="text-slate-500 text-xs">Inicio de plan</span>
-                                </div>
-                            )}
-                            {lastMusculacionKey && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(109,40,217,0.25)' }} />
-                                    <span className="text-slate-500 text-xs">Días de plan</span>
-                                </div>
-                            )}
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-black/[0.06] flex-wrap">
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-400 text-xs">Musculación</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-slate-400 text-xs">Intermitente</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-400 text-xs">Otro</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-slate-400 text-xs">Pago</span></div>
+                            {planInicioKey && <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-violet-600" /><span className="text-slate-400 text-xs">Inicio de plan</span></div>}
+                            {lastMusculacionKey && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(139,92,246,0.18)' }} /><span className="text-slate-400 text-xs">Días de plan</span></div>}
                         </div>
                     </div>
 
-                    {/* Detalle día */}
                     {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || selectedDay === planInicioKey) && (
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06] space-y-3">
-                            <h3 className="text-white font-bold text-sm capitalize">
-                                {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', {
-                                    weekday: 'long', day: 'numeric', month: 'long'
-                                })}
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm space-y-3">
+                            <h3 className="text-slate-900 font-bold text-sm capitalize">
+                                {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </h3>
-
                             {selectedDay === planInicioKey && (
-                                <div className="flex items-center gap-2 bg-violet-500/15 border border-violet-500/20 rounded-xl px-3 py-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
-                                    <span className="text-violet-300 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
+                                <div className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-violet-600 flex-shrink-0" />
+                                    <span className="text-violet-700 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
                                 </div>
                             )}
-
                             {selectedAsistencias.map(a => (
                                 <div key={a._id} className="flex items-center gap-2">
-                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-500'}`} />
-                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-slate-300'}`}>
-                                        {a.actividad}
-                                    </span>
+                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>{a.actividad}</span>
                                 </div>
                             ))}
-
                             {selectedPagos.map(p => (
-                                <div key={p._id} className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2.5">
+                                <div key={p._id} className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                        <span className="text-emerald-300 text-sm font-semibold capitalize">Pago — {p.mes}</span>
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                                        <span className="text-emerald-700 text-sm font-semibold capitalize">Pago — {p.mes}</span>
                                     </div>
-                                    <span className="text-emerald-300 font-bold text-sm">
-                                        ${p.tarifa.toLocaleString('es-AR')}
-                                    </span>
+                                    <span className="text-emerald-700 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* Resumen del mes */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06] text-center">
-                            <p className="text-3xl font-bold text-white">
-                                {Object.entries(asistenciasMap)
-                                    .filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
-                                    .reduce((sum, [, a]) => sum + a.length, 0)}
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm text-center">
+                            <p className="text-3xl font-bold text-slate-900">
+                                {Object.entries(asistenciasMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, a]) => sum + a.length, 0)}
                             </p>
-                            <p className="text-slate-500 text-xs mt-1.5 font-medium capitalize">asistencias en {MESES_CORTO[calMonth]}</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">asistencias en {MESES_CORTO[calMonth]}</p>
                         </div>
-                        <div className="bg-[#111] rounded-2xl p-4 border border-white/[0.06] text-center">
-                            <p className="text-3xl font-bold text-white">
-                                ${Object.entries(pagosMap)
-                                    .filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`))
-                                    .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0)
-                                    .toLocaleString('es-AR')}
+                        <div className="bg-white rounded-2xl p-4 border border-black/[0.07] shadow-sm text-center">
+                            <p className="text-3xl font-bold text-slate-900">
+                                ${Object.entries(pagosMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0).toLocaleString('es-AR')}
                             </p>
-                            <p className="text-slate-500 text-xs mt-1.5 font-medium capitalize">pagado en {MESES_CORTO[calMonth]}</p>
+                            <p className="text-slate-400 text-xs mt-1.5 font-medium capitalize">pagado en {MESES_CORTO[calMonth]}</p>
                         </div>
                     </div>
                 </div>
@@ -935,19 +870,19 @@ export default function MiCuentaPage() {
                 <div className="space-y-3">
                     {loadingPlan && (
                         <div className="flex justify-center py-12">
-                            <div className="border-t-2 border-r-2 border-emerald-400 rounded-full w-8 h-8 animate-spin" />
+                            <div className="border-t-2 border-r-2 border-emerald-500 rounded-full w-8 h-8 animate-spin" />
                         </div>
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-10 text-center mt-2">
-                            <div className="w-14 h-14 bg-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-7 h-7 text-slate-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-10 text-center mt-2">
+                            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                 </svg>
                             </div>
-                            <p className="text-slate-300 font-semibold mb-1">Sin plan asignado</p>
-                            <p className="text-slate-500 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
+                            <p className="text-slate-600 font-semibold mb-1">Sin plan asignado</p>
+                            <p className="text-slate-400 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
                         </div>
                     )}
 
@@ -980,8 +915,8 @@ export default function MiCuentaPage() {
 
                         return (
                             <>
-                                {/* Plan header */}
-                                <div className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3 border border-white/[0.06]">
+                                {/* Plan header — negro como elemento visual de identidad */}
+                                <div className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
                                         <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
@@ -995,8 +930,8 @@ export default function MiCuentaPage() {
                                 </div>
 
                                 {/* Week selector */}
-                                <div className="bg-[#111] rounded-2xl border border-white/[0.06] p-3">
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-3">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === currentWeekNum;
@@ -1008,10 +943,10 @@ export default function MiCuentaPage() {
                                                     onClick={() => setSelectedSemana(sem)}
                                                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
                                                         isSelected
-                                                            ? 'bg-white text-[#111] shadow-sm'
+                                                            ? 'bg-slate-900 text-white shadow-sm'
                                                             : isPast
-                                                            ? 'bg-white/[0.05] text-slate-500'
-                                                            : 'bg-white/[0.05] text-slate-400 hover:bg-white/10'
+                                                            ? 'bg-slate-50 text-slate-400'
+                                                            : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                                                     }`}
                                                 >
                                                     {sem}
@@ -1023,14 +958,14 @@ export default function MiCuentaPage() {
                                                         </span>
                                                     )}
                                                     {isCurrent && !isSelected && (
-                                                        <span className={`absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-[#111] ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
+                                                        <span className={`absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white ${isSporttime ? 'bg-[#f4a347]' : 'bg-emerald-500'}`} />
                                                     )}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                     {selectedSemana === 5 && (
-                                        <p className="text-center text-xs text-slate-500 mt-2 font-medium">Semana de descarga</p>
+                                        <p className="text-center text-xs text-slate-400 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
 
@@ -1046,8 +981,8 @@ export default function MiCuentaPage() {
                                                 onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
-                                                        ? 'bg-white text-[#111] border-white shadow-sm'
-                                                        : 'bg-[#111] text-slate-400 border-white/[0.06] hover:border-white/15'
+                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                                                        : 'bg-white text-slate-500 border-black/[0.08] hover:border-black/20'
                                                 }`}
                                             >
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
@@ -1066,30 +1001,28 @@ export default function MiCuentaPage() {
                                     })}
                                 </div>
 
-                                {/* Bloque activación */}
                                 {dia?.bloqueActivacion && (
-                                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
-                                        <p className="text-xs font-bold text-amber-400 mb-1">Bloque de activación</p>
-                                        <p className="text-sm text-amber-300 leading-snug">{dia.bloqueActivacion}</p>
+                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
+                                        <p className="text-xs font-bold text-amber-700 mb-1">Bloque de activación</p>
+                                        <p className="text-sm text-amber-800 leading-snug">{dia.bloqueActivacion}</p>
                                     </div>
                                 )}
 
-                                {/* Exercise table */}
                                 {dia && (
-                                    <div className="bg-[#111] rounded-2xl border border-white/[0.06] overflow-hidden">
-                                        <div className="grid grid-cols-[1fr_96px_68px] border-b border-white/[0.06]">
+                                    <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
+                                        <div className="grid grid-cols-[1fr_96px_68px] border-b border-black/[0.07]">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-2 py-2.5 text-center border-l border-white/[0.06]">
-                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Sem {selectedSemana}</p>
+                                            <div className="px-2 py-2.5 text-center border-l border-black/[0.06]">
+                                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
                                             </div>
-                                            <div className="px-2 py-2.5 text-center border-l border-white/[0.06]">
-                                                <p className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Mis KG</p>
+                                            <div className="px-2 py-2.5 text-center border-l border-black/[0.06]">
+                                                <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
                                             </div>
                                         </div>
 
-                                        <div className="divide-y divide-white/[0.04]">
+                                        <div className="divide-y divide-slate-100">
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
                                                 const isExpanded = expandedEj === eIdx;
@@ -1098,13 +1031,10 @@ export default function MiCuentaPage() {
                                                 const prevEj = dia.ejercicios[eIdx - 1];
                                                 const isFirstInCombo = combo && (!prevEj?.grupoCombo || prevEj.grupoCombo !== ej.grupoCombo);
                                                 return (
-                                                    <div
-                                                        key={eIdx}
-                                                        style={combo ? { backgroundColor: combo.bg } : undefined}
-                                                    >
+                                                    <div key={eIdx} style={combo ? { backgroundColor: combo.bg } : undefined}>
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-white/[0.04] transition-colors active:bg-white/[0.07]"
+                                                            className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
                                                         >
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
@@ -1114,27 +1044,27 @@ export default function MiCuentaPage() {
                                                                             <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: combo.labelColor }}>Combinado</span>
                                                                         </div>
                                                                     )}
-                                                                    <p className="text-sm font-semibold text-slate-100 leading-tight">{ej.nombre}</p>
+                                                                    <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
                                                                     {ej.kg && ej.kg !== '-' && (
-                                                                        <p className="text-sm font-bold text-red-400 mt-0.5">{ej.kg} kg</p>
+                                                                        <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
                                                                     )}
                                                                     {(() => {
                                                                         const obs = (ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
-                                                                        return obs ? <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{obs}</p> : null;
+                                                                        return obs ? <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{obs}</p> : null;
                                                                     })()}
                                                                 </div>
-                                                                <IconChevron className={`w-3.5 h-3.5 text-slate-600 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                                <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-white/[0.06] flex items-center justify-center">
-                                                                <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-200' : 'text-slate-600'}`}>
+                                                            <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
+                                                                <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-white/[0.06] flex items-center justify-center">
+                                                            <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
                                                                     return (
-                                                                        <span className={`text-sm font-bold ${kgVal ? 'text-emerald-400' : 'text-slate-700'}`}>
+                                                                        <span className={`text-sm font-bold ${kgVal ? 'text-emerald-600' : 'text-slate-200'}`}>
                                                                             {kgVal || '—'}
                                                                         </span>
                                                                     );
@@ -1143,35 +1073,35 @@ export default function MiCuentaPage() {
                                                         </button>
 
                                                         {isExpanded && (
-                                                            <div className="px-4 pb-4 pt-2 bg-white/[0.04] border-t border-white/[0.06] space-y-3">
+                                                            <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-black/[0.06] space-y-3">
                                                                 {ej.notas && (
                                                                     <p className="text-xs text-slate-500 italic">{ej.notas}</p>
                                                                 )}
                                                                 <div className="flex flex-col gap-2">
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Mis KG</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
                                                                         <input
                                                                             type="number"
                                                                             inputMode="numeric"
                                                                             value={(ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm font-semibold text-white bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30"
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                                                                         />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Observaciones</label>
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
                                                                         <input
                                                                             type="text"
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-200 bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30"
+                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                                                                         />
                                                                     </div>
                                                                 </div>
                                                                 <button
                                                                     onClick={() => handleSaveEjercicio(eIdx)}
                                                                     disabled={savingEj === eIdx}
-                                                                    className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-white text-[#111] hover:bg-slate-100 active:bg-slate-200"
+                                                                    className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-slate-900 text-white hover:bg-slate-700 active:bg-slate-800"
                                                                 >
                                                                     {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
                                                                 </button>
@@ -1183,7 +1113,6 @@ export default function MiCuentaPage() {
                                         </div>
                                     </div>
                                 )}
-
                             </>
                         );
                     })()}
