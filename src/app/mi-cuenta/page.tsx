@@ -383,6 +383,13 @@ export default function MiCuentaPage() {
     });
 
     const planInicioKey = planEj?.fechaInicio ? toLocalDateKey(planEj.fechaInicio) : null;
+    const planEndKey = planEj?.fechaInicio && planEj?.totalSemanas
+        ? (() => {
+            const end = new Date(planEj.fechaInicio);
+            end.setDate(end.getDate() + planEj.totalSemanas * 7 - 1);
+            return toLocalDateKey(end.toISOString());
+        })()
+        : null;
 
     const asistenciasEsteMes = alumno.asistencia.filter(a => {
         const f = new Date(a.fecha);
@@ -785,6 +792,8 @@ export default function MiCuentaPage() {
                                 const asists = asistenciasMap[key] || [];
                                 const pagos = pagosMap[key] || [];
                                 const isPlanStart = key === planInicioKey;
+                                const isPlanDay = !isPlanStart && !!planInicioKey && !!planEndKey
+                                    && key >= planInicioKey && key <= planEndKey;
                                 const isToday = key === toLocalDateKey(now.toISOString());
                                 const isSelected = key === selectedDay;
                                 const hasData = asists.length > 0 || pagos.length > 0 || isPlanStart;
@@ -797,11 +806,14 @@ export default function MiCuentaPage() {
                                             isSelected
                                                 ? 'bg-[#111]'
                                                 : isPlanStart
-                                                ? 'bg-violet-50 hover:bg-violet-100'
+                                                ? 'bg-violet-100 hover:bg-violet-200'
+                                                : isPlanDay
+                                                ? 'hover:bg-violet-100'
                                                 : hasData
                                                 ? 'hover:bg-slate-50'
                                                 : 'cursor-default'
                                         }`}
+                                        style={isPlanDay && !isSelected ? { background: 'rgba(109,40,217,0.07)' } : undefined}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
                                             isSelected
@@ -850,6 +862,12 @@ export default function MiCuentaPage() {
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-violet-600" />
                                     <span className="text-slate-400 text-xs">Inicio de plan</span>
+                                </div>
+                            )}
+                            {planEndKey && (
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(109,40,217,0.15)' }} />
+                                    <span className="text-slate-400 text-xs">Días de plan</span>
                                 </div>
                             )}
                         </div>
