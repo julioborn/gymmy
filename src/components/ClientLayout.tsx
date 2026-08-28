@@ -382,8 +382,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                 : 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png'}
                             alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'Gymmy'}
                             style={{
-                                maxHeight: logoShown ? 56 : 38,
-                                maxWidth: logoShown ? 190 : 120,
+                                maxHeight: logoShown ? 68 : 38,
+                                maxWidth: logoShown ? 220 : 120,
                                 objectFit: 'contain',
                                 transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
                                 opacity: logoAnimating ? 0 : 1,
