@@ -912,6 +912,9 @@ export default function MiCuentaPage() {
                               }).length
                             : 0;
                         const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
+                        const sessionBasedWeekNum = planEj.dias.length > 0
+                            ? Math.min(Math.floor(sessionsDone / planEj.dias.length) + 1, totalSem)
+                            : 1;
 
                         return (
                             <>
@@ -924,7 +927,7 @@ export default function MiCuentaPage() {
                                     </div>
                                     <div className={`shrink-0 text-center rounded-xl px-3 py-2 ${isSporttime ? 'bg-[#d1e08b]/20' : 'bg-emerald-500/20'}`}>
                                         <p className={`text-xs font-bold uppercase tracking-wide ${isSporttime ? 'text-[#d1e08b]' : 'text-emerald-400'}`}>Semana</p>
-                                        <p className={`font-bold text-xl leading-none ${isSporttime ? 'text-[#edf5bc]' : 'text-emerald-300'}`}>{currentWeekNum}</p>
+                                        <p className={`font-bold text-xl leading-none ${isSporttime ? 'text-[#edf5bc]' : 'text-emerald-300'}`}>{sessionBasedWeekNum}</p>
                                         <p className={`text-xs ${isSporttime ? 'text-[#b8cc60]' : 'text-emerald-500'}`}>de {totalSem}</p>
                                     </div>
                                 </div>
@@ -934,9 +937,9 @@ export default function MiCuentaPage() {
                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
-                                            const isCurrent = sem === currentWeekNum;
+                                            const isCurrent = sem === sessionBasedWeekNum;
                                             const isSelected = sem === selectedSemana;
-                                            const isPast = sem < currentWeekNum;
+                                            const isPast = sem < sessionBasedWeekNum;
                                             return (
                                                 <button
                                                     key={sem}
@@ -972,9 +975,9 @@ export default function MiCuentaPage() {
                                 {/* Day selector */}
                                 <div className="flex gap-1.5">
                                     {planEj.dias.map((d, i) => {
-                                        const isDayDone = selectedSemana < currentWeekNum
-                                            || (selectedSemana === currentWeekNum && i < currentDayIdx);
-                                        const isCurrentDay = selectedSemana === currentWeekNum && i === currentDayIdx;
+                                        const isDayDone = selectedSemana < sessionBasedWeekNum
+                                            || (selectedSemana === sessionBasedWeekNum && i < currentDayIdx);
+                                        const isCurrentDay = selectedSemana === sessionBasedWeekNum && i === currentDayIdx;
                                         return (
                                             <button
                                                 key={i}
