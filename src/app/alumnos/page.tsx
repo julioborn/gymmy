@@ -955,89 +955,97 @@ export default function ListaAlumnosPage() {
                 isOpen={!!alumnoSeleccionado}
                 onRequestClose={() => setAlumnoSeleccionado(null)}
                 contentLabel="Detalle del Alumno"
-                className="relative w-full max-w-2xl mx-auto mt-16 outline-none"
-                overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-start z-50 px-4 overflow-y-auto"
+                className="relative w-full max-w-sm mx-auto mt-12 outline-none"
+                overlayClassName="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-start z-50 px-4 overflow-y-auto pb-8"
             >
-                {alumnoSeleccionado && (
-                    <div className="relative bg-white shadow-2xl rounded-2xl overflow-hidden outline-none">
-                        {/* Header del modal */}
-                        <div className="bg-[#111] px-6 py-5">
-                            <button
-                                onClick={() => setAlumnoSeleccionado(null)}
-                                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                                aria-label="Cerrar"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                            <h2 className="text-xl font-bold text-white">
-                                {alumnoSeleccionado.nombre} {alumnoSeleccionado.apellido}
-                            </h2>
-                            <div className="mt-1">
-                                {verificarPagoMesActual(alumnoSeleccionado.pagos) ? (
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
-                                        Pago al día
+                {alumnoSeleccionado && (() => {
+                    const pagado = verificarPagoMesActual(alumnoSeleccionado.pagos);
+                    const areaLabel: Record<string, string> = { salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación' };
+                    const nivelLabel: Record<string, string> = { nunca: 'Primera vez', alguna_vez: 'Entrenó antes', hace_tiempo: 'Continuo' };
+                    const initials = `${alumnoSeleccionado.nombre?.[0] ?? ''}${alumnoSeleccionado.apellido?.[0] ?? ''}`.toUpperCase();
+                    return (
+                        <div className="relative bg-white shadow-2xl rounded-3xl overflow-hidden outline-none">
+                            {/* Header tipo documento */}
+                            <div className="bg-[#111] px-5 pt-5 pb-4">
+                                <button
+                                    onClick={() => setAlumnoSeleccionado(null)}
+                                    className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                                    aria-label="Cerrar"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                                        <span className="text-white font-bold text-lg">{initials}</span>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-white font-bold text-base leading-tight truncate">
+                                            {alumnoSeleccionado.apellido}, {alumnoSeleccionado.nombre}
+                                        </p>
+                                        <p className="text-slate-400 text-xs mt-0.5">DNI {alumnoSeleccionado.dni}</p>
+                                    </div>
+                                    <span className={`ml-auto shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${pagado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        {pagado ? 'Pagó' : 'Debe'}
                                     </span>
-                                ) : (
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
-                                        Debe este mes
-                                    </span>
-                                )}
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Datos del alumno */}
-                        <div className="p-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-700 mb-6">
+                            {/* Datos compactos */}
+                            <div className="px-4 py-3 grid grid-cols-2 gap-2 border-b border-slate-100">
                                 {[
-                                    ['DNI', alumnoSeleccionado.dni],
-                                    ['Edad', alumnoSeleccionado.edad ?? '-'],
+                                    ['Edad', alumnoSeleccionado.edad ? `${alumnoSeleccionado.edad} años` : '-'],
                                     ['Teléfono', alumnoSeleccionado.telefono || '-'],
-                                    ['Email', alumnoSeleccionado.email || '-'],
-                                    ['Fecha de inicio', alumnoSeleccionado.fechaInicio ? new Date(alumnoSeleccionado.fechaInicio).toLocaleDateString() : '-'],
-                                    ['Franja horaria', capitalizar(alumnoSeleccionado.horarioEntrenamiento)],
-                                    ['Hora de inicio', alumnoSeleccionado.horaExactaEntrenamiento || '-'],
-                                    ['Historial deportivo', alumnoSeleccionado.historialDeportivo || '-'],
-                                    ['Historial de vida', alumnoSeleccionado.historialDeVida || '-'],
-                                    ['Objetivos', alumnoSeleccionado.objetivos || '-'],
-                                    ['Patologías', alumnoSeleccionado.patologias || '-'],
+                                    ['Horario', capitalizar(alumnoSeleccionado.horarioEntrenamiento)],
+                                    ['Días/sem', alumnoSeleccionado.diasEntrenaSemana ? `${alumnoSeleccionado.diasEntrenaSemana} días` : '-'],
+                                    ...(alumnoSeleccionado.area ? [['Área', areaLabel[alumnoSeleccionado.area] ?? alumnoSeleccionado.area]] : []),
+                                    ...(alumnoSeleccionado.nivelExperiencia ? [['Nivel', nivelLabel[alumnoSeleccionado.nivelExperiencia] ?? alumnoSeleccionado.nivelExperiencia]] : []),
+                                    ...(alumnoSeleccionado.patologias ? [['Patologías', alumnoSeleccionado.patologias]] : []),
                                 ].map(([label, value]) => (
-                                    <div key={label} className="bg-slate-50 rounded-lg px-3 py-2">
-                                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-0.5">{label}</p>
-                                        <p className="font-medium text-slate-800 truncate">{value}</p>
+                                    <div key={label} className={`bg-slate-50 rounded-xl px-3 py-2 ${label === 'Patologías' ? 'col-span-2' : ''}`}>
+                                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
+                                        <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{value}</p>
                                     </div>
                                 ))}
                             </div>
 
                             {/* Botones de acción */}
-                            <div className="space-y-2">
+                            <div className="p-4 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={() => router.push(`/alumnos/${alumnoSeleccionado._id}/historial`)}
-                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-all"
+                                        className="flex flex-col items-center justify-center gap-1 py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                     >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
                                         Historial
                                     </button>
                                     <button
                                         onClick={() => marcarPagoMes(alumnoSeleccionado._id)}
-                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-all"
+                                        className="flex flex-col items-center justify-center gap-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                     >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" />
+                                        </svg>
                                         Marcar Pago
                                     </button>
                                     <button
                                         onClick={() => iniciarPlan(alumnoSeleccionado._id)}
-                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all"
+                                        className="flex flex-col items-center justify-center gap-1 py-3 bg-amber-500 hover:bg-amber-400 text-white text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                     >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                                        </svg>
                                         Iniciar Plan
                                     </button>
                                     <button
                                         onClick={() => handleEditarAlumno(alumnoSeleccionado)}
-                                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#111] hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-all"
+                                        className="flex flex-col items-center justify-center gap-1 py-3 bg-[#111] hover:bg-zinc-800 text-white text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                     >
-                                        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
-                                            <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
                                         </svg>
                                         Editar
                                     </button>
@@ -1045,7 +1053,7 @@ export default function ListaAlumnosPage() {
                                 {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
                                     <button
                                         onClick={() => handleResetPassword(alumnoSeleccionado)}
-                                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all"
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" />
@@ -1055,17 +1063,17 @@ export default function ListaAlumnosPage() {
                                 )}
                                 <button
                                     onClick={() => eliminarAlumno(alumnoSeleccionado._id)}
-                                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition-all"
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-2xl transition-all active:scale-95"
                                 >
-                                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                     </svg>
-                                    Eliminar
+                                    Eliminar alumno
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
             </Modal>
         </div>
     );
