@@ -375,7 +375,7 @@ export default function RegistroPage() {
                                     value={form.condicionDetalle}
                                     onChange={e => setField('condicionDetalle', e.target.value)}
                                     style={{ ...inputStyle(form.condicionDetalle), resize: 'none' as const }} />
-                                <p className="text-slate-500 text-sm mt-2 pl-1">Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.</p>
+                                {/* <p className="text-slate-500 text-sm mt-2 pl-1">Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.</p> */}
                             </div>
                         )}
                         {errBox}
