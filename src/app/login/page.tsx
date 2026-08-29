@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 type Step =
     | { type: 'identifier' }
-    | { type: 'staff-password'; username: string; gimnasioLogoUrl: string | null }
+    | { type: 'staff-password'; username: string; gimnasioLogoUrl: string | null; nombre: string | null; apellido: string | null }
     | { type: 'gym-select'; gyms: GymOption[]; dniRaw: string }
     | { type: 'alumno-register'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null }
     | { type: 'alumno-login'; nombre: string; apellido: string; dni: string; gimnasioId: string; gimnasioNombre: string; gimnasioLogoUrl: string | null };
@@ -83,7 +83,7 @@ export default function LoginPage() {
             const staffRes = await fetch(`/api/auth/staff/check?username=${clean}`);
             const staffData = await staffRes.json();
             if (staffData.found) {
-                setStep({ type: 'staff-password', username: clean, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null });
+                setStep({ type: 'staff-password', username: clean, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null, nombre: staffData.nombre ?? null, apellido: staffData.apellido ?? null });
                 return;
             }
 
@@ -252,7 +252,10 @@ export default function LoginPage() {
                                         </svg>
                                     </div>
                                 )}
-                                <h1 className="text-xl font-bold text-slate-900">Ingresá tu contraseña</h1>
+                                <h1 className="text-xl font-bold text-slate-900">
+                                    {step.nombre ? `Hola, ${step.nombre.charAt(0).toUpperCase()}${step.nombre.slice(1).toLowerCase()}` : 'Ingresá tu contraseña'}
+                                </h1>
+                                {step.nombre && <p className="text-slate-400 text-sm mt-1">Ingresá tu contraseña</p>}
                             </div>
                             <form onSubmit={handleStaffLogin} className="space-y-3">
                                 <div className="relative">

@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     try {
         const user = await db.collection('usuarios').findOne(
             { username },
-            { projection: { _id: 1, gimnasioId: 1 } }
+            { projection: { _id: 1, gimnasioId: 1, nombre: 1, apellido: 1 } }
         );
         if (!user) return NextResponse.json({ found: false });
 
@@ -35,7 +35,12 @@ export async function GET(req: Request) {
             gimnasioLogoUrl = gym?.logoHeaderUrl || gym?.logoUrl || null;
         }
 
-        return NextResponse.json({ found: true, gimnasioLogoUrl });
+        return NextResponse.json({
+            found: true,
+            gimnasioLogoUrl,
+            nombre: user.nombre || null,
+            apellido: user.apellido || null,
+        });
     } finally {
         await client.close();
     }
