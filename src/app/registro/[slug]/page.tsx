@@ -8,7 +8,7 @@ type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion';
 type NivelExp = 'nunca' | 'alguna_vez' | 'hace_tiempo';
 
 const AREAS: { value: Area; label: string; emoji: string; desc: string }[] = [
-    { value: 'salud',       label: 'Salud',       emoji: '❤️', desc: 'Quiero mejorar mi salud general o tego falta de actividad física.' },
+    { value: 'salud',       label: 'Salud',       emoji: '❤️', desc: 'Quiero mejorar mi salud general o tengo falta de actividad física.' },
     { value: 'fitness',     label: 'Fitness',     emoji: '💪', desc: 'Quiero verme mejor estéticamente y hacer un cambio físico.' },
     { value: 'rendimiento', label: 'Rendimiento',  emoji: '🏅', desc: 'Quiero mejorar en un deporte o tengo un objetivo deportivo específico.' },
     { value: 'formacion',   label: 'Formación',              emoji: '🌱', desc: 'Nunca entrené, soy niño/a (desde los 10 años) o adolescente (13 a 17 años).' },
