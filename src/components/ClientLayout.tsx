@@ -426,9 +426,6 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                 transition: isRefreshing ? undefined : 'transform 0.07s linear',
                             }}
                         />
-                        <span className="text-[11px] font-semibold text-white/70">
-                            {isRefreshing ? 'Actualizando…' : 'Soltar para actualizar'}
-                        </span>
                     </div>
                 </div>
             )}
