@@ -539,18 +539,18 @@ const ControlFinanciero = () => {
             </div>
 
             {/* KPI Summary */}
-            <div className="grid grid-cols-3 gap-3">
-                <div className={`${card} p-4`}>
-                    <p className={`${lbl} mb-2`}>Ingresos</p>
-                    <p className="text-2xl font-bold leading-none" style={{ color: acento }}>${totalIngresosCombinados.toLocaleString('es-ES')}</p>
+            <div className="grid grid-cols-3 gap-2">
+                <div className={`${card} p-3`}>
+                    <p className={`${lbl} mb-1.5`}>Ingresos</p>
+                    <p className="text-base font-bold leading-tight text-emerald-600 break-all">${totalIngresosCombinados.toLocaleString('es-ES')}</p>
                 </div>
-                <div className={`${card} p-4`}>
-                    <p className={`${lbl} mb-2`}>Gastos</p>
-                    <p className="text-2xl font-bold leading-none text-red-500">${totalGastos.toLocaleString('es-ES')}</p>
+                <div className={`${card} p-3`}>
+                    <p className={`${lbl} mb-1.5`}>Gastos</p>
+                    <p className="text-base font-bold leading-tight text-red-500 break-all">${totalGastos.toLocaleString('es-ES')}</p>
                 </div>
-                <div className={`${card} p-4`}>
-                    <p className={`${lbl} mb-2`}>Resultado</p>
-                    <p className={`text-2xl font-bold leading-none ${resultado >= 0 ? 'text-slate-800' : 'text-red-500'}`}>${resultado.toLocaleString('es-ES')}</p>
+                <div className={`${card} p-3`}>
+                    <p className={`${lbl} mb-1.5`}>Resultado</p>
+                    <p className={`text-base font-bold leading-tight break-all ${resultado >= 0 ? 'text-slate-800' : 'text-red-500'}`}>${resultado.toLocaleString('es-ES')}</p>
                 </div>
             </div>
 
