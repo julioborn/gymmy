@@ -403,23 +403,35 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             </header>
 
             {/* ── PULL-TO-REFRESH INDICATOR ── */}
-            <div
-                className="fixed left-0 right-0 z-[45] flex items-center justify-center overflow-hidden pointer-events-none"
-                style={{
-                    top: 'calc(75px + env(safe-area-inset-top, 0px))',
-                    height: indicatorH,
-                    transition: (!isRefreshing && pullY === 0) ? 'height 0.25s ease' : undefined,
-                    backgroundColor: '#f8fafc',
-                }}
-            >
+            {(pullY > 4 || isRefreshing) && (
                 <div
-                    className={`w-7 h-7 rounded-full border-2 border-slate-300 ${isRefreshing ? 'animate-spin' : 'transition-transform duration-75'}`}
+                    className="fixed left-1/2 -translate-x-1/2 z-[45] pointer-events-none"
                     style={{
-                        borderTopColor: acento,
-                        ...(isRefreshing ? {} : { transform: `rotate(${pullProgress * 270}deg)` }),
+                        top: `calc(75px + env(safe-area-inset-top, 0px) + 10px)`,
+                        opacity: isRefreshing ? 1 : pullProgress,
+                        transform: `translateX(-50%) translateY(${isRefreshing ? 0 : (pullProgress - 1) * 16}px)`,
+                        transition: isRefreshing ? 'opacity 0.15s ease' : undefined,
                     }}
-                />
-            </div>
+                >
+                    <div
+                        className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg"
+                        style={{ background: navBg, border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                        <div
+                            className={`w-4 h-4 rounded-full border-2 ${isRefreshing ? 'animate-spin' : ''}`}
+                            style={{
+                                borderColor: 'rgba(255,255,255,0.2)',
+                                borderTopColor: acento2 ?? acento,
+                                transform: isRefreshing ? undefined : `rotate(${pullProgress * 270}deg)`,
+                                transition: isRefreshing ? undefined : 'transform 0.07s linear',
+                            }}
+                        />
+                        <span className="text-[11px] font-semibold text-white/70">
+                            {isRefreshing ? 'Actualizando…' : 'Soltar para actualizar'}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* ── SWIPE-BACK INDICATOR ── */}
             {isSwipingBack && swipeX > 6 && (
