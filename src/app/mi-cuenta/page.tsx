@@ -220,17 +220,19 @@ export default function MiCuentaPage() {
             setPlanEj(data);
             if (data?.fechaInicio) {
                 const inicio = new Date(data.fechaInicio);
-                const hoy = new Date();
-                const diasTranscurridos = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-                const semanaActual = Math.min(Math.max(Math.floor(diasTranscurridos / 7) + 1, 1), data.totalSemanas || 5);
-                setSelectedSemana(semanaActual);
+                const totalSemanas = data.totalSemanas || 5;
                 if (alumnoData && data.dias.length > 0) {
                     const sessionsDone = alumnoData.asistencia.filter(a => {
                         if (a.actividad !== 'Musculación' || !a.presente) return false;
                         const f = new Date(a.fecha);
                         return f >= inicio;
                     }).length;
-                    setSelectedDia(sessionsDone % data.dias.length);
+                    const diasLen = data.dias.length;
+                    setSelectedDia(sessionsDone % diasLen);
+                    setSelectedSemana(Math.min(Math.floor(sessionsDone / diasLen) + 1, totalSemanas));
+                } else {
+                    const diasTranscurridos = Math.floor((Date.now() - inicio.getTime()) / (1000 * 60 * 60 * 24));
+                    setSelectedSemana(Math.min(Math.max(Math.floor(diasTranscurridos / 7) + 1, 1), totalSemanas));
                 }
             }
         } finally {
