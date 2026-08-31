@@ -72,13 +72,21 @@ export async function GET() {
         horaPico = `${peak.toString().padStart(2, '0')}:00`;
     }
 
-    const asistenciasHoy = alumnos.reduce((count, a) => {
-        const vino = (a.asistencia as any[]).some(s => {
+    let asistenciasHoy = 0;
+    const asistenciasHoyFranja = { manana: 0, siesta: 0, tarde: 0 };
+    for (const a of alumnos) {
+        const asistHoy = (a.asistencia as any[]).find(s => {
             const f = new Date(s.fecha);
             return s.presente && f >= inicioHoy && f <= finHoy;
         });
-        return count + (vino ? 1 : 0);
-    }, 0);
+        if (asistHoy) {
+            asistenciasHoy++;
+            const h = new Date(asistHoy.fecha).getHours();
+            if (h < 12) asistenciasHoyFranja.manana++;
+            else if (h < 16) asistenciasHoyFranja.siesta++;
+            else asistenciasHoyFranja.tarde++;
+        }
+    }
 
     const ingresosCuotas = alumnos.reduce((sum, a) => {
         return sum + (a.pagos as any[])
@@ -100,6 +108,7 @@ export async function GET() {
         planesVenciendo,
         horaPico,
         asistenciasHoy,
+        asistenciasHoyFranja,
         ingresosCuotas,
         ingresosExtra,
         gastosMes,
