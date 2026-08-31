@@ -5,11 +5,19 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Lege
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-interface Props {
-    data: { actividad: string; cantidad: number }[];
+function hexToRgba(hex: string, alpha: number) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export default function ActividadChart({ data }: Props) {
+interface Props {
+    data: { actividad: string; cantidad: number }[];
+    colors?: [string, string];
+}
+
+export default function ActividadChart({ data, colors = ['#10b981', '#f97316'] }: Props) {
     return (
         <Bar
             data={{
@@ -18,16 +26,8 @@ export default function ActividadChart({ data }: Props) {
                     {
                         label: 'Asistencias',
                         data: data.map(d => d.cantidad),
-                        backgroundColor: data.map(d =>
-                            d.actividad === 'Musculación' ? 'rgba(59, 130, 246, 0.6)' :
-                            d.actividad === 'Intermitente' ? 'rgba(249, 115, 22, 0.6)' :
-                            'rgba(153, 102, 255, 0.6)'
-                        ),
-                        borderColor: data.map(d =>
-                            d.actividad === 'Musculación' ? 'rgba(59, 130, 246, 1)' :
-                            d.actividad === 'Intermitente' ? 'rgba(249, 115, 22, 1)' :
-                            'rgba(153, 102, 255, 1)'
-                        ),
+                        backgroundColor: data.map((_, i) => hexToRgba(colors[i % 2], 0.55)),
+                        borderColor: data.map((_, i) => hexToRgba(colors[i % 2], 1)),
                         borderWidth: 1,
                         borderRadius: 6,
                     },

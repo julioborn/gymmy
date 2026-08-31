@@ -8,9 +8,17 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 type TopHorariosChartProps = {
     topHorarios: { hora: string; frecuencia: number }[];
+    color?: string;
 };
 
-const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios }) => {
+function hexToRgba(hex: string, alpha: number) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios, color = '#10b981' }) => {
     return (
         <Bar
             data={{
@@ -19,8 +27,8 @@ const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios }) => {
                     {
                         label: 'Frecuencia',
                         data: topHorarios.map((h) => h.frecuencia),
-                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: hexToRgba(color, 0.55),
+                        borderColor: hexToRgba(color, 1),
                         borderWidth: 1,
                         borderRadius: 6,
                     },

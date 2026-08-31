@@ -27,12 +27,24 @@ export default function Estadisticas() {
     const [porActividad, setPorActividad] = useState<{ actividad: string; cantidad: number }[]>([]);
     const [porDia, setPorDia] = useState<{ fecha: string; cantidad: number }[]>([]);
     const [promedio, setPromedio] = useState<number>(0);
+    const [acento, setAcento] = useState('#10b981');
+    const [acento2, setAcento2] = useState('#f97316');
 
     useEffect(() => {
         if (status !== 'loading' && !['dueño', 'admin'].includes(session?.user?.role ?? '')) {
             router.push('/');
         }
     }, [session, status, router]);
+
+    useEffect(() => {
+        fetch('/api/gimnasio/tema')
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (d?.temaAcento) setAcento(d.temaAcento);
+                if (d?.temaAcento2) setAcento2(d.temaAcento2);
+            })
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetch('/api/alumnos')
@@ -52,19 +64,16 @@ export default function Estadisticas() {
             alumno.asistencia.forEach(({ fecha, actividad, presente }) => {
                 if (!presente) return;
 
-                // Actividad
                 actividadCount[actividad] = (actividadCount[actividad] || 0) + 1;
 
-                // Por día
                 const dia = new Date(fecha).toISOString().split('T')[0];
                 diaCount[dia] = (diaCount[dia] || 0) + 1;
 
-                // Horario
                 const hora = new Date(fecha).getHours();
                 const minutos = new Date(fecha).getMinutes();
-                let horarioRedondeado = minutos < 15 ? `${hora.toString().padStart(2, '0')}:00`
+                const horarioRedondeado = minutos < 15 ? `${hora.toString().padStart(2, '0')}:00`
                     : minutos < 45 ? `${hora.toString().padStart(2, '0')}:30`
-                        : `${(hora + 1).toString().padStart(2, '0')}:00`;
+                    : `${(hora + 1).toString().padStart(2, '0')}:00`;
                 horarioFrecuencia[horarioRedondeado] = (horarioFrecuencia[horarioRedondeado] || 0) + 1;
             });
         });
@@ -85,52 +94,57 @@ export default function Estadisticas() {
     const totalAsistencias = porDia.reduce((a, b) => a + b.cantidad, 0);
     const actividadLider = [...porActividad].sort((a, b) => b.cantidad - a.cantidad)[0]?.actividad ?? '-';
 
+    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
+    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
+    const num = 'text-3xl font-bold leading-none';
+
     return (
-        <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-5">
 
             {/* Banner */}
-            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5 flex items-center gap-4">
-                <div className="w-11 h-11 bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 className="text-lg font-bold text-white leading-tight">Estadísticas</h1>
-                    <p className="text-slate-400 text-xs mt-0.5">{alumnos.length} alumnos registrados</p>
+            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
+                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25" style={{ background: acento2 }} />
+                <div className="relative">
+                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Resumen general</p>
+                    <h1 className="text-xl font-bold text-white mt-0.5">Estadísticas</h1>
+                    <div className="flex items-center gap-2 mt-2.5">
+                        <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                            {alumnos.length} alumnos
+                        </span>
+                    </div>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-2xl font-bold text-slate-800 leading-tight">{totalAsistencias}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Total asistencias</p>
+            <div className="grid grid-cols-2 gap-3">
+                <div className={card}>
+                    <p className={`${lbl} mb-2`}>Total asistencias</p>
+                    <p className={`${num} text-slate-900`}>{totalAsistencias}</p>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-2xl font-bold text-slate-900 leading-tight">{promedio}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Promedio / día</p>
+                <div className={card}>
+                    <p className={`${lbl} mb-2`}>Promedio / día</p>
+                    <p className={`${num} text-slate-900`}>{promedio}</p>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-2xl font-bold text-amber-600 leading-tight">{topHorarios[0]?.hora ?? '-'}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Hora pico</p>
+                <div className={card}>
+                    <p className={`${lbl} mb-2`}>Hora pico</p>
+                    <p className={`${num}`} style={{ color: acento2 }}>{topHorarios[0]?.hora ?? '-'}</p>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-lg font-bold text-emerald-600 leading-tight truncate">{actividadLider}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Actividad líder</p>
+                <div className={card}>
+                    <p className={`${lbl} mb-2`}>Actividad líder</p>
+                    <p className="text-xl font-bold leading-tight truncate" style={{ color: acento }}>{actividadLider}</p>
                 </div>
             </div>
 
-            {/* Charts — side by side on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-                    <h3 className="text-sm font-bold text-slate-700 mb-4">Horarios Musculación</h3>
-                    <TopHorariosChart topHorarios={topHorarios} />
-                </div>
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-                    <h3 className="text-sm font-bold text-slate-700 mb-4">Asistencias por actividad</h3>
-                    <ActividadChart data={porActividad} />
-                </div>
+            {/* Charts */}
+            <div className={card}>
+                <h3 className={`${lbl} mb-4`}>Horarios Musculación</h3>
+                <TopHorariosChart topHorarios={topHorarios} color={acento} />
+            </div>
+
+            <div className={card}>
+                <h3 className={`${lbl} mb-4`}>Asistencias por actividad</h3>
+                <ActividadChart data={porActividad} colors={[acento, acento2]} />
             </div>
 
         </div>
