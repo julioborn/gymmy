@@ -115,6 +115,7 @@ export default function HomePage() {
     const [recargoMes, setRecargoMes] = useState<number>(0);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
+    const [showBalance, setShowBalance] = useState(true);
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/login');
@@ -299,18 +300,20 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* ── Accesos rápidos — 2×2 tiles negros, mismo ancho que las cards ── */}
+            {/* ── Accesos rápidos — círculos en fila horizontal ── */}
             <div>
-                <p className={`${lbl} mb-3`}>Accesos rápidos</p>
-                <div className="grid grid-cols-2 gap-2">
+                <p className={`${lbl} mb-4`}>Accesos rápidos</p>
+                <div className="flex justify-around">
                     {visibleCards.map((card_nav) => (
                         <Link
                             key={card_nav.href}
                             href={card_nav.href}
-                            className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center gap-3 active:opacity-75 transition-opacity"
+                            className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity"
                         >
-                            <div className="shrink-0 opacity-90">{card_nav.icon}</div>
-                            <span className="text-white font-semibold text-sm">{card_nav.label}</span>
+                            <div className="w-14 h-14 rounded-full bg-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.18)] flex items-center justify-center">
+                                {card_nav.icon}
+                            </div>
+                            <span className="text-[11px] font-semibold text-slate-600 text-center">{card_nav.label}</span>
                         </Link>
                     ))}
                 </div>
@@ -324,56 +327,59 @@ export default function HomePage() {
             ) : data && (
                 <div className="space-y-3">
 
-                    {/* Fila 1: Asistencias + Planes */}
-                    <div className="grid grid-cols-2 gap-3">
-
-                        {/* Asistencias hoy */}
-                        <div className={card}>
-                            <p className={`${lbl} mb-3`}>Hoy</p>
-                            <p className={`${num} text-slate-900`}>{data.asistenciasHoy}</p>
-                            <p className={sub}>asistencias</p>
-                            <div className="mt-3 space-y-1 border-t border-slate-50 pt-3">
-                                {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400">☀️ Mañana</span>
-                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.manana}</span>
-                                    </div>
-                                )}
-                                {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400">🌤 Siesta</span>
-                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.siesta}</span>
-                                    </div>
-                                )}
-                                {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] text-slate-400">🌆 Tarde</span>
-                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.tarde}</span>
-                                    </div>
-                                )}
+                    {/* Asistencias hoy — full width, layout horizontal */}
+                    <div className={card}>
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className={`${lbl} mb-2`}>Asistencias · Hoy</p>
+                                <p className={`${num} text-slate-900`}>{data.asistenciasHoy}</p>
                                 {data.asistenciasHoy === 0 && (
-                                    <p className="text-[10px] text-slate-400">Sin registros aún</p>
+                                    <p className="text-xs text-slate-400 mt-1">Sin registros aún</p>
                                 )}
                             </div>
+                            {data.asistenciasHoy > 0 && (
+                                <div className="flex gap-3 mt-1">
+                                    {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
+                                        <div className="text-center">
+                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.manana}</p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">☀️ Mañana</p>
+                                        </div>
+                                    )}
+                                    {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
+                                        <div className="text-center">
+                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.siesta}</p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">🌤 Siesta</p>
+                                        </div>
+                                    )}
+                                    {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
+                                        <div className="text-center">
+                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.tarde}</p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">🌆 Tarde</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
+                    </div>
 
-                        {/* Planes */}
-                        <div className={card}>
-                            <p className={`${lbl} mb-3`}>Planes</p>
-                            <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'}`}>
-                                {data.planesVenciendo.length}
-                            </p>
-                            <p className={sub}>
-                                {data.planesVenciendo.length === 0 ? 'todo OK' : data.planesVenciendo.length === 1 ? 'por terminar' : 'por terminar'}
-                            </p>
+                    {/* Planes — full width */}
+                    <div className={card}>
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className={`${lbl} mb-2`}>Planes</p>
+                                <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'}`}>
+                                    {data.planesVenciendo.length}
+                                </p>
+                                <p className={sub}>{data.planesVenciendo.length === 1 ? 'por terminar' : 'por terminar'}</p>
+                            </div>
                             {data.planesVenciendo.length > 0 && (
-                                <div className="mt-3 space-y-1.5 border-t border-slate-50 pt-3">
+                                <div className="space-y-1.5 mt-1">
                                     {data.planesVenciendo.slice(0, 3).map(a => (
                                         <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2">
-                                            <span className={`text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
+                                            <span className={`text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
                                                 {a.diasRestantes}
                                             </span>
-                                            <span className="text-[10px] text-slate-600 truncate">{a.apellido}</span>
+                                            <span className="text-xs text-slate-600 truncate">{a.apellido}, {a.nombre}</span>
                                         </Link>
                                     ))}
                                 </div>
@@ -381,22 +387,44 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* Balance del mes — full width */}
+                    {/* Balance del mes — full width con toggle */}
                     {esDueño && (
                         <div className={card}>
-                            <p className={`${lbl} mb-3`}>Balance · {mesLabel}</p>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className={lbl}>Balance · {mesLabel}</p>
+                                <button
+                                    onClick={() => setShowBalance(v => !v)}
+                                    className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
+                                    aria-label={showBalance ? 'Ocultar balance' : 'Mostrar balance'}
+                                >
+                                    {showBalance ? (
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
                             <p className={`${num} ${data.balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                ${fmt(data.balance)}
+                                {showBalance ? `$${fmt(data.balance)}` : '$ ••••••'}
                             </p>
                             <p className={sub}>balance del mes</p>
                             <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-50">
                                 <div>
-                                    <p className="text-xs font-bold text-emerald-600">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                    <p className="text-xs font-bold text-emerald-600">
+                                        {showBalance ? `+$${fmt(data.ingresosCuotas + data.ingresosExtra)}` : '+$ ••••'}
+                                    </p>
                                     <p className="text-[10px] text-slate-400 mt-0.5">ingresos</p>
                                 </div>
                                 <div className="w-px h-6 bg-slate-100" />
                                 <div>
-                                    <p className="text-xs font-bold text-red-500">−${fmt(data.gastosMes)}</p>
+                                    <p className="text-xs font-bold text-red-500">
+                                        {showBalance ? `−$${fmt(data.gastosMes)}` : '−$ ••••'}
+                                    </p>
                                     <p className="text-[10px] text-slate-400 mt-0.5">egresos</p>
                                 </div>
                             </div>
