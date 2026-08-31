@@ -62,7 +62,6 @@ export default function EmpleadosPage() {
     const esDueño = myRole === 'dueño' || myRole === 'admin';
 
     useEffect(() => {
-        if (status === 'unauthenticated') { router.push('/login'); return; }
         if (status !== 'authenticated') return;
         if (!esDueño) { router.push('/'); return; }
         cargar();

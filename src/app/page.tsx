@@ -126,10 +126,9 @@ export default function HomePage() {
     });
 
     useEffect(() => {
-        if (status === 'unauthenticated') router.push('/login');
         if (session?.user?.role === 'registro') router.push('/alumnos/dni');
         if (session?.user?.role === 'alumno') router.push('/mi-cuenta');
-    }, [session, status, router]);
+    }, [session, router]);
 
     const fetchDashboard = () => {
         if (!session || session.user?.role === 'registro' || session.user?.role === 'alumno') return;

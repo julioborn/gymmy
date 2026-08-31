@@ -77,10 +77,24 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     }, [pathname]);
 
     useEffect(() => {
-        if (status !== 'loading') { setSessionReady(true); return; }
-        const t = setTimeout(() => setSessionReady(true), 8000);
-        return () => clearTimeout(t);
+        if (status === 'loading') {
+            const t = setTimeout(() => setSessionReady(true), 8000);
+            return () => clearTimeout(t);
+        }
+        setSessionReady(true);
     }, [status]);
+
+    // Centralised auth guard — only fires once session is definitively known
+    useEffect(() => {
+        if (!sessionReady || status === 'loading') return;
+        if (status !== 'unauthenticated') return;
+        const publicPaths = ['/login', '/registro', '/soporte', '/privacidad', '/eliminar-cuenta'];
+        const isPublic = publicPaths.some(p => pathname.startsWith(p));
+        if (isPublic) return;
+        // Small grace period to avoid transient unauthenticated flashes on reload
+        const t = setTimeout(() => router.push('/login'), 500);
+        return () => clearTimeout(t);
+    }, [sessionReady, status, pathname, router]);
 
     useEffect(() => {
         const update = () => {
