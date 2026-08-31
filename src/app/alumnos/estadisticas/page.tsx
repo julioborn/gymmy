@@ -139,7 +139,7 @@ export default function Estadisticas() {
             {/* Charts */}
             <div className={card}>
                 <h3 className={`${lbl} mb-4`}>Horarios Musculación</h3>
-                <TopHorariosChart topHorarios={topHorarios} color={acento} />
+                <TopHorariosChart topHorarios={topHorarios} color={acento2} />
             </div>
 
             <div className={card}>
