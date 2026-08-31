@@ -46,6 +46,13 @@ type Ingreso = {
     importe: number;
 };
 
+function hexToRgba(hex: string, alpha: number) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const ControlFinanciero = () => {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -61,12 +68,24 @@ const ControlFinanciero = () => {
     const [ingresosAdicionales, setIngresosAdicionales] = useState<Ingreso[]>([]);
     const [ingresosMensualesAdicionales, setIngresosMensualesAdicionales] = useState<number[]>(new Array(12).fill(0));
     const [totalIngresosAdicionales, setTotalIngresosAdicionales] = useState<number>(0);
+    const [acento, setAcento] = useState('#10b981');
+    const [acento2, setAcento2] = useState('#f97316');
 
     useEffect(() => {
         if (status !== 'loading' && !['dueño', 'admin'].includes(session?.user?.role ?? '')) {
             router.push('/');
         }
     }, [session, status, router]);
+
+    useEffect(() => {
+        fetch('/api/gimnasio/tema')
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (d?.temaAcento) setAcento(d.temaAcento);
+                if (d?.temaAcento2) setAcento2(d.temaAcento2);
+            })
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetch('/api/alumnos')
@@ -473,23 +492,24 @@ const ControlFinanciero = () => {
         </svg>
     );
 
+    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
+    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
+
     return (
-        <div className="max-w-5xl mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-5">
 
             {/* Banner */}
-            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 bg-amber-400 rounded-2xl flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-white leading-tight">Finanzas</h1>
-                            <p className="text-slate-400 text-xs mt-0.5">
+            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
+                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25" style={{ background: acento }} />
+                <div className="relative flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Gestión económica</p>
+                        <h1 className="text-xl font-bold text-white mt-0.5">Finanzas</h1>
+                        <div className="mt-2.5">
+                            <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                                 {selectedMonth === -1 ? `Año ${selectedYear}` : `${meses[selectedMonth]} ${selectedYear}`}
-                            </p>
+                            </span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -520,107 +540,103 @@ const ControlFinanciero = () => {
 
             {/* KPI Summary */}
             <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-xl font-bold text-emerald-600 leading-tight">${totalIngresosCombinados.toLocaleString('es-ES')}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Ingresos</p>
+                <div className={`${card} p-4`}>
+                    <p className={`${lbl} mb-2`}>Ingresos</p>
+                    <p className="text-2xl font-bold leading-none" style={{ color: acento }}>${totalIngresosCombinados.toLocaleString('es-ES')}</p>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className="text-xl font-bold text-red-600 leading-tight">${totalGastos.toLocaleString('es-ES')}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Gastos</p>
+                <div className={`${card} p-4`}>
+                    <p className={`${lbl} mb-2`}>Gastos</p>
+                    <p className="text-2xl font-bold leading-none text-red-500">${totalGastos.toLocaleString('es-ES')}</p>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <p className={`text-xl font-bold leading-tight ${resultado >= 0 ? 'text-slate-800' : 'text-red-600'}`}>${resultado.toLocaleString('es-ES')}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Resultado</p>
+                <div className={`${card} p-4`}>
+                    <p className={`${lbl} mb-2`}>Resultado</p>
+                    <p className={`text-2xl font-bold leading-none ${resultado >= 0 ? 'text-slate-800' : 'text-red-500'}`}>${resultado.toLocaleString('es-ES')}</p>
                 </div>
             </div>
 
-            {/* Ingresos + Gastos — side by side on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                {/* Ingresos Adicionales */}
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-700">Ingresos Adicionales</h3>
-                            <p className="text-xs text-slate-400">Total: <span className="font-bold text-slate-900">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
-                        </div>
-                        <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-[#111] hover:bg-zinc-800 text-white text-xs font-semibold rounded-xl transition">
-                            + Agregar
-                        </button>
+            {/* Ingresos Adicionales */}
+            <div className={`${card} overflow-hidden`}>
+                <div className="px-4 py-3 flex items-center justify-between border-b border-slate-50">
+                    <div>
+                        <p className={lbl}>Ingresos adicionales</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Total: <span className="font-bold text-slate-700">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
                     </div>
-                    {ingresosAdicionales.length > 0 ? (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Fecha</th>
-                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Detalle</th>
-                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Importe</th>
-                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">—</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {ingresosAdicionales.map((ingreso) => (
-                                    <tr key={ingreso._id} className="hover:bg-slate-50 transition">
-                                        <td className="px-4 py-2.5 text-slate-600 text-xs">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
-                                        <td className="px-4 py-2.5 text-slate-700 text-xs">{ingreso.detalle}</td>
-                                        <td className="px-4 py-2.5 text-right font-bold text-slate-900 text-xs">${ingreso.importe.toLocaleString('es-ES')}</td>
-                                        <td className="px-4 py-2.5 text-right">
-                                            <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className="p-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition mr-1"><FaEdit size={11} /></button>
-                                            <button onClick={() => handleEliminarIngreso(ingreso._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition"><FaTrashAlt size={11} /></button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="text-slate-400 text-sm text-center py-8">Sin ingresos registrados</p>
-                    )}
+                    <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-[#111] hover:bg-zinc-800 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
+                        + Agregar
+                    </button>
                 </div>
+                {ingresosAdicionales.length > 0 ? (
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-slate-50/60 border-b border-slate-50">
+                                <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Fecha</th>
+                                <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Detalle</th>
+                                <th className="px-4 py-2 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wide">Importe</th>
+                                <th className="px-4 py-2" />
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {ingresosAdicionales.map((ingreso) => (
+                                <tr key={ingreso._id} className="hover:bg-slate-50/60 transition">
+                                    <td className="px-4 py-2.5 text-slate-500 text-xs">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
+                                    <td className="px-4 py-2.5 text-slate-700 text-xs">{ingreso.detalle}</td>
+                                    <td className="px-4 py-2.5 text-right font-bold text-slate-800 text-xs">${ingreso.importe.toLocaleString('es-ES')}</td>
+                                    <td className="px-4 py-2.5 text-right">
+                                        <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition mr-1"><FaEdit size={11} /></button>
+                                        <button onClick={() => handleEliminarIngreso(ingreso._id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition"><FaTrashAlt size={11} /></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p className="text-slate-400 text-sm text-center py-8">Sin ingresos registrados</p>
+                )}
+            </div>
 
-                {/* Gastos */}
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-700">Gastos</h3>
-                            <p className="text-xs text-slate-400">Total: <span className="font-bold text-red-600">${totalGastos.toLocaleString('es-ES')}</span></p>
-                        </div>
-                        <button onClick={handleAgregarGasto} className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-semibold rounded-xl transition">
-                            + Agregar
-                        </button>
+            {/* Gastos */}
+            <div className={`${card} overflow-hidden`}>
+                <div className="px-4 py-3 flex items-center justify-between border-b border-slate-50">
+                    <div>
+                        <p className={lbl}>Gastos</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Total: <span className="font-bold text-red-500">${totalGastos.toLocaleString('es-ES')}</span></p>
                     </div>
-                    {gastos.length > 0 ? (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Fecha</th>
-                                    <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Detalle</th>
-                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Importe</th>
-                                    <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">—</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {gastos.map((gasto) => (
-                                    <tr key={gasto._id} className="hover:bg-slate-50 transition">
-                                        <td className="px-4 py-2.5 text-slate-600 text-xs">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
-                                        <td className="px-4 py-2.5 text-slate-700 text-xs">{gasto.detalle}</td>
-                                        <td className="px-4 py-2.5 text-right font-bold text-red-600 text-xs">${gasto.importe.toLocaleString('es-ES')}</td>
-                                        <td className="px-4 py-2.5 text-right">
-                                            <button onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)} className="p-1.5 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition mr-1"><FaEdit size={11} /></button>
-                                            <button onClick={() => handleEliminarGasto(gasto._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition"><FaTrashAlt size={11} /></button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="text-slate-400 text-sm text-center py-8">Sin gastos registrados</p>
-                    )}
+                    <button onClick={handleAgregarGasto} className="px-3 py-1.5 bg-red-500 hover:bg-red-400 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
+                        + Agregar
+                    </button>
                 </div>
+                {gastos.length > 0 ? (
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-slate-50/60 border-b border-slate-50">
+                                <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Fecha</th>
+                                <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Detalle</th>
+                                <th className="px-4 py-2 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wide">Importe</th>
+                                <th className="px-4 py-2" />
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {gastos.map((gasto) => (
+                                <tr key={gasto._id} className="hover:bg-slate-50/60 transition">
+                                    <td className="px-4 py-2.5 text-slate-500 text-xs">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
+                                    <td className="px-4 py-2.5 text-slate-700 text-xs">{gasto.detalle}</td>
+                                    <td className="px-4 py-2.5 text-right font-bold text-red-500 text-xs">${gasto.importe.toLocaleString('es-ES')}</td>
+                                    <td className="px-4 py-2.5 text-right">
+                                        <button onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)} className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition mr-1"><FaEdit size={11} /></button>
+                                        <button onClick={() => handleEliminarGasto(gasto._id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition"><FaTrashAlt size={11} /></button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p className="text-slate-400 text-sm text-center py-8">Sin gastos registrados</p>
+                )}
             </div>
 
             {/* Gráfico */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
-                <h3 className="text-sm font-bold text-slate-700 mb-4">Ingresos vs Gastos — {selectedYear}</h3>
+            <div className={`${card} p-4`}>
+                <p className={`${lbl} mb-4`}>Ingresos vs Gastos — {selectedYear}</p>
                 <Bar
                     data={{
                         labels: meses,
@@ -628,16 +644,18 @@ const ControlFinanciero = () => {
                             {
                                 label: `Ingresos (${selectedYear})`,
                                 data: ingresosMensualesCombinados.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
-                                backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                                borderColor: 'rgba(16, 185, 129, 1)',
+                                backgroundColor: hexToRgba(acento, 0.55),
+                                borderColor: hexToRgba(acento, 1),
                                 borderWidth: 1,
+                                borderRadius: 4,
                             },
                             {
                                 label: `Gastos (${selectedYear})`,
                                 data: gastosMensuales.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
-                                backgroundColor: 'rgba(239, 68, 68, 0.6)',
-                                borderColor: 'rgba(239, 68, 68, 1)',
+                                backgroundColor: hexToRgba(acento2, 0.55),
+                                borderColor: hexToRgba(acento2, 1),
                                 borderWidth: 1,
+                                borderRadius: 4,
                             },
                         ],
                     }}
@@ -646,8 +664,8 @@ const ControlFinanciero = () => {
                         maintainAspectRatio: true,
                         plugins: { legend: { display: true } },
                         scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'Monto en $' } },
-                            x: { title: { display: true, text: 'Meses' } },
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: {},
                         },
                     }}
                     style={{ maxHeight: '280px' }}
