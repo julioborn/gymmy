@@ -268,118 +268,112 @@ export default function HomePage() {
     const balanceColor = !data ? '' : data.balance >= 0 ? 'text-emerald-600' : 'text-red-600';
     const balanceBg = !data ? 'bg-slate-400' : data.balance >= 0 ? 'bg-emerald-500' : 'bg-red-500';
 
-    const shadow = 'shadow-[0_1px_4px_rgba(0,0,0,0.06),0_6px_20px_rgba(0,0,0,0.05)]';
+    // Un único token de card aplicado a TODAS las stat cards — sin excepciones
+    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
+    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
+    const num = 'text-3xl font-bold leading-none';
+    const sub = 'text-xs text-slate-500 mt-1';
     const mesLabel = data ? capitalize(data.mes) : '';
 
     return (
-        <div className="max-w-5xl mx-auto pt-4 pb-14 px-4 space-y-4">
+        <div className="max-w-lg mx-auto pt-4 pb-16 px-4 space-y-5">
 
-            {/* Banner */}
-            <div className="relative bg-[#111] rounded-3xl px-6 pt-6 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.04),transparent_60%)]" />
-                <div className={`pointer-events-none absolute -bottom-8 -right-4 w-40 h-40 rounded-full blur-3xl opacity-30 ${isSporttime ? 'bg-[#d1e08b]' : 'bg-emerald-400'}`} />
+            {/* ── Banner ── */}
+            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
+                <div className={`pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25 ${isSporttime ? 'bg-[#d1e08b]' : 'bg-emerald-400'}`} />
                 <div className="relative">
-                    <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-widest mb-0.5">{getGreeting()}</p>
-                    <h1 className="text-2xl font-bold text-white truncate">
+                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">{getGreeting()}</p>
+                    <h1 className="text-xl font-bold text-white mt-0.5 truncate">
                         {(session.user as any)?.nombre
                             ? capitalize((session.user as any).nombre)
                             : capitalize(session.user?.username ?? 'Usuario')}
                     </h1>
-                    <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        <span className="ring-1 ring-white/15 bg-white/10 text-white text-[11px] font-bold px-3 py-1 rounded-full capitalize">
+                    <div className="flex items-center gap-2 mt-2.5">
+                        <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full capitalize">
                             {session.user?.role}
                         </span>
-                        <span className="text-slate-600 text-[11px]">·</span>
-                        <span className="text-slate-500 text-[11px] capitalize">{fmtDate()}</span>
+                        <span className="text-slate-600 text-[10px]">·</span>
+                        <span className="text-slate-500 text-[10px] capitalize">{fmtDate()}</span>
                     </div>
                 </div>
             </div>
 
-            {/* KPI — layout variado, no todo cuadriculado */}
+            {/* ── Accesos rápidos — 2×2 tiles negros, mismo ancho que las cards ── */}
+            <div>
+                <p className={`${lbl} mb-3`}>Accesos rápidos</p>
+                <div className="grid grid-cols-2 gap-2">
+                    {visibleCards.map((card_nav) => (
+                        <Link
+                            key={card_nav.href}
+                            href={card_nav.href}
+                            className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center gap-3 active:opacity-75 transition-opacity"
+                        >
+                            <div className="shrink-0 opacity-90">{card_nav.icon}</div>
+                            <span className="text-white font-semibold text-sm">{card_nav.label}</span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
+            {/* ── Stat cards ── */}
             {loading ? (
-                <div className="space-y-3">
-                    <SkeletonCard />
-                    <div className="grid grid-cols-2 gap-3"><SkeletonCard /><SkeletonCard /></div>
-                    <SkeletonCard />
+                <div className="grid grid-cols-2 gap-3">
+                    {[0,1,2,3].map(i => <SkeletonCard key={i} />)}
                 </div>
             ) : data && (
                 <div className="space-y-3">
 
-                    {/* PAGARON — full width, horizontal split */}
-                    {!esProfesor && (
-                        <div className={`bg-white border border-black/[0.07] rounded-3xl p-5 ${shadow}`}>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cuotas · {mesLabel}</p>
-                            <div className="flex items-stretch gap-0">
-                                <div className="flex-1 text-center">
-                                    <div className="text-5xl font-black text-emerald-600 leading-none">{data.pagados}</div>
-                                    <div className="text-[11px] font-bold text-emerald-500 mt-2 uppercase tracking-wide">Pagaron</div>
-                                </div>
-                                <div className="w-px bg-slate-100 mx-4 self-stretch" />
-                                <div className="flex-1 text-center">
-                                    <div className="text-5xl font-black text-red-500 leading-none">{data.totalAlumnos - data.pagados}</div>
-                                    <div className="text-[11px] font-bold text-red-400 mt-2 uppercase tracking-wide">Pendientes</div>
-                                </div>
-                                <div className="w-px bg-slate-100 mx-4 self-stretch" />
-                                <div className="flex-1 text-center">
-                                    <div className="text-5xl font-black text-slate-800 leading-none">{data.totalAlumnos}</div>
-                                    <div className="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-wide">Total</div>
-                                </div>
-                            </div>
-                            <div className="mt-4 w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-                                <div className={`h-full rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
-                            </div>
-                        </div>
-                    )}
+                    {/* Fila 1: Asistencias + Planes */}
+                    <div className="grid grid-cols-2 gap-3">
 
-                    {/* ASISTENCIAS (dark, tall) + PLANES (white) — 2 col, alturas distintas */}
-                    <div className="grid grid-cols-2 gap-3 items-start">
-                        {/* Asistencias — card oscura */}
-                        <div className={`bg-[#111] rounded-3xl p-5 ${shadow}`}>
-                            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-3">Hoy</p>
-                            <div className="text-5xl font-black text-white leading-none mb-1">{data.asistenciasHoy}</div>
-                            <p className="text-slate-400 text-xs mb-4">asistencias</p>
-                            <div className="space-y-1.5">
+                        {/* Asistencias hoy */}
+                        <div className={card}>
+                            <p className={`${lbl} mb-3`}>Hoy</p>
+                            <p className={`${num} text-slate-900`}>{data.asistenciasHoy}</p>
+                            <p className={sub}>asistencias</p>
+                            <div className="mt-3 space-y-1 border-t border-slate-50 pt-3">
                                 {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-slate-400">☀️ Mañana</span>
-                                        <span className="text-[11px] font-bold text-white">{data.asistenciasHoyFranja.manana}</span>
+                                        <span className="text-[10px] text-slate-400">☀️ Mañana</span>
+                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.manana}</span>
                                     </div>
                                 )}
                                 {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-slate-400">🌤 Siesta</span>
-                                        <span className="text-[11px] font-bold text-white">{data.asistenciasHoyFranja.siesta}</span>
+                                        <span className="text-[10px] text-slate-400">🌤 Siesta</span>
+                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.siesta}</span>
                                     </div>
                                 )}
                                 {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[11px] text-slate-400">🌆 Tarde</span>
-                                        <span className="text-[11px] font-bold text-white">{data.asistenciasHoyFranja.tarde}</span>
+                                        <span className="text-[10px] text-slate-400">🌆 Tarde</span>
+                                        <span className="text-[10px] font-bold text-slate-700">{data.asistenciasHoyFranja.tarde}</span>
                                     </div>
                                 )}
                                 {data.asistenciasHoy === 0 && (
-                                    <p className="text-[11px] text-slate-600">Sin registros aún</p>
+                                    <p className="text-[10px] text-slate-400">Sin registros aún</p>
                                 )}
                             </div>
                         </div>
 
-                        {/* Planes venciendo — card blanca */}
-                        <div className={`bg-white border border-black/[0.07] rounded-3xl p-5 ${shadow}`}>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Planes</p>
-                            <div className={`text-5xl font-black leading-none mb-1 ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'}`}>
+                        {/* Planes */}
+                        <div className={card}>
+                            <p className={`${lbl} mb-3`}>Planes</p>
+                            <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'}`}>
                                 {data.planesVenciendo.length}
-                            </div>
-                            <p className="text-slate-400 text-xs mb-4">
-                                {data.planesVenciendo.length === 1 ? 'por terminar' : data.planesVenciendo.length === 0 ? 'todo OK' : 'por terminar'}
+                            </p>
+                            <p className={sub}>
+                                {data.planesVenciendo.length === 0 ? 'todo OK' : data.planesVenciendo.length === 1 ? 'por terminar' : 'por terminar'}
                             </p>
                             {data.planesVenciendo.length > 0 && (
-                                <div className="space-y-1.5">
+                                <div className="mt-3 space-y-1.5 border-t border-slate-50 pt-3">
                                     {data.planesVenciendo.slice(0, 3).map(a => (
-                                        <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2 group">
-                                            <span className={`text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
+                                        <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2">
+                                            <span className={`text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
                                                 {a.diasRestantes}
                                             </span>
-                                            <span className="text-[11px] text-slate-600 truncate group-hover:text-slate-900">{a.apellido}</span>
+                                            <span className="text-[10px] text-slate-600 truncate">{a.apellido}</span>
                                         </Link>
                                     ))}
                                 </div>
@@ -387,27 +381,50 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* BALANCE — full width, dark */}
+                    {/* Balance del mes — full width */}
                     {esDueño && (
-                        <div className={`bg-[#111] rounded-3xl p-5 ${shadow}`}>
-                            <div className="flex items-start justify-between">
+                        <div className={card}>
+                            <p className={`${lbl} mb-3`}>Balance · {mesLabel}</p>
+                            <p className={`${num} ${data.balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                ${fmt(data.balance)}
+                            </p>
+                            <p className={sub}>balance del mes</p>
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-50">
                                 <div>
-                                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-2">{mesLabel}</p>
-                                    <div className={`text-4xl font-black leading-none ${data.balance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        ${fmt(data.balance)}
-                                    </div>
-                                    <p className="text-slate-500 text-xs mt-1">balance del mes</p>
+                                    <p className="text-xs font-bold text-emerald-600">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">ingresos</p>
                                 </div>
-                                <div className="text-right space-y-2 mt-1">
-                                    <div>
-                                        <div className="text-emerald-400 text-base font-bold">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</div>
-                                        <div className="text-[10px] text-slate-600 uppercase tracking-wide">ingresos</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-red-400 text-base font-bold">−${fmt(data.gastosMes)}</div>
-                                        <div className="text-[10px] text-slate-600 uppercase tracking-wide">egresos</div>
-                                    </div>
+                                <div className="w-px h-6 bg-slate-100" />
+                                <div>
+                                    <p className="text-xs font-bold text-red-500">−${fmt(data.gastosMes)}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">egresos</p>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Cuotas — full width, 3 números internos */}
+                    {!esProfesor && (
+                        <div className={card}>
+                            <p className={`${lbl} mb-3`}>Cuotas · {mesLabel}</p>
+                            <div className="flex items-stretch">
+                                <div className="flex-1 text-center">
+                                    <p className={`${num} text-emerald-600`}>{data.pagados}</p>
+                                    <p className={`${sub} text-emerald-500`}>Pagaron</p>
+                                </div>
+                                <div className="w-px bg-slate-100 mx-3 self-stretch" />
+                                <div className="flex-1 text-center">
+                                    <p className={`${num} text-red-500`}>{data.totalAlumnos - data.pagados}</p>
+                                    <p className={`${sub} text-red-400`}>Pendientes</p>
+                                </div>
+                                <div className="w-px bg-slate-100 mx-3 self-stretch" />
+                                <div className="flex-1 text-center">
+                                    <p className={`${num} text-slate-800`}>{data.totalAlumnos}</p>
+                                    <p className={sub}>Total</p>
+                                </div>
+                            </div>
+                            <div className="mt-3 w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+                                <div className={`h-full rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
                             </div>
                         </div>
                     )}
@@ -415,74 +432,41 @@ export default function HomePage() {
                 </div>
             )}
 
-            {/* Accesos rápidos — íconos circulares en scroll horizontal */}
-            <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Accesos rápidos</p>
-                <div className="flex gap-5 overflow-x-auto pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
-                    {visibleCards.map((card) => (
-                        <Link
-                            key={card.href}
-                            href={card.href}
-                            className="flex flex-col items-center gap-2 shrink-0 active:opacity-70 transition-opacity"
-                        >
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${shadow} ${card.iconBg}`}>
-                                <div className="scale-125">{card.icon}</div>
-                            </div>
-                            <span className="text-[11px] font-semibold text-slate-700 text-center">{card.label}</span>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-
-            {/* Configuración — lista limpia */}
+            {/* ── Configuración ── */}
             {!esProfesor && (
                 <div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Configuración</p>
-                    <div className={`bg-white border border-black/[0.07] rounded-3xl overflow-hidden ${shadow}`}>
-                        <button onClick={handleConfiguracionTarifas} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                            <div className="w-10 h-10 rounded-2xl bg-[#111] flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                </svg>
+                    <p className={`${lbl} mb-3`}>Configuración</p>
+                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">
+                        {[
+                            {
+                                label: 'Cuotas', sub: 'Precios por días/semana', onClick: handleConfiguracionTarifas,
+                                icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>,
+                            },
+                            {
+                                label: 'Recargo', sub: 'Día 10 y mes vencido', onClick: handleConfiguracionRecargos,
+                                icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>,
+                            },
+                            {
+                                label: 'Alias de pago', sub: aliasGimnasio || 'Sin configurar', onClick: handleConfiguracionAlias,
+                                icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>,
+                            },
+                        ].map((item, idx, arr) => (
+                            <div key={item.label}>
+                                <button onClick={item.onClick} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
+                                    <div className="w-9 h-9 rounded-xl bg-[#111] flex items-center justify-center shrink-0">
+                                        {item.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-sm text-slate-800">{item.label}</p>
+                                        <p className="text-xs text-slate-400 truncate">{item.sub}</p>
+                                    </div>
+                                    <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
+                                    </svg>
+                                </button>
+                                {idx < arr.length - 1 && <div className="border-t border-black/[0.04] mx-4" />}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-slate-800">Cuotas</p>
-                                <p className="text-xs text-slate-400">Precios por días/semana</p>
-                            </div>
-                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                            </svg>
-                        </button>
-                        <div className="border-t border-black/[0.04] mx-4" />
-                        <button onClick={handleConfiguracionRecargos} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                            <div className="w-10 h-10 rounded-2xl bg-[#111] flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-slate-800">Recargo</p>
-                                <p className="text-xs text-slate-400">Día 10 y mes vencido</p>
-                            </div>
-                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                            </svg>
-                        </button>
-                        <div className="border-t border-black/[0.04] mx-4" />
-                        <button onClick={handleConfiguracionAlias} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                            <div className="w-10 h-10 rounded-2xl bg-[#111] flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                                </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-slate-800">Alias de pago</p>
-                                <p className="text-xs text-slate-400 truncate">{aliasGimnasio || 'Sin configurar'}</p>
-                            </div>
-                            <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                            </svg>
-                        </button>
+                        ))}
                     </div>
                 </div>
             )}
