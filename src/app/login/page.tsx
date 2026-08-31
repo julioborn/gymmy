@@ -191,7 +191,7 @@ export default function LoginPage() {
     const primaryBtn = "w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md shadow-slate-900/10";
 
     return (
-        <div className="min-h-[calc(100vh-75px)] -m-3 flex flex-col items-center justify-center px-4 py-10 bg-slate-50">
+        <div className="min-h-[calc(100vh-75px)] -m-3 flex flex-col items-center justify-start px-4 pt-10 pb-10 bg-slate-50">
 
             <div className="w-full max-w-[360px]">
 
