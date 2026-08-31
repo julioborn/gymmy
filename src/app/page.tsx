@@ -115,7 +115,15 @@ export default function HomePage() {
     const [recargoMes, setRecargoMes] = useState<number>(0);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
-    const [showBalance, setShowBalance] = useState(true);
+    const [showBalance, setShowBalance] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        return localStorage.getItem('gymmy_showBalance') !== 'false';
+    });
+    const toggleBalance = () => setShowBalance(v => {
+        const next = !v;
+        localStorage.setItem('gymmy_showBalance', String(next));
+        return next;
+    });
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/login');
@@ -327,63 +335,63 @@ export default function HomePage() {
             ) : data && (
                 <div className="space-y-3">
 
-                    {/* Asistencias hoy — full width, layout horizontal */}
+                    {/* Asistencias hoy */}
                     <div className={card}>
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className={`${lbl} mb-2`}>Asistencias · Hoy</p>
-                                <p className={`${num} text-slate-900`}>{data.asistenciasHoy}</p>
-                                {data.asistenciasHoy === 0 && (
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="min-w-0">
+                                <p className={`${lbl} mb-1`}>Asistencias · Hoy</p>
+                                {data.asistenciasHoy > 0 ? (
+                                    <div className="flex gap-4 mt-2">
+                                        {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.manana}</p>
+                                                <p className="text-[10px] text-slate-400">☀️ Mañana</p>
+                                            </div>
+                                        )}
+                                        {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.siesta}</p>
+                                                <p className="text-[10px] text-slate-400">🌤 Siesta</p>
+                                            </div>
+                                        )}
+                                        {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.tarde}</p>
+                                                <p className="text-[10px] text-slate-400">🌆 Tarde</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
                                     <p className="text-xs text-slate-400 mt-1">Sin registros aún</p>
                                 )}
                             </div>
-                            {data.asistenciasHoy > 0 && (
-                                <div className="flex gap-3 mt-1">
-                                    {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
-                                        <div className="text-center">
-                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.manana}</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">☀️ Mañana</p>
-                                        </div>
-                                    )}
-                                    {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
-                                        <div className="text-center">
-                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.siesta}</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">🌤 Siesta</p>
-                                        </div>
-                                    )}
-                                    {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
-                                        <div className="text-center">
-                                            <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.tarde}</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">🌆 Tarde</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            <p className={`${num} text-slate-900 shrink-0`}>{data.asistenciasHoy}</p>
                         </div>
                     </div>
 
-                    {/* Planes — full width */}
+                    {/* Planes */}
                     <div className={card}>
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className={`${lbl} mb-2`}>Planes</p>
-                                <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'}`}>
-                                    {data.planesVenciendo.length}
-                                </p>
-                                <p className={sub}>{data.planesVenciendo.length === 1 ? 'por terminar' : 'por terminar'}</p>
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                                <p className={`${lbl} mb-1`}>Planes</p>
+                                {data.planesVenciendo.length > 0 ? (
+                                    <div className="mt-2 space-y-1.5">
+                                        {data.planesVenciendo.slice(0, 3).map(a => (
+                                            <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2">
+                                                <span className={`text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
+                                                    {a.diasRestantes}
+                                                </span>
+                                                <span className="text-xs text-slate-600 truncate">{a.apellido}, {a.nombre}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-slate-400 mt-1">Sin vencimientos</p>
+                                )}
                             </div>
-                            {data.planesVenciendo.length > 0 && (
-                                <div className="space-y-1.5 mt-1">
-                                    {data.planesVenciendo.slice(0, 3).map(a => (
-                                        <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2">
-                                            <span className={`text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
-                                                {a.diasRestantes}
-                                            </span>
-                                            <span className="text-xs text-slate-600 truncate">{a.apellido}, {a.nombre}</span>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
+                            <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'} shrink-0`}>
+                                {data.planesVenciendo.length}
+                            </p>
                         </div>
                     </div>
 
@@ -393,7 +401,7 @@ export default function HomePage() {
                             <div className="flex items-center justify-between mb-2">
                                 <p className={lbl}>Balance · {mesLabel}</p>
                                 <button
-                                    onClick={() => setShowBalance(v => !v)}
+                                    onClick={toggleBalance}
                                     className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
                                     aria-label={showBalance ? 'Ocultar balance' : 'Mostrar balance'}
                                 >
@@ -481,7 +489,7 @@ export default function HomePage() {
                         ].map((item, idx, arr) => (
                             <div key={item.label}>
                                 <button onClick={item.onClick} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                                    <div className="w-9 h-9 rounded-xl bg-[#111] flex items-center justify-center shrink-0">
+                                    <div className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center shrink-0">
                                         {item.icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
