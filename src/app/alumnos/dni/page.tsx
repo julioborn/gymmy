@@ -9,14 +9,15 @@ import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexe
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
-    const dniRef = useRef(''); // always-fresh value, avoids stale closure in onKeyPress
+    const dniRef = useRef('');
     const [actividad, setActividad] = useState('Musculación');
     const isLoadingRef = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [keyboard, setKeyboard] = useState<any>(null);
+    const [acento, setAcento] = useState('#f97316');
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-    // Formatea de derecha a izquierda, grupos de 3, máximo 8 dígitos
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
         const len = digits.length;
@@ -37,92 +38,48 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Guard: prevent double submission
         if (isLoadingRef.current) return;
-
-        const cleanDNI = dniRef.current.replace(/\./g, ''); // read from ref, never stale
-
+        const cleanDNI = dniRef.current.replace(/\./g, '');
         if (cleanDNI.length < 7 || cleanDNI.length > 8) {
-            Swal.fire({
-                ...swalNotify,
-                icon: 'error',
-                title: 'DNI inválido',
-                text: 'El DNI debe tener 7 u 8 dígitos.',
-            });
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'DNI inválido', text: 'El DNI debe tener 7 u 8 dígitos.' });
             return;
         }
-
         isLoadingRef.current = true;
         setIsLoading(true);
         const fecha = new Date().toISOString();
-
         try {
             const response = await fetch(`/api/alumnos?dni=${cleanDNI}`);
             if (!response.ok) throw new Error('Error al buscar alumno');
-
             const alumno = await response.json();
-
-            const ingreso = {
-                dni: cleanDNI,
-                actividad,
-                fecha,
-                presente: true,
-                nombre: alumno.nombre,
-            };
-
+            const ingreso = { dni: cleanDNI, actividad, fecha, presente: true, nombre: alumno.nombre };
             const asistenciaResponse = await fetch(`/api/asistencias/${alumno._id}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(ingreso),
             });
-
             if (!asistenciaResponse.ok) {
                 const errorText = await asistenciaResponse.text();
-                throw new Error(errorText); // Aquí usamos el mensaje del servidor
+                throw new Error(errorText);
             }
-
             Swal.fire({
                 ...swalNotify,
                 icon: 'success',
                 title: `¡Hola ${alumno.nombre}!`,
-                text: `Tu asistencia para ${actividad} ha sido registrada.`,
+                text: `Asistencia de ${actividad} registrada.`,
                 showConfirmButton: false,
                 timer: 4000,
             });
-
             dniRef.current = '';
             setDni('');
             if (keyboard) keyboard.setInput('');
         } catch (error: any) {
-            if (error.message.includes("Asistencia ya registrada")) {
-                Swal.fire({
-                    ...swalNotify,
-                    icon: 'info',
-                    title: 'Ya registrada',
-                    text: `Ya se registró una asistencia para ${actividad} hoy.`,
-                });
+            if (error.message.includes('Asistencia ya registrada')) {
+                Swal.fire({ ...swalNotify, icon: 'info', title: 'Ya registrada', text: `Ya se registró una asistencia para ${actividad} hoy.` });
             } else {
-                const ingreso = {
-                    dni: cleanDNI,
-                    actividad,
-                    fecha,
-                    presente: true,
-                    nombre: 'Alumno',
-                };
-
+                const ingreso = { dni: cleanDNI, actividad, fecha, presente: true, nombre: 'Alumno' };
                 await addIngreso(ingreso);
-
-                Swal.fire({
-                    ...swalNotify,
-                    icon: 'info',
-                    title: `¡Hola!`,
-                    text: `Tu asistencia para "${actividad}" será registrada al reconectarse.`,
-                });
+                Swal.fire({ ...swalNotify, icon: 'info', title: '¡Hola!', text: `Tu asistencia para "${actividad}" será registrada al reconectarse.` });
             }
-
             dniRef.current = '';
             setDni('');
             if (keyboard) keyboard.setInput('');
@@ -135,108 +92,130 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const syncIngresosPendientes = async () => {
         setIsSyncing(true);
         const ingresosPendientes = await getIngresosPendientes();
-
         for (const ingreso of ingresosPendientes) {
             try {
                 const responseAlumno = await fetch(`/api/alumnos?dni=${ingreso.dni}`);
                 if (!responseAlumno.ok) continue;
-
                 const alumno = await responseAlumno.json();
                 const response = await fetch(`/api/asistencias/${alumno._id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(ingreso),
                 });
-
-                // Delete if registered OK, or if it was already registered (avoid infinite retry)
-                if (response.ok || response.status === 400) {
-                    await deleteIngreso(ingreso.id);
-                }
-            } catch {
-                // silenced
-            }
+                if (response.ok || response.status === 400) await deleteIngreso(ingreso.id);
+            } catch { /* silenced */ }
         }
         setIsSyncing(false);
     };
 
     useEffect(() => {
         syncIngresosPendientes();
-
-        const handleOnline = () => {
-            syncIngresosPendientes();
-        };
-
-        window.addEventListener('online', handleOnline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-        };
+        window.addEventListener('online', syncIngresosPendientes);
+        fetch('/api/gimnasio/tema')
+            .then(r => r.json())
+            .then(d => {
+                if (d.temaAcento) setAcento(d.temaAcento);
+                if (d.logoUrl) setLogoUrl(d.logoUrl);
+            })
+            .catch(() => {});
+        return () => window.removeEventListener('online', syncIngresosPendientes);
     }, []);
 
+    const ACTIVIDADES = ['Musculación', 'Intermitente', 'Otro'] as const;
+
     return (
-        <div className="max-w-lg mx-auto bg-slate-800 border border-slate-700 p-6 sm:p-8 md:p-10 rounded-2xl shadow-2xl mt-8 relative">
+        <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8" style={{ background: '#111' }}>
+
+            {/* Spinner de carga global */}
             {isLoading && (
-                <div className="absolute inset-0 bg-slate-800/80 rounded-2xl flex justify-center items-center z-10">
-                    <div className="border-t-4 border-emerald-400 rounded-full w-12 h-12 animate-spin"></div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}>
+                    <div className="w-14 h-14 rounded-full border-4 border-white/10 animate-spin" style={{ borderTopColor: acento }} />
                 </div>
             )}
-            <h1 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">Ingrese su Documento</h1>
 
-            <div className="mb-6 text-center">
-                <div
-                    className="border border-slate-600 bg-[#111] rounded-xl py-4 px-6 text-3xl font-bold text-white tracking-widest shadow-inner min-h-[56px]"
-                    style={{ fontFamily: "'Courier New', monospace", display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                    {dni || <span className="invisible">XX.XXX.XXX</span>}
-                </div>
+            {/* Logo o título */}
+            <div className="mb-6 flex flex-col items-center gap-3">
+                {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt="Gimnasio" style={{ maxHeight: 72, maxWidth: 220, objectFit: 'contain' }} />
+                ) : (
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: acento }}>
+                        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                    </div>
+                )}
+                <p className="text-white/40 text-xs font-semibold uppercase tracking-widest">Registro de asistencia</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                    <button
-                        type="button"
-                        onClick={() => setActividad('Musculación')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Musculación' ? 'bg-[#111] text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
-                        disabled={isLoading}
-                    >
-                        Musculación
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActividad('Intermitente')}
-                        className={`p-2 sm:p-4 text-sm h-16 sm:text-base rounded-xl font-semibold transition-all ${actividad === 'Intermitente' ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
-                        disabled={isLoading}
-                    >
-                        Intermitente
-                    </button>
+            {/* Card principal */}
+            <div className="w-full max-w-sm">
+
+                {/* Display DNI */}
+                <div
+                    className="rounded-2xl mb-4 flex items-center justify-center min-h-[72px] px-6"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.10)' }}
+                >
+                    {dni ? (
+                        <span className="text-white font-bold tracking-[0.2em]" style={{ fontSize: 36, fontFamily: "'Courier New', monospace" }}>
+                            {dni}
+                        </span>
+                    ) : (
+                        <span className="text-white/20 font-bold tracking-[0.2em]" style={{ fontSize: 36, fontFamily: "'Courier New', monospace" }}>
+                            — — — — — —
+                        </span>
+                    )}
                 </div>
 
-                <div className="mt-2 mb-4">
+                {/* Selector de actividad */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                    {ACTIVIDADES.map(act => {
+                        const isActive = actividad === act;
+                        return (
+                            <button
+                                key={act}
+                                type="button"
+                                onClick={() => setActividad(act)}
+                                disabled={isLoading}
+                                className="h-14 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                style={isActive
+                                    ? { background: acento, color: '#fff', boxShadow: `0 4px 16px ${acento}55` }
+                                    : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }
+                                }
+                            >
+                                {act}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Teclado */}
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <Keyboard
                         keyboardRef={(r) => setKeyboard(r)}
                         onChange={handleKeyboardChange}
                         onKeyPress={(button) => {
-                            if (button === "{submit}") {
-                                handleSubmit(new Event("submit") as unknown as React.FormEvent);
+                            if (button === '{submit}') {
+                                handleSubmit(new Event('submit') as unknown as React.FormEvent);
                             }
                         }}
                         inputName="dni"
                         theme="hg-theme-default hg-layout-numeric my-custom-keyboard"
                         layout={{
-                            default: [
-                                "1 2 3",
-                                "4 5 6",
-                                "7 8 9",
-                                "{bksp} 0 {submit}",
-                            ],
+                            default: ['1 2 3', '4 5 6', '7 8 9', '{bksp} 0 {submit}'],
                         }}
                         display={{
-                            "{bksp}": "⌫",
-                            "{submit}": isLoading ? 'Cargando...' : 'Registrar',
+                            '{bksp}': '⌫',
+                            '{submit}': isLoading ? '...' : 'Registrar',
                         }}
                     />
                 </div>
-            </form>
+
+                {/* Indicador sync */}
+                {isSyncing && (
+                    <p className="text-center text-white/30 text-xs mt-3 font-medium">Sincronizando ingresos pendientes...</p>
+                )}
+            </div>
         </div>
     );
 }

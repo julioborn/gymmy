@@ -1,67 +1,70 @@
-/* Estilo general para el teclado */
+/* ── Base del teclado ── */
+.my-custom-keyboard.hg-theme-default {
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 10px !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.my-custom-keyboard .hg-row {
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.my-custom-keyboard .hg-button {
+  background: rgba(255, 255, 255, 0.09) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-bottom: none !important;
+  border-radius: 12px !important;
+  height: 62px !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  transition: background 0.12s ease !important;
+}
+
+.my-custom-keyboard .hg-button:active {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: scale(0.96) !important;
+}
+
+/* Botón backspace */
+.my-custom-keyboard .hg-button[data-skbtn="{bksp}"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255,255,255,0.5) !important;
+  font-size: 20px !important;
+}
+
+/* Botón Registrar */
 .my-custom-keyboard .hg-button[data-skbtn="{submit}"] {
-  background-color: #1f2937; /* Color de fondo */
-  color: white; /* Color del texto */
+  background: white !important;
+  color: #111 !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
 }
 
 .my-custom-keyboard .hg-button[data-skbtn="{submit}"]:hover {
-  background-color: #374151; /* Color al pasar el cursor */
+  background: #f1f5f9 !important;
 }
 
+.my-custom-keyboard .hg-button[data-skbtn="{submit}"]:active {
+  background: #e2e8f0 !important;
+}
 
-/* Estilo específico para tablets en orientación vertical */
+/* ── Tablet vertical ── */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-  /* Ajustar el tamaño del contenedor principal */
+  body, html { overflow: hidden; height: 100%; }
 
-  body {
-    overflow: hidden; /* Evita el scroll en el cuerpo */
-    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
-  }
-
-  html {
-    overflow: hidden;
-    height: 100%; /* Asegura que ocupe toda la altura de la ventana */
-  }
-
-  .max-w-lg {
-      max-width: 90%; /* Más ancho */
-      padding: 20px; /* Más espacio interno */
-  }
-
-  /* Ajustar el tamaño del texto principal */
-  .text-xl {
-      font-size: 2rem !important; /* Texto más grande */
-  }
-
-  .text-2xl {
-      font-size: 2.5rem !important;
-  }
-
-  /* Ajustar el tamaño de los botones */
   .my-custom-keyboard .hg-button {
-      height: 115px !important; /* Más altura */
-      font-size: 24px !important; /* Texto más grande */
+    height: 100px !important;
+    font-size: 28px !important;
+    border-radius: 14px !important;
   }
 
-  /* Ajustar el tamaño del botón "Registrar Presente" */
-  .h-16 {
-      height: 80px !important;
-  }
-
-  .bg-gray-600 {
-      font-size: 20px !important; /* Texto más grande */
-      padding: 16px !important; /* Más espacio interno */
-  }
-
-  /* Ajustar el tamaño del selector de actividad */
-  .grid-cols-2 button {
-      font-size: 22px !important;
-      height: 80px !important;
-  }
-
-  /* Ajustar el tamaño del display del DNI */
-  .tracking-widest {
-      font-size: 3.5rem !important; /* Más grande */
-      padding: 20px !important; /* Más espacio interno */
+  .my-custom-keyboard .hg-button[data-skbtn="{submit}"] {
+    font-size: 18px !important;
   }
 }
