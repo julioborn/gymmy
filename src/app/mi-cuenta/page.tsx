@@ -300,9 +300,17 @@ export default function MiCuentaPage() {
             if (!prev) return prev;
             const dias = prev.dias.map((d, di) => {
                 if (di !== selectedDia) return d;
+                const targetCombo = d.ejercicios[eIdx]?.grupoCombo;
+                const isKgField = field.startsWith('kgAlumno');
                 return {
                     ...d,
-                    ejercicios: d.ejercicios.map((e, ei) => ei === eIdx ? { ...e, [field]: value } : e),
+                    ejercicios: d.ejercicios.map((e, ei) => {
+                        if (ei === eIdx) return { ...e, [field]: value };
+                        if (isKgField && targetCombo && e.grupoCombo === targetCombo) {
+                            return { ...e, [field]: value };
+                        }
+                        return e;
+                    }),
                 };
             });
             return { ...prev, dias };
