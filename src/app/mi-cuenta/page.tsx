@@ -222,10 +222,15 @@ export default function MiCuentaPage() {
                 const inicio = new Date(data.fechaInicio);
                 const totalSemanas = data.totalSemanas || 5;
                 if (alumnoData && data.dias.length > 0) {
-                    const sessionsDone = alumnoData.asistencia.filter(a => {
-                        if (a.actividad !== 'Musculación' || !a.presente) return false;
-                        return new Date(a.fecha) >= inicio;
-                    }).length;
+                    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+                    const valid = alumnoData.asistencia.filter(a =>
+                        a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio
+                    );
+                    const allDone = valid.length;
+                    const last = valid.reduce((l: typeof valid[0] | null, a) =>
+                        !l || new Date(a.fecha) > new Date(l.fecha) ? a : l, null);
+                    const inGym = last != null && (Date.now() - new Date(last.fecha).getTime()) < THREE_HOURS_MS;
+                    const sessionsDone = inGym ? allDone - 1 : allDone;
                     const diasLen = data.dias.length;
                     setSelectedDia(sessionsDone % diasLen);
                     setSelectedSemana(Math.min(Math.floor(sessionsDone / diasLen) + 1, totalSemanas));
@@ -838,9 +843,14 @@ export default function MiCuentaPage() {
                                 </div>
                             )}
                             {selectedAsistencias.map(a => (
-                                <div key={a._id} className="flex items-center gap-2">
-                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
-                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>{a.actividad}</span>
+                                <div key={a._id} className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
+                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>{a.actividad}</span>
+                                    </div>
+                                    <span className="text-slate-400 text-xs font-medium">
+                                        {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
                                 </div>
                             ))}
                             {selectedPagos.map(p => (
@@ -911,12 +921,17 @@ export default function MiCuentaPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        const sessionsDone = planInicio && alumno
-                            ? alumno.asistencia.filter(a => {
-                                if (a.actividad !== 'Musculación' || !a.presente) return false;
-                                return new Date(a.fecha) >= planInicio;
-                              }).length
-                            : 0;
+                        const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+                        const validSess = planInicio && alumno
+                            ? alumno.asistencia.filter(a =>
+                                a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio
+                              )
+                            : [];
+                        const allDone = validSess.length;
+                        const lastSess = validSess.reduce((l: typeof validSess[0] | null, a) =>
+                            !l || new Date(a.fecha) > new Date(l.fecha) ? a : l, null);
+                        const inGym = lastSess != null && (Date.now() - new Date(lastSess.fecha).getTime()) < THREE_HOURS_MS;
+                        const sessionsDone = inGym ? allDone - 1 : allDone;
                         const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
                         const sessionBasedWeekNum = planEj.dias.length > 0
                             ? Math.min(Math.floor(sessionsDone / planEj.dias.length) + 1, totalSem)
