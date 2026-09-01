@@ -20,6 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     if (params.id !== myId) {
         return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
     }
+    if (!gimnasioId) return NextResponse.json({ error: 'Sin gimnasio' }, { status: 400 });
 
     const { client, db } = await getDb();
     try {
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (params.id !== myId) {
         return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
     }
+    if (!gimnasioId) return NextResponse.json({ error: 'Sin gimnasio' }, { status: 400 });
 
     const { client, db } = await getDb();
     try {
