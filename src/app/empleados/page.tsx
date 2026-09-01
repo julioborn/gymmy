@@ -324,11 +324,6 @@ export default function EmpleadosPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <span className="text-slate-900 font-semibold text-sm">{displayName}</span>
-                                        {isMe && (
-                                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full leading-none shrink-0">
-                                                Vos
-                                            </span>
-                                        )}
                                     </div>
                                     <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg mt-1 ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}>
                                         {ROLE_LABEL[emp.role] ?? emp.role}
