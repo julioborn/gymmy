@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Asistencia {
     _id: string;
@@ -190,6 +190,7 @@ export default function MiCuentaPage() {
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#10b981');
+    const calentamientoRef = useRef<HTMLDivElement>(null);
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -941,6 +942,22 @@ export default function MiCuentaPage() {
                                     </div>
                                 </div>
 
+                                {planEj.entradaCalor?.ejercicios?.length > 0 && (
+                                    <button
+                                        onClick={() => calentamientoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                        className="w-full flex items-center justify-between gap-2 bg-white border border-black/[0.07] rounded-2xl px-4 py-3 shadow-sm hover:bg-slate-50 active:bg-slate-100 transition"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-base">🔥</span>
+                                            <span className="text-sm font-semibold text-slate-700">Entrada en calor</span>
+                                            <span className="text-xs text-slate-400 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
+                                        </div>
+                                        <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </button>
+                                )}
+
                                 {/* Week selector */}
                                 <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-3">
                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
@@ -1122,6 +1139,23 @@ export default function MiCuentaPage() {
                                                     </div>
                                                 );
                                             })}
+                                        </div>
+                                    </div>
+                                )}
+                                {planEj.entradaCalor?.ejercicios?.length > 0 && (
+                                    <div ref={calentamientoRef} className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
+                                        <div className="px-4 py-3 border-b border-black/[0.06] flex items-center gap-2">
+                                            <span className="text-sm">🔥</span>
+                                            <p className="text-sm font-bold text-slate-800">Entrada en calor</p>
+                                            <span className="text-xs text-slate-400 font-medium ml-auto">Días 1 / 2 / 3</span>
+                                        </div>
+                                        <div className="divide-y divide-slate-100">
+                                            {planEj.entradaCalor.ejercicios.map((e, i) => (
+                                                <div key={i} className="flex items-center justify-between px-4 py-3">
+                                                    <p className="text-sm font-medium text-slate-700">{e.nombre}</p>
+                                                    <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">S/R</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
