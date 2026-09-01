@@ -72,13 +72,24 @@ function toLocalKey(fechaStr: string): string {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function calDaysGrid(year: number, month: number): (number | null)[] {
+type CalDay = { day: number; year: number; month: number; isCurrentMonth: boolean };
+
+function calDaysGrid(year: number, month: number): CalDay[] {
     const firstDay = new Date(year, month, 1).getDay();
     const daysCount = new Date(year, month + 1, 0).getDate();
     const offset = (firstDay + 6) % 7;
-    const grid: (number | null)[] = [];
-    for (let i = 0; i < offset; i++) grid.push(null);
-    for (let d = 1; d <= daysCount; d++) grid.push(d);
+    const grid: CalDay[] = [];
+    if (offset > 0) {
+        const prevMonth = month === 0 ? 11 : month - 1;
+        const prevYear = month === 0 ? year - 1 : year;
+        const prevDays = new Date(prevYear, prevMonth + 1, 0).getDate();
+        for (let i = offset - 1; i >= 0; i--) {
+            grid.push({ day: prevDays - i, year: prevYear, month: prevMonth, isCurrentMonth: false });
+        }
+    }
+    for (let d = 1; d <= daysCount; d++) {
+        grid.push({ day: d, year, month, isCurrentMonth: true });
+    }
     return grid;
 }
 
@@ -1361,18 +1372,18 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 {/* Grid */}
                                 <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-slate-200">
-                                    {calDaysGrid(mobCalYear, mobCalMonth).map((day, i) => {
-                                        if (!day) return <div key={`e-${i}`} className="sm:min-h-[90px] sm:border-r sm:border-b sm:border-slate-200 sm:bg-slate-50/40" />;
-                                        const key = `${mobCalYear}-${String(mobCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                    {calDaysGrid(mobCalYear, mobCalMonth).map((calDay, i) => {
+                                        const key = `${calDay.year}-${String(calDay.month + 1).padStart(2, '0')}-${String(calDay.day).padStart(2, '0')}`;
                                         const asists = asistenciasMapMob[key] || [];
                                         const pags = pagosMapMob[key] || [];
                                         const isToday = key === mobTodayKey;
                                         const isSelected = key === mobSelectedDay;
                                         const hasData = asists.length > 0 || pags.length > 0;
+                                        const isOverflow = !calDay.isCurrentMonth;
                                         const dotColors: Record<string, string> = { Musculación: 'bg-blue-600', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
                                         return (
                                             <button
-                                                key={key}
+                                                key={`${key}-${i}`}
                                                 onClick={() => setMobSelectedDay(isSelected ? null : key)}
                                                 className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-slate-200 transition-colors overflow-hidden ${
                                                     isSelected
@@ -1381,6 +1392,8 @@ export default function HistorialAlumnoPage() {
                                                         ? 'bg-emerald-50 hover:bg-emerald-100'
                                                         : planDaysMap[key] === 'completed'
                                                         ? 'bg-red-50 hover:bg-red-100'
+                                                        : isOverflow
+                                                        ? 'bg-slate-50/70 hover:bg-slate-100'
                                                         : 'hover:bg-slate-50'
                                                 }`}
                                             >
@@ -1393,10 +1406,12 @@ export default function HistorialAlumnoPage() {
                                                     <span className={`text-xs sm:text-[13px] leading-none mb-1 sm:mb-0 ${
                                                         isToday
                                                             ? 'bg-slate-700 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center font-bold'
+                                                            : isOverflow
+                                                            ? 'text-slate-300'
                                                             : (hasData || planDaysMap[key])
                                                             ? 'text-slate-700 font-medium'
                                                             : 'text-slate-400'
-                                                    }`}>{day}</span>
+                                                    }`}>{calDay.day}</span>
                                                 </div>
                                                 {/* Mobile: dots */}
                                                 <div className="sm:hidden flex gap-0.5 flex-wrap justify-center max-w-[28px]">
