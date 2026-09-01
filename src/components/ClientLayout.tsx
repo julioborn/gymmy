@@ -310,8 +310,20 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             ),
         };
 
+        const miPerfil = {
+            href: '/mi-perfil',
+            label: 'Mi perfil',
+            isCenter: false,
+            isActive: (p: string) => p.startsWith('/mi-perfil'),
+            icon: (
+                <svg className="w-[20px] h-[20px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+            ),
+        };
+
         if (isDuenoAdmin) return [alumnos, empleados, inicio, finanzas, estadisticas];
-        return [alumnos, inicio];
+        return [alumnos, inicio, miPerfil];
     })();
 
     const pullProgress = Math.min(pullY / PULL_THRESHOLD, 1);
