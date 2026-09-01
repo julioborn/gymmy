@@ -122,15 +122,25 @@ export default function MiPerfilPage() {
 
     const validTabs = ['resumen', 'historial', 'plan'] as const;
     type Tab = typeof validTabs[number];
-    const getInitialTab = (): Tab => {
+    const readHash = (): Tab => {
         if (typeof window !== 'undefined') {
             const hash = window.location.hash.replace('#', '') as Tab;
             if (validTabs.includes(hash)) return hash;
         }
         return 'resumen';
     };
-    const [tab, setTab] = useState<Tab>(getInitialTab);
+    const [tab, setTab] = useState<Tab>(readHash);
     const changeTab = (t: Tab) => { setTab(t); window.location.hash = t; };
+
+    useEffect(() => {
+        const onHash = () => {
+            const h = window.location.hash.replace('#', '') as Tab;
+            if (validTabs.includes(h)) setTab(h);
+        };
+        window.addEventListener('hashchange', onHash);
+        onHash();
+        return () => window.removeEventListener('hashchange', onHash);
+    }, []);
 
     const [planEj, setPlanEj] = useState<PlanEj | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
