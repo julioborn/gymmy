@@ -51,11 +51,15 @@ function roleSelectOptions(selected?: string) {
         .join('');
 }
 
+const ROLE_ORDER: Record<string, number> = { dueño: 0, admin: 1, profesor: 2, registro: 3 };
+
 export default function EmpleadosPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [empleados, setEmpleados] = useState<Empleado[]>([]);
     const [loading, setLoading] = useState(true);
+    const [acento, setAcento] = useState('#10b981');
+    const [acento2, setAcento2] = useState('#10b981');
 
     const myId = session?.user?.id;
     const myRole = session?.user?.role;
@@ -72,11 +76,24 @@ export default function EmpleadosPage() {
         try {
             const r = await fetch('/api/empleados');
             const d = await r.json();
-            setEmpleados(d.empleados || []);
+            const sorted = (d.empleados || []).sort((a: Empleado, b: Empleado) =>
+                (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99)
+            );
+            setEmpleados(sorted);
         } catch { /* ignorar */ } finally {
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        fetch('/api/gimnasio/tema')
+            .then(r => r.json())
+            .then(d => {
+                if (d.temaAcento) setAcento(d.temaAcento);
+                if (d.temaAcento2) setAcento2(d.temaAcento2);
+            })
+            .catch(() => {});
+    }, []);
 
     async function handleAgregar() {
         const { value } = await Swal.fire({
@@ -228,57 +245,62 @@ export default function EmpleadosPage() {
     if (status === 'loading' || loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-700" />
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-r-2 border-slate-300" style={{ borderTopColor: acento, borderRightColor: acento }} />
             </div>
         );
     }
 
+    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
+    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
+
     return (
-        <div className="max-w-4xl mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* Banner */}
-            <div className="bg-[#111] rounded-3xl px-6 pt-6 pb-5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-slate-800 rounded-2xl flex items-center justify-center shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                        </svg>
-                    </div>
+            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
+                <div
+                    className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-30"
+                    style={{ background: acento2 }}
+                />
+                <div className="relative flex items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-lg font-bold text-white leading-tight">Empleados</h1>
-                        <p className="text-slate-400 text-xs mt-0.5">
-                            {empleados.length} {empleados.length === 1 ? 'miembro' : 'miembros'} del equipo
+                        <p className={`${lbl} text-slate-500 mb-0.5`}>Gestión de equipo</p>
+                        <h1 className="text-xl font-bold text-white leading-tight">Empleados</h1>
+                        <p className="text-slate-500 text-xs mt-1">
+                            {empleados.length} {empleados.length === 1 ? 'miembro' : 'miembros'}
                         </p>
                     </div>
+                    <button
+                        onClick={handleAgregar}
+                        className="flex items-center gap-2 text-white text-sm font-semibold rounded-full px-4 py-2.5 transition-colors shadow-sm shrink-0 active:opacity-80"
+                        style={{ background: acento }}
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span>Agregar</span>
+                    </button>
                 </div>
-                <button
-                    onClick={handleAgregar}
-                    className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white text-sm font-semibold rounded-2xl px-4 py-2.5 transition-colors shadow-sm shrink-0"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <span>Agregar</span>
-                </button>
             </div>
 
             {/* Lista */}
             {empleados.length === 0 ? (
-                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-10 text-center">
+                <div className={`${card} p-10 text-center`}>
                     <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg className="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                         </svg>
                     </div>
                     <p className="text-slate-600 font-semibold text-sm">Sin empleados registrados</p>
-                    <p className="text-slate-400 text-xs mt-1">Tocá &quot;Agregar&quot; para añadir el primer miembro del equipo.</p>
+                    <p className="text-slate-400 text-xs mt-1">Tocá &quot;Agregar&quot; para añadir el primer miembro.</p>
                 </div>
             ) : (
-                <div className="space-y-2">
+                <div className={`${card} overflow-hidden divide-y divide-black/[0.05]`}>
                     {empleados.map(emp => {
                         const isMe = emp._id === myId;
                         const displayName = emp.nombre && emp.apellido
-                            ? `${emp.nombre} ${emp.apellido}`
+                            ? `${emp.apellido}, ${emp.nombre}`
                             : emp.nombre || emp.username;
                         const initials = emp.nombre
                             ? `${emp.nombre[0]}${emp.apellido?.[0] ?? ''}`.toUpperCase()
@@ -289,38 +311,38 @@ export default function EmpleadosPage() {
                         return (
                             <div
                                 key={emp._id}
-                                className="bg-white border border-slate-100 rounded-2xl shadow-sm px-4 py-3.5 flex items-center gap-3"
+                                className="px-4 py-3.5 flex items-center gap-3"
                             >
                                 {/* Avatar */}
                                 <div
-                                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white text-xs font-bold ${ROLE_AVATAR[emp.role] ?? 'bg-slate-500'}`}
+                                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white text-sm font-bold ${ROLE_AVATAR[emp.role] ?? 'bg-slate-500'}`}
                                 >
                                     {initials}
                                 </div>
 
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-slate-800 font-semibold text-sm">{displayName}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-slate-900 font-semibold text-sm truncate">{displayName}</span>
                                         {isMe && (
-                                            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full leading-none">
+                                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full leading-none shrink-0">
                                                 Vos
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                                        <span
-                                            className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}
-                                        >
-                                            {ROLE_LABEL[emp.role] ?? emp.role}
-                                        </span>
-                                        {emp.dni && (
-                                            <span className="text-[11px] text-slate-400">DNI {emp.dni.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3')}</span>
-                                        )}
-                                        {nacimiento && (
-                                            <span className="text-[11px] text-slate-400">{nacimiento}</span>
-                                        )}
-                                    </div>
+                                    <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg mt-1 ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}>
+                                        {ROLE_LABEL[emp.role] ?? emp.role}
+                                    </span>
+                                    {emp.dni && (
+                                        <p className="text-[11px] text-slate-400 mt-0.5">
+                                            DNI {emp.dni.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3')}
+                                        </p>
+                                    )}
+                                    {nacimiento && (
+                                        <p className="text-[11px] text-slate-400">
+                                            {nacimiento}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Acciones */}

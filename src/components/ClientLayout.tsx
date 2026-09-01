@@ -280,7 +280,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             isCenter: true,
             isActive: (p: string) => p === '/',
             icon: (
-                <svg className="w-[22px] h-[22px] text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                 </svg>
             ),
@@ -493,12 +493,13 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                         <div
                                             className="w-12 h-12 rounded-full flex items-center justify-center"
                                             style={{
-                                                background: active ? acento : '#ffffff18',
-                                                border: `2px solid ${active ? acento : 'rgba(255,255,255,0.12)'}`,
+                                                background: active ? acento : '#fff',
+                                                border: active ? `2px solid ${acento}` : '2px solid rgba(0,0,0,0.1)',
                                                 marginTop: '-28px',
                                                 boxShadow: active
                                                     ? `0 4px 20px ${acento}55`
-                                                    : '0 4px 16px rgba(0,0,0,0.4)',
+                                                    : '0 4px 14px rgba(0,0,0,0.3)',
+                                                color: active ? '#fff' : '#111',
                                             }}
                                         >
                                             {item.icon}
