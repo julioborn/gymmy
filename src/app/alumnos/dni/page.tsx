@@ -10,12 +10,13 @@ import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexe
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
     const dniRef = useRef('');
-    const [actividad, setActividad] = useState('Musculación');
+    const [actividad, setActividad] = useState<string>('Musculación');
     const isLoadingRef = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [keyboard, setKeyboard] = useState<any>(null);
     const [acento, setAcento] = useState('#f97316');
+    const [acento2, setAcento2] = useState('#22c55e');
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -108,12 +109,18 @@ export default function RegistrarAsistenciaPorDNIPage() {
         window.addEventListener('online', syncIngresosPendientes);
         fetch('/api/gimnasio/tema')
             .then(r => r.json())
-            .then(d => { if (d.temaAcento) setAcento(d.temaAcento); })
+            .then(d => {
+                if (d.temaAcento) setAcento(d.temaAcento);
+                if (d.temaAcento2) setAcento2(d.temaAcento2);
+            })
             .catch(() => {});
         return () => window.removeEventListener('online', syncIngresosPendientes);
     }, []);
 
-    const ACTIVIDADES = ['Musculación', 'Intermitente', 'Otro'] as const;
+    const ACTIVIDADES = [
+        { label: 'Musculación', color: acento2 },
+        { label: 'Intermitente', color: acento },
+    ] as const;
 
     return (
         /* Ocupa todo el espacio bajo el header, sin scroll, fondo negro */
@@ -132,16 +139,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1 w-full max-w-sm mx-auto px-4 pt-5 pb-4 gap-3">
+            <div className="flex flex-col w-full max-w-sm mx-auto px-4 pt-5 gap-3" style={{ height: '100%' }}>
 
                 {/* Label */}
-                <p className="text-center text-white/30 text-[11px] font-bold uppercase tracking-widest">
+                <p className="text-center text-white/30 text-[11px] font-bold uppercase tracking-widest flex-none">
                     Ingresá tu DNI
                 </p>
 
                 {/* Display DNI */}
                 <div
-                    className="rounded-2xl flex items-center justify-center"
+                    className="rounded-2xl flex items-center justify-center flex-none"
                     style={{
                         height: 68,
                         background: 'rgba(255,255,255,0.06)',
@@ -160,31 +167,37 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
 
                 {/* Actividad */}
-                <div className="grid grid-cols-3 gap-2">
-                    {ACTIVIDADES.map(act => {
-                        const isActive = actividad === act;
+                <div className="grid grid-cols-2 gap-2 flex-none">
+                    {ACTIVIDADES.map(({ label, color }) => {
+                        const isActive = actividad === label;
                         return (
                             <button
-                                key={act}
+                                key={label}
                                 type="button"
-                                onClick={() => setActividad(act)}
+                                onClick={() => setActividad(label)}
                                 disabled={isLoading}
                                 className="h-12 rounded-xl text-sm font-bold transition-all active:scale-95"
                                 style={isActive
-                                    ? { background: acento, color: '#fff', boxShadow: `0 4px 14px ${acento}55` }
+                                    ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
                                     : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }
                                 }
                             >
-                                {act}
+                                {label}
                             </button>
                         );
                     })}
                 </div>
 
-                {/* Teclado — ocupa el espacio restante */}
+                {/* Teclado — ocupa el espacio restante hasta el fondo */}
                 <div
-                    className="flex-1 rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', minHeight: 0 }}
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                        flex: '1 1 0',
+                        minHeight: 0,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                    }}
                 >
                     <Keyboard
                         keyboardRef={(r) => setKeyboard(r)}
@@ -201,7 +214,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
                 {/* Sync indicator */}
                 {isSyncing && (
-                    <p className="text-center text-white/20 text-[10px] font-medium">Sincronizando ingresos pendientes...</p>
+                    <p className="flex-none text-center text-white/20 text-[10px] font-medium pb-2">Sincronizando ingresos pendientes...</p>
                 )}
             </div>
         </div>

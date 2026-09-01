@@ -5,11 +5,25 @@
   padding: 10px !important;
   box-shadow: none !important;
   border: none !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.my-custom-keyboard .hg-rows {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .my-custom-keyboard .hg-row {
+  flex: 1 !important;
   gap: 8px !important;
   margin-bottom: 8px !important;
+}
+
+.my-custom-keyboard .hg-row:last-child {
+  margin-bottom: 0 !important;
 }
 
 .my-custom-keyboard .hg-button {
@@ -18,7 +32,7 @@
   border: 1px solid rgba(255, 255, 255, 0.10) !important;
   border-bottom: none !important;
   border-radius: 12px !important;
-  height: 62px !important;
+  height: 100% !important;
   font-size: 22px !important;
   font-weight: 700 !important;
   box-shadow: none !important;
@@ -59,7 +73,6 @@
   body, html { overflow: hidden; height: 100%; }
 
   .my-custom-keyboard .hg-button {
-    height: 100px !important;
     font-size: 28px !important;
     border-radius: 14px !important;
   }
