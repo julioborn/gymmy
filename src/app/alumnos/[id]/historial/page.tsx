@@ -175,6 +175,7 @@ export default function HistorialAlumnoPage() {
     const [filtroAnio, setFiltroAnio] = useState('Todos');
     const [filtroMetodo, setFiltroMetodo] = useState('Todos');
     const [ordenPagos, setOrdenPagos] = useState<'recientes' | 'antiguos'>('recientes');
+    const [acento, setAcento] = useState('#111111');
 
     const handleTabClick = (tab: 'asistencias' | 'planes' | 'pagos') => {
         setActiveTab(tab);
@@ -404,6 +405,12 @@ export default function HistorialAlumnoPage() {
         applyResponsive();
         window.addEventListener('resize', applyResponsive);
         return () => window.removeEventListener('resize', applyResponsive);
+    }, []);
+
+    useEffect(() => {
+        fetch('/api/gimnasio/tema').then(r => r.json()).then(d => {
+            if (d.temaAcento) setAcento(d.temaAcento);
+        }).catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -1289,28 +1296,29 @@ export default function HistorialAlumnoPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-4">
             {/* Header */}
-            <div className="flex items-center gap-3 px-1 pt-1">
-                <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition">
+            <div className="bg-[#111] rounded-2xl px-4 py-4 sm:px-5 flex items-center gap-3">
+                <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                     </svg>
                 </Link>
-                <h1 className="flex-1 min-w-0 text-xl font-bold text-slate-900 truncate">{alumno.nombre} {alumno.apellido}</h1>
+                <h1 className="flex-1 min-w-0 text-lg font-bold text-white truncate">{alumno.nombre} {alumno.apellido}</h1>
                 {diasRestantes != null && diasRestantes > 0 ? (
-                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-emerald-50 text-emerald-600' : diasRestantes > 5 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-500'}`}>
+                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/70' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
                         {diasRestantes} entrenos
                     </span>
                 ) : (
-                    <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-400">Sin plan</span>
+                    <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
                 )}
                 <Link
                     href={`/alumnos/${alumno._id}/plan`}
-                    className="shrink-0 px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+                    style={{ backgroundColor: acento }}
+                    className="shrink-0 px-2.5 py-1.5 text-white text-xs font-semibold rounded-xl hover:opacity-80 transition-opacity shadow-sm"
                 >
                     Plan
                 </Link>
                 <select
-                    className="shrink-0 border border-slate-200 rounded-xl px-2.5 py-1.5 bg-white text-slate-600 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer shadow-sm"
+                    className="shrink-0 border border-white/10 rounded-xl px-2.5 py-1.5 bg-white/10 text-white text-sm font-semibold focus:outline-none cursor-pointer"
                     value=""
                     onChange={(e) => {
                         if (e.target.value === 'cuotas') handleConfiguracionTarifas();
@@ -1318,9 +1326,9 @@ export default function HistorialAlumnoPage() {
                         e.target.value = '';
                     }}
                 >
-                    <option value="" disabled>Ajustes</option>
-                    <option value="cuotas">Cuotas</option>
-                    <option value="recargo">Recargo</option>
+                    <option value="" disabled className="text-slate-800">Ajustes</option>
+                    <option value="cuotas" className="text-slate-800">Cuotas</option>
+                    <option value="recargo" className="text-slate-800">Recargo</option>
                 </select>
             </div>
 
@@ -1480,7 +1488,7 @@ export default function HistorialAlumnoPage() {
                                         <h3 className="text-slate-700 font-semibold text-sm capitalize">
                                             {new Date(mobSelectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                         </h3>
-                                        <button onClick={() => handleDateSelect({ startStr: mobSelectedDay, allDay: true } as DateSelectArg)} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition">+ Agregar</button>
+                                        <button onClick={() => handleDateSelect({ startStr: mobSelectedDay, allDay: true } as DateSelectArg)} style={{ color: acento }} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition">+ Agregar</button>
                                     </div>
                                     {(asistenciasMapMob[mobSelectedDay] || []).length === 0 && (pagosMapMob[mobSelectedDay] || []).length === 0 && (
                                         <p className="text-slate-400 text-sm text-center py-3">Sin registros para este día.</p>
@@ -1683,9 +1691,10 @@ export default function HistorialAlumnoPage() {
                         <button
                             key={key}
                             onClick={() => handleTabClick(key)}
+                            style={activeTab === key ? { borderBottomColor: acento, color: acento } : {}}
                             className={`py-3.5 px-4 text-sm font-semibold border-b-2 transition-all -mb-px whitespace-nowrap ${
                                 activeTab === key
-                                    ? 'border-slate-800 text-slate-800'
+                                    ? 'border-current'
                                     : 'border-transparent text-slate-400 hover:text-slate-600 hover:border-slate-200'
                             }`}
                         >
@@ -1708,7 +1717,8 @@ export default function HistorialAlumnoPage() {
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'actividad')}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
+                                            style={{ color: acento }}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('asistencias')}
@@ -1789,7 +1799,8 @@ export default function HistorialAlumnoPage() {
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'plan')}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
+                                            style={{ color: acento }}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('planes')}
@@ -1871,7 +1882,7 @@ export default function HistorialAlumnoPage() {
                                                             <span>{pct}%</span>
                                                         </div>
                                                         <div className="w-full bg-slate-200 rounded-full h-1.5">
-                                                            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                                                            <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: acento }} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1897,7 +1908,8 @@ export default function HistorialAlumnoPage() {
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'pago')}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
+                                            style={{ color: acento }}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('pagos')}
