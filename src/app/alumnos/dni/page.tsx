@@ -72,7 +72,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             if (error.message.includes('Asistencia ya registrada')) {
                 Swal.fire({ ...swalNotify, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
             } else {
-                await addIngreso({ dni: cleanDNI, actividad, fecha, presente: true, nombre: 'Alumno' });
+                await addIngreso({ dni: cleanDNI, actividad, fecha });
                 Swal.fire({ ...swalNotify, icon: 'info', title: '¡Hola!', text: `Tu asistencia para "${actividad}" se registrará al reconectarse.` });
             }
             dniRef.current = '';
