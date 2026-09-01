@@ -505,7 +505,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                             {item.icon}
                                         </div>
                                         <span
-                                            className="text-[9px] font-bold tracking-wide uppercase"
+                                            className="text-[9px] font-bold tracking-wide"
                                             style={{ color: active ? acento : 'rgba(255,255,255,0.35)' }}
                                         >
                                             {item.label}
@@ -529,7 +529,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                     )}
                                     {item.icon}
                                     <span
-                                        className="text-[9px] font-bold tracking-wide uppercase"
+                                        className="text-[9px] font-bold tracking-wide"
                                         style={active ? { color: acento } : undefined}
                                     >
                                         {item.label}
