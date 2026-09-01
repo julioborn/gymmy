@@ -7,6 +7,31 @@ export const dynamic = 'force-dynamic';
 
 const ROLES_VALIDOS = ['dueño', 'admin', 'profesor', 'registro'];
 
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = await requireGymAuth();
+    if (!auth.ok) return auth.error;
+    const { gimnasioId, role, id: myId } = auth.session.user;
+
+    // Admin/dueño can see any; staff can only see themselves
+    if (role !== 'dueño' && role !== 'admin' && params.id !== myId) {
+        return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
+    }
+
+    const { client, db } = await getDb();
+    try {
+        const emp = await db.collection('usuarios').findOne(
+            { _id: new ObjectId(params.id) },
+            { projection: { password: 0 } }
+        );
+        if (!emp || String(emp.gimnasioId) !== gimnasioId) {
+            return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
+        }
+        return NextResponse.json(emp);
+    } finally {
+        await client.close();
+    }
+}
+
 async function getDb() {
     const uri = process.env.USE_ATLAS === 'true' ? process.env.ATLAS_URI : process.env.MONGODB_URI;
     if (!uri) throw new Error('Falta URI de MongoDB');

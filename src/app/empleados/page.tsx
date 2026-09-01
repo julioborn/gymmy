@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 
@@ -321,9 +322,9 @@ export default function EmpleadosPage() {
                                 </div>
 
                                 {/* Info */}
-                                <div className="flex-1 min-w-0">
+                                <Link href={`/empleados/${emp._id}`} className="flex-1 min-w-0 group">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-slate-900 font-semibold text-sm">{displayName}</span>
+                                        <span className="text-slate-900 font-semibold text-sm group-hover:text-slate-600 transition-colors">{displayName}</span>
                                     </div>
                                     <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg mt-1 ${ROLE_BADGE[emp.role] ?? 'bg-slate-100 text-slate-600'}`}>
                                         {ROLE_LABEL[emp.role] ?? emp.role}
@@ -338,7 +339,7 @@ export default function EmpleadosPage() {
                                             {nacimiento}
                                         </p>
                                     )}
-                                </div>
+                                </Link>
 
                                 {/* Acciones */}
                                 <div className="flex items-center gap-1.5 shrink-0">
