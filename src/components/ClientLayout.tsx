@@ -488,10 +488,10 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className="relative flex-1 flex flex-col items-center justify-end pb-1.5 gap-1 active:opacity-80 transition-opacity"
+                                        className="relative flex-1 flex flex-col items-center justify-center h-full gap-1 active:opacity-80 transition-opacity"
                                     >
                                         <div
-                                            className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg mb-0.5"
+                                            className="w-12 h-12 rounded-full flex items-center justify-center"
                                             style={{
                                                 background: active ? acento : '#ffffff18',
                                                 border: `2px solid ${active ? acento : 'rgba(255,255,255,0.12)'}`,
