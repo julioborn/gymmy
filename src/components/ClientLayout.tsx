@@ -43,7 +43,6 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
     const [sessionReady, setSessionReady] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
 
     // ── Pull-to-refresh state ──
@@ -62,7 +61,6 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         busy: false,
     });
 
-    useEffect(() => { setMenuOpen(false); }, [pathname]);
 
     // Reset gestures on route change
     useEffect(() => {
@@ -329,60 +327,52 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             >
                 <div className="relative h-[75px] flex items-center justify-between px-4">
                     {showMenu ? (
-                        <div className="relative">
-                            <button
-                                onClick={() => setMenuOpen(p => !p)}
-                                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
-                                aria-label="Menú"
-                            >
-                                {menuOpen ? (
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                ) : (
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                    </svg>
-                                )}
-                            </button>
-
-                            {menuOpen && (
-                                <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                                    <div className="absolute left-0 top-[calc(100%+6px)] w-56 bg-slate-800 border border-white/10 rounded-2xl shadow-2xl z-[51] overflow-hidden">
-                                        <button
-                                            onClick={async () => {
-                                                setMenuOpen(false);
-                                                const result = await Swal.fire({
-                                                    title: 'Cerrar sesión',
-                                                    text: '¿Querés salir de tu cuenta?',
-                                                    icon: 'question',
-                                                    showCancelButton: true,
-                                                    confirmButtonText: 'Salir',
-                                                    cancelButtonText: 'Cancelar',
-                                                    confirmButtonColor: '#ef4444',
-                                                    cancelButtonColor: '#64748b',
-                                                    background: '#1e293b',
-                                                    color: '#f1f5f9',
-                                                    customClass: {
-                                                        popup: 'rounded-3xl',
-                                                        confirmButton: 'rounded-xl font-semibold',
-                                                        cancelButton: 'rounded-xl font-semibold',
-                                                    },
-                                                });
-                                                if (result.isConfirmed) signOut();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium"
-                                        >
-                                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                                            </svg>
-                                            Cerrar sesión
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <button
+                            onClick={async () => {
+                                const first = await Swal.fire({
+                                    title: 'Cerrar sesión',
+                                    text: '¿Querés salir de tu cuenta?',
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Salir',
+                                    cancelButtonText: 'Cancelar',
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#64748b',
+                                    background: '#1e293b',
+                                    color: '#f1f5f9',
+                                    customClass: {
+                                        popup: 'rounded-3xl',
+                                        confirmButton: 'rounded-xl font-semibold',
+                                        cancelButton: 'rounded-xl font-semibold',
+                                    },
+                                });
+                                if (!first.isConfirmed) return;
+                                const second = await Swal.fire({
+                                    title: '¿Seguro?',
+                                    text: 'Se cerrará la sesión en este dispositivo.',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Sí, cerrar',
+                                    cancelButtonText: 'Cancelar',
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#64748b',
+                                    background: '#1e293b',
+                                    color: '#f1f5f9',
+                                    customClass: {
+                                        popup: 'rounded-3xl',
+                                        confirmButton: 'rounded-xl font-semibold',
+                                        cancelButton: 'rounded-xl font-semibold',
+                                    },
+                                });
+                                if (second.isConfirmed) signOut();
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
+                            aria-label="Cerrar sesión"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                            </svg>
+                        </button>
                     ) : (
                         <div className="w-8" />
                     )}
