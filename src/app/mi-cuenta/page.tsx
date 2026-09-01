@@ -222,11 +222,9 @@ export default function MiCuentaPage() {
                 const inicio = new Date(data.fechaInicio);
                 const totalSemanas = data.totalSemanas || 5;
                 if (alumnoData && data.dias.length > 0) {
-                    const THREE_HOURS = 3 * 60 * 60 * 1000;
                     const sessionsDone = alumnoData.asistencia.filter(a => {
                         if (a.actividad !== 'Musculación' || !a.presente) return false;
-                        const f = new Date(a.fecha);
-                        return f >= inicio && (Date.now() - f.getTime()) >= THREE_HOURS;
+                        return new Date(a.fecha) >= inicio;
                     }).length;
                     const diasLen = data.dias.length;
                     setSelectedDia(sessionsDone % diasLen);
@@ -913,13 +911,10 @@ export default function MiCuentaPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-                        const nowTs = Date.now();
                         const sessionsDone = planInicio && alumno
                             ? alumno.asistencia.filter(a => {
                                 if (a.actividad !== 'Musculación' || !a.presente) return false;
-                                const f = new Date(a.fecha);
-                                return f >= planInicio && (nowTs - f.getTime()) >= THREE_HOURS_MS;
+                                return new Date(a.fecha) >= planInicio;
                               }).length
                             : 0;
                         const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
