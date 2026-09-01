@@ -222,10 +222,17 @@ export default function MiCuentaPage() {
                 const inicio = new Date(data.fechaInicio);
                 const totalSemanas = data.totalSemanas || 5;
                 if (alumnoData && data.dias.length > 0) {
-                    const sessionsDone = alumnoData.asistencia.filter(a => {
+                    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+                    const validSessions = alumnoData.asistencia.filter(a => {
                         if (a.actividad !== 'Musculación' || !a.presente) return false;
                         return new Date(a.fecha) >= inicio;
-                    }).length;
+                    });
+                    const allDone = validSessions.length;
+                    const last = validSessions.length > 0
+                        ? validSessions.reduce((l, a) => new Date(a.fecha) > new Date(l.fecha) ? a : l)
+                        : null;
+                    const lastRecent = last && (Date.now() - new Date(last.fecha).getTime()) < THREE_HOURS_MS;
+                    const sessionsDone = lastRecent ? allDone - 1 : allDone;
                     const diasLen = data.dias.length;
                     setSelectedDia(sessionsDone % diasLen);
                     setSelectedSemana(Math.min(Math.floor(sessionsDone / diasLen) + 1, totalSemanas));
@@ -911,12 +918,19 @@ export default function MiCuentaPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        const sessionsDone = planInicio && alumno
+                        const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+                        const validSessions = planInicio && alumno
                             ? alumno.asistencia.filter(a => {
                                 if (a.actividad !== 'Musculación' || !a.presente) return false;
                                 return new Date(a.fecha) >= planInicio;
-                              }).length
-                            : 0;
+                              })
+                            : [];
+                        const allSessionsDone = validSessions.length;
+                        const lastSession = validSessions.length > 0
+                            ? validSessions.reduce((l, a) => new Date(a.fecha) > new Date(l.fecha) ? a : l)
+                            : null;
+                        const lastRecent = lastSession && (Date.now() - new Date(lastSession.fecha).getTime()) < THREE_HOURS_MS;
+                        const sessionsDone = lastRecent ? allSessionsDone - 1 : allSessionsDone;
                         const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
                         const sessionBasedWeekNum = planEj.dias.length > 0
                             ? Math.min(Math.floor(sessionsDone / planEj.dias.length) + 1, totalSem)
