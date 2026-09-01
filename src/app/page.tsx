@@ -325,7 +325,7 @@ export default function HomePage() {
                     ))}
                     {esProfesor && session.user?.id && (
                         <Link
-                            href={`/empleados/${session.user.id}`}
+                            href="/mi-perfil#plan"
                             className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity"
                         >
                             <div className="w-14 h-14 rounded-full bg-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.18)] flex items-center justify-center">
