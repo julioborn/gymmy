@@ -32,6 +32,8 @@ type PlanState = {
     nombre: string;
     categoria: string;
     descripcion: string;
+    totalSemanas: number;
+    fechaInicio: string;
     entradaCalor: { ejercicios: { nombre: string; notas: string }[] };
     dias: DiaAlumno[];
 };
@@ -80,10 +82,14 @@ const emptyDia = (): DiaAlumno => ({
     _collapsed: false,
 });
 
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
 const plantillaToAlumnoPlan = (p: Plantilla): PlanState => ({
     nombre: p.nombre,
     categoria: p.categoria,
     descripcion: p.descripcion,
+    totalSemanas: 4,
+    fechaInicio: todayStr(),
     entradaCalor: p.entradaCalor,
     dias: p.dias.map((d) => ({
         titulo: d.titulo,
@@ -133,6 +139,10 @@ export default function PlanAlumnoPage() {
                 nombre: planData.nombre,
                 categoria: planData.categoria,
                 descripcion: planData.descripcion,
+                totalSemanas: planData.totalSemanas || 4,
+                fechaInicio: planData.fechaInicio
+                    ? new Date(planData.fechaInicio).toISOString().slice(0, 10)
+                    : todayStr(),
                 entradaCalor: planData.entradaCalor,
                 dias: (planData.dias || []).map((d: DiaAlumno) => ({ ...d, _collapsed: true })),
             });
@@ -157,6 +167,8 @@ export default function PlanAlumnoPage() {
                 nombre: plan.nombre,
                 categoria: plan.categoria,
                 descripcion: plan.descripcion,
+                totalSemanas: plan.totalSemanas,
+                fechaInicio: plan.fechaInicio,
                 entradaCalor: plan.entradaCalor,
                 dias: plan.dias.map(({ _collapsed, ...d }) => d),
             };
@@ -322,7 +334,7 @@ export default function PlanAlumnoPage() {
                                 Usar plantilla
                             </button>
                             <button
-                                onClick={() => setPlan({ nombre: '', categoria: '', descripcion: '', entradaCalor: { ejercicios: [] }, dias: [emptyDia()] })}
+                                onClick={() => setPlan({ nombre: '', categoria: '', descripcion: '', totalSemanas: 4, fechaInicio: todayStr(), entradaCalor: { ejercicios: [] }, dias: [emptyDia()] })}
                                 className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
                             >
                                 Crear desde cero
@@ -367,6 +379,28 @@ export default function PlanAlumnoPage() {
                                 rows={2}
                                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 resize-none"
                             />
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Fecha de inicio</label>
+                                    <input
+                                        type="date"
+                                        value={plan.fechaInicio}
+                                        onChange={(e) => setPlan((p) => p ? { ...p, fechaInicio: e.target.value } : p)}
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                    />
+                                </div>
+                                <div className="w-28">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Semanas</label>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={plan.totalSemanas}
+                                        onChange={(e) => setPlan((p) => p ? { ...p, totalSemanas: Number(e.target.value) } : p)}
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Entrada en calor */}

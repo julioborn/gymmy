@@ -24,6 +24,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const body = await req.json();
 
+    // Normalize fechaInicio to midnight UTC so same-day sessions are always included
+    if (body.fechaInicio) {
+        const d = body.fechaInicio as string;
+        body.fechaInicio = new Date(d.slice(0, 10) + 'T00:00:00Z');
+    }
+
     await connectMongoDB();
     const plan = await PlanAlumno.findOneAndUpdate(
         { _id: params.id, gimnasioId },
