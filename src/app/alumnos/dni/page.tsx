@@ -58,13 +58,25 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 body: JSON.stringify(ingreso),
             });
             if (!asistenciaResponse.ok) throw new Error(await asistenciaResponse.text());
+            const actividadColor = actividad === 'Musculación' ? acento2 : acento;
             Swal.fire({
-                ...swalNotify,
-                icon: 'success',
-                title: `¡Hola ${alumno.nombre}!`,
-                text: `Asistencia de ${actividad} registrada.`,
+                customClass: { popup: 'swal-dni-success' },
+                buttonsStyling: false,
+                title: `¡Hola, ${alumno.nombre}!`,
+                html: `
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="23" stroke="${actividadColor}" stroke-width="2" stroke-opacity="0.4"/>
+                            <path d="M14 24.5L21 31.5L34 17" stroke="${actividadColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span style="display:inline-flex;align-items:center;padding:6px 20px;background:${actividadColor}22;color:${actividadColor};border-radius:999px;font-weight:700;font-size:0.9rem;border:1.5px solid ${actividadColor}44;letter-spacing:0.01em">${actividad}</span>
+                        <span style="color:rgba(255,255,255,0.3);font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase">Asistencia registrada</span>
+                    </div>
+                `,
                 showConfirmButton: false,
                 timer: 4000,
+                timerProgressBar: true,
+                backdrop: 'rgba(0,0,0,0.85)',
             });
             dniRef.current = '';
             setDni('');

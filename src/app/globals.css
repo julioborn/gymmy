@@ -337,6 +337,53 @@ body {
 .swal2-container.swal2-backdrop-show { animation-duration: 0.1s  !important; }
 .swal2-container.swal2-backdrop-hide { animation-duration: 0.08s !important; }
 
+/* ═══════════════════════════════════════════
+   SweetAlert2 – DNI Registration Success
+═══════════════════════════════════════════ */
+.swal-dni-success {
+  background: #1a1a1a !important;
+  border: 1.5px solid rgba(255,255,255,0.07) !important;
+  border-radius: 1.75rem !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-shadow: 0 30px 60px -10px rgba(0,0,0,0.9) !important;
+  min-width: 300px !important;
+}
+
+.swal-dni-success .swal2-title {
+  background: transparent !important;
+  color: #ffffff !important;
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  padding: 2rem 1.5rem 0.25rem !important;
+  text-align: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.swal-dni-success .swal2-html-container {
+  color: rgba(255,255,255,0.6) !important;
+  padding: 0.25rem 1.5rem 2rem !important;
+  margin: 0 !important;
+  text-align: center !important;
+  font-size: 1rem !important;
+}
+
+.swal-dni-success .swal2-icon {
+  display: none !important;
+}
+
+.swal-dni-success .swal2-timer-progress-bar-container {
+  border-radius: 0 0 1.75rem 1.75rem !important;
+  overflow: hidden !important;
+}
+
+.swal-dni-success .swal2-timer-progress-bar {
+  background: rgba(255,255,255,0.18) !important;
+  height: 3px !important;
+}
+
 /* Mobile */
 @media (max-width: 520px) {
   .swal-gymmy .swal2-actions {
