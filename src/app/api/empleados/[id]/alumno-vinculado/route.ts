@@ -61,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         const alumnoDoc = {
             nombre: emp.nombre || 'Profesor',
             apellido: emp.apellido || '',
-            fechaNacimiento: new Date('1990-01-01'),
+            fechaNacimiento: emp.fechaNacimiento || new Date('2000-01-01'),
             dni: emp.dni || '00000000',
             asistencia: [],
             pagos: [],
