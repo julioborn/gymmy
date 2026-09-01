@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useFCM } from '@/hooks/useFCM';
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import Swal from 'sweetalert2';
+import { swalDanger } from '@/utils/swalConfig';
 
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
@@ -330,39 +331,23 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <button
                             onClick={async () => {
                                 const first = await Swal.fire({
+                                    ...swalDanger,
                                     title: 'Cerrar sesión',
                                     text: '¿Querés salir de tu cuenta?',
                                     icon: 'question',
                                     showCancelButton: true,
                                     confirmButtonText: 'Salir',
                                     cancelButtonText: 'Cancelar',
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#64748b',
-                                    background: '#1e293b',
-                                    color: '#f1f5f9',
-                                    customClass: {
-                                        popup: 'rounded-3xl',
-                                        confirmButton: 'rounded-xl font-semibold',
-                                        cancelButton: 'rounded-xl font-semibold',
-                                    },
                                 });
                                 if (!first.isConfirmed) return;
                                 const second = await Swal.fire({
+                                    ...swalDanger,
                                     title: '¿Seguro?',
                                     text: 'Se cerrará la sesión en este dispositivo.',
                                     icon: 'warning',
                                     showCancelButton: true,
                                     confirmButtonText: 'Sí, cerrar',
                                     cancelButtonText: 'Cancelar',
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#64748b',
-                                    background: '#1e293b',
-                                    color: '#f1f5f9',
-                                    customClass: {
-                                        popup: 'rounded-3xl',
-                                        confirmButton: 'rounded-xl font-semibold',
-                                        cancelButton: 'rounded-xl font-semibold',
-                                    },
                                 });
                                 if (second.isConfirmed) signOut();
                             }}
