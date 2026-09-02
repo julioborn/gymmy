@@ -324,7 +324,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
                                 style={isActive
                                     ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
-                                    : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }
+                                    : { background: '#ffffff', color: '#111111' }
                                 }
                             >
                                 {label}
