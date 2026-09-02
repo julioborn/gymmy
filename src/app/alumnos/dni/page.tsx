@@ -30,9 +30,30 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const keyboardRef = useRef<any>(null);
+    const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const INACTIVITY_MS = 8000;
+
+    const clearDNI = () => {
+        dniRef.current = '';
+        setDni('');
+        if (keyboardRef.current) keyboardRef.current.setInput('');
+    };
+
+    const resetInactivityTimer = () => {
+        if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+        inactivityTimer.current = setTimeout(clearDNI, INACTIVITY_MS);
+    };
+
+    const cancelInactivityTimer = () => {
+        if (inactivityTimer.current) {
+            clearTimeout(inactivityTimer.current);
+            inactivityTimer.current = null;
+        }
+    };
 
     const handleKeyPress = (button: string) => {
         if (button === '{submit}') {
+            cancelInactivityTimer();
             handleSubmit(new Event('submit') as unknown as React.FormEvent);
             return;
         }
@@ -48,8 +69,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
         const formatted = formatDNIWithDots(newDigits);
         dniRef.current = formatted;
         setDni(formatted);
-        // Sync internal keyboard state with raw digits (no dots)
         if (keyboardRef.current) keyboardRef.current.setInput(newDigits);
+        // Reiniciar timer de inactividad solo si hay dígitos
+        if (newDigits.length > 0) resetInactivityTimer();
+        else cancelInactivityTimer();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -94,9 +117,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 timerProgressBar: true,
                 backdrop: 'rgba(0,0,0,0.55)',
             });
-            dniRef.current = '';
-            setDni('');
-            if (keyboard) keyboard.setInput('');
+            clearDNI();
+            cancelInactivityTimer();
         } catch (error: any) {
             if (error.message.includes('Asistencia ya registrada')) {
                 Swal.fire({ ...swalNotify, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
@@ -104,9 +126,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 await addIngreso({ dni: cleanDNI, actividad, fecha });
                 Swal.fire({ ...swalNotify, icon: 'info', title: '¡Hola!', text: `Tu asistencia para "${actividad}" se registrará al reconectarse.` });
             }
-            dniRef.current = '';
-            setDni('');
-            if (keyboard) keyboard.setInput('');
+            clearDNI();
+            cancelInactivityTimer();
         } finally {
             isLoadingRef.current = false;
             setIsLoading(false);
@@ -142,7 +163,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 if (d.temaAcento2) setAcento2(d.temaAcento2);
             })
             .catch(() => {});
-        return () => window.removeEventListener('online', syncIngresosPendientes);
+        return () => {
+            window.removeEventListener('online', syncIngresosPendientes);
+            cancelInactivityTimer();
+        };
     }, []);
 
     const ACTIVIDADES = [
