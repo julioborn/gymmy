@@ -68,8 +68,8 @@
   background: #e2e8f0 !important;
 }
 
-/* ── Tablet vertical ── */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+/* ── Tablet (portrait y landscape) ── */
+@media (min-width: 640px) {
   body, html { overflow: hidden; height: 100%; }
 
   .my-custom-keyboard .hg-button {
