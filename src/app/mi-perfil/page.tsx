@@ -251,6 +251,13 @@ export default function MiPerfilPage() {
         return (ej[map[sem]] as string) || '';
     }
 
+    function parseSeries(semVal: string): number {
+        if (!semVal) return 1;
+        const match = semVal.match(/(\d+)\s*[xX]/);
+        if (match) return Math.min(Math.max(parseInt(match[1]), 1), 6);
+        return 1;
+    }
+
     useEffect(() => {
         if (!myId) return;
         fetch('/api/gimnasio/tema').then(r => r.json()).then(d => {
@@ -892,29 +899,52 @@ export default function MiPerfilPage() {
                                                             <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
+                                                                    const kgDisplay = kgVal
+                                                                        ? kgVal.split(',').map(v => v.trim()).filter(Boolean).join(' / ')
+                                                                        : '';
                                                                     return (
-                                                                        <span className={`text-sm font-bold ${kgVal ? 'text-emerald-600' : 'text-slate-200'}`}>
-                                                                            {kgVal || '—'}
+                                                                        <span className={`text-xs font-bold text-center leading-tight ${kgDisplay ? 'text-emerald-600' : 'text-slate-200'}`}>
+                                                                            {kgDisplay || '—'}
                                                                         </span>
                                                                     );
                                                                 })()}
                                                             </div>
                                                         </button>
-                                                        {isExpanded && (
-                                                            <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-black/[0.06] space-y-3">
-                                                                {ej.notas && (
-                                                                    <p className="text-xs text-slate-500 italic">{ej.notas}</p>
-                                                                )}
-                                                                <div className="flex flex-col gap-2">
+                                                        {isExpanded && (() => {
+                                                            const seriesCount = parseSeries(semVal);
+                                                            const kgRaw = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
+                                                            const kgParts = kgRaw.split(',').map(v => v.trim());
+                                                            while (kgParts.length < seriesCount) kgParts.push('');
+                                                            return (
+                                                                <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-black/[0.06] space-y-3">
+                                                                    {ej.notas && (
+                                                                        <p className="text-xs text-slate-500 italic">{ej.notas}</p>
+                                                                    )}
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Mis KG</label>
-                                                                        <input
-                                                                            type="number"
-                                                                            inputMode="numeric"
-                                                                            value={(ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
-                                                                            onChange={(e) => updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
-                                                                        />
+                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">
+                                                                            Mis KG{seriesCount > 1 && <span className="normal-case font-normal"> · {seriesCount} series</span>}
+                                                                        </label>
+                                                                        <div className={`grid gap-2 ${seriesCount === 1 ? 'grid-cols-1' : seriesCount <= 4 ? `grid-cols-${seriesCount}` : 'grid-cols-4'}`}>
+                                                                            {Array.from({ length: seriesCount }, (_, si) => (
+                                                                                <div key={si} className="flex flex-col gap-0.5">
+                                                                                    {seriesCount > 1 && (
+                                                                                        <span className="text-[10px] font-bold text-slate-400 text-center">S{si + 1}</span>
+                                                                                    )}
+                                                                                    <input
+                                                                                        type="number"
+                                                                                        inputMode="decimal"
+                                                                                        placeholder="kg"
+                                                                                        value={kgParts[si] || ''}
+                                                                                        onChange={(e) => {
+                                                                                            const newParts = [...kgParts];
+                                                                                            newParts[si] = e.target.value;
+                                                                                            updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, newParts.join(','));
+                                                                                        }}
+                                                                                        className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                                    />
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
                                                                     </div>
                                                                     <div>
                                                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
@@ -925,16 +955,16 @@ export default function MiPerfilPage() {
                                                                             className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                                                                         />
                                                                     </div>
+                                                                    <button
+                                                                        onClick={() => handleSaveEjercicio(eIdx)}
+                                                                        disabled={savingEj === eIdx}
+                                                                        className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-slate-900 text-white hover:bg-slate-700 active:bg-slate-800"
+                                                                    >
+                                                                        {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
+                                                                    </button>
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => handleSaveEjercicio(eIdx)}
-                                                                    disabled={savingEj === eIdx}
-                                                                    className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-slate-900 text-white hover:bg-slate-700 active:bg-slate-800"
-                                                                >
-                                                                    {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                                            );
+                                                        })()}
                                                     </div>
                                                 );
                                             })}
