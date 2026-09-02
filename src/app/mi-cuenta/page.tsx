@@ -326,6 +326,7 @@ export default function MiCuentaPage() {
 
     function parseSeries(semVal: string): number {
         if (!semVal) return 1;
+        if (semVal.includes('/')) return Math.min(semVal.split('/').length, 6);
         const match = semVal.match(/(\d+)\s*[xX]/);
         if (match) return Math.min(Math.max(parseInt(match[1]), 1), 6);
         return 1;
