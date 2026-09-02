@@ -155,7 +155,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
         <div
             className="fixed left-0 right-0 bottom-0 flex flex-col overflow-hidden"
             style={{
-                top: 'calc(75px + env(safe-area-inset-top, 0px))',
+                top: 'calc(88px + env(safe-area-inset-top, 0px))',
                 background: '#111',
                 touchAction: 'none',
             }}
@@ -169,27 +169,46 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
             <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-4 sm:pt-3 gap-2 sm:gap-2" style={{ height: '100%' }}>
 
-                {/* Label */}
-                <p className="text-center text-white/30 text-[11px] font-bold uppercase tracking-widest flex-none">
-                    Ingresá tu DNI
-                </p>
-
-                {/* Display DNI */}
+                {/* Display DNI — pantalla digital */}
                 <div
-                    className="rounded-2xl flex items-center justify-center flex-none"
+                    className="rounded-2xl flex-none relative overflow-hidden flex items-center justify-center"
                     style={{
-                        height: 68,
-                        background: 'rgba(255,255,255,0.06)',
-                        border: '1.5px solid rgba(255,255,255,0.10)',
+                        height: 96,
+                        background: '#080808',
+                        border: '1.5px solid rgba(255,255,255,0.06)',
+                        boxShadow: 'inset 0 3px 16px rgba(0,0,0,0.95), inset 0 -1px 4px rgba(255,255,255,0.03)',
                     }}
                 >
+                    {/* Scanlines */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                        backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0px, rgba(255,255,255,0.014) 1px, transparent 1px, transparent 5px)',
+                    }} />
+                    {/* Label */}
+                    <span className="absolute top-2 left-3.5" style={{
+                        fontSize: 9, color: 'rgba(255,255,255,0.18)', fontFamily: 'monospace',
+                        fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}>DNI</span>
+                    {/* Número */}
                     {dni ? (
-                        <span className="text-white font-bold tracking-[0.18em]" style={{ fontSize: 34, fontFamily: "'Courier New', monospace" }}>
+                        <span style={{
+                            fontSize: 46,
+                            fontFamily: "'Courier New', 'Lucida Console', monospace",
+                            fontWeight: 700,
+                            letterSpacing: '0.2em',
+                            color: '#f1f5f9',
+                            textShadow: '0 0 18px rgba(255,255,255,0.35), 0 0 6px rgba(255,255,255,0.15)',
+                        }}>
                             {dni}
                         </span>
                     ) : (
-                        <span className="text-white/15 font-bold tracking-[0.18em]" style={{ fontSize: 34, fontFamily: "'Courier New', monospace" }}>
-                            — — — — — —
+                        <span style={{
+                            fontSize: 46,
+                            fontFamily: "'Courier New', 'Lucida Console', monospace",
+                            fontWeight: 700,
+                            letterSpacing: '0.2em',
+                            color: 'rgba(255,255,255,0.07)',
+                        }}>
+                            _ _ _ _ _ _ _ _
                         </span>
                     )}
                 </div>

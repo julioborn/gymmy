@@ -345,7 +345,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
                 style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
             >
-                <div className="relative h-[75px] flex items-center justify-between px-4">
+                <div className="relative h-[88px] flex items-center justify-between px-4">
                     {showMenu ? (
                         <button
                             onClick={async () => {
@@ -390,8 +390,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                 : 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png'}
                             alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'Gymmy'}
                             style={{
-                                maxHeight: logoShown ? 68 : 38,
-                                maxWidth: logoShown ? 220 : 120,
+                                maxHeight: logoShown ? 80 : 42,
+                                maxWidth: logoShown ? 240 : 130,
                                 objectFit: 'contain',
                                 transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
                                 opacity: logoAnimating ? 0 : 1,
@@ -475,7 +475,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             <main
                 className="flex-1 p-3 bg-slate-50"
                 style={{
-                    marginTop: isRegistroPage ? 0 : 'calc(75px + env(safe-area-inset-top, 0px))',
+                    marginTop: isRegistroPage ? 0 : 'calc(88px + env(safe-area-inset-top, 0px))',
                     paddingBottom: (showNav && !isRegistroPage) ? 'calc(5rem + env(safe-area-inset-bottom, 0px))' : undefined,
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
