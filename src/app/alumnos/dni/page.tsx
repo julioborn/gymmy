@@ -151,7 +151,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            <div className="flex flex-col w-full max-w-sm sm:max-w-xl md:max-w-2xl mx-auto px-4 pt-5 gap-3" style={{ height: '100%' }}>
+            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-4 sm:pt-3 gap-2 sm:gap-2" style={{ height: '100%' }}>
 
                 {/* Label */}
                 <p className="text-center text-white/30 text-[11px] font-bold uppercase tracking-widest flex-none">

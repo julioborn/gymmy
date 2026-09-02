@@ -72,12 +72,26 @@
 @media (min-width: 640px) {
   body, html { overflow: hidden; height: 100%; }
 
+  .my-custom-keyboard.hg-theme-default {
+    padding: 6px !important;
+  }
+
+  .my-custom-keyboard .hg-row {
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
   .my-custom-keyboard .hg-button {
-    font-size: 28px !important;
+    font-size: 32px !important;
     border-radius: 14px !important;
   }
 
+  .my-custom-keyboard .hg-button[data-skbtn="{bksp}"] {
+    font-size: 24px !important;
+  }
+
   .my-custom-keyboard .hg-button[data-skbtn="{submit}"] {
-    font-size: 18px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
   }
 }
