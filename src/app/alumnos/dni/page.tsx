@@ -198,18 +198,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     className="rounded-2xl flex-none relative overflow-hidden flex items-center justify-center"
                     style={{
                         height: 96,
-                        background: '#080808',
-                        border: '1.5px solid rgba(255,255,255,0.06)',
-                        boxShadow: 'inset 0 3px 16px rgba(0,0,0,0.95), inset 0 -1px 4px rgba(255,255,255,0.03)',
+                        background: '#ffffff',
+                        border: '1.5px solid rgba(0,0,0,0.10)',
+                        boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08)',
                     }}
                 >
-                    {/* Scanlines */}
-                    <div className="absolute inset-0 pointer-events-none" style={{
-                        backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0px, rgba(255,255,255,0.014) 1px, transparent 1px, transparent 5px)',
-                    }} />
                     {/* Label */}
                     <span className="absolute top-2 left-3.5" style={{
-                        fontSize: 9, color: 'rgba(255,255,255,0.18)', fontFamily: 'monospace',
+                        fontSize: 9, color: 'rgba(0,0,0,0.25)', fontFamily: 'monospace',
                         fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                     }}>DNI</span>
                     {/* Número */}
@@ -217,10 +213,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         <span style={{
                             fontSize: 46,
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
-                            fontWeight: 600,
+                            fontWeight: 700,
                             letterSpacing: '0.18em',
-                            color: '#f1f5f9',
-                            textShadow: '0 0 18px rgba(255,255,255,0.35), 0 0 6px rgba(255,255,255,0.15)',
+                            color: '#111111',
                         }}>
                             {dni}
                         </span>
@@ -230,7 +225,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
                             fontWeight: 600,
                             letterSpacing: '0.18em',
-                            color: 'rgba(255,255,255,0.07)',
+                            color: 'rgba(0,0,0,0.10)',
                         }}>
                             _ _ _ _ _ _ _ _
                         </span>
