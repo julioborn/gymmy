@@ -91,8 +91,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
         const fecha = new Date().toISOString();
         try {
             const response = await fetch(`/api/alumnos?dni=${cleanDNI}`);
-            if (!response.ok) throw new Error('Error al buscar alumno');
+            if (!response.ok) throw new Error('red');
             const alumno = await response.json();
+            if (!alumno) throw new Error('no_encontrado');
             const ingreso = { dni: cleanDNI, actividad, fecha, presente: true, nombre: alumno.nombre };
             const asistenciaResponse = await fetch(`/api/asistencias/${alumno._id}`, {
                 method: 'POST',
@@ -123,11 +124,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
             clearDNI();
             cancelInactivityTimer();
         } catch (error: any) {
-            if (error.message.includes('Asistencia ya registrada')) {
+            if (error.message === 'no_encontrado') {
+                Swal.fire({ ...swalNotify, icon: 'warning', title: 'No encontrado', text: 'No hay ningún alumno registrado con ese DNI.' });
+            } else if (error.message.includes('Asistencia ya registrada')) {
                 Swal.fire({ ...swalNotify, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
             } else {
                 await addIngreso({ dni: cleanDNI, actividad, fecha });
-                Swal.fire({ ...swalNotify, icon: 'info', title: '¡Hola!', text: `Tu asistencia para "${actividad}" se registrará al reconectarse.` });
+                Swal.fire({ ...swalNotify, icon: 'info', title: 'Sin conexión', text: `La asistencia para "${actividad}" se registrará al reconectarse.` });
             }
             clearDNI();
             cancelInactivityTimer();
