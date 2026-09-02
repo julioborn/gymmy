@@ -38,16 +38,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [acento2, setAcento2] = useState('#22c55e');
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
-    const [isFullscreen, setIsFullscreen] = useState(false);
-
-    const enterFullscreen = () => {
-        try {
-            const el = document.documentElement as any;
-            if (!document.fullscreenElement) {
-                (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen)?.call(el);
-            }
-        } catch {}
-    };
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -103,7 +93,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const handleKeyPress = (button: string) => {
-        enterFullscreen();
         playClick();
         if (button === '{submit}') {
             cancelInactivityTimer();
@@ -222,11 +211,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
             })
             .catch(() => {});
 
-        // Fullscreen
-        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
-        document.addEventListener('fullscreenchange', onFsChange);
-        document.addEventListener('webkitfullscreenchange', onFsChange);
-
         // Screen Wake Lock — mantiene la pantalla encendida
         let wakeLock: any = null;
         const requestWakeLock = async () => {
@@ -245,8 +229,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
         return () => {
             window.removeEventListener('online', syncIngresosPendientes);
             document.removeEventListener('visibilitychange', onVisibilityChange);
-            document.removeEventListener('fullscreenchange', onFsChange);
-            document.removeEventListener('webkitfullscreenchange', onFsChange);
             wakeLock?.release().catch(() => {});
             cancelInactivityTimer();
         };
@@ -267,28 +249,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
         >
-            {/* Overlay pantalla completa — solo visible si no está en fullscreen */}
-            {!isFullscreen && (
-                <div
-                    className="absolute inset-0 z-40 flex flex-col items-center justify-end pb-10 cursor-pointer"
-                    style={{ background: 'transparent' }}
-                    onClick={enterFullscreen}
-                >
-                    <div style={{
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        borderRadius: '999px',
-                        padding: '8px 20px',
-                        color: 'rgba(255,255,255,0.35)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.06em',
-                        pointerEvents: 'none',
-                    }}>
-                        TOCÁ PARA PANTALLA COMPLETA
-                    </div>
-                </div>
-            )}
-
             {/* Spinner de carga */}
             {isLoading && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.65)' }}>
@@ -395,7 +355,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             <button
                                 key={label}
                                 type="button"
-                                onClick={() => { enterFullscreen(); playClick(); setActividad(label); }}
+                                onClick={() => { playClick(); setActividad(label); }}
                                 disabled={isLoading}
                                 className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
                                 style={isActive
