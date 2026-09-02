@@ -55,6 +55,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const playClick = () => {
+        try { (navigator as any).vibrate?.(40); } catch {}
         try {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new Ctx();
@@ -71,7 +72,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
             osc.stop(ctx.currentTime + 0.05);
             osc.onended = () => ctx.close();
         } catch {}
-        try { (navigator as any).vibrate?.(18); } catch {}
     };
 
     const handleKeyPress = (button: string) => {
