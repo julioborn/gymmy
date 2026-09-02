@@ -2,7 +2,7 @@
 .my-custom-keyboard.hg-theme-default {
   background: transparent !important;
   border-radius: 0 !important;
-  padding: 10px !important;
+  padding: 16px !important;
   box-shadow: none !important;
   border: none !important;
   height: 100% !important;
@@ -18,8 +18,8 @@
 
 .my-custom-keyboard .hg-row {
   flex: 1 !important;
-  gap: 8px !important;
-  margin-bottom: 8px !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
 }
 
 .my-custom-keyboard .hg-row:last-child {
@@ -77,12 +77,12 @@
   body, html { overflow: hidden; height: 100%; }
 
   .my-custom-keyboard.hg-theme-default {
-    padding: 6px !important;
+    padding: 12px !important;
   }
 
   .my-custom-keyboard .hg-row {
-    gap: 6px !important;
-    margin-bottom: 6px !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
   }
 
   .my-custom-keyboard .hg-button {
