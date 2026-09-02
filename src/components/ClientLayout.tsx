@@ -237,7 +237,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const role = session?.user?.role;
     const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta';
     const isLoginPage = pathname.startsWith('/login');
-    const isRegistroPage = pathname.startsWith('/registro/');
+    const isRegistroPage = pathname.startsWith('/registro/') || pathname === '/alumnos/dni';
     const showNav = !isLoginPage && !isStaticPage && !isRegistroPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
     const showMenu = !isLoginPage && !isStaticPage && !!session;
 

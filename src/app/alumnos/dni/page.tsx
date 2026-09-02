@@ -17,6 +17,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [keyboard, setKeyboard] = useState<any>(null);
     const [acento, setAcento] = useState('#f97316');
     const [acento2, setAcento2] = useState('#22c55e');
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+    const [gymNombre, setGymNombre] = useState<string>('');
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -161,6 +163,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
             .then(d => {
                 if (d.temaAcento) setAcento(d.temaAcento);
                 if (d.temaAcento2) setAcento2(d.temaAcento2);
+                if (d.logoUrl) setLogoUrl(d.logoUrl);
+                if (d.nombre) setGymNombre(d.nombre);
             })
             .catch(() => {});
         return () => {
@@ -175,13 +179,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
     ] as const;
 
     return (
-        /* Ocupa todo el espacio bajo el header, sin scroll, fondo negro */
         <div
-            className="fixed left-0 right-0 bottom-0 flex flex-col overflow-hidden"
+            className="fixed inset-0 flex flex-col overflow-hidden"
             style={{
-                top: 'calc(88px + env(safe-area-inset-top, 0px))',
                 background: '#111',
                 touchAction: 'none',
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
         >
             {/* Spinner de carga */}
@@ -191,13 +195,27 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-4 sm:pt-3 gap-2 sm:gap-2" style={{ height: '100%' }}>
+            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-3 gap-2" style={{ height: '100%' }}>
+
+                {/* Logo del gimnasio */}
+                <div className="flex items-center justify-center flex-none" style={{ height: 80 }}>
+                    {logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={logoUrl}
+                            alt={gymNombre || 'Gimnasio'}
+                            style={{ maxHeight: 80, maxWidth: '70%', objectFit: 'contain' }}
+                        />
+                    ) : (
+                        <span className="text-white font-bold text-2xl tracking-tight">{gymNombre}</span>
+                    )}
+                </div>
 
                 {/* Display DNI — pantalla digital */}
                 <div
                     className="rounded-2xl flex-none relative overflow-hidden flex items-center justify-center"
                     style={{
-                        height: 96,
+                        height: 76,
                         background: '#ffffff',
                         border: '1.5px solid rgba(0,0,0,0.10)',
                         boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08)',
@@ -211,7 +229,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     {/* Número */}
                     {dni ? (
                         <span style={{
-                            fontSize: 46,
+                            fontSize: 38,
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
                             fontWeight: 700,
                             letterSpacing: '0.18em',
@@ -221,7 +239,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         </span>
                     ) : (
                         <span style={{
-                            fontSize: 46,
+                            fontSize: 38,
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
                             fontWeight: 600,
                             letterSpacing: '0.18em',
@@ -242,7 +260,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 type="button"
                                 onClick={() => setActividad(label)}
                                 disabled={isLoading}
-                                className="h-12 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                className="h-16 rounded-xl text-base font-bold transition-all active:scale-95"
                                 style={isActive
                                     ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
                                     : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }
