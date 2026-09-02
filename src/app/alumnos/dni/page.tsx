@@ -1,7 +1,25 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
-import { swalNotify, swalDanger } from '@/utils/swalConfig';
+const swalDni = {
+    customClass: {
+        popup: 'swal-dni-alert',
+        confirmButton: 'sg-btn sg-btn-confirm',
+        cancelButton: 'sg-btn sg-btn-cancel',
+    },
+    buttonsStyling: false,
+    backdrop: 'rgba(0,0,0,0.6)',
+};
+
+const swalDniDanger = {
+    customClass: {
+        popup: 'swal-dni-alert',
+        confirmButton: 'sg-btn sg-btn-danger',
+        cancelButton: 'sg-btn sg-btn-cancel',
+    },
+    buttonsStyling: false,
+    backdrop: 'rgba(0,0,0,0.6)',
+};
 import { signOut } from 'next-auth/react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -104,7 +122,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
         if (isLoadingRef.current) return;
         const cleanDNI = dniRef.current.replace(/\./g, '');
         if (cleanDNI.length < 7 || cleanDNI.length > 8) {
-            Swal.fire({ ...swalNotify, icon: 'error', title: 'DNI inválido', text: 'El DNI debe tener 7 u 8 dígitos.' });
+            Swal.fire({ ...swalDni, icon: 'error', title: 'DNI inválido', text: 'El DNI debe tener 7 u 8 dígitos.' });
             return;
         }
         isLoadingRef.current = true;
@@ -146,12 +164,12 @@ export default function RegistrarAsistenciaPorDNIPage() {
             cancelInactivityTimer();
         } catch (error: any) {
             if (error.message === 'no_encontrado') {
-                Swal.fire({ ...swalNotify, icon: 'warning', title: 'No encontrado', text: 'No hay ningún alumno registrado con ese DNI.' });
+                Swal.fire({ ...swalDni, icon: 'warning', title: 'No encontrado', text: 'No hay ningún alumno registrado con ese DNI.' });
             } else if (error.message.includes('Asistencia ya registrada')) {
-                Swal.fire({ ...swalNotify, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
+                Swal.fire({ ...swalDni, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
             } else {
                 await addIngreso({ dni: cleanDNI, actividad, fecha });
-                Swal.fire({ ...swalNotify, icon: 'info', title: 'Sin conexión', text: `La asistencia para "${actividad}" se registrará al reconectarse.` });
+                Swal.fire({ ...swalDni, icon: 'info', title: 'Sin conexión', text: `La asistencia para "${actividad}" se registrará al reconectarse.` });
             }
             clearDNI();
             cancelInactivityTimer();
@@ -224,7 +242,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             <button
                 onClick={async () => {
                     const { value: password, isConfirmed } = await Swal.fire({
-                        ...swalDanger,
+                        ...swalDniDanger,
                         title: 'Cerrar sesión',
                         input: 'password',
                         inputLabel: 'Contraseña',
@@ -242,7 +260,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     });
                     const { ok } = await res.json();
                     if (!ok) {
-                        Swal.fire({ ...swalDanger, icon: 'error', title: 'Contraseña incorrecta', text: 'No se pudo cerrar la sesión.' });
+                        Swal.fire({ ...swalDniDanger, icon: 'error', title: 'Contraseña incorrecta', text: 'No se pudo cerrar la sesión.' });
                         return;
                     }
                     signOut();
