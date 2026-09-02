@@ -210,8 +210,26 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 if (d.nombre) setGymNombre(d.nombre);
             })
             .catch(() => {});
+
+        // Screen Wake Lock — mantiene la pantalla encendida
+        let wakeLock: any = null;
+        const requestWakeLock = async () => {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await (navigator as any).wakeLock.request('screen');
+                }
+            } catch {}
+        };
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') requestWakeLock();
+        };
+        requestWakeLock();
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
         return () => {
             window.removeEventListener('online', syncIngresosPendientes);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            wakeLock?.release().catch(() => {});
             cancelInactivityTimer();
         };
     }, []);
