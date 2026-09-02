@@ -54,7 +54,28 @@ export default function RegistrarAsistenciaPorDNIPage() {
         }
     };
 
+    const playClick = () => {
+        try {
+            const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+            const ctx = new Ctx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1100, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.045);
+            gain.gain.setValueAtTime(0.14, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.05);
+            osc.onended = () => ctx.close();
+        } catch {}
+        try { (navigator as any).vibrate?.(18); } catch {}
+    };
+
     const handleKeyPress = (button: string) => {
+        playClick();
         if (button === '{submit}') {
             cancelInactivityTimer();
             handleSubmit(new Event('submit') as unknown as React.FormEvent);
@@ -202,16 +223,35 @@ export default function RegistrarAsistenciaPorDNIPage() {
             {/* Botón cerrar sesión — esquina superior izquierda, casi invisible */}
             <button
                 onClick={async () => {
-                    const first = await Swal.fire({ ...swalDanger, title: 'Cerrar sesión', text: '¿Querés salir?', icon: 'question', showCancelButton: true, confirmButtonText: 'Salir', cancelButtonText: 'Cancelar' });
-                    if (!first.isConfirmed) return;
-                    const second = await Swal.fire({ ...swalDanger, title: '¿Seguro?', text: 'Se cerrará la sesión en este dispositivo.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, cerrar', cancelButtonText: 'Cancelar' });
-                    if (second.isConfirmed) signOut();
+                    const { value: password, isConfirmed } = await Swal.fire({
+                        ...swalDanger,
+                        title: 'Cerrar sesión',
+                        input: 'password',
+                        inputLabel: 'Contraseña',
+                        inputPlaceholder: '••••••••',
+                        inputAttributes: { autocomplete: 'current-password' },
+                        showCancelButton: true,
+                        confirmButtonText: 'Cerrar sesión',
+                        cancelButtonText: 'Cancelar',
+                    });
+                    if (!isConfirmed || !password) return;
+                    const res = await fetch('/api/auth/verify-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password }),
+                    });
+                    const { ok } = await res.json();
+                    if (!ok) {
+                        Swal.fire({ ...swalDanger, icon: 'error', title: 'Contraseña incorrecta', text: 'No se pudo cerrar la sesión.' });
+                        return;
+                    }
+                    signOut();
                 }}
-                className="absolute z-10 top-3 left-3 w-9 h-9 flex items-center justify-center rounded-xl opacity-20 hover:opacity-40 active:opacity-60 transition-opacity"
-                style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
+                className="absolute z-10 top-3 left-3 w-9 h-9 flex items-center justify-center rounded-xl"
+                style={{ marginTop: 'env(safe-area-inset-top, 0px)', background: 'transparent' }}
                 aria-label="Cerrar sesión"
             >
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="#111111">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
                 </svg>
             </button>
@@ -219,16 +259,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
             <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
 
                 {/* Logo del gimnasio */}
-                <div className="flex items-center justify-center flex-none" style={{ height: 90 }}>
+                <div className="flex items-center justify-center flex-none" style={{ height: 130 }}>
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={logoUrl}
                             alt={gymNombre || 'Gimnasio'}
-                            style={{ maxHeight: 90, maxWidth: '72%', objectFit: 'contain' }}
+                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain' }}
                         />
                     ) : (
-                        <span className="text-white font-bold text-2xl tracking-tight">{gymNombre}</span>
+                        <span className="text-white font-bold text-3xl tracking-tight">{gymNombre}</span>
                     )}
                 </div>
 
@@ -279,7 +319,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             <button
                                 key={label}
                                 type="button"
-                                onClick={() => setActividad(label)}
+                                onClick={() => { playClick(); setActividad(label); }}
                                 disabled={isLoading}
                                 className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
                                 style={isActive
