@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
-import { swalNotify } from '@/utils/swalConfig';
+import { swalNotify, swalDanger } from '@/utils/swalConfig';
+import { signOut } from 'next-auth/react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css';
@@ -195,16 +196,33 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-3 gap-2" style={{ height: '100%' }}>
+            {/* Botón cerrar sesión — esquina superior izquierda, casi invisible */}
+            <button
+                onClick={async () => {
+                    const first = await Swal.fire({ ...swalDanger, title: 'Cerrar sesión', text: '¿Querés salir?', icon: 'question', showCancelButton: true, confirmButtonText: 'Salir', cancelButtonText: 'Cancelar' });
+                    if (!first.isConfirmed) return;
+                    const second = await Swal.fire({ ...swalDanger, title: '¿Seguro?', text: 'Se cerrará la sesión en este dispositivo.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, cerrar', cancelButtonText: 'Cancelar' });
+                    if (second.isConfirmed) signOut();
+                }}
+                className="absolute z-10 top-3 left-3 w-9 h-9 flex items-center justify-center rounded-xl opacity-20 hover:opacity-40 active:opacity-60 transition-opacity"
+                style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
+                aria-label="Cerrar sesión"
+            >
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                </svg>
+            </button>
+
+            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
 
                 {/* Logo del gimnasio */}
-                <div className="flex items-center justify-center flex-none" style={{ height: 80 }}>
+                <div className="flex items-center justify-center flex-none" style={{ height: 90 }}>
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={logoUrl}
                             alt={gymNombre || 'Gimnasio'}
-                            style={{ maxHeight: 80, maxWidth: '70%', objectFit: 'contain' }}
+                            style={{ maxHeight: 90, maxWidth: '72%', objectFit: 'contain' }}
                         />
                     ) : (
                         <span className="text-white font-bold text-2xl tracking-tight">{gymNombre}</span>
@@ -215,21 +233,21 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 <div
                     className="rounded-2xl flex-none relative overflow-hidden flex items-center justify-center"
                     style={{
-                        height: 76,
+                        height: 68,
                         background: '#ffffff',
                         border: '1.5px solid rgba(0,0,0,0.10)',
                         boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08)',
                     }}
                 >
                     {/* Label */}
-                    <span className="absolute top-2 left-3.5" style={{
+                    <span className="absolute top-1.5 left-3" style={{
                         fontSize: 9, color: 'rgba(0,0,0,0.25)', fontFamily: 'monospace',
                         fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                     }}>DNI</span>
                     {/* Número */}
                     {dni ? (
                         <span style={{
-                            fontSize: 38,
+                            fontSize: 34,
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
                             fontWeight: 700,
                             letterSpacing: '0.18em',
@@ -239,7 +257,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         </span>
                     ) : (
                         <span style={{
-                            fontSize: 38,
+                            fontSize: 34,
                             fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
                             fontWeight: 600,
                             letterSpacing: '0.18em',
@@ -260,7 +278,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 type="button"
                                 onClick={() => setActividad(label)}
                                 disabled={isLoading}
-                                className="h-16 rounded-xl text-base font-bold transition-all active:scale-95"
+                                className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
                                 style={isActive
                                     ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
                                     : { background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }
