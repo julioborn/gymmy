@@ -29,11 +29,27 @@ export default function RegistrarAsistenciaPorDNIPage() {
         return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5)}`;
     };
 
-    const handleKeyboardChange = (input: string) => {
-        const formatted = formatDNIWithDots(input);
+    const keyboardRef = useRef<any>(null);
+
+    const handleKeyPress = (button: string) => {
+        if (button === '{submit}') {
+            handleSubmit(new Event('submit') as unknown as React.FormEvent);
+            return;
+        }
+        const digits = dniRef.current.replace(/\./g, '');
+        let newDigits = digits;
+        if (button === '{bksp}') {
+            newDigits = digits.slice(0, -1);
+        } else if (/^\d$/.test(button) && digits.length < 8) {
+            newDigits = digits + button;
+        } else {
+            return;
+        }
+        const formatted = formatDNIWithDots(newDigits);
         dniRef.current = formatted;
         setDni(formatted);
-        if (keyboard) keyboard.setInput(formatted);
+        // Sync internal keyboard state with raw digits (no dots)
+        if (keyboardRef.current) keyboardRef.current.setInput(newDigits);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -212,15 +228,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     }}
                 >
                     <Keyboard
-                        keyboardRef={(r) => setKeyboard(r)}
-                        onChange={handleKeyboardChange}
-                        onKeyPress={(button) => {
-                            if (button === '{submit}') handleSubmit(new Event('submit') as unknown as React.FormEvent);
-                        }}
+                        keyboardRef={(r) => { keyboardRef.current = r; setKeyboard(r); }}
+                        onKeyPress={handleKeyPress}
                         inputName="dni"
                         theme="hg-theme-default hg-layout-numeric my-custom-keyboard"
                         layout={{ default: ['1 2 3', '4 5 6', '7 8 9', '{bksp} 0 {submit}'] }}
                         display={{ '{bksp}': '⌫', '{submit}': isLoading ? '...' : 'Registrar' }}
+                        physicalKeyboardHighlight={false}
+                        preventMouseDownDefault={true}
                     />
                 </div>
 

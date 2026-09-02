@@ -37,6 +37,10 @@
   font-weight: 700 !important;
   box-shadow: none !important;
   transition: background 0.12s ease !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 .my-custom-keyboard .hg-button:active {
