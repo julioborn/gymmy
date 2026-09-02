@@ -192,9 +192,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     {dni ? (
                         <span style={{
                             fontSize: 46,
-                            fontFamily: "'Courier New', 'Lucida Console', monospace",
-                            fontWeight: 700,
-                            letterSpacing: '0.2em',
+                            fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
+                            fontWeight: 600,
+                            letterSpacing: '0.18em',
                             color: '#f1f5f9',
                             textShadow: '0 0 18px rgba(255,255,255,0.35), 0 0 6px rgba(255,255,255,0.15)',
                         }}>
@@ -203,9 +203,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     ) : (
                         <span style={{
                             fontSize: 46,
-                            fontFamily: "'Courier New', 'Lucida Console', monospace",
-                            fontWeight: 700,
-                            letterSpacing: '0.2em',
+                            fontFamily: "var(--font-geist-mono), 'Roboto Mono', monospace",
+                            fontWeight: 600,
+                            letterSpacing: '0.18em',
                             color: 'rgba(255,255,255,0.07)',
                         }}>
                             _ _ _ _ _ _ _ _

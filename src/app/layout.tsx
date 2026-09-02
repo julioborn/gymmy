@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
 <body className="bg-slate-50 min-h-screen overscroll-none">
         <ErrorBoundary>
           <ClientLayout>{children}</ClientLayout>
