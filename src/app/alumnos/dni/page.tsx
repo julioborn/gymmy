@@ -262,6 +262,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         minHeight: 0,
                         background: 'rgba(255,255,255,0.04)',
                         border: '1px solid rgba(255,255,255,0.07)',
+                        ['--acento' as string]: acento,
+                        ['--acento2' as string]: acento2,
                         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                     }}
                 >
