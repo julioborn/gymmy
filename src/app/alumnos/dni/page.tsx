@@ -31,7 +31,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     const keyboardRef = useRef<any>(null);
     const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const INACTIVITY_MS = 8000;
+    const INACTIVITY_MS = 10000;
 
     const clearDNI = () => {
         dniRef.current = '';
