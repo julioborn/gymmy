@@ -1,6 +1,12 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
+import Keyboard from 'react-simple-keyboard';
+import 'react-simple-keyboard/build/css/index.css';
+import './keyboardStyles.css';
+import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
+import KioskMode, { KioskModeHandle } from './KioskMode';
+
 const swalDni = {
     customClass: {
         popup: 'swal-dni-alert',
@@ -10,21 +16,6 @@ const swalDni = {
     buttonsStyling: false,
     backdrop: 'rgba(0,0,0,0.6)',
 };
-
-const swalDniDanger = {
-    customClass: {
-        popup: 'swal-dni-alert',
-        confirmButton: 'sg-btn sg-btn-danger',
-        cancelButton: 'sg-btn sg-btn-cancel',
-    },
-    buttonsStyling: false,
-    backdrop: 'rgba(0,0,0,0.6)',
-};
-import { signOut } from 'next-auth/react';
-import Keyboard from 'react-simple-keyboard';
-import 'react-simple-keyboard/build/css/index.css';
-import './keyboardStyles.css';
-import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
 
 export default function RegistrarAsistenciaPorDNIPage() {
     const [dni, setDni] = useState('');
@@ -38,6 +29,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [acento2, setAcento2] = useState('#22c55e');
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
+    const kioskRef = useRef<KioskModeHandle>(null);
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -241,14 +233,23 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     return (
         <div
-            className="fixed inset-0 flex flex-col overflow-hidden"
+            className="fixed inset-0 overflow-hidden"
             style={{
                 background: '#111',
                 touchAction: 'none',
-                paddingTop: 'env(safe-area-inset-top, 0px)',
-                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
             }}
         >
+            {/* Kiosk overlays — INICIAR TERMINAL / VOLVER A PANTALLA COMPLETA / exit modal */}
+            <KioskMode
+                ref={kioskRef}
+                logoUrl={logoUrl}
+                gymNombre={gymNombre}
+                acento={acento}
+                acento2={acento2}
+            />
+
             {/* Spinner de carga */}
             {isLoading && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.65)' }}>
@@ -256,55 +257,27 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            {/* Botón cerrar sesión — esquina superior izquierda, casi invisible */}
-            <button
-                onClick={async () => {
-                    const { value: password, isConfirmed } = await Swal.fire({
-                        ...swalDniDanger,
-                        title: 'Cerrar sesión',
-                        input: 'password',
-                        inputLabel: 'Contraseña',
-                        inputPlaceholder: '••••••••',
-                        inputAttributes: { autocomplete: 'current-password' },
-                        showCancelButton: true,
-                        confirmButtonText: 'Cerrar sesión',
-                        cancelButtonText: 'Cancelar',
-                    });
-                    if (!isConfirmed || !password) return;
-                    const res = await fetch('/api/auth/verify-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password }),
-                    });
-                    const { ok } = await res.json();
-                    if (!ok) {
-                        Swal.fire({ ...swalDniDanger, icon: 'error', title: 'Contraseña incorrecta', text: 'No se pudo cerrar la sesión.' });
-                        return;
-                    }
-                    signOut();
-                }}
-                className="absolute z-10 top-3 left-3 w-9 h-9 flex items-center justify-center rounded-xl"
-                style={{ marginTop: 'env(safe-area-inset-top, 0px)', background: 'transparent' }}
-                aria-label="Cerrar sesión"
+            <div
+                className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2"
+                style={{ height: '100dvh', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="#111111">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                </svg>
-            </button>
 
-            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
-
-                {/* Logo del gimnasio */}
-                <div className="flex items-center justify-center flex-none" style={{ height: 130 }}>
+                {/* Logo del gimnasio — 5 toques activan la salida de kiosk */}
+                <div
+                    className="flex items-center justify-center flex-none"
+                    style={{ height: 130, cursor: 'default' }}
+                    onClick={() => kioskRef.current?.logoTap()}
+                >
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={logoUrl}
                             alt={gymNombre || 'Gimnasio'}
-                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain' }}
+                            draggable={false}
+                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain', pointerEvents: 'none' }}
                         />
                     ) : (
-                        <span className="text-white font-bold text-3xl tracking-tight">{gymNombre}</span>
+                        <span className="text-white font-bold text-3xl tracking-tight" style={{ pointerEvents: 'none' }}>{gymNombre}</span>
                     )}
                 </div>
 
