@@ -32,7 +32,10 @@ const KioskMode = forwardRef<KioskModeHandle, KioskModeProps>(
         const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
         useEffect(() => {
-            const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+            const onChange = () => {
+                const fs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+                setIsFullscreen(fs);
+            };
             document.addEventListener('fullscreenchange', onChange);
             document.addEventListener('webkitfullscreenchange', onChange);
             return () => {
@@ -42,13 +45,20 @@ const KioskMode = forwardRef<KioskModeHandle, KioskModeProps>(
         }, []);
 
         const requestFs = () => {
-            try {
-                const el = document.documentElement as any;
-                (el.requestFullscreen ?? el.webkitRequestFullscreen)?.call(el);
-            } catch {}
+            const el = document.documentElement as any;
+            const opts = { navigationUI: 'hide' as const };
+            // Try standard API first, then webkit prefix (Samsung Internet older)
+            const p: Promise<void> | undefined =
+                el.requestFullscreen ? el.requestFullscreen(opts)
+                : el.webkitRequestFullscreen ? el.webkitRequestFullscreen(opts)
+                : el.mozRequestFullScreen ? el.mozRequestFullScreen()
+                : undefined;
+            p?.catch(() => {});
         };
 
         const handleStart = () => {
+            // Call requestFs synchronously inside the click handler so the browser
+            // treats it as a direct user gesture (required by Chrome / Samsung Internet)
             requestFs();
             setStarted(true);
         };
@@ -94,8 +104,11 @@ const KioskMode = forwardRef<KioskModeHandle, KioskModeProps>(
                 Swal.fire({ ...swalKiosk, icon: 'error', title: 'Error', text: 'No se pudo verificar la contraseña.' });
                 return;
             }
-            if (document.fullscreenElement) {
-                try { await document.exitFullscreen(); } catch {}
+            const inFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+            if (inFs) {
+                try {
+                    await (document.exitFullscreen?.() ?? (document as any).webkitExitFullscreen?.());
+                } catch {}
             }
             signOut();
         };
