@@ -5,7 +5,6 @@ import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css';
 import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
-import KioskMode, { KioskModeHandle } from './KioskMode';
 
 const swalDni = {
     customClass: {
@@ -29,7 +28,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [acento2, setAcento2] = useState('#22c55e');
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
-    const kioskRef = useRef<KioskModeHandle>(null);
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -104,7 +102,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
         dniRef.current = formatted;
         setDni(formatted);
         if (keyboardRef.current) keyboardRef.current.setInput(newDigits);
-        // Reiniciar timer de inactividad solo si hay dígitos
         if (newDigits.length > 0) resetInactivityTimer();
         else cancelInactivityTimer();
     };
@@ -233,23 +230,15 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     return (
         <div
-            className="fixed inset-0 overflow-hidden"
+            className="fixed inset-0 flex flex-col overflow-hidden"
             style={{
                 background: '#111',
                 touchAction: 'none',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
         >
-            {/* Kiosk overlays — INICIAR TERMINAL / VOLVER A PANTALLA COMPLETA / exit modal */}
-            <KioskMode
-                ref={kioskRef}
-                logoUrl={logoUrl}
-                gymNombre={gymNombre}
-                acento={acento}
-                acento2={acento2}
-            />
-
             {/* Spinner de carga */}
             {isLoading && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.65)' }}>
@@ -257,27 +246,20 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 </div>
             )}
 
-            <div
-                className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2"
-                style={{ height: '100dvh', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-            >
+            <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
 
-                {/* Logo del gimnasio — 5 toques activan la salida de kiosk */}
-                <div
-                    className="flex items-center justify-center flex-none"
-                    style={{ height: 130, cursor: 'default' }}
-                    onClick={() => kioskRef.current?.logoTap()}
-                >
+                {/* Logo del gimnasio */}
+                <div className="flex items-center justify-center flex-none" style={{ height: 130 }}>
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                             src={logoUrl}
                             alt={gymNombre || 'Gimnasio'}
                             draggable={false}
-                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain', pointerEvents: 'none' }}
+                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain' }}
                         />
                     ) : (
-                        <span className="text-white font-bold text-3xl tracking-tight" style={{ pointerEvents: 'none' }}>{gymNombre}</span>
+                        <span className="text-white font-bold text-3xl tracking-tight">{gymNombre}</span>
                     )}
                 </div>
 
@@ -291,12 +273,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08)',
                     }}
                 >
-                    {/* Label */}
                     <span className="absolute top-1.5 left-3" style={{
                         fontSize: 9, color: 'rgba(0,0,0,0.25)', fontFamily: 'monospace',
                         fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                     }}>DNI</span>
-                    {/* Número */}
                     {dni ? (
                         <span style={{
                             fontSize: 34,
@@ -352,7 +332,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         border: '1px solid rgba(255,255,255,0.07)',
                         ['--acento' as string]: acento,
                         ['--acento2' as string]: acento2,
-                        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                     }}
                 >
                     <Keyboard
