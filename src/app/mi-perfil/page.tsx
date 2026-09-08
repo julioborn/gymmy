@@ -177,12 +177,26 @@ export default function MiPerfilPage() {
             if (data?.fechaInicio && alumnoData && data.dias.length > 0) {
                 const inicio = new Date(data.fechaInicio);
                 const totalSemanas = data.totalSemanas || 5;
-                const sessionsDone = alumnoData.asistencia.filter(a =>
-                    a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio
-                ).length;
                 const diasLen = data.dias.length;
-                setSelectedDia(sessionsDone % diasLen);
-                setSelectedSemana(Math.min(Math.floor(sessionsDone / diasLen) + 1, totalSemanas));
+
+                // Calendar-week-based tracking: week number = calendar weeks since plan start
+                const nowFP = new Date();
+                const todayMonFP = new Date(nowFP);
+                todayMonFP.setDate(todayMonFP.getDate() - ((todayMonFP.getDay() + 6) % 7));
+                todayMonFP.setHours(0, 0, 0, 0);
+                const planMonFP = new Date(inicio);
+                planMonFP.setDate(planMonFP.getDate() - ((planMonFP.getDay() + 6) % 7));
+                planMonFP.setHours(0, 0, 0, 0);
+                const msW = 7 * 24 * 60 * 60 * 1000;
+                const calWeekNum = Math.max(Math.floor((todayMonFP.getTime() - planMonFP.getTime()) / msW) + 1, 1);
+                const weekEndFP = todayMonFP.getTime() + msW;
+                const sessionsThisWeek = alumnoData.asistencia.filter(a => {
+                    const d = new Date(a.fecha).getTime();
+                    return a.actividad === 'Musculación' && a.presente && d >= todayMonFP.getTime() && d < weekEndFP;
+                }).length;
+
+                setSelectedSemana(Math.min(calWeekNum, totalSemanas));
+                setSelectedDia(Math.min(sessionsThisWeek, diasLen - 1));
             }
         } finally {
             setLoadingPlan(false);
@@ -714,15 +728,23 @@ export default function MiPerfilPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        const sessionsDone = planInicio
-                            ? alumno.asistencia.filter(a =>
-                                a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio
-                              ).length
-                            : 0;
-                        const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
-                        const sessionBasedWeekNum = planEj.dias.length > 0
-                            ? Math.min(Math.floor(sessionsDone / planEj.dias.length) + 1, totalSem)
-                            : 1;
+                        // Calendar-week-based: week = weeks elapsed since plan start; day = sessions done this calendar week
+                        const sessionBasedWeekNum = (() => {
+                            if (!planInicio) return 1;
+                            const pMon = new Date(planInicio);
+                            pMon.setDate(pMon.getDate() - ((pMon.getDay() + 6) % 7));
+                            pMon.setHours(0, 0, 0, 0);
+                            const n = Math.floor((currentCalWeekMs - pMon.getTime()) / msPerWeek) + 1;
+                            return Math.min(Math.max(n, 1), totalSem);
+                        })();
+                        const currentDayIdx = (() => {
+                            const weekEndMs2 = currentCalWeekMs + msPerWeek;
+                            const sessionsThisWeek = alumno.asistencia.filter(a => {
+                                const d = new Date(a.fecha).getTime();
+                                return a.actividad === 'Musculación' && a.presente && d >= currentCalWeekMs && d < weekEndMs2;
+                            }).length;
+                            return Math.min(sessionsThisWeek, planEj.dias.length);
+                        })();
 
                         return (
                             <>
