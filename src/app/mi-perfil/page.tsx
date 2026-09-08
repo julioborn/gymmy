@@ -190,9 +190,12 @@ export default function MiPerfilPage() {
                 const msW = 7 * 24 * 60 * 60 * 1000;
                 const calWeekNum = Math.max(Math.floor((todayMonFP.getTime() - planMonFP.getTime()) / msW) + 1, 1);
                 const weekEndFP = todayMonFP.getTime() + msW;
+                const THREE_HOURS = 3 * 60 * 60 * 1000;
                 const sessionsThisWeek = alumnoData.asistencia.filter(a => {
                     const d = new Date(a.fecha).getTime();
-                    return a.actividad === 'Musculación' && a.presente && d >= todayMonFP.getTime() && d < weekEndFP;
+                    return a.actividad === 'Musculación' && a.presente
+                        && d >= todayMonFP.getTime() && d < weekEndFP
+                        && (nowFP.getTime() - d) >= THREE_HOURS;
                 }).length;
 
                 setSelectedSemana(Math.min(calWeekNum, totalSemanas));
@@ -739,9 +742,12 @@ export default function MiPerfilPage() {
                         })();
                         const currentDayIdx = (() => {
                             const weekEndMs2 = currentCalWeekMs + msPerWeek;
+                            const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
                             const sessionsThisWeek = alumno.asistencia.filter(a => {
                                 const d = new Date(a.fecha).getTime();
-                                return a.actividad === 'Musculación' && a.presente && d >= currentCalWeekMs && d < weekEndMs2;
+                                return a.actividad === 'Musculación' && a.presente
+                                    && d >= currentCalWeekMs && d < weekEndMs2
+                                    && d <= threeHoursAgo;
                             }).length;
                             return Math.min(sessionsThisWeek, planEj.dias.length);
                         })();
