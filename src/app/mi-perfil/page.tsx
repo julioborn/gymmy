@@ -885,6 +885,11 @@ export default function MiPerfilPage() {
                                     })}
                                 </div>
 
+                                {/* DEBUG TEMPORAL - borrar luego */}
+                                <p className="text-[10px] text-slate-400 text-center">
+                                    dbg: semActual={sessionBasedWeekNum} diaIdx={currentDayIdx} selDia={selectedDia} lunes={thisMonStrR} asistSemana={(() => { const m=getMondayStr(new Date()); const s=localDateStr(new Date(new Date(m+'T12:00:00').getTime()+6*24*60*60*1000)); return alumno.asistencia.filter(a=>{const aDate=new Date(a.fecha);const aStr=localDateStr(aDate);return a.actividad==='Musculación'&&a.presente&&aStr>=m&&aStr<=s;}).length; })()} total={alumno.asistencia.length}
+                                </p>
+
                                 {dia?.bloqueActivacion && (
                                     <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
                                         <p className="text-xs font-bold text-amber-700 mb-1">Bloque de activación</p>
