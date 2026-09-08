@@ -885,10 +885,13 @@ export default function MiPerfilPage() {
                                     })}
                                 </div>
 
-                                {/* DEBUG TEMPORAL - borrar luego */}
-                                <p className="text-[10px] text-slate-400 text-center">
-                                    dbg: semActual={sessionBasedWeekNum} diaIdx={currentDayIdx} selDia={selectedDia} lunes={thisMonStrR} asistSemana={(() => { const m=getMondayStr(new Date()); const s=localDateStr(new Date(new Date(m+'T12:00:00').getTime()+6*24*60*60*1000)); return alumno.asistencia.filter(a=>{const aDate=new Date(a.fecha);const aStr=localDateStr(aDate);return a.actividad==='Musculación'&&a.presente&&aStr>=m&&aStr<=s;}).length; })()} total={alumno.asistencia.length}
-                                </p>
+                                {/* DEBUG TEMPORAL */}
+                                <div className="bg-red-600 text-white text-xs font-bold rounded-xl p-2 space-y-0.5">
+                                    <p>semActual={sessionBasedWeekNum} diaIdx={currentDayIdx} selDia={selectedDia}</p>
+                                    <p>lunes={thisMonStrR} total={alumno.asistencia.length}</p>
+                                    <p>asistSemana(sinFiltro3h)={(() => { const m=getMondayStr(new Date()); const s=localDateStr(new Date(new Date(m+'T12:00:00').getTime()+6*24*60*60*1000)); return alumno.asistencia.filter(a=>{const aDate=new Date(a.fecha);const aStr=localDateStr(aDate);return a.actividad==='Musculación'&&a.presente&&aStr>=m&&aStr<=s;}).length; })()}</p>
+                                    <p>ultimaAsist={alumno.asistencia.length>0?alumno.asistencia[alumno.asistencia.length-1].fecha+'/'+alumno.asistencia[alumno.asistencia.length-1].actividad:'none'}</p>
+                                </div>
 
                                 {dia?.bloqueActivacion && (
                                     <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
