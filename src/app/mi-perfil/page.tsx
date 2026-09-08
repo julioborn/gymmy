@@ -57,6 +57,18 @@ interface PlanEj {
 }
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+// Returns "YYYY-MM-DD" in LOCAL timezone (avoids UTC midnight parsing pitfalls)
+function localDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Returns "YYYY-MM-DD" of the Monday of the week containing `d`, in LOCAL timezone
+function getMondayStr(d: Date): string {
+    const m = new Date(d);
+    m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
+    return localDateStr(m);
+}
+
 const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
@@ -179,23 +191,25 @@ export default function MiPerfilPage() {
                 const totalSemanas = data.totalSemanas || 5;
                 const diasLen = data.dias.length;
 
-                // Calendar-week-based tracking: week number = calendar weeks since plan start
+                // Calendar-week-based: compare by local date strings to avoid UTC boundary issues
                 const nowFP = new Date();
-                const todayMonFP = new Date(nowFP);
-                todayMonFP.setDate(todayMonFP.getDate() - ((todayMonFP.getDay() + 6) % 7));
-                todayMonFP.setHours(0, 0, 0, 0);
-                const planMonFP = new Date(inicio);
-                planMonFP.setDate(planMonFP.getDate() - ((planMonFP.getDay() + 6) % 7));
-                planMonFP.setHours(0, 0, 0, 0);
+                const thisMonStr = getMondayStr(nowFP);
+                const planMonStr = getMondayStr(inicio);
                 const msW = 7 * 24 * 60 * 60 * 1000;
-                const calWeekNum = Math.max(Math.floor((todayMonFP.getTime() - planMonFP.getTime()) / msW) + 1, 1);
-                const weekEndFP = todayMonFP.getTime() + msW;
-                const THREE_HOURS = 3 * 60 * 60 * 1000;
+                const planMonDate = new Date(planMonStr + 'T12:00:00'); // noon to avoid DST edge
+                const todayMonDate = new Date(thisMonStr + 'T12:00:00');
+                const calWeekNum = Math.max(Math.round((todayMonDate.getTime() - planMonDate.getTime()) / msW) + 1, 1);
+
+                // Count sessions done THIS calendar week, more than 3h ago
+                const threeHoursAgoFP = nowFP.getTime() - 3 * 60 * 60 * 1000;
+                // Sunday = Monday + 6 days
+                const sunStr = localDateStr(new Date(todayMonDate.getTime() + 6 * 24 * 60 * 60 * 1000));
                 const sessionsThisWeek = alumnoData.asistencia.filter(a => {
-                    const d = new Date(a.fecha).getTime();
+                    const aDate = new Date(a.fecha);
+                    const aStr = localDateStr(aDate);
                     return a.actividad === 'Musculación' && a.presente
-                        && d >= todayMonFP.getTime() && d < weekEndFP
-                        && (nowFP.getTime() - d) >= THREE_HOURS;
+                        && aStr >= thisMonStr && aStr <= sunStr
+                        && aDate.getTime() <= threeHoursAgoFP;
                 }).length;
 
                 setSelectedSemana(Math.min(calWeekNum, totalSemanas));
@@ -731,23 +745,27 @@ export default function MiPerfilPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        // Calendar-week-based: week = weeks elapsed since plan start; day = sessions done this calendar week
+                        // Calendar-week-based using local date strings (avoids UTC boundary issues)
+                        const nowR = new Date();
+                        const thisMonStrR = getMondayStr(nowR);
                         const sessionBasedWeekNum = (() => {
                             if (!planInicio) return 1;
-                            const pMon = new Date(planInicio);
-                            pMon.setDate(pMon.getDate() - ((pMon.getDay() + 6) % 7));
-                            pMon.setHours(0, 0, 0, 0);
-                            const n = Math.floor((currentCalWeekMs - pMon.getTime()) / msPerWeek) + 1;
+                            const planMonStrR = getMondayStr(planInicio);
+                            const planMonD = new Date(planMonStrR + 'T12:00:00');
+                            const thisMonD = new Date(thisMonStrR + 'T12:00:00');
+                            const n = Math.round((thisMonD.getTime() - planMonD.getTime()) / msPerWeek) + 1;
                             return Math.min(Math.max(n, 1), totalSem);
                         })();
                         const currentDayIdx = (() => {
-                            const weekEndMs2 = currentCalWeekMs + msPerWeek;
-                            const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
+                            const thisMonD2 = new Date(thisMonStrR + 'T12:00:00');
+                            const sunStrR = localDateStr(new Date(thisMonD2.getTime() + 6 * 24 * 60 * 60 * 1000));
+                            const threeHoursAgo = nowR.getTime() - 3 * 60 * 60 * 1000;
                             const sessionsThisWeek = alumno.asistencia.filter(a => {
-                                const d = new Date(a.fecha).getTime();
+                                const aDate = new Date(a.fecha);
+                                const aStr = localDateStr(aDate);
                                 return a.actividad === 'Musculación' && a.presente
-                                    && d >= currentCalWeekMs && d < weekEndMs2
-                                    && d <= threeHoursAgo;
+                                    && aStr >= thisMonStrR && aStr <= sunStrR
+                                    && aDate.getTime() <= threeHoursAgo;
                             }).length;
                             return Math.min(sessionsThisWeek, planEj.dias.length);
                         })();
