@@ -1,7 +1,8 @@
 'use client';
 
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -57,7 +58,30 @@ type Alumno = {
     pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento;
     planEntrenamientoHistorial: any[];
+    telefono?: string;
+    email?: string;
+    horarioEntrenamiento?: string;
+    horaExactaEntrenamiento?: string;
+    diasEntrenaSemana?: number;
+    area?: string;
+    nivelExperiencia?: string;
+    patologias?: string;
+    historialDeportivo?: string;
+    historialDeVida?: string;
+    objetivos?: string;
+    fechaNacimiento?: string;
 };
+
+function verificarPagoMesActual(pagos: Pago[]): boolean {
+    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+    return pagos.some(p => p.mes?.toLowerCase() === mesActual);
+}
+
+function capitalizar(texto: string) {
+    return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : '-';
+}
+
+const AREA_LABEL: Record<string, string> = { salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación' };
 
 type Tarifa = {
     dias: number;
@@ -109,6 +133,8 @@ function obtenerColorSemaforo(diasRestantes: number | null): string {
 }
 
 export default function HistorialAlumnoPage() {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [diasRestantes, setDiasRestantes] = useState<number | null>(null);
     const params = useParams();
@@ -616,6 +642,312 @@ export default function HistorialAlumnoPage() {
             fetchAlumno();
         }
     }, [id]);
+
+    // ── Action handlers ─────────────────────────────────────────────────────
+
+    const marcarPagoMes = async () => {
+        const opcionesTarifas = tarifas.reduce((options, tarifa) => {
+            options[tarifa.dias] = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana</span>
+                    <strong>$${tarifa.valor}</strong>
+                </div>`;
+            return options;
+        }, {} as Record<number, string>);
+
+        const { value: diasMusculacion } = await Swal.fire({
+            ...swalBase,
+            title: 'Días de musculación por semana',
+            input: 'select',
+            inputOptions: opcionesTarifas,
+            inputPlaceholder: 'Selecciona una opción',
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+        });
+
+        if (!diasMusculacion) return;
+
+        const tarifaSeleccionada = tarifas.find(t => t.dias === Number(diasMusculacion));
+        if (!tarifaSeleccionada) {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontró una tarifa para los días seleccionados.' });
+            return;
+        }
+
+        const { value: metodoPago } = await Swal.fire({
+            ...swalBase,
+            title: 'Método de pago',
+            input: 'radio',
+            inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
+            inputValidator: (value) => { if (!value) return 'Debes seleccionar un método de pago'; return null; },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!metodoPago) return;
+
+        const hoy = new Date();
+        const esDespuesDel10 = hoy.getDate() > 10;
+        const montoRecargoDisponible = esDespuesDel10 ? recargoDiez : 0;
+        const labelRecargo = `Recargo por día 10 ($${recargoDiez.toFixed(2)})`;
+
+        const confirmacion = await Swal.fire({
+            ...swalBase,
+            title: 'Confirmar cobro',
+            html: `
+                <div class="swal-form-body">
+                    <p style="text-align:center;color:#475569;font-size:0.875rem;margin:0 0 0.75rem;">
+                        Días de musculación: <strong>${diasMusculacion}</strong><br>
+                        Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
+                        Precio: <strong>$${tarifaSeleccionada.valor}</strong>
+                    </p>
+                    ${montoRecargoDisponible > 0 ? `
+                    <label class="swal-form-label" style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;font-size:0.85rem;color:#334155;">
+                        <input type="checkbox" id="swal-aplicar-recargo" checked style="width:16px;height:16px;accent-color:#059669;">
+                        ${labelRecargo}
+                    </label>` : ''}
+                </div>
+            `,
+            preConfirm: () => {
+                const checkbox = document.getElementById('swal-aplicar-recargo') as HTMLInputElement;
+                return { aplicarRecargo: checkbox?.checked ?? false };
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Cobrar',
+            cancelButtonText: 'Cancelar',
+        });
+
+        if (!confirmacion.isConfirmed) return;
+
+        try {
+            const aplicarRecargo = confirmacion.value?.aplicarRecargo;
+            const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+            const montoRecargo = aplicarRecargo ? montoRecargoDisponible : 0;
+            const total = tarifaSeleccionada.valor + montoRecargo;
+
+            const res = await fetch('/api/alumnos/pagos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alumnoId: id,
+                    nuevoPago: {
+                        mes: mesActual,
+                        fechaPago: new Date(),
+                        diasMusculacion: Number(diasMusculacion),
+                        tarifa: tarifaSeleccionada.valor,
+                        metodoPago,
+                        recargo: montoRecargo,
+                        totalPagado: total,
+                    },
+                }),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago registrado correctamente' });
+                fetchAlumno();
+            } else {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar el pago' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar el pago' });
+        }
+    };
+
+    const iniciarPlan = async () => {
+        const { value: formValues } = await Swal.fire({
+            ...swalBase,
+            title: 'Iniciar plan de entrenamiento',
+            html: `
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Duración (clases)</label>
+                    <input type="number" id="duracion" class="swal2-input" placeholder="Ej: 20">
+                    <label class="swal-form-label">Fecha de inicio</label>
+                    <input type="date" id="fecha" class="swal2-input" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+            `,
+            showCancelButton: true,
+            focusConfirm: false,
+            preConfirm: () => {
+                const duracion = (document.getElementById('duracion') as HTMLInputElement).value;
+                const fecha = (document.getElementById('fecha') as HTMLInputElement).value;
+                if (!duracion || Number(duracion) <= 0) { Swal.showValidationMessage('Debes ingresar una duración válida'); return; }
+                if (!fecha) { Swal.showValidationMessage('Debes seleccionar una fecha de inicio'); return; }
+                return { duracion: Number(duracion), fechaInicio: fecha };
+            },
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+        });
+
+        if (!formValues) return;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/plan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fechaInicio: formValues.fechaInicio, duracion: formValues.duracion, terminado: false }),
+            });
+            if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan de entrenamiento iniciado' }); fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo iniciar el plan de entrenamiento' });
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al iniciar el plan' });
+        }
+    };
+
+    const guardarAlumno = async (alumnoActualizado: any) => {
+        try {
+            const res = await fetch('/api/alumnos', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, ...alumnoActualizado }),
+            });
+            if (!res.ok) throw new Error();
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno actualizado correctamente', showConfirmButton: false, timer: 1500 });
+            fetchAlumno();
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al actualizar el alumno' });
+        }
+    };
+
+    const handleEditarAlumno = async () => {
+        if (!alumno) return;
+        const { value: formValues } = await Swal.fire({
+            ...swalBase,
+            title: 'Editar alumno',
+            html: `
+                <div class="swal-form-body swal-form-grid">
+                    <div>
+                        <label class="swal-form-label">Nombre</label>
+                        <input id="swal-nombre" class="swal2-input" value="${alumno.nombre || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Apellido</label>
+                        <input id="swal-apellido" class="swal2-input" value="${alumno.apellido || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">DNI</label>
+                        <input id="swal-dni" class="swal2-input" value="${alumno.dni || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Teléfono</label>
+                        <input id="swal-telefono" class="swal2-input" value="${alumno.telefono || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Email</label>
+                        <input id="swal-email" class="swal2-input" value="${alumno.email || ''}">
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Franja horaria</label>
+                        <select id="swal-horario" class="swal2-select">
+                            <option value="">Selecciona una franja</option>
+                            <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana</option>
+                            <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta</option>
+                            <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Hora exacta</label>
+                        <input id="swal-hora-exacta" class="swal2-input" type="time" value="${alumno.horaExactaEntrenamiento || ''}">
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Historial deportivo</label>
+                        <textarea id="swal-historial-deportivo" class="swal2-textarea">${alumno.historialDeportivo || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Historial de vida</label>
+                        <textarea id="swal-historial-vida" class="swal2-textarea">${alumno.historialDeVida || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Objetivos</label>
+                        <textarea id="swal-objetivos" class="swal2-textarea">${alumno.objetivos || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Patologías</label>
+                        <textarea id="swal-patologias" class="swal2-textarea">${alumno.patologias || ''}</textarea>
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            width: '50rem',
+            preConfirm: () => ({
+                nombre: (document.getElementById('swal-nombre') as HTMLInputElement).value,
+                apellido: (document.getElementById('swal-apellido') as HTMLInputElement).value,
+                dni: (document.getElementById('swal-dni') as HTMLInputElement).value,
+                telefono: (document.getElementById('swal-telefono') as HTMLInputElement).value,
+                email: (document.getElementById('swal-email') as HTMLInputElement).value,
+                horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLInputElement).value,
+                horaExactaEntrenamiento: (document.getElementById('swal-hora-exacta') as HTMLInputElement).value,
+                historialDeportivo: (document.getElementById('swal-historial-deportivo') as HTMLTextAreaElement).value,
+                historialDeVida: (document.getElementById('swal-historial-vida') as HTMLTextAreaElement).value,
+                objetivos: (document.getElementById('swal-objetivos') as HTMLTextAreaElement).value,
+                patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
+            }),
+        });
+        if (formValues) await guardarAlumno({ ...alumno, ...formValues });
+    };
+
+    const handleResetPassword = async () => {
+        if (!alumno) return;
+        const { value: newPassword } = await Swal.fire({
+            ...swalBase,
+            title: 'Nueva contraseña',
+            html: `
+                <div class="swal-form-body">
+                    <p style="color:#475569;font-size:0.875rem;margin:0 0 1rem;">
+                        Establecé una nueva contraseña para <strong>${alumno.nombre} ${alumno.apellido}</strong>.
+                    </p>
+                    <label class="swal-form-label">Contraseña</label>
+                    <input type="password" id="swal-new-pwd" class="swal2-input" placeholder="Mínimo 6 caracteres">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const val = (document.getElementById('swal-new-pwd') as HTMLInputElement).value;
+                if (!val || val.length < 6) { Swal.showValidationMessage('Mínimo 6 caracteres'); return false; }
+                return val;
+            },
+        });
+        if (!newPassword) return;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: newPassword }),
+            });
+            if (res.ok) Swal.fire({ ...swalNotify, icon: 'success', title: 'Contraseña actualizada' });
+            else { const d = await res.json(); Swal.fire({ ...swalNotify, icon: 'error', title: d.error || 'Error al actualizar la contraseña' }); }
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' }); }
+    };
+
+    const eliminarAlumno = async () => {
+        const result = await Swal.fire({
+            ...swalDanger,
+            title: '¿Eliminar alumno?',
+            text: 'Esta acción no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (!result.isConfirmed) return;
+        try {
+            const res = await fetch('/api/alumnos', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno eliminado correctamente', showConfirmButton: false, timer: 1500 });
+                router.push('/alumnos');
+            } else {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar el alumno' });
+            }
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Hubo un problema al eliminar el alumno' }); }
+    };
+
+    // ── End action handlers ─────────────────────────────────────────────────
 
     if (!alumno) {
         return <Loader />;
@@ -1341,6 +1673,86 @@ export default function HistorialAlumnoPage() {
                     <option value="cuotas" className="text-slate-800">Cuotas</option>
                     <option value="recargo" className="text-slate-800">Recargo</option>
                 </select>
+            </div>
+
+            {/* Info + Acciones */}
+            <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm px-4 py-3 sm:px-5 space-y-3">
+                {/* Info row */}
+                <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">DNI</p>
+                        <p className="text-sm font-semibold text-slate-800">{alumno.dni}</p>
+                    </div>
+                    {alumno.area && (
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Área</p>
+                            <p className="text-sm font-semibold text-slate-800">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
+                        </div>
+                    )}
+                    {alumno.telefono && (
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Teléfono</p>
+                            <p className="text-sm font-semibold text-slate-800">{alumno.telefono}</p>
+                        </div>
+                    )}
+                    {alumno.horarioEntrenamiento && (
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Horario</p>
+                            <p className="text-sm font-semibold text-slate-800">{capitalizar(alumno.horarioEntrenamiento)}</p>
+                        </div>
+                    )}
+                    {alumno.diasEntrenaSemana && (
+                        <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Días/sem</p>
+                            <p className="text-sm font-semibold text-slate-800">{alumno.diasEntrenaSemana} días</p>
+                        </div>
+                    )}
+                    <div className="ml-auto">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                            {verificarPagoMesActual(alumno.pagos) ? '✓ Pagó' : '✗ Debe'}
+                        </span>
+                    </div>
+                </div>
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                    <button
+                        onClick={marcarPagoMes}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-all active:scale-95"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
+                        Marcar Pago
+                    </button>
+                    <button
+                        onClick={iniciarPlan}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-white text-xs font-semibold rounded-xl transition-all active:scale-95"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
+                        Iniciar Plan
+                    </button>
+                    <button
+                        onClick={handleEditarAlumno}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
+                        Editar
+                    </button>
+                    {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                        <button
+                            onClick={handleResetPassword}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition-all active:scale-95"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
+                            Resetear contraseña
+                        </button>
+                    )}
+                    <button
+                        onClick={eliminarAlumno}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl transition-all active:scale-95 ml-auto"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        Eliminar alumno
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
