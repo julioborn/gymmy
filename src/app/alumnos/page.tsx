@@ -1069,6 +1069,11 @@ export default function ListaAlumnosPage() {
                                             <p className={`text-xs mt-0.5 ${planColor}`}>
                                                 {alumno.edad ? `${alumno.edad} años · ` : ''}{planText}
                                             </p>
+                                            {alumno.area && (
+                                                <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 bg-slate-100 text-slate-500">
+                                                    {({ salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación' } as Record<string, string>)[alumno.area] ?? alumno.area}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="shrink-0 flex items-center gap-2">
                                             {pagado ? (

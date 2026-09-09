@@ -255,7 +255,7 @@ export default function EmpleadosPage() {
     const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
 
     return (
-        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
 
             {/* Banner */}
             <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
@@ -297,7 +297,8 @@ export default function EmpleadosPage() {
                     <p className="text-slate-400 text-xs mt-1">Tocá &quot;Agregar&quot; para añadir el primer miembro.</p>
                 </div>
             ) : (
-                <div className={`${card} overflow-hidden divide-y divide-black/[0.05]`}>
+                <div className={`${card} overflow-hidden lg:divide-y-0`}>
+                    <div className="divide-y divide-black/[0.05] lg:grid lg:grid-cols-2 lg:divide-y-0 lg:divide-x-0">
                     {empleados.map(emp => {
                         const isMe = emp._id === myId;
                         const displayName = emp.nombre && emp.apellido
@@ -366,6 +367,7 @@ export default function EmpleadosPage() {
                             </div>
                         );
                     })}
+                    </div>
                 </div>
             )}
 

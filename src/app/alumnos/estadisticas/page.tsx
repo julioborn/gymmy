@@ -99,7 +99,7 @@ export default function Estadisticas() {
     const num = 'text-3xl font-bold leading-none';
 
     return (
-        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-5">
+        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-5">
 
             {/* Banner */}
             <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
@@ -117,7 +117,7 @@ export default function Estadisticas() {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className={card}>
                     <p className={`${lbl} mb-2`}>Total asistencias</p>
                     <p className={`${num} text-slate-900`}>{totalAsistencias}</p>
@@ -136,15 +136,17 @@ export default function Estadisticas() {
                 </div>
             </div>
 
-            {/* Charts */}
-            <div className={card}>
-                <h3 className={`${lbl} mb-4`}>Horarios Musculación</h3>
-                <TopHorariosChart topHorarios={topHorarios} color={acento2} />
-            </div>
+            {/* Charts — side by side on desktop */}
+            <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-5 lg:space-y-0">
+                <div className={card}>
+                    <h3 className={`${lbl} mb-4`}>Horarios Musculación</h3>
+                    <TopHorariosChart topHorarios={topHorarios} color={acento2} />
+                </div>
 
-            <div className={card}>
-                <h3 className={`${lbl} mb-4`}>Asistencias por actividad</h3>
-                <ActividadChart data={porActividad} colors={[acento, acento2]} />
+                <div className={card}>
+                    <h3 className={`${lbl} mb-4`}>Asistencias por actividad</h3>
+                    <ActividadChart data={porActividad} colors={[acento, acento2]} />
+                </div>
             </div>
 
         </div>
