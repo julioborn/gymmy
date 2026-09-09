@@ -11,7 +11,7 @@ export async function GET() {
 
     try {
         await connectMongoDB();
-        const ingresos = await Ingreso.find({ gimnasioId });
+        const ingresos = await Ingreso.find({ gimnasioId }).lean();
         return NextResponse.json(ingresos, { status: 200 });
     } catch {
         return NextResponse.json({ error: 'Error al obtener los ingresos' }, { status: 500 });

@@ -1,20 +1,12 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongoClient";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 
-const USE_ATLAS = process.env.USE_ATLAS === "true";
-
-let client: MongoClient | null = null;
-
-async function getDb() {
-    const uri = USE_ATLAS ? process.env.ATLAS_URI : process.env.MONGODB_URI;
-    if (!uri) throw new Error("Falta URI de MongoDB en variables de entorno");
-    if (!client) {
-        client = new MongoClient(uri);
-        await client.connect();
-    }
-    return client.db(process.env.MONGODB_DB);
+async function getAuthDb() {
+    const { db } = await getAuthDb();
+    return db;
 }
 
 export const authOptions: AuthOptions = {
@@ -32,7 +24,7 @@ export const authOptions: AuthOptions = {
                     throw new Error("Credenciales inválidas");
                 }
 
-                const db = await getDb();
+                const db = await getAuthDb();
                 const user = await db.collection("usuarios").findOne({ username: credentials.username });
 
                 if (!user) throw new Error("Credenciales inválidas");
@@ -75,7 +67,7 @@ export const authOptions: AuthOptions = {
                     throw new Error("Credenciales inválidas");
                 }
 
-                const db = await getDb();
+                const db = await getAuthDb();
                 const query: any = { dni: credentials.dni };
                 if (credentials.gimnasioId) {
                     query.gimnasioId = new ObjectId(credentials.gimnasioId);

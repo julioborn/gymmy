@@ -302,9 +302,12 @@ export default function MiPerfilPage() {
             .then(async (d) => {
                 if (d.alumnoId) {
                     setAlumnoId(d.alumnoId);
-                    const alumnoData = await fetchAlumnoData(d.alumnoId);
+                    // Fetch alumno data and plan in parallel
+                    const [alumnoData] = await Promise.all([
+                        fetchAlumnoData(d.alumnoId),
+                        fetchPlan(d.alumnoId),
+                    ]);
                     setAlumno(alumnoData);
-                    if (alumnoData) await fetchPlan(d.alumnoId, alumnoData);
                 }
             })
             .catch(() => {})

@@ -12,14 +12,24 @@ export async function GET() {
 
     await connectMongoDB();
     const gym = await Gimnasio.findById(session.user.gimnasioId)
-        .select('nombre logoUrl logoHeaderUrl temaFondo temaAcento temaAcento2');
+        .select('nombre logoUrl logoHeaderUrl temaFondo temaAcento temaAcento2')
+        .lean();
     if (!gym) return NextResponse.json(null);
 
-    return NextResponse.json({
-        nombre: gym.nombre,
-        logoUrl: gym.logoHeaderUrl || gym.logoUrl || null,
-        temaFondo: gym.temaFondo || null,
-        temaAcento: gym.temaAcento || null,
-        temaAcento2: gym.temaAcento2 || null,
-    });
+    const { nombre, logoUrl, logoHeaderUrl, temaFondo, temaAcento, temaAcento2 } = gym as any;
+
+    return NextResponse.json(
+        {
+            nombre,
+            logoUrl: logoHeaderUrl || logoUrl || null,
+            temaFondo: temaFondo || null,
+            temaAcento: temaAcento || null,
+            temaAcento2: temaAcento2 || null,
+        },
+        {
+            headers: {
+                'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+            },
+        }
+    );
 }

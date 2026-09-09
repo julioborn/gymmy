@@ -13,11 +13,23 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const dni = searchParams.get('dni');
 
+    // Projection: exclude heavy text-blob fields not needed for the list view
+    const projection = {
+        historialDeportivo: 0,
+        historialDeVida: 0,
+        objetivos: 0,
+        planEntrenamientoHistorial: 0,
+        horaExactaEntrenamiento: 0,
+    };
+
     try {
         const alumnos = dni
-            ? await Alumno.findOne({ dni, gimnasioId })
-            : await Alumno.find({ gimnasioId });
-        return new Response(JSON.stringify(alumnos), { status: 200 });
+            ? await Alumno.findOne({ dni, gimnasioId }, projection).lean()
+            : await Alumno.find({ gimnasioId }, projection).lean();
+        return new Response(JSON.stringify(alumnos), {
+            status: 200,
+            headers: { 'Cache-Control': 'no-store' },
+        });
     } catch {
         return new Response('Error fetching alumnos', { status: 500 });
     }

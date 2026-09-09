@@ -14,4 +14,6 @@ const GastoSchema: Schema = new Schema({
     gimnasioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gimnasio', required: true },
 });
 
+GastoSchema.index({ gimnasioId: 1, fecha: -1 });
+
 export default mongoose.models.Gasto || mongoose.model<IGasto>('Gasto', GastoSchema);

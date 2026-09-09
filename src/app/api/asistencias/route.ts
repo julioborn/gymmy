@@ -10,7 +10,10 @@ export async function GET() {
     await connectMongoDB();
 
     try {
-        const alumnos = await Alumno.find({ gimnasioId });
+        const alumnos = await Alumno.find(
+            { gimnasioId },
+            { nombre: 1, apellido: 1, dni: 1, asistencia: 1 }
+        ).lean();
         return new Response(JSON.stringify(alumnos), { status: 200 });
     } catch {
         return new Response('Error fetching asistencias', { status: 500 });

@@ -14,4 +14,6 @@ const IngresoSchema: Schema = new Schema({
     gimnasioId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gimnasio', required: true },
 });
 
+IngresoSchema.index({ gimnasioId: 1, fecha: -1 });
+
 export default mongoose.models.Ingreso || mongoose.model<IIngreso>('Ingreso', IngresoSchema);

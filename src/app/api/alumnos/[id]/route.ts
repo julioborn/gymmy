@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const { id } = params;
 
     try {
-        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
+        const alumno = await Alumno.findOne({ _id: id, gimnasioId }).lean();
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
         }

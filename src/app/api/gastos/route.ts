@@ -10,7 +10,7 @@ export async function GET() {
 
     try {
         await connectMongoDB();
-        const gastos = await Gasto.find({ gimnasioId });
+        const gastos = await Gasto.find({ gimnasioId }).lean();
         return NextResponse.json(gastos, { status: 200 });
     } catch {
         return NextResponse.json({ error: 'Error al obtener los gastos' }, { status: 500 });

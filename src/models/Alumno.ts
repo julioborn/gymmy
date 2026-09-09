@@ -129,6 +129,8 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
 });
 
 AlumnoSchema.index({ dni: 1, gimnasioId: 1 }, { unique: true });
+AlumnoSchema.index({ gimnasioId: 1 });
+AlumnoSchema.index({ gimnasioId: 1, apellido: 1 });
 
 const Alumno = mongoose.models.Alumno || mongoose.model<IAlumno>('Alumno', AlumnoSchema);
 export default Alumno;
