@@ -76,6 +76,7 @@ export default function ListaAlumnosPage() {
     const [itemsPerPage] = useState(10); // Cantidad de elementos por página
     const [alumnoSeleccionado, setAlumnoSeleccionado] = useState<any | null>(null);
     const [filtroDiasEntrena, setFiltroDiasEntrena] = useState('');
+    const [filtroArea, setFiltroArea] = useState('');
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
 
@@ -457,7 +458,9 @@ export default function ListaAlumnosPage() {
                     ? verificarPagoMesActual(alumno.pagos)
                     : !verificarPagoMesActual(alumno.pagos);
 
-            return coincideBusqueda && coincideLetraApellido && coincidePago && coincideDiasEntrena;
+            const coincideArea = filtroArea ? alumno.area === filtroArea : true;
+
+            return coincideBusqueda && coincideLetraApellido && coincidePago && coincideDiasEntrena && coincideArea;
 
         })
         .sort((a, b) => {
@@ -836,11 +839,14 @@ export default function ListaAlumnosPage() {
                         filtroDiasEntrena={filtroDiasEntrena}
                         setFiltroDiasEntrena={setFiltroDiasEntrena}
                         diasDisponibles={[...Array.from(new Set(alumnos.map((a) => a.diasEntrenaSemana)))].filter(Boolean).sort((a, b) => a - b)}
+                        filtroArea={filtroArea}
+                        setFiltroArea={setFiltroArea}
                         limpiarFiltros={() => {
                             setBusqueda('');
                             setFiltroPago('');
                             setOrdenDiasRestantes('');
                             setFiltroDiasEntrena('');
+                            setFiltroArea('');
                         }}
                     />
                 </Suspense>

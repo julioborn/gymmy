@@ -8,6 +8,8 @@ type FiltrosProps = {
     filtroDiasEntrena: string;
     setFiltroDiasEntrena: (value: string) => void;
     diasDisponibles: number[];
+    filtroArea: string;
+    setFiltroArea: (value: string) => void;
     limpiarFiltros: () => void;
 };
 
@@ -27,9 +29,11 @@ export default function FiltrosAlumnos({
     filtroDiasEntrena,
     setFiltroDiasEntrena,
     diasDisponibles,
+    filtroArea,
+    setFiltroArea,
     limpiarFiltros,
 }: FiltrosProps) {
-    const hayFiltros = busqueda || filtroPago || ordenDiasRestantes || filtroDiasEntrena;
+    const hayFiltros = busqueda || filtroPago || ordenDiasRestantes || filtroDiasEntrena || filtroArea;
 
     return (
         <div className="space-y-3 mb-2">
@@ -101,6 +105,21 @@ export default function FiltrosAlumnos({
                         <Chevron />
                     </div>
                 )}
+
+                <div className="relative flex-1">
+                    <select
+                        value={filtroArea}
+                        onChange={(e) => setFiltroArea(e.target.value)}
+                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
+                    >
+                        <option value="">Área</option>
+                        <option value="salud">❤️ Salud</option>
+                        <option value="fitness">💪 Fitness</option>
+                        <option value="rendimiento">🏅 Rendimiento</option>
+                        <option value="formacion">🌱 Formación</option>
+                    </select>
+                    <Chevron />
+                </div>
 
                 {hayFiltros && (
                     <button
