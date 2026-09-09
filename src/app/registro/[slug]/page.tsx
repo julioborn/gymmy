@@ -78,6 +78,7 @@ export default function RegistroPage() {
                 setError('Ingresá tu fecha de nacimiento completa.'); return;
             }
             if (!form.telefono.trim()) { setError('Ingresá tu teléfono.');          return; }
+            if (!form.horarioEntrenamiento) { setError('Seleccioná tu horario de entrenamiento.'); return; }
         }
         if (step === 2 && !form.areaElegida)      { setError('Por favor seleccioná tu objetivo.'); return; }
         if (step === 3 && !form.tieneCondicion)   { setError('Por favor respondé la pregunta.');   return; }
@@ -202,10 +203,20 @@ export default function RegistroPage() {
             ←
         </button>
     );
+    const stepIsValid = (() => {
+        if (step === 1) return !!(form.nombre.trim() && form.apellido.trim() && form.dni.trim() &&
+            form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() && form.horarioEntrenamiento);
+        if (step === 2) return !!form.areaElegida;
+        if (step === 3) return !!form.tieneCondicion;
+        if (step === 4) return !!form.nivelExperiencia;
+        if (step === 5) return form.diasEntrenaSemana > 0;
+        return false;
+    })();
+
     const BtnNext = ({ label = 'Siguiente →', onClick }: { label?: string; onClick?: () => void }) => (
-        <button type="button" onClick={onClick ?? nextStep} disabled={submitting}
-            className="w-full py-5 rounded-2xl text-lg font-bold text-white transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{ background: green }}>
+        <button type="button" onClick={onClick ?? nextStep} disabled={submitting || !stepIsValid}
+            className="w-full py-5 rounded-2xl text-lg font-bold text-white transition-all active:scale-[0.98]"
+            style={{ background: stepIsValid && !submitting ? green : '#cbd5e1' }}>
             {label}
         </button>
     );
@@ -213,12 +224,12 @@ export default function RegistroPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header */}
-            <div className="px-6 pt-10 pb-6" style={{ background: '#000' }}>
+            <div className="px-4 pt-5 pb-4" style={{ background: '#000' }}>
                 {gym.logoUrl && (
                     <div className="flex justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={gym.logoUrl} alt={gym.nombre}
-                            style={{ maxWidth: 260, maxHeight: 130, objectFit: 'contain' }}
+                            style={{ maxWidth: 160, maxHeight: 72, objectFit: 'contain' }}
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     </div>
                 )}
@@ -303,7 +314,7 @@ export default function RegistroPage() {
                             </div>
 
                             <div>
-                                <label className={labelClass}>Horario <span className="ml-2 text-sm font-normal text-slate-400">opcional</span></label>
+                                <label className={labelClass}>Horario de entrenamiento</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['mañana', 'siesta', 'tarde'] as const).map(h => {
                                         const sel = form.horarioEntrenamiento === h;
