@@ -141,10 +141,10 @@ export default function RegistroPage() {
         </div>
     );
     if (success) return (
-        <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-16">
             <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-10 max-w-sm w-full text-center">
                 {gym?.logoUrl
-                    ? <img src={gym.logoUrl} alt={gym.nombre} className="w-20 h-20 object-contain mx-auto mb-5" />
+                    ? <img src={gym.logoUrl} alt={gym.nombre} className="w-32 h-32 object-contain mx-auto mb-5" />
                     : (
                         <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: `${green}22` }}>
                             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke={green}>
@@ -153,7 +153,7 @@ export default function RegistroPage() {
                         </div>
                     )
                 }
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">¡Registro exitoso!</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">¡Ya estás registrado!</h2>
                 <p className="text-slate-500 text-base leading-relaxed mb-6">
                     Tu cuenta fue creada en <span className="font-semibold text-slate-700">{gym.nombre}</span>. Ya podés iniciar sesión en la app.
                 </p>
