@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 
 async function getAuthDb() {
-    const { db } = await getAuthDb();
+    const { db } = await getDb();
     return db;
 }
 
