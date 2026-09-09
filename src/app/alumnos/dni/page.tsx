@@ -5,6 +5,7 @@ import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css';
 import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
+import { signOut } from 'next-auth/react';
 
 const swalDni = {
     customClass: {
@@ -42,6 +43,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     const keyboardRef = useRef<any>(null);
     const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const INACTIVITY_MS = 10000;
 
     const clearDNI = () => {
@@ -220,8 +222,44 @@ export default function RegistrarAsistenciaPorDNIPage() {
             document.removeEventListener('visibilitychange', onVisibilityChange);
             wakeLock?.release().catch(() => {});
             cancelInactivityTimer();
+            handleLogoLongPressEnd();
         };
     }, []);
+
+    const handleLogoLongPressStart = () => {
+        longPressTimer.current = setTimeout(async () => {
+            const result = await Swal.fire({
+                ...swalDni,
+                title: 'Salir de recepción',
+                input: 'password',
+                inputLabel: 'Contraseña',
+                inputPlaceholder: 'Ingresá tu contraseña',
+                showCancelButton: true,
+                confirmButtonText: 'Salir',
+                cancelButtonText: 'Cancelar',
+            });
+            if (result.isConfirmed && result.value) {
+                const res = await fetch('/api/auth/verify-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: result.value }),
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    signOut({ callbackUrl: '/login' });
+                } else {
+                    Swal.fire({ ...swalDni, icon: 'error', title: 'Contraseña incorrecta' });
+                }
+            }
+        }, 2000);
+    };
+
+    const handleLogoLongPressEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    };
 
     const ACTIVIDADES = [
         { label: 'Musculación', color: acento2 },
@@ -248,8 +286,17 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
             <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
 
-                {/* Logo del gimnasio */}
-                <div className="flex items-center justify-center flex-none" style={{ height: 130 }}>
+                {/* Logo del gimnasio — mantener presionado 2s para salir */}
+                <div
+                    className="flex items-center justify-center flex-none"
+                    style={{ height: 130 }}
+                    onMouseDown={handleLogoLongPressStart}
+                    onMouseUp={handleLogoLongPressEnd}
+                    onMouseLeave={handleLogoLongPressEnd}
+                    onTouchStart={handleLogoLongPressStart}
+                    onTouchEnd={handleLogoLongPressEnd}
+                    onTouchCancel={handleLogoLongPressEnd}
+                >
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
