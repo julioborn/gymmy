@@ -2471,9 +2471,9 @@ export default function HistorialAlumnoPage() {
             </div>
         </div>
 
-        {/* Day action bottom sheet — mobile only */}
+        {/* Day action bottom sheet */}
         {dayModal && (
-            <div className="fixed inset-0 z-[100] flex items-end sm:hidden">
+            <div className="fixed inset-0 z-[100] flex items-end">
                 <div className="absolute inset-0 bg-black/40" onClick={closeDayModal} />
                 <div className="relative w-full bg-white rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
                     {/* Grip handle */}
