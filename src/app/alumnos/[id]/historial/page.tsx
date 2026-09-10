@@ -2601,43 +2601,37 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Horario</p>
-                                    <div className="flex items-center justify-center gap-5 bg-slate-50 rounded-2xl py-4 border border-slate-200">
-                                        {/* Hours */}
-                                        <div className="flex flex-col items-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
-                                                    setDayModalActHora(`${String((h + 1) % 24).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
-                                                }}
-                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▲</button>
-                                            <span className="text-4xl font-bold text-slate-800 w-16 text-center tabular-nums">{dayModalActHora.split(':')[0]}</span>
-                                            <button
-                                                onClick={() => {
-                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
-                                                    setDayModalActHora(`${String((h - 1 + 24) % 24).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
-                                                }}
-                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▼</button>
-                                        </div>
-                                        <span className="text-4xl font-bold text-slate-300 mb-0.5">:</span>
-                                        {/* Minutes */}
-                                        <div className="flex flex-col items-center gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
-                                                    const next = (mm + 5) % 60;
-                                                    setDayModalActHora(`${String(h).padStart(2,'0')}:${String(next).padStart(2,'0')}`);
-                                                }}
-                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▲</button>
-                                            <span className="text-4xl font-bold text-slate-800 w-16 text-center tabular-nums">{dayModalActHora.split(':')[1]}</span>
-                                            <button
-                                                onClick={() => {
-                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
-                                                    const prev = (mm - 5 + 60) % 60;
-                                                    setDayModalActHora(`${String(h).padStart(2,'0')}:${String(prev).padStart(2,'0')}`);
-                                                }}
-                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▼</button>
-                                        </div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Horario</p>
+                                        <span className="text-sm font-bold text-blue-600 tabular-nums">{dayModalActHora} hs</span>
+                                    </div>
+                                    {/* Hours grid */}
+                                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1.5">Hora</p>
+                                    <div className="grid grid-cols-6 gap-1.5 mb-3">
+                                        {Array.from({ length: 24 }, (_, i) => i).map(h => {
+                                            const hStr = String(h).padStart(2,'0');
+                                            const selected = dayModalActHora.split(':')[0] === hStr;
+                                            return (
+                                                <button key={h} onClick={() => setDayModalActHora(`${hStr}:${dayModalActHora.split(':')[1]}`)}
+                                                    className={`py-2 rounded-lg text-sm font-semibold transition ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 active:bg-slate-200'}`}>
+                                                    {hStr}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {/* Minutes grid */}
+                                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1.5">Minutos</p>
+                                    <div className="grid grid-cols-6 gap-1.5">
+                                        {[0,5,10,15,20,25,30,35,40,45,50,55].map(m => {
+                                            const mStr = String(m).padStart(2,'0');
+                                            const selected = dayModalActHora.split(':')[1] === mStr;
+                                            return (
+                                                <button key={m} onClick={() => setDayModalActHora(`${dayModalActHora.split(':')[0]}:${mStr}`)}
+                                                    className={`py-2 rounded-lg text-sm font-semibold transition ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 active:bg-slate-200'}`}>
+                                                    {mStr}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                                 <button onClick={submitDayModalActividad} disabled={!dayModalActTipo || dayModalSaving}
