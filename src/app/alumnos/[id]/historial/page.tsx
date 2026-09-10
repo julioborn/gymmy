@@ -1902,14 +1902,14 @@ export default function HistorialAlumnoPage() {
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 {/* Calendario */}
-                <div className="p-3 sm:p-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
+                <div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
 
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
 
                         <div className="order-2 bg-white rounded-xl border border-slate-200 p-3 sm:pt-5 sm:px-0 sm:pb-5">
                                 {/* Nav */}
-                                <div className="flex items-center justify-between mb-3 sm:mb-4 sm:px-5">
+                                <div className="flex items-center justify-between mb-3 sm:mb-4">
                                     <button
                                         onClick={() => { if (mobCalMonth === 0) { setMobCalMonth(11); setMobCalYear(y => y - 1); } else setMobCalMonth(m => m - 1); }}
                                         className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition text-xl"
@@ -2043,7 +2043,7 @@ export default function HistorialAlumnoPage() {
                                     })}
                                 </div>
                                 {/* Legend */}
-                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 flex-wrap sm:px-5">
+                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 flex-wrap">
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-500 text-xs">Musculación</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-slate-500 text-xs">Intermitente</span></div>
                                     <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-500 text-xs">Otro</span></div>
@@ -2207,7 +2207,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Tab nav */}
-                <div className="px-4 sm:px-6 flex border-b border-slate-100">
+                <div className="px-4 sm:px-5 flex border-b border-slate-100">
                     {([
                         { key: 'asistencias', label: 'Asistencias' },
                         { key: 'planes',      label: 'Planes' },
@@ -2229,7 +2229,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Panels */}
-                <div ref={sectionRef} className="px-4 sm:px-6 py-5">
+                <div ref={sectionRef} className="px-4 sm:px-5 py-5">
 
                         {/* ── ASISTENCIAS ── */}
                         {activeTab === 'asistencias' && (
