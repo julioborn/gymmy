@@ -940,15 +940,20 @@ export default function MiCuentaPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        const sessionsDone = planInicio && alumno
-                            ? alumno.asistencia.filter(a =>
-                                a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio
-                              ).length
-                            : 0;
-                        const currentDayIdx = planEj.dias.length > 0 ? sessionsDone % planEj.dias.length : 0;
-                        const sessionBasedWeekNum = planEj.dias.length > 0
-                            ? Math.min(Math.floor(sessionsDone / planEj.dias.length) + 1, totalSem)
-                            : 1;
+                        const diasLen = planEj.dias.length;
+                        const sortedSessionsR = (planInicio && alumno)
+                            ? alumno.asistencia
+                                .filter((a: { actividad: string; presente: boolean; fecha: string }) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio)
+                                .sort((a: { fecha: string }, b: { fecha: string }) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+                            : [];
+                        const totalDoneR = sortedSessionsR.length;
+                        const lastSessionR = sortedSessionsR[sortedSessionsR.length - 1] as { fecha: string } | undefined;
+                        const threeHoursAgoR = Date.now() - 3 * 60 * 60 * 1000;
+                        const justAttendedR = lastSessionR && new Date(lastSessionR.fecha).getTime() > threeHoursAgoR;
+                        const effectiveDoneR = justAttendedR ? totalDoneR - 1 : totalDoneR;
+                        const planComplete = diasLen > 0 && effectiveDoneR >= totalSem * diasLen;
+                        const currentDayIdx = planComplete ? diasLen : (diasLen > 0 ? effectiveDoneR % diasLen : 0);
+                        const sessionBasedWeekNum = planComplete ? totalSem + 1 : Math.min(Math.floor(effectiveDoneR / diasLen) + 1, totalSem);
 
                         return (
                             <>

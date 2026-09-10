@@ -845,29 +845,19 @@ export default function MiPerfilPage() {
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
                         // Calendar-week-based using local date strings (avoids UTC boundary issues)
-                        const nowR = new Date();
-                        const thisMonStrR = getMondayStr(nowR);
-                        const sessionBasedWeekNum = (() => {
-                            if (!planInicio) return 1;
-                            const planMonStrR = getMondayStr(planInicio);
-                            const planMonD = new Date(planMonStrR + 'T12:00:00');
-                            const thisMonD = new Date(thisMonStrR + 'T12:00:00');
-                            const n = Math.round((thisMonD.getTime() - planMonD.getTime()) / msPerWeek) + 1;
-                            return Math.min(Math.max(n, 1), totalSem);
-                        })();
-                        const currentDayIdx = (() => {
-                            const thisMonD2 = new Date(thisMonStrR + 'T12:00:00');
-                            const sunStrR = localDateStr(new Date(thisMonD2.getTime() + 6 * 24 * 60 * 60 * 1000));
-                            const threeHoursAgo = nowR.getTime() - 3 * 60 * 60 * 1000;
-                            const sessionsThisWeek = alumno.asistencia.filter(a => {
-                                const aDate = new Date(a.fecha);
-                                const aStr = localDateStr(aDate);
-                                return a.actividad === 'Musculación' && a.presente
-                                    && aStr >= thisMonStrR && aStr <= sunStrR
-                                    && aDate.getTime() <= threeHoursAgo;
-                            }).length;
-                            return Math.min(sessionsThisWeek, planEj.dias.length);
-                        })();
+                        const diasLen = planEj.dias.length;
+                        const sortedSessionsR = planInicio ? alumno.asistencia
+                            .filter(a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio)
+                            .sort((a: { fecha: string }, b: { fecha: string }) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+                            : [];
+                        const totalDoneR = sortedSessionsR.length;
+                        const lastSessionR = sortedSessionsR[sortedSessionsR.length - 1];
+                        const threeHoursAgoR = Date.now() - 3 * 60 * 60 * 1000;
+                        const justAttendedR = lastSessionR && new Date((lastSessionR as { fecha: string }).fecha).getTime() > threeHoursAgoR;
+                        const effectiveDoneR = justAttendedR ? totalDoneR - 1 : totalDoneR;
+                        const planComplete = diasLen > 0 && effectiveDoneR >= totalSem * diasLen;
+                        const sessionBasedWeekNum = planComplete ? totalSem + 1 : Math.min(Math.floor(effectiveDoneR / diasLen) + 1, totalSem);
+                        const currentDayIdx = planComplete ? diasLen : (diasLen > 0 ? effectiveDoneR % diasLen : 0);
 
                         return (
                             <>
