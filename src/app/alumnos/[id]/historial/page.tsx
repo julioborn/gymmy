@@ -192,7 +192,11 @@ export default function HistorialAlumnoPage() {
     const [dayModal, setDayModal] = useState<string | null>(null);
     const [dayModalStep, setDayModalStep] = useState<'menu' | 'actividad' | 'plan' | 'pago'>('menu');
     const [dayModalActTipo, setDayModalActTipo] = useState('');
-    const [dayModalActHora, setDayModalActHora] = useState('12:00');
+    const [dayModalActHora, setDayModalActHora] = useState(() => {
+        const n = new Date();
+        const m = Math.round(n.getMinutes() / 5) * 5;
+        return `${String(m >= 60 ? (n.getHours() + 1) % 24 : n.getHours()).padStart(2,'0')}:${String(m >= 60 ? 0 : m).padStart(2,'0')}`;
+    });
     const [dayModalPlanDur, setDayModalPlanDur] = useState('');
     const [dayModalPagoDias, setDayModalPagoDias] = useState<number | null>(null);
     const [dayModalPagoMetodo, setDayModalPagoMetodo] = useState('');
@@ -1111,7 +1115,9 @@ export default function HistorialAlumnoPage() {
         setDayModal(dateKey);
         setDayModalStep('menu');
         setDayModalActTipo('');
-        setDayModalActHora('12:00');
+        const n = new Date();
+        const m = Math.round(n.getMinutes() / 5) * 5;
+        setDayModalActHora(`${String(m >= 60 ? (n.getHours() + 1) % 24 : n.getHours()).padStart(2,'0')}:${String(m >= 60 ? 0 : m).padStart(2,'0')}`);
         setDayModalPlanDur('');
         setDayModalPagoDias(null);
         setDayModalPagoMetodo('');
@@ -2540,7 +2546,13 @@ export default function HistorialAlumnoPage() {
                                     <button
                                         onClick={() => setDayModalStep('actividad')}
                                         className="flex flex-col items-center gap-2 py-5 rounded-2xl bg-blue-600 active:bg-blue-700 transition shadow-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 16 16"><path d="M9.5 2a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1h-1zM11.5 3.5a.5.5 0 0 0-.5.5v1.5H9.646a2 2 0 0 0-1.9 1.37L7.5 8H5a.5.5 0 0 0 0 1h2.5l-.5 1.5H5a.5.5 0 0 0 0 1h2l-.333 1H5a.5.5 0 0 0 0 1h2.111l-.444 1.333A.5.5 0 0 0 7.144 15H8.5a.5.5 0 0 0 .447-.276L9.5 13h1.476l.553 1.724A.5.5 0 0 0 12 15h1.356a.5.5 0 0 0 .477-.651L11.5 7.5V4a.5.5 0 0 0-.5-.5h-.5z"/></svg>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="1" y="7" width="3" height="10" rx="1.5"/>
+                                            <rect x="4" y="9" width="2.5" height="6" rx="1"/>
+                                            <rect x="6.5" y="11" width="11" height="2" rx="1"/>
+                                            <rect x="17.5" y="9" width="2.5" height="6" rx="1"/>
+                                            <rect x="20" y="7" width="3" height="10" rx="1.5"/>
+                                        </svg>
                                         <span className="text-white font-semibold text-xs text-center leading-tight">Actividad</span>
                                     </button>
                                     <button
@@ -2590,8 +2602,43 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Horario</p>
-                                    <input type="time" value={dayModalActHora} onChange={e => setDayModalActHora(e.target.value)}
-                                        className="w-full px-4 py-3.5 rounded-xl border border-slate-200 text-slate-800 text-lg font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-slate-50" />
+                                    <div className="flex items-center justify-center gap-5 bg-slate-50 rounded-2xl py-4 border border-slate-200">
+                                        {/* Hours */}
+                                        <div className="flex flex-col items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
+                                                    setDayModalActHora(`${String((h + 1) % 24).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
+                                                }}
+                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▲</button>
+                                            <span className="text-4xl font-bold text-slate-800 w-16 text-center tabular-nums">{dayModalActHora.split(':')[0]}</span>
+                                            <button
+                                                onClick={() => {
+                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
+                                                    setDayModalActHora(`${String((h - 1 + 24) % 24).padStart(2,'0')}:${String(mm).padStart(2,'0')}`);
+                                                }}
+                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▼</button>
+                                        </div>
+                                        <span className="text-4xl font-bold text-slate-300 mb-0.5">:</span>
+                                        {/* Minutes */}
+                                        <div className="flex flex-col items-center gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
+                                                    const next = (mm + 5) % 60;
+                                                    setDayModalActHora(`${String(h).padStart(2,'0')}:${String(next).padStart(2,'0')}`);
+                                                }}
+                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▲</button>
+                                            <span className="text-4xl font-bold text-slate-800 w-16 text-center tabular-nums">{dayModalActHora.split(':')[1]}</span>
+                                            <button
+                                                onClick={() => {
+                                                    const [h, mm] = dayModalActHora.split(':').map(Number);
+                                                    const prev = (mm - 5 + 60) % 60;
+                                                    setDayModalActHora(`${String(h).padStart(2,'0')}:${String(prev).padStart(2,'0')}`);
+                                                }}
+                                                className="w-12 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 text-lg shadow-sm active:bg-slate-100">▼</button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <button onClick={submitDayModalActividad} disabled={!dayModalActTipo || dayModalSaving}
                                     className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base transition disabled:opacity-40">
