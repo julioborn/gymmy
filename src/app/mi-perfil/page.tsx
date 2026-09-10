@@ -120,6 +120,56 @@ function IconTrophy({ className }: { className?: string }) {
     );
 }
 
+function IconSwitcherCard({
+    currentIcon, switchingIcon, gymLogoUrl, gymNombre, onSetIcon,
+}: {
+    currentIcon: string;
+    switchingIcon: boolean;
+    gymLogoUrl: string;
+    gymNombre: string | null;
+    onSetIcon: (name: string) => void;
+}) {
+    const options = [
+        { name: 'default',    label: 'Gymmy',              src: '/icons/icon-192x192.png' },
+        { name: 'Sporttime',  label: gymNombre ?? 'Gimnasio', src: gymLogoUrl },
+    ];
+    return (
+        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm px-4 py-3.5">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ícono de la app</p>
+            <div className="flex gap-3">
+                {options.map(opt => {
+                    const active = currentIcon === opt.name;
+                    return (
+                        <button
+                            key={opt.name}
+                            onClick={() => onSetIcon(opt.name)}
+                            disabled={switchingIcon}
+                            className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-2xl border-2 transition-all disabled:opacity-60 ${
+                                active
+                                    ? 'border-slate-900 bg-slate-50'
+                                    : 'border-transparent bg-slate-50 hover:border-slate-200'
+                            }`}
+                        >
+                            <img
+                                src={opt.src}
+                                alt={opt.label}
+                                className="w-14 h-14 rounded-2xl object-cover shadow-sm"
+                            />
+                            <span className="text-xs font-semibold text-slate-700">{opt.label}</span>
+                            {active && (
+                                <span className="text-[10px] font-bold text-emerald-600">Activo</span>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+            {switchingIcon && (
+                <p className="text-center text-xs text-slate-400 mt-2.5">Cambiando ícono...</p>
+            )}
+        </div>
+    );
+}
+
 export default function MiPerfilPage() {
     const { data: session } = useSession();
     const myId = session?.user?.id;
@@ -163,6 +213,12 @@ export default function MiPerfilPage() {
 
     const [acento, setAcento] = useState('#111111');
     const [acento2, setAcento2] = useState('#10b981');
+    const [currentIcon, setCurrentIcon] = useState<string>('default');
+    const [switchingIcon, setSwitchingIcon] = useState(false);
+    const [isNative, setIsNative] = useState(false);
+    const gymLogoUrl = (session?.user as any)?.gimnasioLogoUrl as string | null ?? null;
+    const gymId = (session?.user as any)?.gimnasioId as string | null ?? null;
+    const gymNombre = (session?.user as any)?.gimnasioNombre as string | null ?? null;
     const [showCalentamiento, setShowCalentamiento] = useState(false);
 
     const now = new Date();
@@ -217,6 +273,20 @@ export default function MiPerfilPage() {
             }
         } finally {
             setLoadingPlan(false);
+        }
+    }
+
+    async function handleSetIcon(iconName: string) {
+        if (switchingIcon) return;
+        setSwitchingIcon(true);
+        try {
+            const { default: AppIcon } = await import('@/plugins/AppIcon');
+            await AppIcon.setIcon({ iconName });
+            setCurrentIcon(iconName);
+        } catch (e) {
+            console.error('Icon switch failed:', e);
+        } finally {
+            setSwitchingIcon(false);
         }
     }
 
@@ -291,6 +361,20 @@ export default function MiPerfilPage() {
     }
 
     useEffect(() => {
+        (async () => {
+            const { Capacitor } = await import('@capacitor/core');
+            if (Capacitor.isNativePlatform()) {
+                setIsNative(true);
+                const { default: AppIcon } = await import('@/plugins/AppIcon');
+                try {
+                    const { iconName } = await AppIcon.getIcon();
+                    setCurrentIcon(iconName);
+                } catch {}
+            }
+        })();
+    }, []);
+
+    useEffect(() => {
         if (!myId) return;
         fetch('/api/gimnasio/tema').then(r => r.json()).then(d => {
             if (d.temaAcento) setAcento(d.temaAcento);
@@ -336,6 +420,16 @@ export default function MiPerfilPage() {
                         </div>
                     </div>
                 </div>
+                {isNative && gymId && gymLogoUrl && (
+                    <IconSwitcherCard
+                        currentIcon={currentIcon}
+                        switchingIcon={switchingIcon}
+                        gymLogoUrl={gymLogoUrl}
+                        gymNombre={gymNombre}
+                        onSetIcon={handleSetIcon}
+                    />
+                )}
+
                 <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm p-10 text-center">
                     <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -457,6 +551,17 @@ export default function MiPerfilPage() {
                     </div>
                 </div>
             </div>
+
+            {/* ── ICON SWITCHER ── */}
+            {isNative && gymId && gymLogoUrl && (
+                <IconSwitcherCard
+                    currentIcon={currentIcon}
+                    switchingIcon={switchingIcon}
+                    gymLogoUrl={gymLogoUrl}
+                    gymNombre={gymNombre}
+                    onSetIcon={handleSetIcon}
+                />
+            )}
 
             {/* ── TABS ── */}
             <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
@@ -886,14 +991,6 @@ export default function MiPerfilPage() {
                                             </button>
                                         );
                                     })}
-                                </div>
-
-                                {/* DEBUG TEMPORAL */}
-                                <div className="bg-red-600 text-white text-xs font-bold rounded-xl p-2 space-y-0.5">
-                                    <p>semActual={sessionBasedWeekNum} diaIdx={currentDayIdx} selDia={selectedDia}</p>
-                                    <p>lunes={thisMonStrR} total={alumno.asistencia.length}</p>
-                                    <p>asistSemana(sinFiltro3h)={(() => { const m=getMondayStr(new Date()); const s=localDateStr(new Date(new Date(m+'T12:00:00').getTime()+6*24*60*60*1000)); return alumno.asistencia.filter(a=>{const aDate=new Date(a.fecha);const aStr=localDateStr(aDate);return a.actividad==='Musculación'&&a.presente&&aStr>=m&&aStr<=s;}).length; })()}</p>
-                                    <p>ultimaAsist={alumno.asistencia.length>0?alumno.asistencia[alumno.asistencia.length-1].fecha+'/'+alumno.asistencia[alumno.asistencia.length-1].actividad:'none'}</p>
                                 </div>
 
                                 {dia?.bloqueActivacion && (

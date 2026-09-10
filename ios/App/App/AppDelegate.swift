@@ -1,6 +1,49 @@
 import UIKit
 import Capacitor
 
+// MARK: - AppIconPlugin
+// Capacitor plugin for switching the app icon between default (Gymmy) and gym-specific icons.
+@objc(AppIcon)
+public class AppIconPlugin: CAPPlugin {
+
+    // Logical name → iOS appiconset name in Assets.xcassets
+    private func iosIconName(for logicalName: String?) -> String? {
+        switch logicalName {
+        case "Sporttime": return "AppIcon-Sporttime"
+        default:          return nil  // nil resets to primary icon
+        }
+    }
+
+    @objc func setIcon(_ call: CAPPluginCall) {
+        let logicalName = call.getString("iconName")
+        guard #available(iOS 10.3, *) else {
+            call.reject("Alternate icons require iOS 10.3 or later")
+            return
+        }
+        guard UIApplication.shared.supportsAlternateIcons else {
+            call.reject("Alternate icons are not supported on this device")
+            return
+        }
+        let target = iosIconName(for: logicalName)
+        DispatchQueue.main.async {
+            UIApplication.shared.setAlternateIconName(target) { error in
+                if let error = error {
+                    call.reject(error.localizedDescription)
+                } else {
+                    UserDefaults.standard.set(logicalName ?? "default", forKey: "currentAppIcon")
+                    call.resolve()
+                }
+            }
+        }
+    }
+
+    @objc func getIcon(_ call: CAPPluginCall) {
+        let current = UserDefaults.standard.string(forKey: "currentAppIcon") ?? "default"
+        call.resolve(["iconName": current])
+    }
+}
+
+// MARK: - AppDelegate
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
