@@ -209,8 +209,6 @@ export default function HistorialAlumnoPage() {
     const [filtrosAbiertos, setFiltrosAbiertos] = useState<Record<string, boolean>>({});
     const toggleFiltros = (tab: string) => setFiltrosAbiertos(prev => ({ ...prev, [tab]: !prev[tab] }));
     const sectionRef = useRef<HTMLDivElement>(null);
-    const planDeletedRef = useRef(false);
-    const skipAutoDeleteRef = useRef(false);
     // Filtros asistencias
     const [filtroActividad, setFiltroActividad] = useState('Todas');
     const [fechaDesdeAsist, setFechaDesdeAsist] = useState('');
@@ -629,21 +627,7 @@ export default function HistorialAlumnoPage() {
                 ).length;
 
                 const diasRestantes = duracion - asistenciasMusculacion;
-
-                if (diasRestantes <= 0) {
-                    if (!planDeletedRef.current && !skipAutoDeleteRef.current) {
-                        planDeletedRef.current = true;
-                        await fetch(`/api/alumnos/${id}/plan`, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                        });
-                    }
-                    skipAutoDeleteRef.current = false;
-                    setDiasRestantes(null);
-                } else {
-                    skipAutoDeleteRef.current = false;
-                    setDiasRestantes(diasRestantes);
-                }
+                setDiasRestantes(diasRestantes <= 0 ? 0 : diasRestantes);
             } else {
                 setDiasRestantes(null); // Sin plan o con fecha inválida
             }
@@ -1158,7 +1142,7 @@ export default function HistorialAlumnoPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fechaInicio: dayModal, duracion: Number(dayModalPlanDur), terminado: false }),
             });
-            if (res.ok) { skipAutoDeleteRef.current = true; closeDayModal(); await fetchAlumno(); }
+            if (res.ok) { closeDayModal(); await fetchAlumno(); }
             else Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al iniciar plan' });
         } finally {
             setDayModalSaving(false);
@@ -1246,7 +1230,6 @@ export default function HistorialAlumnoPage() {
                         body: JSON.stringify({ fechaInicio: fechaSeleccionada, duracion: Number(duracion), terminado: false }),
                     });
                     if (response.ok) {
-                        skipAutoDeleteRef.current = true;
                         Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan de entrenamiento actualizado' });
                         fetchAlumno();
                     } else {
@@ -1758,6 +1741,8 @@ export default function HistorialAlumnoPage() {
                         <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/60' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
                             {diasRestantes} entrenos
                         </span>
+                    ) : diasRestantes === 0 ? (
+                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">Plan completado</span>
                     ) : (
                         <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
                     )}
