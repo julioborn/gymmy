@@ -189,6 +189,15 @@ export default function HistorialAlumnoPage() {
     const [mobCalYear, setMobCalYear] = useState(() => new Date().getFullYear());
     const [mobCalMonth, setMobCalMonth] = useState(() => new Date().getMonth());
     const [mobSelectedDay, setMobSelectedDay] = useState<string | null>(null);
+    const [dayModal, setDayModal] = useState<string | null>(null);
+    const [dayModalStep, setDayModalStep] = useState<'menu' | 'actividad' | 'plan' | 'pago'>('menu');
+    const [dayModalActTipo, setDayModalActTipo] = useState('');
+    const [dayModalActHora, setDayModalActHora] = useState('12:00');
+    const [dayModalPlanDur, setDayModalPlanDur] = useState('');
+    const [dayModalPagoDias, setDayModalPagoDias] = useState<number | null>(null);
+    const [dayModalPagoMetodo, setDayModalPagoMetodo] = useState('');
+    const [dayModalPagoRecargo, setDayModalPagoRecargo] = useState(true);
+    const [dayModalSaving, setDayModalSaving] = useState(false);
 
     // Tabs
     const [activeTab, setActiveTab] = useState<'asistencias' | 'planes' | 'pagos'>('asistencias');
@@ -1098,6 +1107,91 @@ export default function HistorialAlumnoPage() {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
+    const openDayModal = (dateKey: string) => {
+        setDayModal(dateKey);
+        setDayModalStep('menu');
+        setDayModalActTipo('');
+        setDayModalActHora('12:00');
+        setDayModalPlanDur('');
+        setDayModalPagoDias(null);
+        setDayModalPagoMetodo('');
+        setDayModalPagoRecargo(true);
+    };
+
+    const closeDayModal = () => {
+        setDayModal(null);
+        setDayModalStep('menu');
+    };
+
+    const submitDayModalActividad = async () => {
+        if (!dayModalActTipo || !dayModal || dayModalSaving) return;
+        setDayModalSaving(true);
+        try {
+            const [year, month, day] = dayModal.split('-').map(Number);
+            const [hh, mm] = dayModalActHora.split(':').map(Number);
+            const fechaLocal = new Date(year, month - 1, day, hh, mm);
+            const res = await fetch(`/api/asistencias/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fecha: fechaLocal.toISOString(), actividad: dayModalActTipo, presente: true }),
+            });
+            if (res.ok) { closeDayModal(); await fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar asistencia' });
+        } finally {
+            setDayModalSaving(false);
+        }
+    };
+
+    const submitDayModalPlan = async () => {
+        if (!dayModalPlanDur || !dayModal || dayModalSaving) return;
+        setDayModalSaving(true);
+        try {
+            const res = await fetch(`/api/alumnos/${id}/plan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fechaInicio: dayModal, duracion: Number(dayModalPlanDur), terminado: false }),
+            });
+            if (res.ok) { skipAutoDeleteRef.current = true; closeDayModal(); await fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al iniciar plan' });
+        } finally {
+            setDayModalSaving(false);
+        }
+    };
+
+    const submitDayModalPago = async () => {
+        if (!dayModalPagoDias || !dayModalPagoMetodo || !dayModal || dayModalSaving) return;
+        setDayModalSaving(true);
+        try {
+            const tarifaSel = tarifas.find(t => t.dias === dayModalPagoDias);
+            if (!tarifaSel) return;
+            const selDate = new Date(dayModal + 'T12:00:00');
+            const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+            const montoRecargo = dayModalPagoRecargo ? recargoAplicable : 0;
+            const mesNombre = selDate.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+            const res = await fetch('/api/alumnos/pagos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alumnoId: id,
+                    nuevoPago: {
+                        mes: mesNombre,
+                        fechaPago: selDate.toISOString(),
+                        diasMusculacion: dayModalPagoDias,
+                        tarifa: tarifaSel.valor,
+                        metodoPago: dayModalPagoMetodo,
+                        recargo: montoRecargo,
+                        totalPagado: tarifaSel.valor + montoRecargo,
+                    },
+                }),
+            });
+            if (res.ok) { closeDayModal(); await fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar pago' });
+        } finally {
+            setDayModalSaving(false);
+        }
+    };
+
     // Seleccionar fecha para agregar o editar una actividad, plan o pago
     const handleDateSelect = async (selectInfo: DateSelectArg, forceAction?: 'plan' | 'actividad' | 'pago') => {
         const fechaSeleccionada = selectInfo.startStr;
@@ -1637,6 +1731,7 @@ export default function HistorialAlumnoPage() {
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
 
     return (
+        <>
         <div className="max-w-4xl mx-auto space-y-4">
             {/* Header */}
             <div className="bg-[#111] rounded-2xl px-4 py-4 sm:px-5 flex items-center gap-3">
@@ -1766,12 +1861,12 @@ export default function HistorialAlumnoPage() {
                                 {/* Nav */}
                                 <div className="flex items-center justify-between mb-3 sm:mb-4 sm:px-5">
                                     <button
-                                        onClick={() => { setMobSelectedDay(null); if (mobCalMonth === 0) { setMobCalMonth(11); setMobCalYear(y => y - 1); } else setMobCalMonth(m => m - 1); }}
+                                        onClick={() => { if (mobCalMonth === 0) { setMobCalMonth(11); setMobCalYear(y => y - 1); } else setMobCalMonth(m => m - 1); }}
                                         className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition text-xl"
                                     >‹</button>
                                     <span className="text-slate-700 font-semibold sm:text-lg capitalize">{new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}</span>
                                     <button
-                                        onClick={() => { setMobSelectedDay(null); if (mobCalMonth === 11) { setMobCalMonth(0); setMobCalYear(y => y + 1); } else setMobCalMonth(m => m + 1); }}
+                                        onClick={() => { if (mobCalMonth === 11) { setMobCalMonth(0); setMobCalYear(y => y + 1); } else setMobCalMonth(m => m + 1); }}
                                         disabled={mobCalYear >= nowCalendar.getFullYear() && mobCalMonth >= nowCalendar.getMonth()}
                                         className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition disabled:opacity-30 text-xl"
                                     >›</button>
@@ -1789,14 +1884,14 @@ export default function HistorialAlumnoPage() {
                                         const asists = asistenciasMapMob[key] || [];
                                         const pags = pagosMapMob[key] || [];
                                         const isToday = key === mobTodayKey;
-                                        const isSelected = key === mobSelectedDay;
+                                        const isSelected = key === dayModal;
                                         const hasData = asists.length > 0 || pags.length > 0;
                                         const isOverflow = !calDay.isCurrentMonth;
                                         const dotColors: Record<string, string> = { Musculación: 'bg-blue-600', Intermitente: 'bg-orange-500', Otro: 'bg-yellow-400' };
                                         return (
                                             <button
                                                 key={`${key}-${i}`}
-                                                onClick={() => setMobSelectedDay(isSelected ? null : key)}
+                                                onClick={() => openDayModal(key)}
                                                 className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-slate-200 transition-colors overflow-hidden ${
                                                     isSelected
                                                         ? 'bg-slate-100'
@@ -1908,53 +2003,6 @@ export default function HistorialAlumnoPage() {
                                 </div>
                             </div>
 
-                            {/* Detalle del día seleccionado */}
-                            {mobSelectedDay && (
-                                <div className="order-1 bg-white rounded-xl border border-slate-200 p-4 space-y-2.5">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h3 className="text-slate-700 font-semibold text-sm capitalize">
-                                            {new Date(mobSelectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                                        </h3>
-                                        <button onClick={() => handleDateSelect({ startStr: mobSelectedDay, allDay: true } as DateSelectArg)} style={{ color: acento }} className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition">+ Agregar</button>
-                                    </div>
-                                    {(asistenciasMapMob[mobSelectedDay] || []).length === 0 && (pagosMapMob[mobSelectedDay] || []).length === 0 && (
-                                        <p className="text-slate-400 text-sm text-center py-3">Sin registros para este día.</p>
-                                    )}
-                                    {(asistenciasMapMob[mobSelectedDay] || []).map((a: Asistencia) => {
-                                        const badgeMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
-                                        return (
-                                            <div key={a._id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeMap[a.actividad] || 'bg-slate-100 text-slate-700'}`}>{a.actividad}</span>
-                                                    <span className="text-slate-400 text-xs">{new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <button onClick={() => handleEditAsistenciaMob(a)} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition" title="Editar">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
-                                                    </button>
-                                                    <button onClick={() => handleEliminarAsistencia(a._id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {(pagosMapMob[mobSelectedDay] || []).map((p: Pago) => (
-                                        <div key={p._id} className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                                                <span className="text-emerald-700 text-sm font-medium capitalize">Pago — {p.mes}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-emerald-600 font-bold text-sm">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</span>
-                                                <button onClick={() => handleEliminarPago(p._id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
 
                     </div>
 
@@ -2422,5 +2470,245 @@ export default function HistorialAlumnoPage() {
                     </div>
             </div>
         </div>
+
+        {/* Day action bottom sheet — mobile only */}
+        {dayModal && (
+            <div className="fixed inset-0 z-[100] flex items-end sm:hidden">
+                <div className="absolute inset-0 bg-black/40" onClick={closeDayModal} />
+                <div className="relative w-full bg-white rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
+                    {/* Grip handle */}
+                    <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                        <div className="w-10 h-1 rounded-full bg-slate-300" />
+                    </div>
+
+                    {/* ── MENU ── */}
+                    {dayModalStep === 'menu' && (
+                        <>
+                            <div className="px-5 pt-2 pb-3 flex items-center justify-between flex-shrink-0">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide capitalize">
+                                        {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long' })}
+                                    </p>
+                                    <h3 className="text-lg font-bold text-slate-800 capitalize">
+                                        {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
+                                    </h3>
+                                </div>
+                                <button onClick={closeDayModal} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl font-medium">×</button>
+                            </div>
+                            <div className="overflow-y-auto flex-1 px-5 pb-8">
+                                {/* Existing records */}
+                                {(asistenciasMapMob[dayModal] || []).length > 0 || (pagosMapMob[dayModal] || []).length > 0 ? (
+                                    <div className="mb-4 space-y-2">
+                                        {(asistenciasMapMob[dayModal] || []).map((a: Asistencia) => {
+                                            const badgeMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                            return (
+                                                <div key={a._id} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeMap[a.actividad] || 'bg-slate-100 text-slate-700'}`}>{a.actividad}</span>
+                                                        <span className="text-slate-400 text-xs">{new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <button onClick={() => { closeDayModal(); handleEditAsistenciaMob(a); }} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                                                        </button>
+                                                        <button onClick={() => { closeDayModal(); handleEliminarAsistencia(a._id); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {(pagosMapMob[dayModal] || []).map((p: Pago) => (
+                                            <div key={p._id} className="flex items-center justify-between bg-emerald-50 rounded-xl px-3 py-2.5 border border-emerald-100">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                                                    <span className="text-emerald-700 text-sm font-medium capitalize">Pago — {p.mes}</span>
+                                                    <span className="text-emerald-600 font-bold text-sm">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                </div>
+                                                <button onClick={() => { closeDayModal(); handleEliminarPago(p._id); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-slate-400 text-sm text-center py-2 mb-4">Sin registros para este día.</p>
+                                )}
+                                {/* Action buttons */}
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Agregar</p>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <button
+                                        onClick={() => setDayModalStep('actividad')}
+                                        className="flex flex-col items-center gap-2 py-5 rounded-2xl bg-blue-600 active:bg-blue-700 transition shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 16 16"><path d="M9.5 2a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1h-1zM11.5 3.5a.5.5 0 0 0-.5.5v1.5H9.646a2 2 0 0 0-1.9 1.37L7.5 8H5a.5.5 0 0 0 0 1h2.5l-.5 1.5H5a.5.5 0 0 0 0 1h2l-.333 1H5a.5.5 0 0 0 0 1h2.111l-.444 1.333A.5.5 0 0 0 7.144 15H8.5a.5.5 0 0 0 .447-.276L9.5 13h1.476l.553 1.724A.5.5 0 0 0 12 15h1.356a.5.5 0 0 0 .477-.651L11.5 7.5V4a.5.5 0 0 0-.5-.5h-.5z"/></svg>
+                                        <span className="text-white font-semibold text-xs text-center leading-tight">Actividad</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setDayModalStep('plan')}
+                                        className="flex flex-col items-center gap-2 py-5 rounded-2xl bg-violet-600 active:bg-violet-700 transition shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 16 16"><path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/><path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3z"/></svg>
+                                        <span className="text-white font-semibold text-xs text-center leading-tight">Plan</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setDayModalStep('pago')}
+                                        className="flex flex-col items-center gap-2 py-5 rounded-2xl bg-emerald-600 active:bg-emerald-700 transition shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-2zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/></svg>
+                                        <span className="text-white font-semibold text-xs text-center leading-tight">Pago</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── ACTIVIDAD ── */}
+                    {dayModalStep === 'actividad' && (
+                        <>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                                <div>
+                                    <p className="text-xs text-slate-400 capitalize">
+                                        {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    </p>
+                                    <h3 className="font-bold text-slate-800">Ingresar actividad</h3>
+                                </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tipo de actividad</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { label: 'Musculación', active: 'bg-blue-600 text-white', idle: 'bg-blue-50 text-blue-700 border border-blue-100' },
+                                            { label: 'Intermitente', active: 'bg-orange-500 text-white', idle: 'bg-orange-50 text-orange-700 border border-orange-100' },
+                                            { label: 'Otro', active: 'bg-yellow-400 text-slate-800', idle: 'bg-yellow-50 text-yellow-700 border border-yellow-100' },
+                                        ].map(({ label, active, idle }) => (
+                                            <button key={label} onClick={() => setDayModalActTipo(label)}
+                                                className={`py-3.5 rounded-xl font-semibold text-sm transition ${dayModalActTipo === label ? active : idle}`}>
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Horario</p>
+                                    <input type="time" value={dayModalActHora} onChange={e => setDayModalActHora(e.target.value)}
+                                        className="w-full px-4 py-3.5 rounded-xl border border-slate-200 text-slate-800 text-lg font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-slate-50" />
+                                </div>
+                                <button onClick={submitDayModalActividad} disabled={!dayModalActTipo || dayModalSaving}
+                                    className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base transition disabled:opacity-40">
+                                    {dayModalSaving ? 'Guardando...' : 'Registrar asistencia'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── PLAN ── */}
+                    {dayModalStep === 'plan' && (
+                        <>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                                <div>
+                                    <p className="text-xs text-slate-400 capitalize">
+                                        Inicio: {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    </p>
+                                    <h3 className="font-bold text-slate-800">Iniciar plan</h3>
+                                </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Duración del plan</p>
+                                    <div className="flex items-center gap-3">
+                                        <input type="number" min="1" max="365" value={dayModalPlanDur} onChange={e => setDayModalPlanDur(e.target.value)}
+                                            placeholder="ej: 20"
+                                            className="flex-1 px-4 py-3.5 rounded-xl border border-slate-200 text-slate-800 text-lg font-medium focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 bg-slate-50" />
+                                        <span className="text-slate-500 font-medium">clases</span>
+                                    </div>
+                                </div>
+                                <button onClick={submitDayModalPlan} disabled={!dayModalPlanDur || dayModalSaving}
+                                    className="w-full py-4 rounded-2xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white font-bold text-base transition disabled:opacity-40">
+                                    {dayModalSaving ? 'Guardando...' : 'Iniciar plan'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── PAGO ── */}
+                    {dayModalStep === 'pago' && (
+                        <>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                                <div>
+                                    <p className="text-xs text-slate-400 capitalize">
+                                        {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    </p>
+                                    <h3 className="font-bold text-slate-800">Marcar pago</h3>
+                                </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tarifa</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {tarifas.map(t => (
+                                            <button key={t.dias} onClick={() => setDayModalPagoDias(t.dias)}
+                                                className={`flex flex-col items-start px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === t.dias ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-700'}`}>
+                                                <span className="font-bold text-lg">${t.valor.toLocaleString('es-AR')}</span>
+                                                <span className="text-xs opacity-80">{t.dias} días/sem</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Método de pago</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[{ value: 'efectivo', label: 'Efectivo' }, { value: 'transferencia', label: 'Transferencia' }].map(m => (
+                                            <button key={m.value} onClick={() => setDayModalPagoMetodo(m.value)}
+                                                className={`py-3.5 rounded-xl border font-semibold text-sm transition ${dayModalPagoMetodo === m.value ? 'bg-slate-800 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                                                {m.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {(() => {
+                                    const selDate = new Date(dayModal + 'T12:00:00');
+                                    const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                                    const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+                                    if (recargoAplicable <= 0) return null;
+                                    return (
+                                        <button onClick={() => setDayModalPagoRecargo(!dayModalPagoRecargo)}
+                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition ${dayModalPagoRecargo ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                                            <span className="text-sm font-medium">
+                                                {esMesPasado ? 'Recargo mes vencido' : 'Recargo por día 10'} (+${recargoAplicable.toLocaleString('es-AR')})
+                                            </span>
+                                            <span className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold ${dayModalPagoRecargo ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                                {dayModalPagoRecargo ? '✓' : ''}
+                                            </span>
+                                        </button>
+                                    );
+                                })()}
+                                {dayModalPagoDias && (
+                                    <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
+                                        <span className="text-slate-500 text-sm">Total a cobrar</span>
+                                        <span className="text-slate-800 font-bold text-xl">
+                                            ${(() => {
+                                                const t = tarifas.find(t => t.dias === dayModalPagoDias);
+                                                if (!t) return '—';
+                                                const selDate = new Date(dayModal + 'T12:00:00');
+                                                const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                                                const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+                                                return (t.valor + (dayModalPagoRecargo ? recargoAplicable : 0)).toLocaleString('es-AR');
+                                            })()}
+                                        </span>
+                                    </div>
+                                )}
+                                <button onClick={submitDayModalPago} disabled={!dayModalPagoDias || !dayModalPagoMetodo || dayModalSaving}
+                                    className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base transition disabled:opacity-40">
+                                    {dayModalSaving ? 'Guardando...' : 'Confirmar cobro'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        )}
+        </>
     );
 }
