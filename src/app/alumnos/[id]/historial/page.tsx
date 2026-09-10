@@ -1740,164 +1740,111 @@ export default function HistorialAlumnoPage() {
     return (
         <>
         <div className="max-w-7xl mx-auto space-y-4">
-            {/* Header */}
-            <div className="bg-[#111] rounded-2xl px-4 py-4 sm:px-5 flex items-center gap-3">
-                <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                    </svg>
-                </Link>
-                <h1 className="flex-1 min-w-0 text-lg font-bold text-white truncate">{alumno.nombre} {alumno.apellido}</h1>
-                {diasRestantes != null && diasRestantes > 0 ? (
-                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/70' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
-                        {diasRestantes} entrenos
-                    </span>
-                ) : (
-                    <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
-                )}
-                <Link
-                    href={`/alumnos/${alumno._id}/plan`}
-                    style={{ backgroundColor: acento }}
-                    className="shrink-0 px-2.5 py-1.5 text-white text-xs font-semibold rounded-xl hover:opacity-80 transition-opacity shadow-sm"
-                >
-                    Plan
-                </Link>
-                <select
-                    className="shrink-0 border border-white/10 rounded-xl px-2.5 py-1.5 bg-white/10 text-white text-sm font-semibold focus:outline-none cursor-pointer"
-                    value=""
-                    onChange={(e) => {
-                        if (e.target.value === 'cuotas') handleConfiguracionTarifas();
-                        if (e.target.value === 'recargo') handleConfiguracionRecargos();
-                        e.target.value = '';
-                    }}
-                >
-                    <option value="" disabled className="text-slate-800">Ajustes</option>
-                    <option value="cuotas" className="text-slate-800">Cuotas</option>
-                    <option value="recargo" className="text-slate-800">Recargo</option>
-                </select>
-            </div>
+            {/* Header + Info fusionados */}
+            <div className="bg-[#111] rounded-2xl overflow-hidden">
 
-            {/* Info + Acciones */}
-            <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
-
-                {/* Collapsed bar — always visible */}
-                <button
-                    onClick={() => setInfoExpanded(v => !v)}
-                    className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition text-left"
-                >
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                {/* Barra siempre visible */}
+                <div className="px-4 sm:px-5 py-4 flex items-center gap-3">
+                    <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                        </svg>
+                    </Link>
+                    <h1 className="flex-1 min-w-0 text-lg font-bold text-white truncate">{alumno.nombre} {alumno.apellido}</h1>
+                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
                         {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
                     </span>
-                    {diasRestantes != null && diasRestantes > 0 && (
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${diasRestantes > 10 ? 'bg-slate-100 text-slate-600' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
+                    {diasRestantes != null && diasRestantes > 0 ? (
+                        <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/60' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
                             {diasRestantes} entrenos
                         </span>
+                    ) : (
+                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
                     )}
-                    <span className="ml-auto text-xs font-semibold text-slate-400 flex items-center gap-1">
-                        {infoExpanded ? 'Ocultar' : 'Ver información'}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform ${infoExpanded ? 'rotate-180' : ''}`}>
+                    <Link
+                        href={`/alumnos/${alumno._id}/plan`}
+                        style={{ backgroundColor: acento }}
+                        className="shrink-0 px-2.5 py-1.5 text-white text-xs font-semibold rounded-xl hover:opacity-80 transition-opacity shadow-sm"
+                    >
+                        Plan
+                    </Link>
+                    <button
+                        onClick={() => setInfoExpanded(v => !v)}
+                        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition"
+                        title={infoExpanded ? 'Ocultar información' : 'Ver información'}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform duration-200 ${infoExpanded ? 'rotate-180' : ''}`}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                         </svg>
-                    </span>
-                </button>
+                    </button>
+                </div>
 
-                {/* Expandable content */}
-                {infoExpanded && <>
-                <div className="border-t border-slate-100" />
+                {/* Expandable: datos + acciones */}
+                {infoExpanded && (
+                    <>
+                    <div className="border-t border-white/10" />
 
-                {/* Top: datos | estado */}
-                <div className="flex flex-col sm:flex-row sm:divide-x divide-slate-100">
-
-                    {/* Datos del alumno */}
-                    <div className="flex-1 px-5 py-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">DNI</p>
-                            <p className="text-base font-bold text-slate-800 tabular-nums">{alumno.dni}</p>
+                    {/* Grid de datos */}
+                    <div className="px-4 sm:px-5 pt-4 pb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                        <div className="bg-white/10 rounded-xl px-3.5 py-3">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">DNI</p>
+                            <p className="text-base font-bold text-white tabular-nums">{alumno.dni}</p>
                         </div>
                         {alumno.area && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Área</p>
-                                <p className="text-base font-bold text-slate-800">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
+                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Área</p>
+                                <p className="text-base font-bold text-white">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
                             </div>
                         )}
                         {alumno.telefono && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Teléfono</p>
-                                <p className="text-base font-bold text-slate-800 tabular-nums">{alumno.telefono}</p>
+                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Teléfono</p>
+                                <p className="text-base font-bold text-white tabular-nums">{alumno.telefono}</p>
                             </div>
                         )}
                         {alumno.horarioEntrenamiento && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Horario</p>
-                                <p className="text-base font-bold text-slate-800">{capitalizar(alumno.horarioEntrenamiento)}</p>
+                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Horario</p>
+                                <p className="text-base font-bold text-white">{capitalizar(alumno.horarioEntrenamiento)}</p>
                             </div>
                         )}
                         {alumno.diasEntrenaSemana && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Días/sem</p>
-                                <p className="text-base font-bold text-slate-800">{alumno.diasEntrenaSemana} días</p>
+                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Días/sem</p>
+                                <p className="text-base font-bold text-white">{alumno.diasEntrenaSemana} días</p>
                             </div>
                         )}
                     </div>
 
-                    {/* Estado: pago + plan */}
-                    <div className="sm:w-52 flex sm:flex-col gap-3 px-5 sm:px-4 pb-5 pt-0 sm:pt-5 sm:justify-center">
-                        {/* Pago */}
-                        <div className={`flex-1 sm:flex-none rounded-xl px-4 py-3.5 ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'}`}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-400">Cuota</p>
-                            <p className={`text-lg font-black ${verificarPagoMesActual(alumno.pagos) ? 'text-emerald-600' : 'text-red-500'}`}>
-                                {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
-                            </p>
-                            <p className="text-[10px] text-slate-400 font-medium capitalize">
-                                {new Date().toLocaleDateString('es-AR', { month: 'long' })}
-                            </p>
-                        </div>
-                        {/* Plan */}
-                        <div className={`flex-1 sm:flex-none rounded-xl px-4 py-3.5 ${diasRestantes == null ? 'bg-slate-50 border border-slate-100' : diasRestantes > 10 ? 'bg-slate-50 border border-slate-100' : diasRestantes > 5 ? 'bg-amber-50 border border-amber-100' : 'bg-red-50 border border-red-100'}`}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-400">Plan</p>
-                            {diasRestantes != null && diasRestantes > 0 ? (
-                                <>
-                                    <p className={`text-lg font-black ${diasRestantes > 10 ? 'text-slate-700' : diasRestantes > 5 ? 'text-amber-600' : 'text-red-500'}`}>
-                                        {diasRestantes}
-                                    </p>
-                                    <p className="text-[10px] text-slate-400 font-medium">entrenos restantes</p>
-                                </>
-                            ) : (
-                                <p className="text-sm font-semibold text-slate-400">Sin plan activo</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    <div className="border-t border-white/10 mx-4 sm:mx-5" />
 
-                {/* Divider */}
-                <div className="border-t border-slate-100 mx-5" />
-
-                {/* Acciones */}
-                <div className="px-5 py-4 flex flex-wrap items-center gap-2">
-                    <button onClick={marcarPagoMes} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
-                        Marcar Pago
-                    </button>
-                    <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
-                        Iniciar Plan
-                    </button>
-                    <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
-                        Editar
-                    </button>
-                    {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
-                        <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-semibold rounded-xl transition-all active:scale-95">
-                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
-                            Resetear contraseña
+                    {/* Acciones */}
+                    <div className="px-4 sm:px-5 py-4 flex flex-wrap items-center gap-2">
+                        <button onClick={marcarPagoMes} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
+                            Marcar Pago
                         </button>
-                    )}
-                    <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                        Eliminar alumno
-                    </button>
-                </div>
-                </>}
+                        <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
+                            Iniciar Plan
+                        </button>
+                        <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/20 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
+                            Editar
+                        </button>
+                        {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                            <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white/70 text-sm font-semibold rounded-xl transition-all active:scale-95">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
+                                Resetear contraseña
+                            </button>
+                        )}
+                        <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                            Eliminar alumno
+                        </button>
+                    </div>
+                    </>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
