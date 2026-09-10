@@ -27,10 +27,16 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Gymmy",
   description: "Sistema de gestión de gimnasio",
-  manifest: "/manifest.json",
-  themeColor: "#1f2937",
+  manifest: "/api/pwa/manifest",
+  themeColor: "#111827",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Gymmy",
+  },
   icons: {
     icon: "/icons/favicon.ico",
+    apple: "/api/pwa/icon",
   },
 };
 
