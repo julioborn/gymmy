@@ -43,7 +43,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
     const keyboardRef = useRef<any>(null);
     const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const logoTapCount = useRef(0);
+    const logoTapReset = useRef<ReturnType<typeof setTimeout> | null>(null);
     const INACTIVITY_MS = 10000;
 
     const clearDNI = () => {
@@ -222,12 +223,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
             document.removeEventListener('visibilitychange', onVisibilityChange);
             wakeLock?.release().catch(() => {});
             cancelInactivityTimer();
-            handleLogoLongPressEnd();
+            if (logoTapReset.current) clearTimeout(logoTapReset.current);
         };
     }, []);
 
-    const handleLogoLongPressStart = () => {
-        longPressTimer.current = setTimeout(async () => {
+    const handleLogoTap = async () => {
+        if (logoTapReset.current) clearTimeout(logoTapReset.current);
+        logoTapCount.current += 1;
+
+        if (logoTapCount.current >= 5) {
+            logoTapCount.current = 0;
             const result = await Swal.fire({
                 ...swalDni,
                 title: 'Salir de recepción',
@@ -251,15 +256,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     Swal.fire({ ...swalDni, icon: 'error', title: 'Contraseña incorrecta' });
                 }
             }
-        }, 2000);
-    };
-
-    const handleLogoLongPressEnd = () => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
+        } else {
+            logoTapReset.current = setTimeout(() => { logoTapCount.current = 0; }, 2000);
         }
     };
+
 
     const ACTIVIDADES = [
         { label: 'Musculación', color: acento2 },
@@ -289,13 +290,14 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 {/* Logo del gimnasio — mantener presionado 2s para salir */}
                 <div
                     className="flex items-center justify-center flex-none"
-                    style={{ height: 130 }}
-                    onMouseDown={handleLogoLongPressStart}
-                    onMouseUp={handleLogoLongPressEnd}
-                    onMouseLeave={handleLogoLongPressEnd}
-                    onTouchStart={handleLogoLongPressStart}
-                    onTouchEnd={handleLogoLongPressEnd}
-                    onTouchCancel={handleLogoLongPressEnd}
+                    style={{
+                        height: 130,
+                        WebkitTouchCallout: 'none' as any,
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none' as any,
+                    }}
+                    onClick={handleLogoTap}
+                    onContextMenu={e => e.preventDefault()}
                 >
                     {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -303,7 +305,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             src={logoUrl}
                             alt={gymNombre || 'Gimnasio'}
                             draggable={false}
-                            style={{ maxHeight: 130, maxWidth: '88%', objectFit: 'contain' }}
+                            style={{
+                                maxHeight: 130,
+                                maxWidth: '88%',
+                                objectFit: 'contain',
+                                WebkitTouchCallout: 'none' as any,
+                                pointerEvents: 'none',
+                            }}
                         />
                     ) : (
                         <span className="text-white font-bold text-3xl tracking-tight">{gymNombre}</span>
