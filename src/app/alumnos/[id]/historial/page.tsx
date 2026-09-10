@@ -1738,7 +1738,7 @@ export default function HistorialAlumnoPage() {
 
     return (
         <>
-        <div className="max-w-5xl mx-auto space-y-4">
+        <div className="max-w-7xl mx-auto space-y-4">
             {/* Header */}
             <div className="bg-[#111] rounded-2xl px-4 py-4 sm:px-5 flex items-center gap-3">
                 <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition">
