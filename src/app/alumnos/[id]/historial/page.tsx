@@ -202,6 +202,7 @@ export default function HistorialAlumnoPage() {
     const [dayModalPagoMetodo, setDayModalPagoMetodo] = useState('');
     const [dayModalPagoRecargo, setDayModalPagoRecargo] = useState(true);
     const [dayModalSaving, setDayModalSaving] = useState(false);
+    const [infoExpanded, setInfoExpanded] = useState(false);
 
     // Tabs
     const [activeTab, setActiveTab] = useState<'asistencias' | 'planes' | 'pagos'>('asistencias');
@@ -1779,6 +1780,31 @@ export default function HistorialAlumnoPage() {
             {/* Info + Acciones */}
             <div className="bg-white rounded-2xl border border-black/[0.06] shadow-sm overflow-hidden">
 
+                {/* Collapsed bar — always visible */}
+                <button
+                    onClick={() => setInfoExpanded(v => !v)}
+                    className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition text-left"
+                >
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                        {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
+                    </span>
+                    {diasRestantes != null && diasRestantes > 0 && (
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${diasRestantes > 10 ? 'bg-slate-100 text-slate-600' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
+                            {diasRestantes} entrenos
+                        </span>
+                    )}
+                    <span className="ml-auto text-xs font-semibold text-slate-400 flex items-center gap-1">
+                        {infoExpanded ? 'Ocultar' : 'Ver información'}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform ${infoExpanded ? 'rotate-180' : ''}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </span>
+                </button>
+
+                {/* Expandable content */}
+                {infoExpanded && <>
+                <div className="border-t border-slate-100" />
+
                 {/* Top: datos | estado */}
                 <div className="flex flex-col sm:flex-row sm:divide-x divide-slate-100">
 
@@ -1871,6 +1897,7 @@ export default function HistorialAlumnoPage() {
                         Eliminar alumno
                     </button>
                 </div>
+                </>}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
