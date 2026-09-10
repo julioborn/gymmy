@@ -247,29 +247,20 @@ export default function MiPerfilPage() {
                 const totalSemanas = data.totalSemanas || 5;
                 const diasLen = data.dias.length;
 
-                // Calendar-week-based: compare by local date strings to avoid UTC boundary issues
-                const nowFP = new Date();
-                const thisMonStr = getMondayStr(nowFP);
-                const planMonStr = getMondayStr(inicio);
-                const msW = 7 * 24 * 60 * 60 * 1000;
-                const planMonDate = new Date(planMonStr + 'T12:00:00'); // noon to avoid DST edge
-                const todayMonDate = new Date(thisMonStr + 'T12:00:00');
-                const calWeekNum = Math.max(Math.round((todayMonDate.getTime() - planMonDate.getTime()) / msW) + 1, 1);
-
-                // Count sessions done THIS calendar week, more than 3h ago
-                const threeHoursAgoFP = nowFP.getTime() - 3 * 60 * 60 * 1000;
-                // Sunday = Monday + 6 days
-                const sunStr = localDateStr(new Date(todayMonDate.getTime() + 6 * 24 * 60 * 60 * 1000));
-                const sessionsThisWeek = alumnoData.asistencia.filter(a => {
-                    const aDate = new Date(a.fecha);
-                    const aStr = localDateStr(aDate);
-                    return a.actividad === 'Musculación' && a.presente
-                        && aStr >= thisMonStr && aStr <= sunStr
-                        && aDate.getTime() <= threeHoursAgoFP;
-                }).length;
-
-                setSelectedSemana(Math.min(calWeekNum, totalSemanas));
-                setSelectedDia(Math.min(sessionsThisWeek, diasLen - 1));
+                // Count ALL Musculación sessions since plan start
+                const sortedSessions = alumnoData.asistencia
+                    .filter(a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio)
+                    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+                const totalDone = sortedSessions.length;
+                const lastSession = sortedSessions[sortedSessions.length - 1];
+                const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
+                const justAttended = lastSession && new Date(lastSession.fecha).getTime() > threeHoursAgo;
+                // < 3h since last session: stay on day just completed; > 3h: advance to next day
+                const effectiveDone = justAttended ? totalDone - 1 : totalDone;
+                const currentDayIdx = diasLen > 0 ? effectiveDone % diasLen : 0;
+                const currentWeek = diasLen > 0 ? Math.floor(effectiveDone / diasLen) + 1 : 1;
+                setSelectedDia(currentDayIdx);
+                setSelectedSemana(Math.min(currentWeek, totalSemanas));
             }
         } finally {
             setLoadingPlan(false);

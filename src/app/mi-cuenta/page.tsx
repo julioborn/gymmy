@@ -223,12 +223,20 @@ export default function MiCuentaPage() {
                 const inicio = new Date(data.fechaInicio);
                 const totalSemanas = data.totalSemanas || 5;
                 if (alumnoData && data.dias.length > 0) {
-                    const sessionsDone = alumnoData.asistencia.filter(a =>
-                        a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio
-                    ).length;
                     const diasLen = data.dias.length;
-                    setSelectedDia(sessionsDone % diasLen);
-                    setSelectedSemana(Math.min(Math.floor(sessionsDone / diasLen) + 1, totalSemanas));
+                    const sortedSessions = alumnoData.asistencia
+                        .filter(a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio)
+                        .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+                    const totalDone = sortedSessions.length;
+                    const lastSession = sortedSessions[sortedSessions.length - 1];
+                    const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
+                    const justAttended = lastSession && new Date(lastSession.fecha).getTime() > threeHoursAgo;
+                    // < 3h since last session: stay on day just completed; > 3h: advance to next day
+                    const effectiveDone = justAttended ? totalDone - 1 : totalDone;
+                    const currentDayIdx = diasLen > 0 ? effectiveDone % diasLen : 0;
+                    const currentWeek = diasLen > 0 ? Math.floor(effectiveDone / diasLen) + 1 : 1;
+                    setSelectedDia(currentDayIdx);
+                    setSelectedSemana(Math.min(currentWeek, totalSemanas));
                 } else {
                     const diasTranscurridos = Math.floor((Date.now() - inicio.getTime()) / (1000 * 60 * 60 * 24));
                     setSelectedSemana(Math.min(Math.max(Math.floor(diasTranscurridos / 7) + 1, 1), totalSemanas));
