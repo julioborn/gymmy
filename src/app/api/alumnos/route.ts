@@ -57,6 +57,8 @@ export async function POST(request: Request) {
         historialDeVida,
         objetivos,
         patologias,
+        area,
+        nivelExperiencia,
     } = await request.json();
 
     try {
@@ -75,6 +77,8 @@ export async function POST(request: Request) {
             historialDeVida: historialDeVida || "",
             objetivos: objetivos || "",
             patologias: patologias || "",
+            area: area || null,
+            nivelExperiencia: nivelExperiencia || null,
             asistencia: [],
             pagos: [],
             planEntrenamiento: {
