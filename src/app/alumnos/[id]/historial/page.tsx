@@ -137,6 +137,7 @@ export default function HistorialAlumnoPage() {
     const router = useRouter();
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [diasRestantes, setDiasRestantes] = useState<number | null>(null);
+    const [planAlumnoActivo, setPlanAlumnoActivo] = useState<any>(null);
     const params = useParams();
     const { id } = params;
     const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 640;
@@ -603,10 +604,16 @@ export default function HistorialAlumnoPage() {
 
     // Función para obtener los datos del alumno
     const fetchAlumno = async () => {
-        const response = await fetch(`/api/alumnos/${id}`);
-        if (response.ok) {
-            const data = await response.json();
+        const [alumnoRes, planAlumnoRes] = await Promise.all([
+            fetch(`/api/alumnos/${id}`),
+            fetch(`/api/plan-alumno/alumno/${id}`),
+        ]);
+        if (alumnoRes.ok) {
+            const data = await alumnoRes.json();
             setAlumno(data);
+
+            const planAlumno = planAlumnoRes.ok ? await planAlumnoRes.json() : null;
+            setPlanAlumnoActivo(planAlumno || null);
 
             // Calcular los días restantes del plan de entrenamiento
             if (
@@ -628,10 +635,21 @@ export default function HistorialAlumnoPage() {
 
                 const diasRestantes = duracion - asistenciasMusculacion;
                 setDiasRestantes(diasRestantes <= 0 ? 0 : diasRestantes);
+            } else if (planAlumno && planAlumno.fechaInicio) {
+                // Calcular desde PlanAlumno (plan de ejercicios) si no hay planEntrenamiento
+                const fechaInicio = new Date(planAlumno.fechaInicio);
+                const totalSesiones = (planAlumno.dias?.length || 0) * (planAlumno.semanas || 1);
+                const asistenciasMusculacion = data.asistencia.filter(
+                    (a: Asistencia) =>
+                        a.actividad === 'Musculación' &&
+                        a.presente &&
+                        new Date(a.fecha) >= fechaInicio
+                ).length;
+                const remaining = totalSesiones - asistenciasMusculacion;
+                setDiasRestantes(remaining <= 0 ? 0 : remaining);
             } else {
                 setDiasRestantes(null); // Sin plan o con fecha inválida
             }
-
         }
     };
 
@@ -1739,10 +1757,12 @@ export default function HistorialAlumnoPage() {
                     </span>
                     {diasRestantes != null && diasRestantes > 0 ? (
                         <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/60' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
-                            {diasRestantes} entrenos
+                            {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}{diasRestantes} entrenos
                         </span>
                     ) : diasRestantes === 0 ? (
-                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">Plan completado</span>
+                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">
+                            {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}Plan completado
+                        </span>
                     ) : (
                         <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
                     )}
