@@ -499,6 +499,21 @@ export default function MiPerfilPage() {
         ).length;
     }
 
+    // PlanEj (PlanAlumno) stats para el Resumen — usa zona horaria local para evitar el bug UTC
+    const planEjFechaInicio: Date | null = (() => {
+        if (!planEj?.fechaInicio) return null;
+        const s = planEj.fechaInicio.split('T')[0];
+        const [y, m, d] = s.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    })();
+    const planEjTotal = planEj ? (planEj.dias?.length || 0) * (planEj.totalSemanas || 1) : 0;
+    const planEjDone = planEjFechaInicio
+        ? alumno.asistencia.filter(a =>
+            a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planEjFechaInicio
+          ).length
+        : 0;
+    const planEjComplete = planEj != null && planEjTotal > 0 && planEjDone >= planEjTotal;
+
     const calDays = getCalendarDays(calYear, calMonth);
 
     function prevMonth() {
@@ -514,7 +529,8 @@ export default function MiPerfilPage() {
     const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const planInicioDate = planEj?.fechaInicio ? new Date(planEj.fechaInicio) : null;
+    // Usar fecha local para evitar que '2026-09-14' se interprete como sept 13 en Argentina (UTC-3)
+    const planInicioDate = planEjFechaInicio;
     const todayMonday = new Date(now);
     todayMonday.setDate(todayMonday.getDate() - ((todayMonday.getDay() + 6) % 7));
     todayMonday.setHours(0, 0, 0, 0);
@@ -598,9 +614,9 @@ export default function MiPerfilPage() {
                         </div>
                         <div className={card}>
                             <p className={`${lbl} mb-3`}>Plan</p>
-                            {tienePlan ? (
+                            {(planEj || tienePlan) ? (
                                 <>
-                                    <p className={`${num} text-slate-900`}>{asistenciasEnPlan}</p>
+                                    <p className={`${num} text-slate-900`}>{planEj ? planEjDone : asistenciasEnPlan}</p>
                                     <p className={sub}>sesiones completadas</p>
                                 </>
                             ) : (
@@ -612,7 +628,23 @@ export default function MiPerfilPage() {
                         </div>
                     </div>
 
-                    {tienePlan && (
+                    {planEj && !planEjComplete && (
+                        <div className={card}>
+                            <div className="flex items-center justify-between mb-3">
+                                <p className={lbl}>{planEj.nombre}</p>
+                                <span className="text-xs text-slate-400 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+                                <div
+                                    className="h-2 rounded-full transition-all"
+                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%`, background: acento2 }}
+                                />
+                            </div>
+                            <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
+                        </div>
+                    )}
+
+                    {!planEj && tienePlan && (
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <p className={lbl}>Plan activo</p>
@@ -628,7 +660,7 @@ export default function MiPerfilPage() {
                         </div>
                     )}
 
-                    {plan?.terminado && (
+                    {(planEjComplete || (!planEj && plan?.terminado)) && (
                         <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
                                 <IconTrophy className="w-6 h-6 text-emerald-600" />
