@@ -3,6 +3,11 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IEjercicioPlanAlumno {
     nombre: string;
     notas: string;
+    trepada1: string;
+    trepada2: string;
+    trepada3: string;
+    trepada4: string;
+    trepada5: string;
     semana1: string;
     semana2: string;
     semana3: string;
@@ -50,6 +55,11 @@ export interface IPlanAlumno extends Document {
 const EjercicioSchema = new Schema({
     nombre: { type: String, default: '' },
     notas: { type: String, default: '' },
+    trepada1: { type: String, default: '' },
+    trepada2: { type: String, default: '' },
+    trepada3: { type: String, default: '' },
+    trepada4: { type: String, default: '' },
+    trepada5: { type: String, default: '' },
     semana1: { type: String, default: '' },
     semana2: { type: String, default: '' },
     semana3: { type: String, default: '' },

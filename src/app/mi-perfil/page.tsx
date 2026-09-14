@@ -30,6 +30,7 @@ interface Alumno {
 interface EjercicioAsignado {
     nombre: string;
     notas: string;
+    trepada1: string; trepada2: string; trepada3: string; trepada4: string; trepada5: string;
     semana1: string; semana2: string; semana3: string; semana4: string; semana5: string;
     kg: string;
     kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string;
@@ -339,6 +340,13 @@ export default function MiPerfilPage() {
     function getSemanaField(ej: EjercicioAsignado, sem: number): string {
         const map: Record<number, keyof EjercicioAsignado> = {
             1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5',
+        };
+        return (ej[map[sem]] as string) || '';
+    }
+
+    function getTrepadaField(ej: EjercicioAsignado, sem: number): string {
+        const map: Record<number, keyof EjercicioAsignado> = {
+            1: 'trepada1', 2: 'trepada2', 3: 'trepada3', 4: 'trepada4', 5: 'trepada5',
         };
         return (ej[map[sem]] as string) || '';
     }
@@ -933,7 +941,7 @@ export default function MiPerfilPage() {
                                                         : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                                                     }`}
                                                 >
-                                                    {sem}
+                                                    {sem === totalSem ? 'DESC' : sem}
                                                     {isPast && (
                                                         <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
                                                             <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
@@ -948,7 +956,7 @@ export default function MiPerfilPage() {
                                             );
                                         })}
                                     </div>
-                                    {selectedSemana === 5 && (
+                                    {selectedSemana === totalSem && (
                                         <p className="text-center text-xs text-slate-400 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
@@ -993,12 +1001,15 @@ export default function MiPerfilPage() {
 
                                 {dia && (
                                     <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
-                                        <div className="grid grid-cols-[1fr_96px_68px] border-b border-black/[0.07]">
+                                        <div className="grid grid-cols-[1fr_52px_88px_68px] border-b border-black/[0.07]">
                                             <div className="px-4 py-2.5">
                                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
+                                            <div className="px-1 py-2.5 text-center border-l border-black/[0.06]">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Trep.</p>
+                                            </div>
                                             <div className="px-2 py-2.5 text-center border-l border-black/[0.06]">
-                                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide">Sem {selectedSemana}</p>
+                                                <p className="text-xs font-bold text-slate-900 uppercase tracking-wide">{selectedSemana === totalSem ? 'Desc.' : `Sem ${selectedSemana}`}</p>
                                             </div>
                                             <div className="px-2 py-2.5 text-center border-l border-black/[0.06]">
                                                 <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
@@ -1007,6 +1018,7 @@ export default function MiPerfilPage() {
                                         <div className="divide-y divide-slate-100">
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
+                                                const trepadaVal = getTrepadaField(ej, selectedSemana);
                                                 const isExpanded = expandedEj === eIdx;
                                                 const ci = ej.grupoCombo ? (comboIdx[ej.grupoCombo] ?? -1) : -1;
                                                 const combo = ci >= 0 ? COMBO_PALETTE[ci % COMBO_PALETTE.length] : null;
@@ -1016,7 +1028,7 @@ export default function MiPerfilPage() {
                                                     <div key={eIdx} style={combo ? { backgroundColor: combo.bg } : undefined}>
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_96px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
+                                                            className="w-full grid grid-cols-[1fr_52px_88px_68px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
                                                         >
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
@@ -1036,6 +1048,11 @@ export default function MiPerfilPage() {
                                                                     })()}
                                                                 </div>
                                                                 <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                            </div>
+                                                            <div className="px-1 py-3 border-l border-black/[0.06] flex items-center justify-center">
+                                                                <span className={`text-xs font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-slate-500' : 'text-slate-200'}`}>
+                                                                    {trepadaVal && trepadaVal !== '-' ? trepadaVal : '—'}
+                                                                </span>
                                                             </div>
                                                             <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
                                                                 <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
