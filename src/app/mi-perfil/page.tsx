@@ -345,9 +345,19 @@ export default function MiPerfilPage() {
 
     function parseSeries(semVal: string): number {
         if (!semVal) return 1;
+        // "Nde..." → N series (e.g. "3de4", "4de6")
+        const deMatch = semVal.match(/^(\d+)\s*de/i);
+        if (deMatch) return Math.min(Math.max(parseInt(deMatch[1]), 1), 6);
+        // "N series" → N series (e.g. "3 series (10-15)")
+        const seriesMatch = semVal.match(/^(\d+)\s*series/i);
+        if (seriesMatch) return Math.min(Math.max(parseInt(seriesMatch[1]), 1), 6);
+        // "N.M.P..." → count segments (e.g. "4.3.3.2", "10.10.10")
+        if (/^\d+(\.\d+)+$/.test(semVal)) return Math.min(semVal.split('.').length, 6);
+        // "/" notation
         if (semVal.includes('/')) return Math.min(semVal.split('/').length, 6);
-        const match = semVal.match(/(\d+)\s*[xX]/);
-        if (match) return Math.min(Math.max(parseInt(match[1]), 1), 6);
+        // "NxREP"
+        const xMatch = semVal.match(/^(\d+)\s*[xX]/);
+        if (xMatch) return Math.min(Math.max(parseInt(xMatch[1]), 1), 6);
         return 1;
     }
 
