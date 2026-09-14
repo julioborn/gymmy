@@ -1009,6 +1009,17 @@ export default function HistorialAlumnoPage() {
             planDaysMap[k] = 'active';
             cur.setDate(cur.getDate() + 1);
         }
+    } else if (planAlumnoActivo?.fechaInicio) {
+        const startStr = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
+        const cur = parseLocalDate(startStr);
+        planBoundaryMap[startStr] = 'start';
+        const totalSes = (planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.semanas || 1);
+        planByDateMap[startStr] = { type: 'active', plan: { fechaInicio: startStr, duracion: totalSes, diasRestantes: diasRestantes ?? 0 } };
+        while (cur <= todayLocal) {
+            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+            planDaysMap[k] = 'active';
+            cur.setDate(cur.getDate() + 1);
+        }
     }
     for (const plan of alumno.planEntrenamientoHistorial || []) {
         if (!plan.fechaInicio || !plan.fechaFin) continue;
@@ -1040,8 +1051,12 @@ export default function HistorialAlumnoPage() {
     })();
 
     const asistenciasPlan = (() => {
-        if (!alumno.planEntrenamiento?.fechaInicio || alumno.planEntrenamiento?.terminado) return 0;
-        const fi = new Date(alumno.planEntrenamiento.fechaInicio);
+        const fi = alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado
+            ? new Date(alumno.planEntrenamiento.fechaInicio)
+            : planAlumnoActivo?.fechaInicio
+                ? new Date(planAlumnoActivo.fechaInicio)
+                : null;
+        if (!fi) return 0;
         return alumno.asistencia.filter((a: Asistencia) =>
             a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= fi
         ).length;
@@ -1066,10 +1081,22 @@ export default function HistorialAlumnoPage() {
             } : null;
         }).filter(Boolean),
 
-        // Plan activo: rango desde inicio hasta hoy (verde = en progreso)
+        // Plan activo (planEntrenamiento embebido): rango desde inicio hasta hoy
         alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && {
             title: `Plan iniciado (${asistenciasPlan}/${alumno.planEntrenamiento.duracion})`,
             start: convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio),
+            end: addOneDay(localToday),
+            display: 'block',
+            backgroundColor: '#bbf7d0',
+            borderColor: '#4ade80',
+            textColor: '#15803d',
+            extendedProps: { tipo: 'plan' },
+        },
+
+        // Plan activo (PlanAlumno con ejercicios) cuando no hay planEntrenamiento embebido
+        !alumno.planEntrenamiento?.fechaInicio && planAlumnoActivo?.fechaInicio && {
+            title: `${planAlumnoActivo.nombre ?? 'Plan'} (${asistenciasPlan}/${(planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.semanas || 1)})`,
+            start: convertirAFechaLocal(planAlumnoActivo.fechaInicio),
             end: addOneDay(localToday),
             display: 'block',
             backgroundColor: '#bbf7d0',
