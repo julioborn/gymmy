@@ -638,7 +638,7 @@ export default function HistorialAlumnoPage() {
             } else if (planAlumno && planAlumno.fechaInicio) {
                 // Calcular desde PlanAlumno (plan de ejercicios) si no hay planEntrenamiento
                 const fechaInicio = new Date(planAlumno.fechaInicio);
-                const totalSesiones = (planAlumno.dias?.length || 0) * (planAlumno.semanas || 1);
+                const totalSesiones = (planAlumno.dias?.length || 0) * (planAlumno.totalSemanas || 1);
                 const asistenciasMusculacion = data.asistencia.filter(
                     (a: Asistencia) =>
                         a.actividad === 'Musculación' &&
@@ -1013,7 +1013,7 @@ export default function HistorialAlumnoPage() {
         const startStr = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
         const cur = parseLocalDate(startStr);
         planBoundaryMap[startStr] = 'start';
-        const totalSes = (planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.semanas || 1);
+        const totalSes = (planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.totalSemanas || 1);
         planByDateMap[startStr] = { type: 'active', plan: { fechaInicio: startStr, duracion: totalSes, diasRestantes: diasRestantes ?? 0 } };
         while (cur <= todayLocal) {
             const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
@@ -1095,7 +1095,7 @@ export default function HistorialAlumnoPage() {
 
         // Plan activo (PlanAlumno con ejercicios) cuando no hay planEntrenamiento embebido
         !alumno.planEntrenamiento?.fechaInicio && planAlumnoActivo?.fechaInicio && {
-            title: `${planAlumnoActivo.nombre ?? 'Plan'} (${asistenciasPlan}/${(planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.semanas || 1)})`,
+            title: `${planAlumnoActivo.nombre ?? 'Plan'} (${asistenciasPlan}/${(planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.totalSemanas || 1)})`,
             start: convertirAFechaLocal(planAlumnoActivo.fechaInicio),
             end: addOneDay(localToday),
             display: 'block',
