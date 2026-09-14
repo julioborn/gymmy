@@ -196,6 +196,8 @@ export default function MiCuentaPage() {
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#10b981');
     const [showCalentamiento, setShowCalentamiento] = useState(false);
+    const [checkingIn, setCheckingIn] = useState(false);
+    const [checkInResult, setCheckInResult] = useState<'ok' | 'duplicate' | 'error' | null>(null);
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -284,6 +286,28 @@ export default function MiCuentaPage() {
             }
         } finally {
             setSavingEj(null);
+        }
+    }
+
+    async function handleCheckIn() {
+        setCheckingIn(true);
+        setCheckInResult(null);
+        try {
+            const res = await fetch('/api/alumno/check-in', { method: 'POST' });
+            if (res.ok) {
+                setCheckInResult('ok');
+                fetchAlumno().catch(() => {});
+                setTimeout(() => setCheckInResult(null), 4000);
+            } else {
+                const data = await res.json().catch(() => ({}));
+                setCheckInResult(data.error?.includes('Ya registraste') ? 'duplicate' : 'error');
+                setTimeout(() => setCheckInResult(null), 4000);
+            }
+        } catch {
+            setCheckInResult('error');
+            setTimeout(() => setCheckInResult(null), 4000);
+        } finally {
+            setCheckingIn(false);
         }
     }
 
@@ -630,6 +654,47 @@ export default function MiCuentaPage() {
             {/* ── RESUMEN ── */}
             {tab === 'resumen' && (
                 <div className="space-y-4">
+
+                    {alumno.dni === '43844409' && (
+                        <button
+                            onClick={handleCheckIn}
+                            disabled={checkingIn || checkInResult === 'ok' || checkInResult === 'duplicate'}
+                            className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.98]"
+                            style={
+                                checkInResult === 'ok'
+                                    ? { background: '#d1fae5', color: '#065f46' }
+                                    : checkInResult === 'duplicate'
+                                    ? { background: '#fef3c7', color: '#92400e' }
+                                    : checkInResult === 'error'
+                                    ? { background: '#fee2e2', color: '#991b1b' }
+                                    : { background: acento, color: '#fff' }
+                            }
+                        >
+                            {checkingIn ? (
+                                <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            ) : checkInResult === 'ok' ? (
+                                <IconCheck className="w-5 h-5" />
+                            ) : checkInResult === 'duplicate' ? (
+                                <IconClock className="w-5 h-5" />
+                            ) : checkInResult === 'error' ? (
+                                <IconX className="w-5 h-5" />
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                </svg>
+                            )}
+                            {checkingIn
+                                ? 'Registrando...'
+                                : checkInResult === 'ok'
+                                ? '¡Presente registrado!'
+                                : checkInResult === 'duplicate'
+                                ? 'Ya registraste hoy'
+                                : checkInResult === 'error'
+                                ? 'Error al registrar'
+                                : 'Marcar presente'}
+                        </button>
+                    )}
 
                     <div className="grid grid-cols-2 gap-3">
                         {/* Asistencias este mes */}
