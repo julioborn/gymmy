@@ -1108,16 +1108,16 @@ export default function MiCuentaPage() {
                                     <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
                                         <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-black/[0.07]">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-1 py-2.5 text-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide leading-tight">Trepada</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Trepada</p>
                                             </div>
-                                            <div className="px-1 py-2.5 text-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-700 uppercase tracking-wide leading-tight">Núcleo</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
+                                                <p className="text-[8px] font-bold text-slate-700 uppercase tracking-wide text-center leading-tight">Núcleo</p>
                                             </div>
-                                            <div className="px-2 py-2.5 text-center border-l border-black/[0.06]">
-                                                <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Mis KG</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
+                                                <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide text-center leading-tight">Mis KG</p>
                                             </div>
                                         </div>
 
