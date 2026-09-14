@@ -1197,16 +1197,18 @@ export default function MiCuentaPage() {
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
+                                                            <div className="px-1 py-2 border-l border-black/[0.06] flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
-                                                                    const kgDisplay = kgVal
-                                                                        ? kgVal.split(',').map(v => v.trim()).filter(Boolean).join(' / ')
-                                                                        : '';
+                                                                    const kgParts = kgVal ? kgVal.split(',').map(v => v.trim()).filter(Boolean) : [];
+                                                                    if (kgParts.length === 0) return <span className="text-[10px] font-bold text-slate-200">—</span>;
+                                                                    if (kgParts.length === 1) return <span className="text-[10px] font-bold text-emerald-600">{kgParts[0]}</span>;
                                                                     return (
-                                                                        <span className={`text-xs font-bold text-center leading-tight ${kgDisplay ? 'text-emerald-600' : 'text-slate-200'}`}>
-                                                                            {kgDisplay || '—'}
-                                                                        </span>
+                                                                        <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">
+                                                                            {kgParts.map((kg, i) => (
+                                                                                <span key={i} className="text-[9px] font-bold text-emerald-600 text-center leading-tight">{kg}</span>
+                                                                            ))}
+                                                                        </div>
                                                                     );
                                                                 })()}
                                                             </div>
