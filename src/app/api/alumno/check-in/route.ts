@@ -4,6 +4,15 @@ import Alumno from '@/models/Alumno';
 import { requireAlumnoAuth } from '@/lib/requireAuth';
 import { sendToTokens } from '@/lib/notifications';
 
+// Devuelve "YYYY-MM-DD" en zona horaria Argentina (UTC-3)
+function toArgDate(d: Date): string {
+    const arg = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+    const y = arg.getUTCFullYear();
+    const m = String(arg.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(arg.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 export async function POST() {
     const auth = await requireAlumnoAuth();
     if (!auth.ok) return auth.error;
@@ -17,24 +26,22 @@ export async function POST() {
         return NextResponse.json({ error: 'Alumno no encontrado' }, { status: 404 });
     }
 
-    const fecha = new Date().toISOString();
+    const now = new Date();
     const actividad = 'Musculación';
     const presente = true;
+    const todayArg = toArgDate(now);
 
     if (!alumno.asistencia) alumno.asistencia = [];
 
-    const fechaAsistencia = new Date(fecha).toISOString().split('T')[0];
     const asistenciaExistente = alumno.asistencia.find(
-        (a: { fecha: string; actividad: string }) =>
-            new Date(a.fecha).toISOString().split('T')[0] === fechaAsistencia &&
-            a.actividad === actividad
+        (a: any) => toArgDate(new Date(a.fecha)) === todayArg && a.actividad === actividad
     );
 
     if (asistenciaExistente) {
         return NextResponse.json({ error: 'Ya registraste asistencia hoy' }, { status: 400 });
     }
 
-    alumno.asistencia.push({ fecha, presente, actividad });
+    alumno.asistencia.push({ fecha: now, presente, actividad });
     await alumno.save();
 
     if (alumno.fcmTokens?.length) {
