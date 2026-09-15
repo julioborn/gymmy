@@ -1988,9 +1988,9 @@ export default function HistorialAlumnoPage() {
                                                                 key={idx}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
-                                                                    const { value: action } = await Swal.fire({ ...swalBase, title: a.actividad, input: 'select', inputOptions: { editar: 'Editar actividad', eliminar: 'Eliminar actividad' }, inputPlaceholder: 'Seleccioná una acción', showCancelButton: true, confirmButtonText: 'Aceptar', cancelButtonText: 'Cancelar' });
-                                                                    if (action === 'editar') handleEditAsistenciaMob(a);
-                                                                    else if (action === 'eliminar') handleEliminarAsistencia(a._id);
+                                                                    const result = await Swal.fire({ ...swalBase, title: a.actividad, showConfirmButton: true, confirmButtonText: 'Editar', showDenyButton: true, denyButtonText: 'Eliminar', showCancelButton: true, cancelButtonText: 'Cancelar' });
+                                                                    if (result.isConfirmed) handleEditAsistenciaMob(a);
+                                                                    else if (result.isDenied) handleEliminarAsistencia(a._id);
                                                                 }}
                                                                 className="flex items-center gap-1 px-1.5 py-0.5 bg-white hover:bg-slate-50 rounded-[3px] mx-0.5 shadow-sm cursor-pointer"
                                                             >
@@ -2005,9 +2005,9 @@ export default function HistorialAlumnoPage() {
                                                             key={idx}
                                                             onClick={async (e) => {
                                                                 e.stopPropagation();
-                                                                const { value: action } = await Swal.fire({ ...swalBase, title: `Pago ${p.mes}`, input: 'select', inputOptions: { editar: 'Editar pago', eliminar: 'Eliminar pago' }, inputPlaceholder: 'Seleccioná una acción', showCancelButton: true, confirmButtonText: 'Aceptar', cancelButtonText: 'Cancelar' });
-                                                                if (action === 'editar') handleEditPagoMob(p);
-                                                                else if (action === 'eliminar') handleEliminarPago(p._id);
+                                                                const result = await Swal.fire({ ...swalBase, title: `Pago ${p.mes}`, showConfirmButton: true, confirmButtonText: 'Editar', showDenyButton: true, denyButtonText: 'Eliminar', showCancelButton: true, cancelButtonText: 'Cancelar' });
+                                                                if (result.isConfirmed) handleEditPagoMob(p);
+                                                                else if (result.isDenied) handleEliminarPago(p._id);
                                                             }}
                                                             className="flex items-center justify-between px-1.5 py-0.5 bg-emerald-700 hover:bg-emerald-800 rounded-[3px] mx-0.5 cursor-pointer"
                                                         >

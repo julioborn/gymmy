@@ -108,24 +108,16 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
         await alumno.save();
 
-        let fcmDebug: any = { presente, tokenCount: alumno.fcmTokens?.length ?? 0, sent: false, error: null };
         if (presente && alumno.fcmTokens?.length) {
             const actividadLabel = actividad === 'Musculación' ? 'musculación' : actividad.toLowerCase();
-            try {
-                const fcmResult = await sendToTokens(alumno.fcmTokens, {
-                    title: '📋 Asistencia registrada',
-                    body: `Tu asistencia de ${actividadLabel} de hoy fue registrada. ¡Buen entrenamiento!`,
-                    url: '/mi-cuenta',
-                });
-                fcmDebug.sent = true;
-                fcmDebug.result = fcmResult;
-            } catch (e: any) {
-                fcmDebug.error = e?.message ?? String(e);
-            }
+            await sendToTokens(alumno.fcmTokens, {
+                title: '📋 Asistencia registrada',
+                body: `Tu asistencia de ${actividadLabel} de hoy fue registrada. ¡Buen entrenamiento!`,
+                url: '/mi-cuenta',
+            }).catch(() => {});
         }
 
-        const responseBody = { ...alumno.toObject(), _fcmDebug: fcmDebug };
-        return new Response(JSON.stringify(responseBody), { status: 200 });
+        return new Response(JSON.stringify(alumno), { status: 200 });
     } catch {
         return new Response('Error registrando asistencia', { status: 500 });
     }
