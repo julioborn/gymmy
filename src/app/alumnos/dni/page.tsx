@@ -181,6 +181,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 body: JSON.stringify(ingreso),
             });
             if (!asistenciaResponse.ok) throw new Error(await asistenciaResponse.text());
+            const asistenciaData = await asistenciaResponse.json().catch(() => ({}));
+            console.log('[FCM DEBUG]', JSON.stringify(asistenciaData._fcmDebug));
 
             // Detectar si tiene la cuota del mes pagada
             const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
