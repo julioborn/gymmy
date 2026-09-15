@@ -3,8 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 
-const STORAGE_KEY = 'gymmy_fcm_token';
-
 async function isCapacitor(): Promise<boolean> {
     try {
         const { Capacitor } = await import('@capacitor/core');
@@ -14,33 +12,25 @@ async function isCapacitor(): Promise<boolean> {
     }
 }
 
+async function registerToken(token: string) {
+    await fetch('/api/fcm/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+    });
+}
+
 async function initNativeFCM() {
     const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
 
-    // Pedir permiso
     const { receive } = await FirebaseMessaging.requestPermissions();
-    if (receive !== 'granted') { console.log('[FCM] permiso denegado'); return; }
+    if (receive !== 'granted') return;
 
-    // Obtener token nativo
     const { token } = await FirebaseMessaging.getToken();
-    if (!token) { console.error('[FCM] no token'); return; }
-    console.log('[FCM] native token:', token.slice(0, 20) + '...');
+    if (!token) return;
 
-    // Guardar en DB si cambió
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (token !== stored) {
-        const res = await fetch('/api/fcm/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-        });
-        if (res.ok) {
-            localStorage.setItem(STORAGE_KEY, token);
-            console.log('[FCM] token nativo guardado en DB');
-        }
-    }
+    await registerToken(token);
 
-    // Foreground: mostrar como notificación local
     FirebaseMessaging.addListener('notificationReceived', async (event) => {
         const { LocalNotifications } = await import('@capacitor/local-notifications');
         const { display } = await LocalNotifications.checkPermissions();
@@ -55,7 +45,6 @@ async function initNativeFCM() {
         });
     });
 
-    // Abrir URL al tocar la notificación
     FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
         const url = (event.notification.data as any)?.url;
         if (url) window.location.href = url;
@@ -64,18 +53,17 @@ async function initNativeFCM() {
 
 async function initWebFCM() {
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-    if (!vapidKey) { console.error('[FCM] VAPID key missing'); return; }
+    if (!vapidKey) return;
 
     const { getMessagingInstance } = await import('@/lib/firebase');
     const { getToken, onMessage } = await import('firebase/messaging');
 
     const messaging = await getMessagingInstance();
-    if (!messaging) { console.error('[FCM] not supported'); return; }
+    if (!messaging) return;
 
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') { console.log('[FCM] permiso denegado'); return; }
+    if (permission !== 'granted') return;
 
-    // Registrar SW
     const existing = await navigator.serviceWorker.getRegistrations();
     for (const reg of existing) {
         const url = reg.active?.scriptURL ?? reg.installing?.scriptURL ?? reg.waiting?.scriptURL ?? '';
@@ -85,21 +73,9 @@ async function initWebFCM() {
     await navigator.serviceWorker.ready;
 
     const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg });
-    if (!token) { console.error('[FCM] no token'); return; }
-    console.log('[FCM] web token:', token.slice(0, 20) + '...');
+    if (!token) return;
 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (token !== stored) {
-        const res = await fetch('/api/fcm/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-        });
-        if (res.ok) {
-            localStorage.setItem(STORAGE_KEY, token);
-            console.log('[FCM] web token guardado en DB');
-        }
-    }
+    await registerToken(token);
 
     onMessage(messaging, async (payload) => {
         const title = payload.notification?.title ?? 'Gymmy';
