@@ -1988,7 +1988,7 @@ export default function HistorialAlumnoPage() {
                                                                 key={idx}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
-                                                                    const result = await Swal.fire({ ...swalBase, title: a.actividad, showConfirmButton: true, confirmButtonText: 'Editar', confirmButtonColor: '#eab308', showDenyButton: true, denyButtonText: 'Eliminar', denyButtonColor: '#ef4444', showCancelButton: true, cancelButtonText: 'Cancelar' });
+                                                                    const result = await Swal.fire({ ...swalBase, buttonsStyling: true, title: a.actividad, showConfirmButton: true, confirmButtonText: 'Editar', confirmButtonColor: '#eab308', showDenyButton: true, denyButtonText: 'Eliminar', denyButtonColor: '#ef4444', showCancelButton: true, cancelButtonText: 'Cancelar', cancelButtonColor: '#6b7280' });
                                                                     if (result.isConfirmed) handleEditAsistenciaMob(a);
                                                                     else if (result.isDenied) handleEliminarAsistencia(a._id);
                                                                 }}
@@ -2005,7 +2005,7 @@ export default function HistorialAlumnoPage() {
                                                             key={idx}
                                                             onClick={async (e) => {
                                                                 e.stopPropagation();
-                                                                const result = await Swal.fire({ ...swalBase, title: `Pago ${p.mes}`, showConfirmButton: true, confirmButtonText: 'Editar', confirmButtonColor: '#eab308', showDenyButton: true, denyButtonText: 'Eliminar', denyButtonColor: '#ef4444', showCancelButton: true, cancelButtonText: 'Cancelar' });
+                                                                const result = await Swal.fire({ ...swalBase, buttonsStyling: true, title: `Pago ${p.mes}`, showConfirmButton: true, confirmButtonText: 'Editar', confirmButtonColor: '#eab308', showDenyButton: true, denyButtonText: 'Eliminar', denyButtonColor: '#ef4444', showCancelButton: true, cancelButtonText: 'Cancelar', cancelButtonColor: '#6b7280' });
                                                                 if (result.isConfirmed) handleEditPagoMob(p);
                                                                 else if (result.isDenied) handleEliminarPago(p._id);
                                                             }}
