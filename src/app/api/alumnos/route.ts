@@ -1,4 +1,5 @@
 import Alumno from '@/models/Alumno';
+import PlanAlumno from '@/models/PlanAlumno';
 import connectMongoDB from '../../../lib/mongodb';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { notifyOwners } from '@/lib/notifications';
@@ -23,10 +24,38 @@ export async function GET(request: Request) {
     };
 
     try {
-        const alumnos = dni
-            ? await Alumno.findOne({ dni, gimnasioId }, projection).lean()
-            : await Alumno.find({ gimnasioId }, projection).lean();
-        return new Response(JSON.stringify(alumnos), {
+        if (dni) {
+            const alumno = await Alumno.findOne({ dni, gimnasioId }, projection).lean();
+            return new Response(JSON.stringify(alumno), {
+                status: 200,
+                headers: { 'Cache-Control': 'no-store' },
+            });
+        }
+
+        const [alumnos, planesActivos] = await Promise.all([
+            Alumno.find({ gimnasioId }, projection).lean(),
+            PlanAlumno.find(
+                { gimnasioId, activo: true },
+                { alumnoId: 1, totalSemanas: 1, 'dias._id': 0, diasLength: 1, fechaInicio: 1, nombre: 1 }
+            ).lean(),
+        ]);
+
+        // Map alumnoId → active plan (only fields needed for diasRestantes)
+        const planMap = new Map<string, any>();
+        for (const p of planesActivos) {
+            planMap.set(p.alumnoId.toString(), {
+                fechaInicio: p.fechaInicio,
+                totalSesiones: (p.dias?.length ?? 0) * (p.totalSemanas ?? 1),
+                nombre: p.nombre,
+            });
+        }
+
+        const alumnosConPlan = (alumnos as any[]).map(a => ({
+            ...a,
+            planAlumnoActivo: planMap.get(a._id.toString()) ?? null,
+        }));
+
+        return new Response(JSON.stringify(alumnosConPlan), {
             status: 200,
             headers: { 'Cache-Control': 'no-store' },
         });

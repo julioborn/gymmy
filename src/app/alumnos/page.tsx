@@ -28,15 +28,23 @@ function calcularEdad(fechaNacimiento: string): number {
     return edad;
 }
 
-function calcularDiasRestantes(plan: any, asistencias: any[]): number | null {
+function calcularDiasRestantes(plan: any, asistencias: any[], planAlumnoActivo?: any): number | null {
+    // Primero intentar con PlanAlumno (plan de ejercicios activo)
+    if (planAlumnoActivo?.fechaInicio && planAlumnoActivo?.totalSesiones > 0) {
+        const fechaInicio = new Date(planAlumnoActivo.fechaInicio);
+        const hechas = asistencias.filter(
+            a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= fechaInicio
+        ).length;
+        const restantes = planAlumnoActivo.totalSesiones - hechas;
+        return restantes > 0 ? restantes : 0;
+    }
+    // Fallback al planEntrenamiento embebido
     if (!plan || !plan.fechaInicio || !plan.duracion) return null;
     const fechaInicio = new Date(plan.fechaInicio);
-    const duracion = plan.duracion;
     const asistenciasMusculacion = asistencias.filter(
-        (asistencia) => asistencia.actividad === 'Musculación' && asistencia.presente &&
-            new Date(asistencia.fecha) >= fechaInicio
+        a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= fechaInicio
     ).length;
-    const diasRestantes = duracion - asistenciasMusculacion;
+    const diasRestantes = plan.duracion - asistenciasMusculacion;
     return diasRestantes > 0 ? diasRestantes : 0;
 }
 
@@ -72,7 +80,7 @@ export default function ListaAlumnosPage() {
             if (!response.ok) throw new Error('Error en la solicitud');
             const data = await response.json();
             const alumnosConDatos = data.map((alumno: any) => {
-                const diasRestantes = calcularDiasRestantes(alumno.planEntrenamiento, alumno.asistencia);
+                const diasRestantes = calcularDiasRestantes(alumno.planEntrenamiento, alumno.asistencia, alumno.planAlumnoActivo);
                 const edad = alumno.fechaNacimiento ? calcularEdad(alumno.fechaNacimiento) : null;
                 return { ...alumno, diasRestantes, edad };
             });
