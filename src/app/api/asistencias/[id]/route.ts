@@ -4,6 +4,15 @@ import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { sendToTokens } from '@/lib/notifications';
 
+// Devuelve "YYYY-MM-DD" en zona horaria Argentina (UTC-3)
+function toArgDate(d: Date): string {
+    const arg = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+    const y = arg.getUTCFullYear();
+    const m = String(arg.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(arg.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+}
+
 export async function POST(request: Request, { params }: { params: { id: string } }) {
     const auth = await requireGymAuth();
     if (!auth.ok) return auth.error;
@@ -24,13 +33,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
             alumno.asistencia = [];
         }
 
-        const fechaAsistencia = new Date(fecha).toISOString().split('T')[0];
+        const todayArg = toArgDate(new Date(fecha));
 
         const asistenciaExistente = alumno.asistencia.find(
-            (asistencia: { fecha: string; actividad: string }) => {
-                const fechaRegistrada = new Date(asistencia.fecha).toISOString().split('T')[0];
-                return fechaRegistrada === fechaAsistencia && asistencia.actividad === actividad;
-            }
+            (asistencia: any) =>
+                toArgDate(new Date(asistencia.fecha)) === todayArg && asistencia.actividad === actividad
         );
 
         if (asistenciaExistente) {
