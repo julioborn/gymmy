@@ -29,6 +29,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [acento2, setAcento2] = useState('#22c55e');
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
+    const [actividadesDisponibles, setActividadesDisponibles] = useState<string[]>(['Musculación']);
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -200,6 +201,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 if (d.temaAcento2) setAcento2(d.temaAcento2);
                 if (d.logoUrl) setLogoUrl(d.logoUrl);
                 if (d.nombre) setGymNombre(d.nombre);
+                if (d.actividadesRecepcion?.length) {
+                    setActividadesDisponibles(d.actividadesRecepcion);
+                    setActividad(d.actividadesRecepcion[0]);
+                }
             })
             .catch(() => {});
 
@@ -262,10 +267,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
 
-    const ACTIVIDADES = [
-        { label: 'Musculación', color: acento2 },
-        { label: 'Intermitente', color: acento },
-    ] as const;
+    const ACTIVIDAD_COLOR: Record<string, string> = {
+        'Musculación': acento2,
+        'Intermitente': acento,
+        'Otro': '#94a3b8',
+    };
 
     return (
         <div
@@ -355,27 +361,30 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     )}
                 </div>
 
-                {/* Actividad */}
-                <div className="grid grid-cols-2 gap-2 flex-none">
-                    {ACTIVIDADES.map(({ label, color }) => {
-                        const isActive = actividad === label;
-                        return (
-                            <button
-                                key={label}
-                                type="button"
-                                onClick={() => { playClick(); setActividad(label); }}
-                                disabled={isLoading}
-                                className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
-                                style={isActive
-                                    ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
-                                    : { background: '#ffffff', color: '#111111' }
-                                }
-                            >
-                                {label}
-                            </button>
-                        );
-                    })}
-                </div>
+                {/* Actividad — solo se muestra si hay más de una opción */}
+                {actividadesDisponibles.length > 1 && (
+                    <div className={`grid gap-2 flex-none`} style={{ gridTemplateColumns: `repeat(${actividadesDisponibles.length}, 1fr)` }}>
+                        {actividadesDisponibles.map((label) => {
+                            const color = ACTIVIDAD_COLOR[label] || '#94a3b8';
+                            const isActive = actividad === label;
+                            return (
+                                <button
+                                    key={label}
+                                    type="button"
+                                    onClick={() => { playClick(); setActividad(label); }}
+                                    disabled={isLoading}
+                                    className="h-14 rounded-xl text-base font-bold transition-all active:scale-95"
+                                    style={isActive
+                                        ? { background: color, color: '#fff', boxShadow: `0 4px 14px ${color}55` }
+                                        : { background: '#ffffff', color: '#111111' }
+                                    }
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
 
                 {/* Teclado — ocupa el espacio restante hasta el fondo */}
                 <div

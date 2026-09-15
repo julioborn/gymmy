@@ -12,6 +12,7 @@ export interface IGimnasio extends Document {
     temaFondo?: string;
     temaAcento?: string;
     temaAcento2?: string;
+    actividadesRecepcion?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,6 +29,7 @@ const GimnasioSchema = new Schema<IGimnasio>({
     temaFondo: { type: String },
     temaAcento: { type: String },
     temaAcento2: { type: String },
+    actividadesRecepcion: { type: [String], default: ['Musculación'] },
 }, { timestamps: true });
 
 export default mongoose.models.Gimnasio || mongoose.model<IGimnasio>('Gimnasio', GimnasioSchema);

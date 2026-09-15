@@ -115,6 +115,8 @@ export default function HomePage() {
     const [recargoMes, setRecargoMes] = useState<number>(0);
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
+    const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
+    const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
         if (typeof window === 'undefined') return true;
         return localStorage.getItem('gymmy_showBalance') !== 'false';
@@ -158,6 +160,10 @@ export default function HomePage() {
         fetch('/api/gimnasio/alias')
             .then(r => r.json())
             .then(d => { setAliasGimnasio(d.alias ?? ''); setGimnasioNombre(d.nombre ?? ''); })
+            .catch(() => { });
+        fetch('/api/gimnasio/tema')
+            .then(r => r.json())
+            .then(d => { if (d?.actividadesRecepcion?.length) setActividadesRecepcion(d.actividadesRecepcion); })
             .catch(() => { });
     }, [session]);
 
@@ -254,6 +260,26 @@ export default function HomePage() {
                 if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); }
                 else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' });
             } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); }
+        }
+    };
+
+    const TODAS_ACTIVIDADES = ['Musculación', 'Intermitente', 'Otro'];
+
+    const handleToggleActividad = async (actividad: string) => {
+        const nuevas = actividadesRecepcion.includes(actividad)
+            ? actividadesRecepcion.filter(a => a !== actividad)
+            : [...actividadesRecepcion, actividad];
+        if (nuevas.length === 0) return; // mínimo 1
+        setSavingActividades(true);
+        try {
+            const res = await fetch('/api/gimnasio/tema', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actividadesRecepcion: nuevas }),
+            });
+            if (res.ok) setActividadesRecepcion(nuevas);
+        } finally {
+            setSavingActividades(false);
         }
     };
 
@@ -539,6 +565,51 @@ export default function HomePage() {
                                     {idx < arr.length - 1 && <div className="border-t border-black/[0.04] mx-4" />}
                                 </div>
                             ))}
+                            {/* Actividades de recepción */}
+                            <div className="border-t border-black/[0.04]">
+                                <div className="px-4 py-3.5">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center shrink-0">
+                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-sm text-slate-800">Recepción</p>
+                                            <p className="text-xs text-slate-400">Actividades disponibles</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        {TODAS_ACTIVIDADES.map(act => {
+                                            const activa = actividadesRecepcion.includes(act);
+                                            const esUltima = activa && actividadesRecepcion.length === 1;
+                                            return (
+                                                <button
+                                                    key={act}
+                                                    onClick={() => handleToggleActividad(act)}
+                                                    disabled={savingActividades || esUltima}
+                                                    className="flex items-center justify-between px-3 py-2 rounded-xl transition-colors"
+                                                    style={{ background: activa ? '#f0fdf4' : '#f8fafc' }}
+                                                    title={esUltima ? 'Debe haber al menos una actividad' : ''}
+                                                >
+                                                    <span className="text-sm font-medium" style={{ color: activa ? '#065f46' : '#64748b' }}>
+                                                        {act}
+                                                    </span>
+                                                    <div
+                                                        className="w-9 h-5 rounded-full relative transition-colors"
+                                                        style={{ background: activa ? '#10b981' : '#cbd5e1' }}
+                                                    >
+                                                        <div
+                                                            className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all"
+                                                            style={{ left: activa ? '18px' : '2px' }}
+                                                        />
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
