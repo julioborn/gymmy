@@ -1232,12 +1232,12 @@ export default function MiCuentaPage() {
                                                                 <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
                                                             <div className="px-1 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-xs font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-slate-500' : 'text-slate-200'}`}>
+                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-slate-500' : 'text-slate-200'}`}>
                                                                     {trepadaVal && trepadaVal !== '-' ? trepadaVal : '—'}
                                                                 </span>
                                                             </div>
                                                             <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-xs font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
+                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
@@ -1245,12 +1245,12 @@ export default function MiCuentaPage() {
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
                                                                     const kgParts = kgVal ? kgVal.split(',').map(v => v.trim()).filter(Boolean) : [];
-                                                                    if (kgParts.length === 0) return <span className="text-[10px] font-bold text-slate-200">—</span>;
-                                                                    if (kgParts.length === 1) return <span className="text-[10px] font-bold text-emerald-600">{kgParts[0]}</span>;
+                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-slate-200">—</span>;
+                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-emerald-600">{kgParts[0]}</span>;
                                                                     return (
                                                                         <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">
                                                                             {kgParts.map((kg, i) => (
-                                                                                <span key={i} className="text-[9px] font-bold text-emerald-600 text-center leading-tight">{kg}</span>
+                                                                                <span key={i} className="text-[10px] font-bold text-emerald-600 text-center leading-tight">{kg}</span>
                                                                             ))}
                                                                         </div>
                                                                     );
