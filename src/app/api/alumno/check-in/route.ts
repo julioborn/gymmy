@@ -45,7 +45,7 @@ export async function POST() {
     await alumno.save();
 
     if (alumno.fcmTokens?.length) {
-        sendToTokens(alumno.fcmTokens, {
+        await sendToTokens(alumno.fcmTokens, {
             title: '📋 Asistencia registrada',
             body: 'Tu asistencia de musculación de hoy fue registrada. ¡Buen entrenamiento!',
             url: '/mi-cuenta',
