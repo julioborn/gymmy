@@ -325,7 +325,11 @@ export default function HistorialAlumnoPage() {
 
     const handleEditAsistenciaMob = async (asistencia: Asistencia) => {
         const fechaActual = new Date(asistencia.fecha);
-        const horaActual = fechaActual.toLocaleTimeString('es-ES', { hour12: false, hour: '2-digit', minute: '2-digit' });
+        // Mostrar fecha y hora en zona horaria Argentina (UTC-3)
+        const argOffset = -3 * 60 * 60 * 1000;
+        const argDate = new Date(fechaActual.getTime() + argOffset);
+        const dateForInput = argDate.toISOString().split('T')[0];
+        const horaActual = argDate.toISOString().split('T')[1].slice(0, 5);
         const { value: formData } = await Swal.fire({
             ...swalBase,
             title: 'Editar Actividad',
@@ -338,7 +342,7 @@ export default function HistorialAlumnoPage() {
                         <option value="Otro" ${asistencia.actividad === 'Otro' ? 'selected' : ''}>Otro</option>
                     </select>
                     <label class="swal-form-label">Fecha</label>
-                    <input type="date" id="mob-fecha" class="swal2-input" value="${fechaActual.toISOString().split('T')[0]}">
+                    <input type="date" id="mob-fecha" class="swal2-input" value="${dateForInput}">
                     <label class="swal-form-label">Hora</label>
                     <input type="time" id="mob-hora" class="swal2-input" value="${horaActual}">
                 </div>
@@ -351,7 +355,8 @@ export default function HistorialAlumnoPage() {
                     (a: Asistencia) => a.fecha.startsWith(nuevaFecha) && a.actividad === nuevaActividad && a._id !== asistencia._id
                 );
                 if (dup) { Swal.showValidationMessage(`Ya existe "${nuevaActividad}" para esa fecha.`); return; }
-                return { nuevaActividad, nuevaFechaHora: `${nuevaFecha}T${nuevaHora}` };
+                // Guardar con offset explícito -03:00 para que MongoDB almacene la hora Argentina correcta
+                return { nuevaActividad, nuevaFechaHora: `${nuevaFecha}T${nuevaHora}:00-03:00` };
             },
             showCancelButton: true,
             confirmButtonText: 'Guardar',
