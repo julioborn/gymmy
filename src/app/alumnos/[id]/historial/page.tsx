@@ -381,13 +381,18 @@ export default function HistorialAlumnoPage() {
             const startLabel = new Date(plan.fechaInicio + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
             const { value: action } = await Swal.fire({
                 ...swalBase,
+                buttonsStyling: true,
+                customClass: { confirmButton: 'sg-btn', denyButton: 'sg-btn', cancelButton: 'sg-btn' },
                 title: 'Plan activo',
                 html: `<div class="swal-form-body" style="text-align:left"><p style="margin:0;color:#475569;font-size:0.85rem;"><strong>Inicio:</strong> ${startLabel}<br><strong>Días planificados:</strong> ${plan.duracion}<br><strong>Días restantes:</strong> ${plan.diasRestantes}</p></div>`,
                 showDenyButton: true,
                 showCancelButton: true,
                 confirmButtonText: 'Editar días',
+                confirmButtonColor: '#eab308',
                 denyButtonText: 'Eliminar plan',
+                denyButtonColor: '#ef4444',
                 cancelButtonText: 'Cerrar',
+                cancelButtonColor: '#6b7280',
             });
             if (action === true) {
                 const { value: nuevaDuracion } = await Swal.fire({
