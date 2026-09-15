@@ -1,6 +1,7 @@
 import Alumno from '@/models/Alumno';
 import PlanAlumno from '@/models/PlanAlumno';
 import connectMongoDB from '../../../lib/mongodb';
+import mongoose from 'mongoose';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { notifyOwners } from '@/lib/notifications';
 
@@ -32,12 +33,16 @@ export async function GET(request: Request) {
             });
         }
 
+        const gimId = typeof gimnasioId === 'string'
+            ? new mongoose.Types.ObjectId(gimnasioId)
+            : gimnasioId;
+
         const [alumnos, planesActivos] = await Promise.all([
             Alumno.find({ gimnasioId }, projection).lean(),
-            PlanAlumno.find(
-                { gimnasioId, activo: true },
-                { alumnoId: 1, totalSemanas: 1, 'dias._id': 0, diasLength: 1, fechaInicio: 1, nombre: 1 }
-            ).lean(),
+            PlanAlumno.aggregate([
+                { $match: { gimnasioId: gimId, activo: true } },
+                { $project: { alumnoId: 1, totalSemanas: 1, fechaInicio: 1, nombre: 1, totalDias: { $size: '$dias' } } },
+            ]),
         ]);
 
         // Map alumnoId → active plan (only fields needed for diasRestantes)
@@ -45,7 +50,7 @@ export async function GET(request: Request) {
         for (const p of planesActivos) {
             planMap.set(p.alumnoId.toString(), {
                 fechaInicio: p.fechaInicio,
-                totalSesiones: (p.dias?.length ?? 0) * (p.totalSemanas ?? 1),
+                totalSesiones: (p.totalDias ?? 0) * (p.totalSemanas ?? 1),
                 nombre: p.nombre,
             });
         }
