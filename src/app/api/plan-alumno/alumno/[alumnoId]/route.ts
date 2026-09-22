@@ -45,8 +45,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { alumnoId: 
             for (let s = 1; s <= 5; s++) {
                 const kk = `kgAlumno${s}`;
                 const ok = `observacionesAlumno${s}`;
+                const tk = `trepada${s}`;
+                const sk = `semana${s}`;
                 merged[kk] = clientEj[kk] ?? (ej[kk] as string) ?? '';
                 merged[ok] = clientEj[ok] ?? (ej[ok] as string) ?? '';
+                merged[tk] = clientEj[tk] ?? (ej[tk] as string) ?? '';
+                merged[sk] = clientEj[sk] ?? (ej[sk] as string) ?? '';
             }
             return { ...ej, ...merged };
         });

@@ -1268,6 +1268,26 @@ export default function MiCuentaPage() {
                                                                     {ej.notas && (
                                                                         <p className="text-xs text-slate-500 italic">{ej.notas}</p>
                                                                     )}
+                                                                    <div className="grid grid-cols-2 gap-2">
+                                                                        <div>
+                                                                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">Trepada</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={(ej[`trepada${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
+                                                                                onChange={(e) => updateEjAlumno(eIdx, `trepada${selectedSemana}`, e.target.value)}
+                                                                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 block">Núcleo</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={semVal}
+                                                                                onChange={(e) => updateEjAlumno(eIdx, `semana${selectedSemana}`, e.target.value)}
+                                                                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
                                                                     <div>
                                                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">
                                                                             Mis KG{seriesCount > 1 && <span className="normal-case font-normal"> · {seriesCount} series</span>}
