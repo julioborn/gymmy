@@ -30,7 +30,7 @@ export interface IAlumno extends Document {
     planEntrenamiento: IPlanEntrenamiento;
     planEntrenamientoHistorial: IPlanEntrenamientoHistorial[];
     fechaInicio?: Date | null;
-    horarioEntrenamiento?: 'mañana' | 'siesta' | 'tarde' | null;
+    horarioEntrenamiento?: 'mañana' | 'siesta' | 'tarde' | 'tarde-noche' | null;
     horaExactaEntrenamiento?: string | null;
     historialDeportivo?: string;
     historialDeVida?: string;
@@ -111,7 +111,7 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     horarioEntrenamiento: {
         type: String,
         required: false,
-        enum: ['mañana', 'siesta', 'tarde'],
+        enum: ['mañana', 'siesta', 'tarde', 'tarde-noche'],
         default: null
     },
     planEntrenamientoHistorial: {
