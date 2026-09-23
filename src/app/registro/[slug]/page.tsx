@@ -63,6 +63,7 @@ export default function RegistroPage() {
         condicionDetalle: '',
         nivelExperiencia: '' as NivelExp | '',
         diasEntrenaSemana: 0,
+        diaDePaso: false,
     });
 
     const [submitting, setSubmitting] = useState(false);
@@ -99,9 +100,9 @@ export default function RegistroPage() {
             }
             if (!form.telefono.trim()) { setError('Ingresá tu teléfono.');          return; }
             if (!form.horarioEntrenamiento) { setError('Seleccioná tu horario de entrenamiento.'); return; }
-            if (!form.diasEntrenaSemana)    { setError('Seleccioná los días por semana.');         return; }
+            if (!form.diasEntrenaSemana && !form.diaDePaso) { setError('Seleccioná los días por semana.'); return; }
             setError('');
-            if (form.diasEntrenaSemana === 1) { handleSubmit(); return; }
+            if (form.diaDePaso) { handleSubmit(); return; }
             setStep(2);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
@@ -128,7 +129,7 @@ export default function RegistroPage() {
     const areaFinal: Area = form.tieneCondicion === 'si' ? 'salud' : (form.areaElegida as Area);
 
     async function handleSubmit() {
-        if (!form.diasEntrenaSemana) { setError('Por favor seleccioná los días.'); return; }
+        if (!form.diasEntrenaSemana && !form.diaDePaso) { setError('Por favor seleccioná los días.'); return; }
         setSubmitting(true);
         setError('');
         const mes = String(MESES.indexOf(form.mesNac) + 1).padStart(2, '0');
@@ -146,7 +147,7 @@ export default function RegistroPage() {
                     telefono: form.telefono,
                     area: areaFinal,
                     nivelExperiencia: form.nivelExperiencia,
-                    diasEntrenaSemana: form.diasEntrenaSemana,
+                    diasEntrenaSemana: form.diaDePaso ? 1 : form.diasEntrenaSemana,
                     horarioEntrenamiento: form.horarioEntrenamiento,
                     patologias: form.tieneCondicion === 'si' ? form.condicionDetalle : '',
                 }),
@@ -240,7 +241,7 @@ export default function RegistroPage() {
             return !!(form.nombre.trim() && form.apellido.trim() &&
                 (dniDigits.length === 7 || dniDigits.length === 8) &&
                 form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() &&
-                form.horarioEntrenamiento && form.diasEntrenaSemana > 0);
+                form.horarioEntrenamiento && (form.diasEntrenaSemana > 0 || form.diaDePaso));
         }
         if (step === 2) return !!form.areaElegida;
         if (step === 3) return !!form.tieneCondicion;
@@ -283,7 +284,7 @@ export default function RegistroPage() {
                 {step === 1 && (
                     <div>
                         <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>
-                            Paso 1 de {form.diasEntrenaSemana === 1 ? '1' : TOTAL_STEPS}
+                            Paso 1 de {form.diaDePaso ? '1' : TOTAL_STEPS}
                         </p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Tus datos</h2>
                         <p className="text-slate-600 text-base mb-6">Completá tu información para crear la cuenta.</p>
@@ -375,25 +376,34 @@ export default function RegistroPage() {
                                 <label className={labelClass}>Días por semana</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {DIAS_SEMANA.map(d => {
-                                        const sel = form.diasEntrenaSemana === d;
+                                        const sel = form.diasEntrenaSemana === d && !form.diaDePaso;
                                         return (
                                             <button key={d} type="button"
-                                                onClick={() => setField('diasEntrenaSemana', d)}
-                                                className="flex flex-col items-center justify-center py-3 rounded-2xl border-2 transition-all active:scale-[0.95]"
+                                                onClick={() => { setField('diasEntrenaSemana', d); setField('diaDePaso', false); }}
+                                                className="py-4 rounded-2xl border-2 text-xl font-bold transition-all active:scale-[0.95]"
                                                 style={{
                                                     borderColor: sel ? orange : '#e2e8f0',
                                                     background: sel ? orange : 'white',
                                                     color: sel ? 'white' : '#334155',
                                                 }}>
-                                                <span className="text-xl font-bold leading-none">{d}</span>
-                                                {d === 1 && <span className="text-[9px] font-semibold mt-1 leading-none" style={{ color: sel ? 'rgba(255,255,255,0.8)' : '#94a3b8' }}>de paso</span>}
+                                                {d}
                                             </button>
                                         );
                                     })}
                                 </div>
-                                {form.diasEntrenaSemana === 1 && (
+                                <button type="button"
+                                    onClick={() => { setField('diaDePaso', !form.diaDePaso); if (!form.diaDePaso) setField('diasEntrenaSemana', 0); }}
+                                    className="mt-2 w-full py-3 rounded-2xl border-2 text-base font-semibold transition-all"
+                                    style={{
+                                        borderColor: form.diaDePaso ? orange : '#e2e8f0',
+                                        background: form.diaDePaso ? `${orange}18` : 'white',
+                                        color: form.diaDePaso ? orange : '#64748b',
+                                    }}>
+                                    Día de paso
+                                </button>
+                                {form.diaDePaso && (
                                     <p className="mt-2 text-sm text-slate-500 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-                                        Con 1 día registramos tus datos básicos. Podés completar tu perfil más adelante.
+                                        Registramos tus datos básicos. Podés completar tu perfil más adelante.
                                     </p>
                                 )}
                             </div>
@@ -402,7 +412,7 @@ export default function RegistroPage() {
                         {errBox}
                         <div className="mt-6">
                             <BtnNext
-                                label={form.diasEntrenaSemana === 1
+                                label={form.diaDePaso
                                     ? (submitting ? 'Registrando...' : 'Crear mi cuenta ✓')
                                     : 'Siguiente →'}
                             />
