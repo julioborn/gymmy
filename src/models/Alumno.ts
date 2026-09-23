@@ -36,7 +36,8 @@ export interface IAlumno extends Document {
     historialDeVida?: string;
     objetivos?: string;
     patologias?: string;
-    area?: 'salud' | 'fitness' | 'rendimiento' | 'formacion';
+    archivosMedicos?: { url: string; nombre: string; tipo: string; fechaSubida: Date }[];
+    area?: 'salud' | 'fitness' | 'rendimiento' | 'formacion' | 'fuerza' | 'masa_muscular' | 'composicion' | 'retomar';
     nivelExperiencia?: 'nunca' | 'alguna_vez' | 'hace_tiempo';
     gimnasioId: mongoose.Types.ObjectId;
     password?: string;
@@ -122,7 +123,11 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     historialDeVida: { type: String, required: false, default: "" },
     objetivos: { type: String, required: false, default: "" },
     patologias: { type: String, required: false, default: "" },
-    area: { type: String, required: false, enum: ['salud', 'fitness', 'rendimiento', 'formacion'], default: null },
+    archivosMedicos: {
+        type: [{ url: String, nombre: String, tipo: String, fechaSubida: { type: Date, default: Date.now } }],
+        default: [],
+    },
+    area: { type: String, required: false, default: null },
     nivelExperiencia: { type: String, required: false, enum: ['nunca', 'alguna_vez', 'hace_tiempo'], default: null },
     password: { type: String, select: false },
     fcmTokens: { type: [String], default: [], select: false },

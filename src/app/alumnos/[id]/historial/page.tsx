@@ -66,6 +66,7 @@ type Alumno = {
     area?: string;
     nivelExperiencia?: string;
     patologias?: string;
+    archivosMedicos?: { url: string; nombre: string; tipo: string; fechaSubida: string }[];
     historialDeportivo?: string;
     historialDeVida?: string;
     objetivos?: string;
@@ -1891,6 +1892,35 @@ export default function HistorialAlumnoPage() {
                             Eliminar alumno
                         </button>
                     </div>
+
+                    {/* Archivos médicos */}
+                    {alumno.archivosMedicos && alumno.archivosMedicos.length > 0 && (
+                        <>
+                        <div className="border-t border-white/10 mx-4 sm:mx-5" />
+                        <div className="px-4 sm:px-5 py-4">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Archivos médicos</p>
+                            <div className="flex flex-col gap-2">
+                                {alumno.archivosMedicos.map((a, i) => (
+                                    <a key={i} href={a.url} target="_blank" rel="noopener noreferrer"
+                                        className="flex items-center gap-3 bg-white/10 hover:bg-white/15 rounded-xl px-3 py-2.5 transition-all">
+                                        <span className="text-xl">
+                                            {a.tipo === 'application/pdf' ? '📄' : '🖼️'}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-white truncate">{a.nombre}</p>
+                                            <p className="text-[11px] text-white/40">
+                                                {new Date(a.fechaSubida).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                        <svg className="w-4 h-4 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                        </svg>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                        </>
+                    )}
                     </>
                 )}
             </div>

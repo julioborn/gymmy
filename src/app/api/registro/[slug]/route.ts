@@ -38,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
         return NextResponse.json({ error: 'Ya existe un alumno con ese DNI' }, { status: 409 });
     }
 
-    await Alumno.create({
+    const alumno = await Alumno.create({
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         dni: dni.trim(),
@@ -52,5 +52,5 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
         gimnasioId: gym._id,
     });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, alumnoId: alumno._id.toString() });
 }

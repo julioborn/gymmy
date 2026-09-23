@@ -69,6 +69,7 @@ export default function RegistroPage() {
         diaDePaso: false,
     });
 
+    const [archivos, setArchivos] = useState<File[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -157,6 +158,15 @@ export default function RegistroPage() {
             });
             const data = await res.json();
             if (!res.ok) { setError(data.error || 'Error al registrarse. Intentá de nuevo.'); return; }
+
+            // Subir archivos médicos si los hay
+            if (archivos.length && data.alumnoId) {
+                const fd = new FormData();
+                fd.append('alumnoId', data.alumnoId);
+                archivos.forEach(f => fd.append('archivos', f));
+                await fetch(`/api/registro/${slug}/archivos`, { method: 'POST', body: fd }).catch(() => {});
+            }
+
             setSuccess(true);
         } catch {
             setError('Error de conexión. Intentá de nuevo.');
@@ -475,13 +485,44 @@ export default function RegistroPage() {
                             })}
                         </div>
                         {form.tieneCondicion === 'si' && (
-                            <div>
-                                <label className={labelClass}>Contanos qué tenés</label>
-                                <textarea rows={4} placeholder="Describí tu lesión, dolor o condición..."
-                                    value={form.condicionDetalle}
-                                    onChange={e => setField('condicionDetalle', e.target.value)}
-                                    style={{ ...inputStyle(form.condicionDetalle), resize: 'none' as const }} />
-                                {/* <p className="text-slate-500 text-sm mt-2 pl-1">Serás asignado al área <strong>Salud</strong> para un seguimiento adecuado.</p> */}
+                            <div className="space-y-4">
+                                <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 text-sm text-blue-700 leading-snug">
+                                    Esta información nos ayuda a adaptar tu entrenamiento. Si tenés algún estudio médico, indicaciones o información relevante, podés comentárselo al profesor o adjuntarlo acá.
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Comentario (opcional)</label>
+                                    <textarea rows={3} placeholder="Describí tu lesión, dolor o condición..."
+                                        value={form.condicionDetalle}
+                                        onChange={e => setField('condicionDetalle', e.target.value)}
+                                        style={{ ...inputStyle(form.condicionDetalle), resize: 'none' as const }} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Adjuntar archivos (opcional)</label>
+                                    <label
+                                        className="flex flex-col items-center justify-center gap-2 w-full rounded-2xl border-2 border-dashed py-5 cursor-pointer transition-all"
+                                        style={{ borderColor: archivos.length ? orange : '#e2e8f0', background: archivos.length ? `${orange}08` : 'white' }}>
+                                        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={archivos.length ? orange : '#94a3b8'}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                        </svg>
+                                        <span className="text-sm font-semibold" style={{ color: archivos.length ? orange : '#64748b' }}>
+                                            {archivos.length ? `${archivos.length} archivo${archivos.length > 1 ? 's' : ''} seleccionado${archivos.length > 1 ? 's' : ''}` : 'Tocá para seleccionar'}
+                                        </span>
+                                        <span className="text-xs text-slate-400">PDF, JPG, PNG · hasta 10 MB por archivo</span>
+                                        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic" multiple className="hidden"
+                                            onChange={e => setArchivos(Array.from(e.target.files ?? []))} />
+                                    </label>
+                                    {archivos.length > 0 && (
+                                        <ul className="mt-2 space-y-1">
+                                            {archivos.map((f, i) => (
+                                                <li key={i} className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl px-3 py-1.5">
+                                                    <span className="truncate flex-1">{f.name}</span>
+                                                    <button type="button" onClick={() => setArchivos(prev => prev.filter((_, j) => j !== i))}
+                                                        className="text-slate-300 hover:text-red-400 shrink-0 font-bold">✕</button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {errBox}
