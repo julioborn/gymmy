@@ -31,6 +31,14 @@ function toTitleCase(str: string) {
     return str.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
 }
 
+function formatDNI(raw: string): string {
+    const digits = raw.replace(/\D/g, '').slice(0, 8);
+    const len = digits.length;
+    if (len <= 3) return digits;
+    if (len <= 6) return digits.slice(0, len - 3) + '.' + digits.slice(len - 3);
+    return digits.slice(0, len - 6) + '.' + digits.slice(len - 6, len - 3) + '.' + digits.slice(len - 3);
+}
+
 export default function RegistroPage() {
     const { slug } = useParams<{ slug: string }>();
     const [gym, setGym] = useState<GymInfo | null>(null);
@@ -73,7 +81,11 @@ export default function RegistroPage() {
         if (step === 1) {
             if (!form.nombre.trim())   { setError('Ingresá tu nombre.');            return; }
             if (!form.apellido.trim()) { setError('Ingresá tu apellido.');          return; }
-            if (!form.dni.trim())      { setError('Ingresá tu DNI.');               return; }
+            const dniDigits = form.dni.replace(/\./g, '');
+            if (!dniDigits)            { setError('Ingresá tu DNI.');               return; }
+            if (dniDigits.length < 7 || dniDigits.length > 8) {
+                setError('El DNI debe tener 7 u 8 dígitos.'); return;
+            }
             if (!form.diaNac || !form.mesNac || !form.anioNac) {
                 setError('Ingresá tu fecha de nacimiento completa.'); return;
             }
@@ -110,7 +122,7 @@ export default function RegistroPage() {
                 body: JSON.stringify({
                     nombre: form.nombre,
                     apellido: form.apellido,
-                    dni: form.dni,
+                    dni: form.dni.replace(/\./g, ''),
                     fechaNacimiento,
                     telefono: form.telefono,
                     area: areaFinal,
@@ -204,8 +216,12 @@ export default function RegistroPage() {
         </button>
     );
     const stepIsValid = (() => {
-        if (step === 1) return !!(form.nombre.trim() && form.apellido.trim() && form.dni.trim() &&
-            form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() && form.horarioEntrenamiento);
+        if (step === 1) {
+            const dniDigits = form.dni.replace(/\./g, '');
+            return !!(form.nombre.trim() && form.apellido.trim() &&
+                (dniDigits.length === 7 || dniDigits.length === 8) &&
+                form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() && form.horarioEntrenamiento);
+        }
         if (step === 2) return !!form.areaElegida;
         if (step === 3) return !!form.tieneCondicion;
         if (step === 4) return !!form.nivelExperiencia;
@@ -272,7 +288,7 @@ export default function RegistroPage() {
                             <div>
                                 <label className={labelClass}>DNI</label>
                                 <input type="text" inputMode="numeric" autoComplete="off" value={form.dni}
-                                    onChange={e => setField('dni', e.target.value.replace(/\D/g, ''))}
+                                    onChange={e => setField('dni', formatDNI(e.target.value))}
                                     style={inputStyle(form.dni)} />
                             </div>
 
