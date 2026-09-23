@@ -393,19 +393,14 @@ export default function RegistroPage() {
                                 </div>
                                 <button type="button"
                                     onClick={() => { setField('diaDePaso', !form.diaDePaso); if (!form.diaDePaso) setField('diasEntrenaSemana', 0); }}
-                                    className="mt-2 w-full py-3 rounded-2xl border-2 text-base font-semibold transition-all"
+                                    className="mt-2 w-full py-3.5 px-4 rounded-2xl border-2 text-left transition-all"
                                     style={{
                                         borderColor: form.diaDePaso ? orange : '#e2e8f0',
                                         background: form.diaDePaso ? `${orange}18` : 'white',
-                                        color: form.diaDePaso ? orange : '#64748b',
                                     }}>
-                                    Día de paso
+                                    <p className="text-base font-semibold" style={{ color: form.diaDePaso ? orange : '#334155' }}>Un día de paso</p>
+                                    <p className="text-xs mt-0.5" style={{ color: form.diaDePaso ? orange : '#94a3b8' }}>Venís solo por hoy, sin inscripción regular.</p>
                                 </button>
-                                {form.diaDePaso && (
-                                    <p className="mt-2 text-sm text-slate-500 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-                                        Registramos tus datos básicos. Podés completar tu perfil más adelante.
-                                    </p>
-                                )}
                             </div>
                         </div>
 
