@@ -83,11 +83,15 @@ function capitalizar(texto: string) {
 }
 
 const AREA_LABEL: Record<string, string> = {
-    // Áreas legacy
     salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
-    // Áreas nuevas
     fuerza: '💪 Fuerza y condición', masa_muscular: '🏋️ Masa muscular',
     composicion: '⚖️ Composición corporal', retomar: '🔄 Retomar actividad',
+};
+
+const NIVEL_LABEL: Record<string, string> = {
+    nunca: 'Primera vez en un gym',
+    alguna_vez: 'Entrenó alguna vez',
+    hace_tiempo: 'Entrena hace tiempo',
 };
 
 type Tarifa = {
@@ -1785,41 +1789,45 @@ export default function HistorialAlumnoPage() {
     return (
         <>
         <div className="max-w-7xl mx-auto space-y-4">
-            {/* Header + Info fusionados */}
-            <div className="bg-[#111] rounded-2xl overflow-hidden">
+            {/* Header + Info */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
 
                 {/* Barra siempre visible */}
-                <div className="px-4 sm:px-5 py-4 flex items-center gap-3">
-                    <Link href="/alumnos" className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition">
+                <div className="px-4 sm:px-5 py-4 flex items-start gap-3">
+                    <Link href="/alumnos" className="flex-shrink-0 mt-0.5 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
                     </Link>
-                    <h1 className="flex-1 min-w-0 text-lg font-bold text-white truncate">{alumno.nombre} {alumno.apellido}</h1>
-                    <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                        {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
-                    </span>
-                    {diasRestantes != null && diasRestantes > 0 ? (
-                        <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/10 text-white/60' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>
-                            {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}{diasRestantes} entrenos
-                        </span>
-                    ) : diasRestantes === 0 ? (
-                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">
-                            {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}Plan completado
-                        </span>
-                    ) : (
-                        <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-white/40">Sin plan</span>
-                    )}
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-lg font-bold text-slate-800 leading-snug">{alumno.nombre} {alumno.apellido}</h1>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                                {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
+                            </span>
+                            {diasRestantes != null && diasRestantes > 0 ? (
+                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-slate-100 text-slate-500' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
+                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}{diasRestantes} entrenos
+                                </span>
+                            ) : diasRestantes === 0 ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}Plan completado
+                                </span>
+                            ) : (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400">Sin plan</span>
+                            )}
+                        </div>
+                    </div>
                     <Link
                         href={`/alumnos/${alumno._id}/plan`}
                         style={{ backgroundColor: acento }}
-                        className="shrink-0 px-2.5 py-1.5 text-white text-xs font-semibold rounded-xl hover:opacity-80 transition-opacity shadow-sm"
+                        className="shrink-0 mt-0.5 px-2.5 py-1.5 text-white text-xs font-semibold rounded-xl hover:opacity-80 transition-opacity shadow-sm"
                     >
                         Plan
                     </Link>
                     <button
                         onClick={() => setInfoExpanded(v => !v)}
-                        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition"
+                        className="shrink-0 mt-0.5 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
                         title={infoExpanded ? 'Ocultar información' : 'Ver información'}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform duration-200 ${infoExpanded ? 'rotate-180' : ''}`}>
@@ -1831,63 +1839,113 @@ export default function HistorialAlumnoPage() {
                 {/* Expandable: datos + acciones */}
                 {infoExpanded && (
                     <>
-                    <div className="border-t border-white/10" />
+                    <div className="border-t border-slate-100" />
 
                     {/* Grid de datos */}
-                    <div className="px-4 sm:px-5 pt-4 pb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-                        <div className="bg-white/10 rounded-xl px-3.5 py-3">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">DNI</p>
-                            <p className="text-base font-bold text-white tabular-nums">{alumno.dni}</p>
+                    <div className="px-4 sm:px-5 pt-4 pb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                        <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">DNI</p>
+                            <p className="text-sm font-bold text-slate-700 tabular-nums">{alumno.dni}</p>
                         </div>
-                        {alumno.area && (
-                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Área</p>
-                                <p className="text-base font-bold text-white">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
+                        {alumno.fechaNacimiento && (
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Nacimiento</p>
+                                <p className="text-sm font-bold text-slate-700">
+                                    {new Date(alumno.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </p>
                             </div>
                         )}
                         {alumno.telefono && (
-                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Teléfono</p>
-                                <p className="text-base font-bold text-white tabular-nums">{alumno.telefono}</p>
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Teléfono</p>
+                                <p className="text-sm font-bold text-slate-700 tabular-nums">{alumno.telefono}</p>
+                            </div>
+                        )}
+                        {alumno.email && (
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Email</p>
+                                <p className="text-sm font-bold text-slate-700 truncate">{alumno.email}</p>
+                            </div>
+                        )}
+                        {alumno.area && (
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Área</p>
+                                <p className="text-sm font-bold text-slate-700">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
+                            </div>
+                        )}
+                        {alumno.nivelExperiencia && (
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Experiencia</p>
+                                <p className="text-sm font-bold text-slate-700">{NIVEL_LABEL[alumno.nivelExperiencia] ?? alumno.nivelExperiencia}</p>
                             </div>
                         )}
                         {alumno.horarioEntrenamiento && (
-                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Horario</p>
-                                <p className="text-base font-bold text-white">{capitalizar(alumno.horarioEntrenamiento)}</p>
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Horario</p>
+                                <p className="text-sm font-bold text-slate-700">{capitalizar(alumno.horarioEntrenamiento)}</p>
                             </div>
                         )}
                         {alumno.diasEntrenaSemana && (
-                            <div className="bg-white/10 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Días/sem</p>
-                                <p className="text-base font-bold text-white">{alumno.diasEntrenaSemana} días</p>
+                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Días/sem</p>
+                                <p className="text-sm font-bold text-slate-700">{alumno.diasEntrenaSemana} días</p>
                             </div>
                         )}
                     </div>
 
-                    <div className="border-t border-white/10 mx-4 sm:mx-5" />
+                    {/* Secciones de texto largo */}
+                    {(alumno.patologias || alumno.objetivos || alumno.historialDeportivo || alumno.historialDeVida) && (
+                        <div className="px-4 sm:px-5 pb-3 flex flex-col gap-2">
+                            {alumno.patologias && (
+                                <div className="bg-red-50 border border-red-100 rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Condición física / Patologías</p>
+                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.patologias}</p>
+                                </div>
+                            )}
+                            {alumno.objetivos && (
+                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Objetivos</p>
+                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.objetivos}</p>
+                                </div>
+                            )}
+                            {alumno.historialDeportivo && (
+                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Historial deportivo</p>
+                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.historialDeportivo}</p>
+                                </div>
+                            )}
+                            {alumno.historialDeVida && (
+                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Historial de vida</p>
+                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.historialDeVida}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="border-t border-slate-100 mx-4 sm:mx-5" />
 
                     {/* Acciones */}
                     <div className="px-4 sm:px-5 py-4 flex flex-wrap items-center gap-2">
-                        <button onClick={marcarPagoMes} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                        <button onClick={marcarPagoMes} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
                             Marcar Pago
                         </button>
-                        <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                        <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
                             Iniciar Plan
                         </button>
-                        <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/20 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
+                        <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all active:scale-95">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
                             Editar
                         </button>
                         {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
-                            <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white/70 text-sm font-semibold rounded-xl transition-all active:scale-95">
+                            <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-500 text-sm font-semibold rounded-xl transition-all active:scale-95">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
                                 Resetear contraseña
                             </button>
                         )}
-                        <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto">
+                        <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto border border-red-100">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                             Eliminar alumno
                         </button>
@@ -1896,23 +1954,23 @@ export default function HistorialAlumnoPage() {
                     {/* Archivos médicos */}
                     {alumno.archivosMedicos && alumno.archivosMedicos.length > 0 && (
                         <>
-                        <div className="border-t border-white/10 mx-4 sm:mx-5" />
+                        <div className="border-t border-slate-100 mx-4 sm:mx-5" />
                         <div className="px-4 sm:px-5 py-4">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Archivos médicos</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Archivos médicos</p>
                             <div className="flex flex-col gap-2">
                                 {alumno.archivosMedicos.map((a, i) => (
                                     <a key={i} href={a.url} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 bg-white/10 hover:bg-white/15 rounded-xl px-3 py-2.5 transition-all">
+                                        className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 transition-all">
                                         <span className="text-xl">
                                             {a.tipo === 'application/pdf' ? '📄' : '🖼️'}
                                         </span>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-white truncate">{a.nombre}</p>
-                                            <p className="text-[11px] text-white/40">
+                                            <p className="text-sm font-semibold text-slate-700 truncate">{a.nombre}</p>
+                                            <p className="text-[11px] text-slate-400">
                                                 {new Date(a.fechaSubida).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </p>
                                         </div>
-                                        <svg className="w-4 h-4 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                         </svg>
                                     </a>
