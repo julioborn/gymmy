@@ -4,14 +4,17 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 interface GymInfo { nombre: string; alias: string; logoUrl?: string | null; }
-type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion';
+type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion' | 'fuerza' | 'masa_muscular' | 'composicion' | 'retomar';
 type NivelExp = 'nunca' | 'alguna_vez' | 'hace_tiempo';
 
 const AREAS: { value: Area; label: string; emoji: string; desc: string }[] = [
-    { value: 'salud',       label: 'Salud',       emoji: '❤️', desc: 'Quiero mejorar mi salud general o tengo falta de actividad física.' },
-    { value: 'fitness',     label: 'Fitness',     emoji: '💪', desc: 'Quiero verme mejor estéticamente y hacer un cambio físico.' },
-    { value: 'rendimiento', label: 'Rendimiento',  emoji: '🏅', desc: 'Quiero mejorar en un deporte o tengo un objetivo deportivo específico.' },
-    { value: 'formacion',   label: 'Formación',              emoji: '🌱', desc: 'Nunca entrené, soy niño/a (desde los 10 años) o adolescente (13 a 17 años).' },
+    { value: 'fuerza',        label: 'Fuerza y condición',     emoji: '💪', desc: 'Quiero sentirme más fuerte, ágil y mejorar mi capacidad física general.' },
+    { value: 'masa_muscular', label: 'Masa muscular',           emoji: '🏋️', desc: 'Quiero aumentar mi masa muscular y desarrollar determinadas zonas de mi cuerpo.' },
+    { value: 'salud',         label: 'Salud y calidad de vida', emoji: '❤️', desc: 'Quiero sentirme mejor, mantenerme activo y generar un hábito de entrenamiento saludable.' },
+    { value: 'composicion',   label: 'Composición corporal',    emoji: '⚖️', desc: 'Quiero reducir grasa corporal y generar un cambio en mi composición física.' },
+    { value: 'rendimiento',   label: 'Rendimiento deportivo',   emoji: '🏅', desc: 'Practico un deporte y quiero mejorar mi rendimiento o prepararme para un objetivo específico.' },
+    { value: 'formacion',     label: 'Formación (10-17 años)',  emoji: '🌱', desc: 'Tengo entre 10 y 17 años y quiero comenzar un proceso de entrenamiento adaptado a mi etapa de desarrollo.' },
+    { value: 'retomar',       label: 'Retomar actividad',       emoji: '🔄', desc: 'Quiero retomar la actividad física después de un período de inactividad.' },
 ];
 
 const NIVELES: { value: NivelExp; label: string; desc: string }[] = [
@@ -365,7 +368,7 @@ export default function RegistroPage() {
                                                     background: sel ? `${orange}18` : 'white',
                                                 }}>
                                                 <p className="text-base font-semibold" style={{ color: sel ? orange : '#334155' }}>{h.label}</p>
-                                                <p className="text-xs mt-0.5" style={{ color: sel ? orange : '#94a3b8' }}>{h.rango}</p>
+                                                <p className="text-sm mt-0.5" style={{ color: sel ? orange : '#94a3b8' }}>{h.rango}</p>
                                             </button>
                                         );
                                     })}
@@ -399,7 +402,7 @@ export default function RegistroPage() {
                                         background: form.diaDePaso ? `${orange}18` : 'white',
                                     }}>
                                     <p className="text-base font-semibold" style={{ color: form.diaDePaso ? orange : '#334155' }}>Un día de paso</p>
-                                    <p className="text-xs mt-0.5" style={{ color: form.diaDePaso ? orange : '#94a3b8' }}>Venís solo por hoy, sin inscripción regular.</p>
+                                    <p className="text-sm mt-0.5" style={{ color: form.diaDePaso ? orange : '#94a3b8' }}>Venís solo por hoy, sin inscripción regular.</p>
                                 </button>
                             </div>
                         </div>
@@ -419,8 +422,8 @@ export default function RegistroPage() {
                 {step === 2 && (
                     <div>
                         <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 2 de {TOTAL_STEPS}</p>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-1">¿Cuál es tu objetivo?</h2>
-                        <p className="text-slate-600 text-base mb-6">Elegí la opción que mejor te describe.</p>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-1">¿Cuál es tu objetivo principal?</h2>
+                        <p className="text-slate-600 text-base mb-6">Seleccioná la opción que mejor represente lo que querés lograr.</p>
                         <div className="space-y-3">
                             {AREAS.map(a => {
                                 const sel = form.areaElegida === a.value;
@@ -432,7 +435,7 @@ export default function RegistroPage() {
                                             <span className="text-2xl mt-0.5 leading-none">{a.emoji}</span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="font-bold text-base" style={{ color: sel ? orange : '#1e293b' }}>{a.label}</p>
-                                                <p className="text-slate-600 text-[15px] mt-0.5 leading-snug">{a.desc}</p>
+                                                <p className="text-slate-600 text-base mt-0.5 leading-snug">{a.desc}</p>
                                             </div>
                                             <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center"
                                                 style={{ borderColor: sel ? orange : '#cbd5e1' }}>

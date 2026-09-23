@@ -476,7 +476,10 @@ export default function ListaAlumnosPage() {
                                             </p>
                                             {alumno.area && (
                                                 <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 bg-slate-100 text-slate-500">
-                                                    {({ salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación' } as Record<string, string>)[alumno.area] ?? alumno.area}
+                                                    {({
+                                                        salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rend.', formacion: '🌱 Formación',
+                                                        fuerza: '💪 Fuerza', masa_muscular: '🏋️ Masa musc.', composicion: '⚖️ Composición', retomar: '🔄 Retomar',
+                                                    } as Record<string, string>)[alumno.area] ?? alumno.area}
                                                 </span>
                                             )}
                                         </div>

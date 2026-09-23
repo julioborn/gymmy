@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { swalNotify } from '@/utils/swalConfig';
 
-type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion';
+type Area = 'salud' | 'fitness' | 'rendimiento' | 'formacion' | 'fuerza' | 'masa_muscular' | 'composicion' | 'retomar';
 type NivelExp = 'nunca' | 'alguna_vez' | 'hace_tiempo';
 
 const AREAS: { value: Area; label: string; emoji: string; desc: string }[] = [
-    { value: 'salud',       label: 'Salud',       emoji: '❤️', desc: 'Quiere mejorar su salud general o tiene falta de actividad física.' },
-    { value: 'fitness',     label: 'Fitness',     emoji: '💪', desc: 'Quiere un cambio físico o estético.' },
-    { value: 'rendimiento', label: 'Rendimiento', emoji: '🏅', desc: 'Tiene un objetivo deportivo específico.' },
-    { value: 'formacion',   label: 'Formación',   emoji: '🌱', desc: 'Nunca entrenó, es niño/a o adolescente.' },
+    { value: 'fuerza',        label: 'Fuerza y condición',     emoji: '💪', desc: 'Quiere sentirse más fuerte y mejorar su capacidad física general.' },
+    { value: 'masa_muscular', label: 'Masa muscular',           emoji: '🏋️', desc: 'Quiere aumentar masa muscular y desarrollar zonas específicas.' },
+    { value: 'salud',         label: 'Salud y calidad de vida', emoji: '❤️', desc: 'Quiere mantenerse activo y generar un hábito saludable.' },
+    { value: 'composicion',   label: 'Composición corporal',    emoji: '⚖️', desc: 'Quiere reducir grasa y mejorar su composición física.' },
+    { value: 'rendimiento',   label: 'Rendimiento deportivo',   emoji: '🏅', desc: 'Practica un deporte y quiere mejorar su rendimiento.' },
+    { value: 'formacion',     label: 'Formación (10-17 años)',  emoji: '🌱', desc: 'Entre 10 y 17 años, entrenamiento adaptado a su etapa de desarrollo.' },
+    { value: 'retomar',       label: 'Retomar actividad',       emoji: '🔄', desc: 'Quiere volver a entrenar después de un período de inactividad.' },
 ];
 
 const NIVELES: { value: NivelExp; label: string; desc: string }[] = [

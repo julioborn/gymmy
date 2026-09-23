@@ -113,10 +113,14 @@ export default function FiltrosAlumnos({
                         className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
                     >
                         <option value="">Área</option>
-                        <option value="salud">❤️ Salud</option>
-                        <option value="fitness">💪 Fitness</option>
-                        <option value="rendimiento">🏅 Rendimiento</option>
-                        <option value="formacion">🌱 Formación</option>
+                        <option value="fuerza">💪 Fuerza y condición</option>
+                        <option value="masa_muscular">🏋️ Masa muscular</option>
+                        <option value="salud">❤️ Salud y calidad de vida</option>
+                        <option value="composicion">⚖️ Composición corporal</option>
+                        <option value="rendimiento">🏅 Rendimiento deportivo</option>
+                        <option value="formacion">🌱 Formación (10-17 años)</option>
+                        <option value="retomar">🔄 Retomar actividad</option>
+                        <option value="fitness">💪 Fitness (legacy)</option>
                     </select>
                     <Chevron />
                 </div>

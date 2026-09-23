@@ -81,7 +81,13 @@ function capitalizar(texto: string) {
     return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : '-';
 }
 
-const AREA_LABEL: Record<string, string> = { salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación' };
+const AREA_LABEL: Record<string, string> = {
+    // Áreas legacy
+    salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
+    // Áreas nuevas
+    fuerza: '💪 Fuerza y condición', masa_muscular: '🏋️ Masa muscular',
+    composicion: '⚖️ Composición corporal', retomar: '🔄 Retomar actividad',
+};
 
 type Tarifa = {
     dias: number;
