@@ -25,8 +25,15 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const ANIO_ACTUAL = new Date().getFullYear();
 const ANIOS = Array.from({ length: ANIO_ACTUAL - 1921 + 1 }, (_, i) => ANIO_ACTUAL - i);
 
-const DIAS_SEMANA = [2, 3, 4, 5];
-const TOTAL_STEPS = 5;
+const DIAS_SEMANA = [1, 2, 3, 4, 5];
+const TOTAL_STEPS = 4;
+
+const HORARIOS: { value: string; label: string; rango: string }[] = [
+    { value: 'mañana',      label: 'Mañana',      rango: '6 a 12hs' },
+    { value: 'siesta',      label: 'Siesta',       rango: '12 a 15hs' },
+    { value: 'tarde',       label: 'Tarde',        rango: '15 a 18hs' },
+    { value: 'tarde-noche', label: 'Tarde-Noche',  rango: '18 a 21hs' },
+];
 
 function toTitleCase(str: string) {
     return str.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
@@ -92,10 +99,21 @@ export default function RegistroPage() {
             }
             if (!form.telefono.trim()) { setError('Ingresá tu teléfono.');          return; }
             if (!form.horarioEntrenamiento) { setError('Seleccioná tu horario de entrenamiento.'); return; }
+            if (!form.diasEntrenaSemana)    { setError('Seleccioná los días por semana.');         return; }
+            setError('');
+            if (form.diasEntrenaSemana === 1) { handleSubmit(); return; }
+            setStep(2);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
         }
         if (step === 2 && !form.areaElegida)      { setError('Por favor seleccioná tu objetivo.'); return; }
         if (step === 3 && !form.tieneCondicion)   { setError('Por favor respondé la pregunta.');   return; }
-        if (step === 4 && !form.nivelExperiencia) { setError('Por favor seleccioná tu nivel.');    return; }
+        if (step === 4) {
+            if (!form.nivelExperiencia) { setError('Por favor seleccioná tu nivel.'); return; }
+            setError('');
+            handleSubmit();
+            return;
+        }
         setError('');
         setStep(s => s + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -221,12 +239,12 @@ export default function RegistroPage() {
             const dniDigits = form.dni.replace(/\./g, '');
             return !!(form.nombre.trim() && form.apellido.trim() &&
                 (dniDigits.length === 7 || dniDigits.length === 8) &&
-                form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() && form.horarioEntrenamiento);
+                form.diaNac && form.mesNac && form.anioNac && form.telefono.trim() &&
+                form.horarioEntrenamiento && form.diasEntrenaSemana > 0);
         }
         if (step === 2) return !!form.areaElegida;
         if (step === 3) return !!form.tieneCondicion;
         if (step === 4) return !!form.nivelExperiencia;
-        if (step === 5) return form.diasEntrenaSemana > 0;
         return false;
     })();
 
@@ -264,7 +282,9 @@ export default function RegistroPage() {
                 {/* ── PASO 1: Datos personales ── */}
                 {step === 1 && (
                     <div>
-                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 1 de {TOTAL_STEPS}</p>
+                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>
+                            Paso 1 de {form.diasEntrenaSemana === 1 ? '1' : TOTAL_STEPS}
+                        </p>
                         <h2 className="text-2xl font-bold text-slate-900 mb-1">Tus datos</h2>
                         <p className="text-slate-600 text-base mb-6">Completá tu información para crear la cuenta.</p>
 
@@ -332,28 +352,61 @@ export default function RegistroPage() {
 
                             <div>
                                 <label className={labelClass}>Horario de entrenamiento</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {(['mañana', 'siesta', 'tarde'] as const).map(h => {
-                                        const sel = form.horarioEntrenamiento === h;
+                                <div className="grid grid-cols-2 gap-2">
+                                    {HORARIOS.map(h => {
+                                        const sel = form.horarioEntrenamiento === h.value;
                                         return (
-                                            <button key={h} type="button"
-                                                onClick={() => setField('horarioEntrenamiento', sel ? '' : h)}
-                                                className="py-3 rounded-xl text-base font-semibold border-2 transition-all capitalize"
+                                            <button key={h.value} type="button"
+                                                onClick={() => setField('horarioEntrenamiento', sel ? '' : h.value)}
+                                                className="py-3 px-2 rounded-xl border-2 transition-all text-center"
                                                 style={{
                                                     borderColor: sel ? orange : '#e2e8f0',
                                                     background: sel ? `${orange}18` : 'white',
-                                                    color: sel ? orange : '#64748b',
                                                 }}>
-                                                {h}
+                                                <p className="text-base font-semibold" style={{ color: sel ? orange : '#334155' }}>{h.label}</p>
+                                                <p className="text-xs mt-0.5" style={{ color: sel ? orange : '#94a3b8' }}>{h.rango}</p>
                                             </button>
                                         );
                                     })}
                                 </div>
                             </div>
+
+                            <div>
+                                <label className={labelClass}>Días por semana</label>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {DIAS_SEMANA.map(d => {
+                                        const sel = form.diasEntrenaSemana === d;
+                                        return (
+                                            <button key={d} type="button"
+                                                onClick={() => setField('diasEntrenaSemana', d)}
+                                                className="flex flex-col items-center justify-center py-3 rounded-2xl border-2 transition-all active:scale-[0.95]"
+                                                style={{
+                                                    borderColor: sel ? orange : '#e2e8f0',
+                                                    background: sel ? orange : 'white',
+                                                    color: sel ? 'white' : '#334155',
+                                                }}>
+                                                <span className="text-xl font-bold leading-none">{d}</span>
+                                                {d === 1 && <span className="text-[9px] font-semibold mt-1 leading-none" style={{ color: sel ? 'rgba(255,255,255,0.8)' : '#94a3b8' }}>de paso</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {form.diasEntrenaSemana === 1 && (
+                                    <p className="mt-2 text-sm text-slate-500 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                                        Con 1 día registramos tus datos básicos. Podés completar tu perfil más adelante.
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {errBox}
-                        <div className="mt-6"><BtnNext /></div>
+                        <div className="mt-6">
+                            <BtnNext
+                                label={form.diasEntrenaSemana === 1
+                                    ? (submitting ? 'Registrando...' : 'Crear mi cuenta ✓')
+                                    : 'Siguiente →'}
+                            />
+                        </div>
                     </div>
                 )}
 
@@ -456,38 +509,10 @@ export default function RegistroPage() {
                             })}
                         </div>
                         {errBox}
-                        <div className="flex items-center gap-3 mt-6"><BtnBack /><div className="flex-1"><BtnNext /></div></div>
-                    </div>
-                )}
-
-                {/* ── PASO 5: Días + submit ── */}
-                {step === 5 && (
-                    <div>
-                        <p className="text-sm font-bold uppercase tracking-widest mb-1" style={{ color: orange }}>Paso 5 de {TOTAL_STEPS}</p>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-1">Días de entrenamiento</h2>
-                        <p className="text-slate-600 text-base mb-6">¿Cuántos días por semana vas a entrenar?</p>
-                        <div className="grid grid-cols-4 gap-3">
-                            {DIAS_SEMANA.map(d => {
-                                const sel = form.diasEntrenaSemana === d;
-                                return (
-                                    <button key={d} type="button" onClick={() => setField('diasEntrenaSemana', d)}
-                                        className="py-6 rounded-2xl border-2 text-2xl font-bold transition-all active:scale-[0.95]"
-                                        style={{
-                                            borderColor: sel ? orange : '#e2e8f0',
-                                            background: sel ? orange : 'white',
-                                            color: sel ? 'white' : '#334155',
-                                        }}>
-                                        {d}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <p className="text-slate-500 text-base text-center mt-3">días por semana</p>
-                        {errBox}
                         <div className="flex items-center gap-3 mt-6">
                             <BtnBack />
                             <div className="flex-1">
-                                <BtnNext label={submitting ? 'Registrando...' : 'Crear mi cuenta ✓'} onClick={handleSubmit} />
+                                <BtnNext label={submitting ? 'Registrando...' : 'Crear mi cuenta ✓'} />
                             </div>
                         </div>
                     </div>
