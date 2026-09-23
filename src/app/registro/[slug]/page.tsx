@@ -22,7 +22,8 @@ const NIVELES: { value: NivelExp; label: string; desc: string }[] = [
 
 const DIAS_MES = Array.from({ length: 31 }, (_, i) => i + 1);
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const ANIOS = Array.from({ length: 96 }, (_, i) => 2016 - i); // 10 a 105 años
+const ANIO_ACTUAL = new Date().getFullYear();
+const ANIOS = Array.from({ length: ANIO_ACTUAL - 1921 + 1 }, (_, i) => ANIO_ACTUAL - i);
 
 const DIAS_SEMANA = [2, 3, 4, 5];
 const TOTAL_STEPS = 5;
