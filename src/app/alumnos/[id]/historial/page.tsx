@@ -916,22 +916,6 @@ export default function HistorialAlumnoPage() {
                         <label class="swal-form-label">Hora exacta</label>
                         <input id="swal-hora-exacta" class="swal2-input" type="time" value="${alumno.horaExactaEntrenamiento || ''}">
                     </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Condición física / Patologías</label>
-                        <textarea id="swal-patologias" class="swal2-textarea">${alumno.patologias || ''}</textarea>
-                    </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Objetivos</label>
-                        <textarea id="swal-objetivos" class="swal2-textarea">${alumno.objetivos || ''}</textarea>
-                    </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Historial deportivo</label>
-                        <textarea id="swal-historial-deportivo" class="swal2-textarea">${alumno.historialDeportivo || ''}</textarea>
-                    </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Historial de vida</label>
-                        <textarea id="swal-historial-vida" class="swal2-textarea">${alumno.historialDeVida || ''}</textarea>
-                    </div>
                 </div>
             `,
             focusConfirm: false,
@@ -951,10 +935,10 @@ export default function HistorialAlumnoPage() {
                 diasEntrenaSemana: Number((document.getElementById('swal-dias') as HTMLSelectElement).value) || null,
                 horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLSelectElement).value || null,
                 horaExactaEntrenamiento: (document.getElementById('swal-hora-exacta') as HTMLInputElement).value,
-                patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
-                objetivos: (document.getElementById('swal-objetivos') as HTMLTextAreaElement).value,
-                historialDeportivo: (document.getElementById('swal-historial-deportivo') as HTMLTextAreaElement).value,
-                historialDeVida: (document.getElementById('swal-historial-vida') as HTMLTextAreaElement).value,
+                patologias: alumno.patologias || '',
+                objetivos: alumno.objetivos || '',
+                historialDeportivo: alumno.historialDeportivo || '',
+                historialDeVida: alumno.historialDeVida || '',
             }),
         });
         if (formValues) await guardarAlumno({ ...alumno, ...formValues });
