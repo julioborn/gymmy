@@ -50,7 +50,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
             actividad === "Musculación" &&
             presente &&
             alumno.planEntrenamiento &&
-            !alumno.planEntrenamiento.terminado
+            !alumno.planEntrenamiento.terminado &&
+            alumno.planEntrenamiento.fechaInicio != null &&
+            alumno.planEntrenamiento.duracion != null
         ) {
             const fechaInicio = new Date(alumno.planEntrenamiento.fechaInicio as Date);
 
