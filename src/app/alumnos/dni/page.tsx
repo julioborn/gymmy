@@ -30,6 +30,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
     const [actividadesDisponibles, setActividadesDisponibles] = useState<string[]>(['Musculación']);
+    const [feedback, setFeedback] = useState<{ nombre: string; cuotaPaga: boolean; actividad: string } | null>(null);
+    const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const formatDNIWithDots = (input: string): string => {
         const digits = input.replace(/\D/g, '').slice(0, 8);
@@ -87,12 +89,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const playSuccess = () => {
-        try { (navigator as any).vibrate?.([30, 20, 50]); } catch {}
+        try { (navigator as any).vibrate?.([30, 20, 60]); } catch {}
         try {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new Ctx();
-            // Dos tonos ascendentes: Do5 → Sol5
-            const notes: [number, number, number][] = [[523, 0, 0.18], [784, 0.16, 0.28]];
+            const notes: [number, number, number][] = [[523, 0, 0.2], [659, 0.19, 0.2], [784, 0.38, 0.38]];
             notes.forEach(([freq, delay, dur]) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
@@ -101,12 +102,35 @@ export default function RegistrarAsistenciaPorDNIPage() {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
                 gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-                gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + delay + 0.015);
+                gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + delay + 0.015);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
                 osc.start(ctx.currentTime + delay);
                 osc.stop(ctx.currentTime + delay + dur + 0.05);
             });
-            setTimeout(() => ctx.close(), 800);
+            setTimeout(() => ctx.close(), 1200);
+        } catch {}
+    };
+
+    const playDebt = () => {
+        try { (navigator as any).vibrate?.([100, 40, 100, 40, 150]); } catch {}
+        try {
+            const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+            const ctx = new Ctx();
+            const notes: [number, number, number][] = [[380, 0, 0.28], [260, 0.3, 0.28], [180, 0.6, 0.45]];
+            notes.forEach(([freq, delay, dur]) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+                gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + dur + 0.05);
+            });
+            setTimeout(() => ctx.close(), 1600);
         } catch {}
     };
 
@@ -115,7 +139,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
         try {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new Ctx();
-            // Dos tonos descendentes y más bajos
             const notes: [number, number, number][] = [[320, 0, 0.18], [200, 0.17, 0.22]];
             notes.forEach(([freq, delay, dur]) => {
                 const osc = ctx.createOscillator();
@@ -132,6 +155,12 @@ export default function RegistrarAsistenciaPorDNIPage() {
             });
             setTimeout(() => ctx.close(), 700);
         } catch {}
+    };
+
+    const showFeedback = (nombre: string, cuotaPaga: boolean, act: string) => {
+        if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+        setFeedback({ nombre, cuotaPaga, actividad: act });
+        feedbackTimer.current = setTimeout(() => setFeedback(null), 4000);
     };
 
     const handleKeyPress = (button: string) => {
@@ -186,32 +215,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
             const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
             const mesActual = meses[new Date().getMonth()];
             const cuotaPaga = alumno.pagos?.some((p: any) => p.mes?.toLowerCase() === mesActual) ?? false;
-            const successColor = cuotaPaga ? '#22c55e' : '#ef4444';
-            const cuotaLabel = cuotaPaga
-                ? `<span style="color:#16a34a;font-size:0.75rem;font-weight:600;letter-spacing:0.04em;">✓ Cuota al día</span>`
-                : `<span style="color:#dc2626;font-size:0.75rem;font-weight:600;letter-spacing:0.04em;">✗ Cuota pendiente</span>`;
 
-            playSuccess();
-            Swal.fire({
-                customClass: { popup: 'swal-dni-success' },
-                buttonsStyling: false,
-                title: `¡Hola, ${alumno.nombre}!`,
-                html: `
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <circle cx="24" cy="24" r="23" stroke="${successColor}" stroke-width="2" stroke-opacity="0.4"/>
-                            <path d="M14 24.5L21 31.5L34 17" stroke="${successColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span style="display:inline-flex;align-items:center;padding:6px 20px;background:${successColor}22;color:${successColor};border-radius:999px;font-weight:700;font-size:0.9rem;border:1.5px solid ${successColor}44;letter-spacing:0.01em">${actividad}</span>
-                        <span style="color:rgba(0,0,0,0.35);font-size:0.8rem;letter-spacing:0.05em;text-transform:uppercase">Asistencia registrada</span>
-                        ${cuotaLabel}
-                    </div>
-                `,
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
-                backdrop: cuotaPaga ? 'rgba(0,80,0,0.45)' : 'rgba(80,0,0,0.45)',
-            });
+            if (cuotaPaga) playSuccess(); else playDebt();
+            showFeedback(alumno.nombre, cuotaPaga, actividad);
             clearDNI();
             cancelInactivityTimer();
         } catch (error: any) {
@@ -348,6 +354,51 @@ export default function RegistrarAsistenciaPorDNIPage() {
             {isLoading && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.65)' }}>
                     <div className="w-14 h-14 rounded-full border-4 border-white/10 animate-spin" style={{ borderTopColor: acento }} />
+                </div>
+            )}
+
+            {/* Feedback pantalla completa */}
+            {feedback && (
+                <div
+                    className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 px-8"
+                    style={{ background: feedback.cuotaPaga ? '#15803d' : '#b91c1c' }}
+                    onClick={() => { if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); }}
+                >
+                    {/* Ícono */}
+                    <div className="flex items-center justify-center rounded-full bg-white/20" style={{ width: 120, height: 120 }}>
+                        {feedback.cuotaPaga ? (
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        ) : (
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="6" strokeLinecap="round"/>
+                            </svg>
+                        )}
+                    </div>
+
+                    {/* Nombre */}
+                    <div className="text-center">
+                        <p className="text-white/70 font-semibold tracking-widest uppercase" style={{ fontSize: 22 }}>¡Hola!</p>
+                        <h1 className="text-white font-black leading-none mt-1" style={{ fontSize: 'clamp(52px, 10vw, 96px)' }}>
+                            {feedback.nombre}
+                        </h1>
+                    </div>
+
+                    {/* Actividad */}
+                    <span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}>
+                        {feedback.actividad}
+                    </span>
+
+                    {/* Estado cuota */}
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-white font-black" style={{ fontSize: 32 }}>
+                            {feedback.cuotaPaga ? '✓ Cuota al día' : '✗ Cuota pendiente'}
+                        </span>
+                        <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
+                            Asistencia registrada
+                        </span>
+                    </div>
                 </div>
             )}
 
