@@ -912,10 +912,6 @@ export default function HistorialAlumnoPage() {
                             <option value="tarde-noche" ${alumno.horarioEntrenamiento === 'tarde-noche' ? 'selected' : ''}>Tarde-Noche (18 a 21hs)</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="swal-form-label">Hora exacta</label>
-                        <input id="swal-hora-exacta" class="swal2-input" type="time" value="${alumno.horaExactaEntrenamiento || ''}">
-                    </div>
                 </div>
             `,
             focusConfirm: false,
@@ -934,7 +930,7 @@ export default function HistorialAlumnoPage() {
                 nivelExperiencia: (document.getElementById('swal-nivel') as HTMLSelectElement).value || null,
                 diasEntrenaSemana: Number((document.getElementById('swal-dias') as HTMLSelectElement).value) || null,
                 horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLSelectElement).value || null,
-                horaExactaEntrenamiento: (document.getElementById('swal-hora-exacta') as HTMLInputElement).value,
+                horaExactaEntrenamiento: alumno.horaExactaEntrenamiento || '',
                 patologias: alumno.patologias || '',
                 objetivos: alumno.objetivos || '',
                 historialDeportivo: alumno.historialDeportivo || '',
