@@ -83,7 +83,7 @@ function capitalizar(texto: string) {
 }
 
 const AREA_LABEL: Record<string, string> = {
-    salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
+    salud: '❤️ Salud', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
     fuerza: '💪 Fuerza y condición', masa_muscular: '🏋️ Masa muscular',
     composicion: '⚖️ Composición corporal', retomar: '🔄 Retomar actividad',
 };

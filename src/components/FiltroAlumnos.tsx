@@ -120,7 +120,6 @@ export default function FiltrosAlumnos({
                         <option value="rendimiento">🏅 Rendimiento deportivo</option>
                         <option value="formacion">🌱 Formación (10-17 años)</option>
                         <option value="retomar">🔄 Retomar actividad</option>
-                        <option value="fitness">💪 Fitness (legacy)</option>
                     </select>
                     <Chevron />
                 </div>
