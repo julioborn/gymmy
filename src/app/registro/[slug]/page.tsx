@@ -186,27 +186,27 @@ export default function RegistroPage() {
         </div>
     );
     if (success) return (
-        <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-16">
-            <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-10 max-w-sm w-full text-center">
+        <div className="min-h-screen bg-white flex items-center justify-center px-4 py-10">
+            <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-6 sm:p-10 max-w-sm w-full text-center">
                 {gym?.logoUrl
-                    ? <img src={gym.logoUrl} alt={gym.nombre} className="w-32 h-32 object-contain mx-auto mb-5" />
+                    ? <img src={gym.logoUrl} alt={gym.nombre} className="w-24 h-24 sm:w-32 sm:h-32 object-contain mx-auto mb-4" />
                     : (
-                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: `${green}22` }}>
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke={green}>
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `${green}22` }}>
+                            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke={green}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
                         </div>
                     )
                 }
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">¡Ya estás registrado!</h2>
-                <p className="text-slate-500 text-base leading-relaxed mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">¡Ya estás registrado!</h2>
+                <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-6">
                     Tu cuenta fue creada en <span className="font-semibold text-slate-700">{gym.nombre}</span>. Ya podés iniciar sesión en la app.
                 </p>
                 <a
                     href="https://chat.whatsapp.com/Id1Su5ZhoOA9Qp6ZSPXTdk?s=sw&p=i&mlu=4"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl font-semibold text-white text-base transition-opacity hover:opacity-90"
+                    className="flex items-center justify-center gap-2 w-full py-3 sm:py-3.5 rounded-2xl font-semibold text-white text-sm sm:text-base transition-opacity hover:opacity-90"
                     style={{ background: '#25D366' }}
                 >
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white shrink-0">
