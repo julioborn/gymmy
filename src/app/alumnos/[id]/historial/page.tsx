@@ -1823,16 +1823,10 @@ export default function HistorialAlumnoPage() {
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
                                 {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
                             </span>
-                            {diasRestantes != null && diasRestantes > 0 ? (() => {
-                                const totalPlan = alumno.planEntrenamiento?.duracion
-                                    ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1))
-                                    ?? null;
-                                return (
+                            {diasRestantes != null && diasRestantes > 0 ? (
                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-slate-100 text-slate-500' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
-                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}quedan {diasRestantes}{totalPlan ? ` de ${totalPlan}` : ''} entrenos
+                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}quedan {diasRestantes}{(alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1)) || null) ? ` de ${alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1))}` : ''} entrenos
                                 </span>
-                                );
-                            })()
                             ) : diasRestantes === 0 ? (
                                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
                                     {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}Plan completado
