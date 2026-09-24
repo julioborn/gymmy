@@ -133,7 +133,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
                 if (canSwipeBack() && g.current.startX <= EDGE_ZONE && dx > 0 && ax > ay * 1.2) {
                     g.current.type = 'swipe';
-                } else if (dy > 0 && ay > ax * 1.2 && window.scrollY <= 0) {
+                } else if (dy > 0 && ay > ax * 1.2 && window.scrollY <= 0 && g.current.startY < window.innerHeight * 0.25) {
                     g.current.type = 'pull';
                 } else {
                     g.current.type = null;
