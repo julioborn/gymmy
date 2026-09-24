@@ -83,7 +83,7 @@ function capitalizar(texto: string) {
 }
 
 const AREA_LABEL: Record<string, string> = {
-    salud: '❤️ Salud', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
+    salud: '❤️ Salud', fitness: '💪 Fitness', rendimiento: '🏅 Rendimiento', formacion: '🌱 Formación',
     fuerza: '💪 Fuerza y condición', masa_muscular: '🏋️ Masa muscular',
     composicion: '⚖️ Composición corporal', retomar: '🔄 Retomar actividad',
 };
@@ -862,6 +862,10 @@ export default function HistorialAlumnoPage() {
                         <input id="swal-dni" class="swal2-input" value="${alumno.dni || ''}">
                     </div>
                     <div>
+                        <label class="swal-form-label">Fecha de nacimiento</label>
+                        <input id="swal-fecha-nac" class="swal2-input" type="date" value="${alumno.fechaNacimiento ? new Date(alumno.fechaNacimiento).toISOString().split('T')[0] : ''}">
+                    </div>
+                    <div>
                         <label class="swal-form-label">Teléfono</label>
                         <input id="swal-telefono" class="swal2-input" value="${alumno.telefono || ''}">
                     </div>
@@ -870,17 +874,55 @@ export default function HistorialAlumnoPage() {
                         <input id="swal-email" class="swal2-input" value="${alumno.email || ''}">
                     </div>
                     <div>
+                        <label class="swal-form-label">Área</label>
+                        <select id="swal-area" class="swal2-select">
+                            <option value="">Sin área</option>
+                            <option value="fuerza" ${alumno.area === 'fuerza' ? 'selected' : ''}>💪 Fuerza y condición</option>
+                            <option value="masa_muscular" ${alumno.area === 'masa_muscular' ? 'selected' : ''}>🏋️ Masa muscular</option>
+                            <option value="salud" ${alumno.area === 'salud' ? 'selected' : ''}>❤️ Salud y calidad de vida</option>
+                            <option value="composicion" ${alumno.area === 'composicion' ? 'selected' : ''}>⚖️ Composición corporal</option>
+                            <option value="rendimiento" ${alumno.area === 'rendimiento' ? 'selected' : ''}>🏅 Rendimiento deportivo</option>
+                            <option value="formacion" ${alumno.area === 'formacion' ? 'selected' : ''}>🌱 Formación (10-17 años)</option>
+                            <option value="retomar" ${alumno.area === 'retomar' ? 'selected' : ''}>🔄 Retomar actividad</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Nivel de experiencia</label>
+                        <select id="swal-nivel" class="swal2-select">
+                            <option value="">Sin especificar</option>
+                            <option value="nunca" ${alumno.nivelExperiencia === 'nunca' ? 'selected' : ''}>Primera vez en un gym</option>
+                            <option value="alguna_vez" ${alumno.nivelExperiencia === 'alguna_vez' ? 'selected' : ''}>Entrenó alguna vez</option>
+                            <option value="hace_tiempo" ${alumno.nivelExperiencia === 'hace_tiempo' ? 'selected' : ''}>Entrena hace tiempo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="swal-form-label">Días/semana</label>
+                        <select id="swal-dias" class="swal2-select">
+                            <option value="">Sin especificar</option>
+                            ${[1,2,3,4,5].map(d => `<option value="${d}" ${alumno.diasEntrenaSemana === d ? 'selected' : ''}>${d} día${d > 1 ? 's' : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
                         <label class="swal-form-label">Franja horaria</label>
                         <select id="swal-horario" class="swal2-select">
-                            <option value="">Selecciona una franja</option>
-                            <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana</option>
-                            <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta</option>
-                            <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde</option>
+                            <option value="">Sin especificar</option>
+                            <option value="mañana" ${alumno.horarioEntrenamiento === 'mañana' ? 'selected' : ''}>Mañana (6 a 12hs)</option>
+                            <option value="siesta" ${alumno.horarioEntrenamiento === 'siesta' ? 'selected' : ''}>Siesta (12 a 15hs)</option>
+                            <option value="tarde" ${alumno.horarioEntrenamiento === 'tarde' ? 'selected' : ''}>Tarde (15 a 18hs)</option>
+                            <option value="tarde-noche" ${alumno.horarioEntrenamiento === 'tarde-noche' ? 'selected' : ''}>Tarde-Noche (18 a 21hs)</option>
                         </select>
                     </div>
                     <div>
                         <label class="swal-form-label">Hora exacta</label>
                         <input id="swal-hora-exacta" class="swal2-input" type="time" value="${alumno.horaExactaEntrenamiento || ''}">
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Condición física / Patologías</label>
+                        <textarea id="swal-patologias" class="swal2-textarea">${alumno.patologias || ''}</textarea>
+                    </div>
+                    <div class="swal-full-row">
+                        <label class="swal-form-label">Objetivos</label>
+                        <textarea id="swal-objetivos" class="swal2-textarea">${alumno.objetivos || ''}</textarea>
                     </div>
                     <div class="swal-full-row">
                         <label class="swal-form-label">Historial deportivo</label>
@@ -889,14 +931,6 @@ export default function HistorialAlumnoPage() {
                     <div class="swal-full-row">
                         <label class="swal-form-label">Historial de vida</label>
                         <textarea id="swal-historial-vida" class="swal2-textarea">${alumno.historialDeVida || ''}</textarea>
-                    </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Objetivos</label>
-                        <textarea id="swal-objetivos" class="swal2-textarea">${alumno.objetivos || ''}</textarea>
-                    </div>
-                    <div class="swal-full-row">
-                        <label class="swal-form-label">Patologías</label>
-                        <textarea id="swal-patologias" class="swal2-textarea">${alumno.patologias || ''}</textarea>
                     </div>
                 </div>
             `,
@@ -909,14 +943,18 @@ export default function HistorialAlumnoPage() {
                 nombre: (document.getElementById('swal-nombre') as HTMLInputElement).value,
                 apellido: (document.getElementById('swal-apellido') as HTMLInputElement).value,
                 dni: (document.getElementById('swal-dni') as HTMLInputElement).value,
+                fechaNacimiento: (document.getElementById('swal-fecha-nac') as HTMLInputElement).value || null,
                 telefono: (document.getElementById('swal-telefono') as HTMLInputElement).value,
                 email: (document.getElementById('swal-email') as HTMLInputElement).value,
-                horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLInputElement).value,
+                area: (document.getElementById('swal-area') as HTMLSelectElement).value || null,
+                nivelExperiencia: (document.getElementById('swal-nivel') as HTMLSelectElement).value || null,
+                diasEntrenaSemana: Number((document.getElementById('swal-dias') as HTMLSelectElement).value) || null,
+                horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLSelectElement).value || null,
                 horaExactaEntrenamiento: (document.getElementById('swal-hora-exacta') as HTMLInputElement).value,
+                patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
+                objetivos: (document.getElementById('swal-objetivos') as HTMLTextAreaElement).value,
                 historialDeportivo: (document.getElementById('swal-historial-deportivo') as HTMLTextAreaElement).value,
                 historialDeVida: (document.getElementById('swal-historial-vida') as HTMLTextAreaElement).value,
-                objetivos: (document.getElementById('swal-objetivos') as HTMLTextAreaElement).value,
-                patologias: (document.getElementById('swal-patologias') as HTMLTextAreaElement).value,
             }),
         });
         if (formValues) await guardarAlumno({ ...alumno, ...formValues });
