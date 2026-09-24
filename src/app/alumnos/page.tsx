@@ -289,63 +289,32 @@ export default function ListaAlumnosPage() {
     };
 
     const handleGenerateExcel = () => {
-        const categorizarFranjaHoraria = (horario: string) => {
-            const [hora] = horario.split(':').map(Number);
-            if (hora >= 7 && hora < 12) return 'Mañana';
-            if (hora >= 12 && hora < 16) return 'Siesta';
-            if (hora >= 16 && hora < 24) return 'Tarde';
-            return '-';
-        };
+        const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+        const mesLabel = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
-        const calcularHorarioMasFrecuenteDelMes = (asistencias: any[]) => {
-            const mesActual = new Date().getMonth();
-            const añoActual = new Date().getFullYear();
-            const horarios = asistencias
-                .filter((asistencia: { fecha: string | number | Date; actividad: string }) => {
-                    const fechaAsistencia = new Date(asistencia.fecha);
-                    return (
-                        asistencia.actividad === 'Musculación' &&
-                        fechaAsistencia.getMonth() === mesActual &&
-                        fechaAsistencia.getFullYear() === añoActual
-                    );
-                })
-                .map((asistencia: { fecha: string | number | Date }) =>
-                    new Date(asistencia.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })
+        const formattedData = [...alumnos]
+            .sort((a, b) => (a.apellido || '').localeCompare(b.apellido || '', 'es'))
+            .map((alumno) => {
+                const pagoMes = alumno.pagos.find(
+                    (p: { mes: string }) => p.mes.toLowerCase() === mesActual
                 );
-            if (horarios.length === 0) return '-';
-            const frecuencia = horarios.reduce((acc: { [x: string]: any }, horario: string | number) => {
-                acc[horario] = (acc[horario] || 0) + 1;
-                return acc;
-            }, {});
-            const horarioMasFrecuente = Object.keys(frecuencia).reduce((a, b) => (frecuencia[a] > frecuencia[b] ? a : b));
-            return categorizarFranjaHoraria(horarioMasFrecuente);
-        };
-
-        const formattedData = alumnos.map((alumno) => {
-            const pagoMesActual = alumno.pagos.find(
-                (pago: { mes: string }) =>
-                    pago.mes.toLowerCase() ===
-                    new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase()
-            );
-            const horarioMasFrecuenteDelMes = calcularHorarioMasFrecuenteDelMes(alumno.asistencia || []);
-            return {
-                Apellido: alumno.apellido,
-                Nombre: alumno.nombre,
-                Pago: pagoMesActual ? `$${pagoMesActual.tarifa}` : 'No pagó',
-                'Fecha de Pago': pagoMesActual
-                    ? new Date(pagoMesActual.fechaPago).toLocaleDateString('es-ES')
-                    : '-',
-                Adeuda: pagoMesActual ? 'No' : 'Sí',
-                'Días que asiste': alumno.diasEntrenaSemana || '-',
-                Horario: horarioMasFrecuenteDelMes,
-                Mes: new Date().toLocaleString('es-ES', { month: 'long' }),
-            };
-        });
+                return {
+                    'Apellido y Nombre': `${alumno.apellido || ''} ${alumno.nombre || ''}`.trim(),
+                    'Fecha de pago': pagoMes
+                        ? new Date(pagoMes.fechaPago).toLocaleDateString('es-AR')
+                        : '-',
+                    'Días/semana': alumno.diasEntrenaSemana || '-',
+                    'Precio cuota': pagoMes ? `$${pagoMes.tarifa}` : '-',
+                    'Estado': pagoMes ? 'Pagó' : 'No pagó',
+                };
+            });
 
         const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        // Ancho de columnas
+        worksheet['!cols'] = [{ wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 10 }];
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Balance Mensual');
-        XLSX.writeFile(workbook, `Balance_Mensual_${new Date().toLocaleDateString('es-ES')}.xlsx`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, mesLabel);
+        XLSX.writeFile(workbook, `Alumnos_${mesLabel.replace(' ', '_')}.xlsx`);
     };
 
     const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
