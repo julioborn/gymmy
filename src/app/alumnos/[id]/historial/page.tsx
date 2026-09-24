@@ -2469,8 +2469,8 @@ export default function HistorialAlumnoPage() {
                                 {/* Plan activo */}
                                 {hayPlanActivo && (() => {
                                     const fiRaw = planActivoEmb ? planActivoEmb.fechaInicio : planActivoEj!.fechaInicio;
-                                    const fiLabel = new Date(fiRaw).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
                                     const fiInputVal = convertirAFechaLocal(fiRaw);
+                                    const fiLabel = parseLocalDate(fiInputVal).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
                                     const total = planActivoEmb
                                         ? planActivoEmb.duracion
                                         : (planActivoEj!.dias?.length || 0) * (planActivoEj!.totalSemanas || 1);
@@ -2563,11 +2563,11 @@ export default function HistorialAlumnoPage() {
                                                     <div className="flex items-start justify-between gap-2 mb-3">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="text-sm font-semibold text-slate-800">
-                                                                {new Date(plan.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                {parseLocalDate(convertirAFechaLocal(plan.fechaInicio)).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </span>
                                                             <span className="text-slate-400 text-xs">→</span>
                                                             <span className="text-sm font-semibold text-slate-800">
-                                                                {new Date(plan.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                {parseLocalDate(convertirAFechaLocal(plan.fechaFin)).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </span>
                                                         </div>
                                                         <button
