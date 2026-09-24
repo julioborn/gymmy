@@ -2415,12 +2415,17 @@ export default function HistorialAlumnoPage() {
                         )}
 
                         {/* ── PLANES ── */}
-                        {activeTab === 'planes' && (
+                        {activeTab === 'planes' && (() => {
+                            const planActivoEmb = alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado ? alumno.planEntrenamiento : null;
+                            const planActivoEj = !planActivoEmb && planAlumnoActivo?.fechaInicio ? planAlumnoActivo : null;
+                            const hayPlanActivo = !!(planActivoEmb || planActivoEj);
+                            const totalPlanesCount = historialPlanesFiltrado.length + (hayPlanActivo ? 1 : 0);
+                            return (
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-sm font-bold text-slate-700">Planes</h3>
-                                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">{historialPlanesFiltrado.length}</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">{totalPlanesCount}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <button
@@ -2461,6 +2466,94 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 )}
+                                {/* Plan activo */}
+                                {hayPlanActivo && (() => {
+                                    const fiRaw = planActivoEmb ? planActivoEmb.fechaInicio : planActivoEj!.fechaInicio;
+                                    const fiLabel = new Date(fiRaw).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                                    const fiInputVal = convertirAFechaLocal(fiRaw);
+                                    const total = planActivoEmb
+                                        ? planActivoEmb.duracion
+                                        : (planActivoEj!.dias?.length || 0) * (planActivoEj!.totalSemanas || 1);
+                                    const restantes = diasRestantes ?? 0;
+                                    const hechas = Math.max(0, total - restantes);
+                                    const pct = total > 0 ? Math.min(100, Math.round((hechas / total) * 100)) : 0;
+
+                                    const handleEditarPlanActivo = async () => {
+                                        const { value: vals } = await Swal.fire({
+                                            ...swalBase,
+                                            title: 'Editar plan activo',
+                                            html: `
+                                                <div class="swal-form-body">
+                                                    <label class="swal-form-label">Fecha de inicio</label>
+                                                    <input type="date" id="ep-fecha" class="swal2-input" value="${fiInputVal}">
+                                                    <label class="swal-form-label">Total de clases</label>
+                                                    <input type="number" id="ep-dur" class="swal2-input" value="${total}" min="1">
+                                                </div>
+                                            `,
+                                            focusConfirm: false,
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Guardar',
+                                            cancelButtonText: 'Cancelar',
+                                            preConfirm: () => {
+                                                const fecha = (document.getElementById('ep-fecha') as HTMLInputElement).value;
+                                                const dur = parseInt((document.getElementById('ep-dur') as HTMLInputElement).value);
+                                                if (!fecha) { Swal.showValidationMessage('Ingresá una fecha'); return; }
+                                                if (!dur || dur < 1) { Swal.showValidationMessage('Ingresá un número válido'); return; }
+                                                return { fechaInicio: fecha, duracion: dur };
+                                            },
+                                        });
+                                        if (!vals) return;
+                                        const savedScroll = window.scrollY;
+                                        try {
+                                            const res = await fetch(`/api/alumnos/${id}/plan`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ fechaInicio: vals.fechaInicio, duracion: vals.duracion }),
+                                            });
+                                            if (res.ok) { void Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan actualizado' }); await fetchAlumno(); requestAnimationFrame(() => window.scrollTo(0, savedScroll)); }
+                                            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar' });
+                                        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al actualizar' }); }
+                                    };
+
+                                    return (
+                                        <div className="mb-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Plan activo</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold text-slate-600">Inicio: {fiLabel}</span>
+                                                    <button
+                                                        onClick={handleEditarPlanActivo}
+                                                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition"
+                                                    >
+                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                                                        Editar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Total</p>
+                                                    <p className="font-bold text-slate-800">{total}</p>
+                                                </div>
+                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Hechas</p>
+                                                    <p className="font-bold text-slate-800">{hechas}</p>
+                                                </div>
+                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Restan</p>
+                                                    <p className="font-bold text-emerald-600">{restantes}</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-full bg-emerald-100 rounded-full h-1.5">
+                                                <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                                            </div>
+                                            <p className="text-right text-xs text-emerald-600 mt-1">{pct}%</p>
+                                        </div>
+                                    );
+                                })()}
                                 {historialPlanesFiltrado.length > 0 ? (
                                     <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
                                         {historialPlanesFiltrado.map((plan: any, idx: number) => {
@@ -2516,10 +2609,11 @@ export default function HistorialAlumnoPage() {
                                         })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-400 text-sm text-center py-10">No hay planes finalizados para los filtros aplicados.</p>
+                                    !hayPlanActivo && <p className="text-slate-400 text-sm text-center py-10">No hay planes registrados.</p>
                                 )}
                             </div>
-                        )}
+                            );
+                        })()}
 
                         {/* ── PAGOS ── */}
                         {activeTab === 'pagos' && (
