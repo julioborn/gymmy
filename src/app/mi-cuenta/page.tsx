@@ -498,7 +498,7 @@ export default function MiCuentaPage() {
             a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planEjFechaInicio
           ).length
         : 0;
-    const planEjComplete = planEj != null && planEjTotal > 0 && planEjDone >= planEjTotal;
+    const planEjComplete = planEj != null && planEjTotal > 0 && planEjFechaInicio != null && planEjDone >= planEjTotal;
 
     const calDays = getCalendarDays(calYear, calMonth);
     const initials = getInitials(alumno.nombre, alumno.apellido);
@@ -773,7 +773,7 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {(planEjComplete || (!planEj && plan?.terminado)) && (
+                    {(planEjComplete || (!planEj && plan?.terminado && plan?.fechaInicio && plan?.duracion)) && (
                         <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
                                 <IconTrophy className="w-6 h-6 text-emerald-600" />
