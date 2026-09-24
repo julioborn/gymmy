@@ -30,7 +30,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
     const [actividadesDisponibles, setActividadesDisponibles] = useState<string[]>(['Musculación']);
-    const [feedback, setFeedback] = useState<{ type: 'paid' | 'debt' | 'not_found'; nombre?: string; actividad: string } | null>(null);
+    const [feedback, setFeedback] = useState<{ type: 'paid' | 'debt' | 'not_found' | 'already'; nombre?: string; actividad: string } | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const formatDNIWithDots = (input: string): string => {
@@ -125,18 +125,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
             const step = 0.35; // duración de cada subida/bajada
             // 3 ciclos completos: bajo → alto → bajo → alto → bajo → alto → bajo
             osc.frequency.setValueAtTime(330, now);
-            osc.frequency.linearRampToValueAtTime(960, now + step);
+            osc.frequency.linearRampToValueAtTime(880, now + step);
             osc.frequency.linearRampToValueAtTime(330, now + step * 2);
-            osc.frequency.linearRampToValueAtTime(960, now + step * 3);
+            osc.frequency.linearRampToValueAtTime(880, now + step * 3);
             osc.frequency.linearRampToValueAtTime(330, now + step * 4);
-            osc.frequency.linearRampToValueAtTime(960, now + step * 5);
-            osc.frequency.linearRampToValueAtTime(330, now + step * 6);
             gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.35, now + 0.04);
-            gain.gain.setValueAtTime(0.35, now + step * 6 - 0.08);
-            gain.gain.linearRampToValueAtTime(0, now + step * 6);
+            gain.gain.linearRampToValueAtTime(0.18, now + 0.04);
+            gain.gain.setValueAtTime(0.18, now + step * 4 - 0.08);
+            gain.gain.linearRampToValueAtTime(0, now + step * 4);
             osc.start(now);
-            osc.stop(now + step * 6 + 0.05);
+            osc.stop(now + step * 4 + 0.05);
             osc.onended = () => ctx.close();
         } catch {}
     };
@@ -229,7 +227,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             if (error.message === 'no_encontrado') {
                 showFeedback('not_found', actividad);
             } else if (error.message.includes('Asistencia ya registrada')) {
-                Swal.fire({ ...swalDni, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
+                showFeedback('already', actividad);
             } else {
                 await addIngreso({ dni: cleanDNI, actividad, fecha });
                 Swal.fire({ ...swalDni, icon: 'info', title: 'Sin conexión', text: `La asistencia para "${actividad}" se registrará al reconectarse.` });
@@ -365,7 +363,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             {feedback && (
                 <div
                     className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 px-8"
-                    style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : '#1d4ed8' }}
+                    style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'already' ? '#b45309' : '#1d4ed8' }}
                     onClick={() => { if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); }}
                 >
                     {/* Ícono */}
@@ -377,6 +375,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         ) : feedback.type === 'debt' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                                 <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="6" strokeLinecap="round"/>
+                            </svg>
+                        ) : feedback.type === 'already' ? (
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="20" r="5" fill="white"/>
+                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
                             </svg>
                         ) : (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -397,6 +400,15 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                     No hay ningún alumno con ese DNI
                                 </p>
                             </>
+                        ) : feedback.type === 'already' ? (
+                            <>
+                                <h1 className="text-white font-black leading-none" style={{ fontSize: 'clamp(44px, 9vw, 80px)' }}>
+                                    Ya registrado
+                                </h1>
+                                <p className="text-white/60 font-semibold mt-3" style={{ fontSize: 22 }}>
+                                    Ya se registró asistencia hoy
+                                </p>
+                            </>
                         ) : (
                             <>
                                 <p className="text-white/70 font-semibold tracking-widest uppercase" style={{ fontSize: 22 }}>¡Hola!</p>
@@ -408,7 +420,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     </div>
 
                     {/* Actividad */}
-                    {feedback.type !== 'not_found' && (
+                    {feedback.type !== 'not_found' && feedback.type !== 'already' && (
                         <span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}>
                             {feedback.actividad}
                         </span>
@@ -419,6 +431,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         {feedback.type === 'not_found' ? (
                             <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
                                 Revisá el DNI ingresado
+                            </span>
+                        ) : feedback.type === 'already' ? (
+                            <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
+                                {feedback.actividad}
                             </span>
                         ) : (
                             <>
