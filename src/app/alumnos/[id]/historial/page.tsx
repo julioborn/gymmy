@@ -2122,6 +2122,10 @@ export default function HistorialAlumnoPage() {
                                                     <span className={`text-xs sm:text-[13px] leading-none mb-1 sm:mb-0 ${
                                                         isToday
                                                             ? 'bg-slate-700 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center font-bold'
+                                                            : planBoundaryMap[key] === 'start'
+                                                            ? 'bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-slate-700 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
+                                                            : planBoundaryMap[key] === 'end'
+                                                            ? 'bg-red-400 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-slate-700 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
                                                             : isOverflow
                                                             ? 'text-slate-300'
                                                             : (hasData || planDaysMap[key])

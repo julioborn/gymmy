@@ -25,6 +25,14 @@ interface PlanEntrenamiento {
     terminado: boolean;
 }
 
+interface PlanHistorial {
+    _id?: string;
+    fechaInicio: string;
+    fechaFin: string;
+    duracion: number;
+    asistenciasContadas: number;
+}
+
 interface Alumno {
     _id: string;
     nombre: string;
@@ -33,6 +41,7 @@ interface Alumno {
     asistencia: Asistencia[];
     pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento;
+    planEntrenamientoHistorial: PlanHistorial[];
     gimnasioId: { nombre: string; logoUrl?: string };
 }
 
@@ -106,6 +115,14 @@ const ACTIVIDAD_PILL: Record<string, string> = {
 function toLocalDateKey(fechaStr: string): string {
     const d = new Date(fechaStr);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// Same as convertirAFechaLocal in historial — timezone-safe key for plan dates stored as UTC
+function planDateToKey(fecha: string | Date): string {
+    const d = new Date(fecha);
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() + offset * 60 * 1000);
+    return `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2,'0')}-${String(local.getDate()).padStart(2,'0')}`;
 }
 
 function getCalendarDays(year: number, month: number): (number | null)[] {
@@ -460,15 +477,48 @@ export default function MiCuentaPage() {
         pagosMap[key].push(p);
     });
 
-    const planInicioKey = planEj?.fechaInicio ? toLocalDateKey(planEj.fechaInicio) : null;
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const planDaysMap: Record<string, 'active' | 'completed'> = {};
+    const planBoundaryMap: Record<string, 'start' | 'end'> = {};
 
-    const lastMusculacionKey = planInicioKey
-        ? Object.entries(asistenciasMap)
-            .filter(([key, asists]) => key >= planInicioKey && asists.some(a => a.actividad === 'Musculación'))
-            .map(([key]) => key)
-            .sort()
-            .pop() ?? null
-        : null;
+    // Active plan
+    if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado) {
+        const startStr = planDateToKey(alumno.planEntrenamiento.fechaInicio);
+        planBoundaryMap[startStr] = 'start';
+        const cur = new Date(startStr + 'T12:00:00');
+        const today = new Date(todayKey + 'T12:00:00');
+        while (cur <= today) {
+            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+            planDaysMap[k] = 'active';
+            cur.setDate(cur.getDate() + 1);
+        }
+    } else if (planEj?.fechaInicio) {
+        const startStr = toLocalDateKey(planEj.fechaInicio);
+        planBoundaryMap[startStr] = 'start';
+        const cur = new Date(startStr + 'T12:00:00');
+        const today = new Date(todayKey + 'T12:00:00');
+        while (cur <= today) {
+            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+            planDaysMap[k] = 'active';
+            cur.setDate(cur.getDate() + 1);
+        }
+    }
+
+    // Historical plans
+    for (const plan of (alumno.planEntrenamientoHistorial || [])) {
+        if (!plan.fechaInicio || !plan.fechaFin) continue;
+        const startStr = planDateToKey(plan.fechaInicio);
+        const endStr = planDateToKey(plan.fechaFin);
+        planBoundaryMap[startStr] = 'start';
+        planBoundaryMap[endStr] = 'end';
+        const cur = new Date(startStr + 'T12:00:00');
+        const pe = new Date(endStr + 'T12:00:00');
+        while (cur <= pe) {
+            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+            if (!planDaysMap[k]) planDaysMap[k] = 'completed';
+            cur.setDate(cur.getDate() + 1);
+        }
+    }
 
     const asistenciasEsteMes = alumno.asistencia.filter(a => {
         const f = new Date(a.fecha);
@@ -894,12 +944,11 @@ export default function MiCuentaPage() {
                                 const key = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                                 const asists = asistenciasMap[key] || [];
                                 const pagos = pagosMap[key] || [];
-                                const isPlanStart = key === planInicioKey;
-                                const isPlanDay = !isPlanStart && !!planInicioKey && !!lastMusculacionKey
-                                    && key >= planInicioKey && key <= lastMusculacionKey;
                                 const isToday = key === toLocalDateKey(now.toISOString());
                                 const isSelected = key === selectedDay;
-                                const hasData = asists.length > 0 || pagos.length > 0 || isPlanStart;
+                                const hasData = asists.length > 0 || pagos.length > 0;
+                                const planDay = planDaysMap[key];
+                                const planBoundary = planBoundaryMap[key];
 
                                 return (
                                     <button
@@ -908,21 +957,20 @@ export default function MiCuentaPage() {
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
                                             isSelected
                                                 ? 'bg-slate-100'
-                                                : isPlanStart
-                                                ? 'bg-violet-100 hover:bg-violet-200'
-                                                : isPlanDay
-                                                ? 'hover:bg-violet-50'
+                                                : planDay === 'active'
+                                                ? 'bg-emerald-50 hover:bg-emerald-100'
+                                                : planDay === 'completed'
+                                                ? 'bg-red-50 hover:bg-red-100'
                                                 : hasData
                                                 ? 'hover:bg-slate-50'
                                                 : 'cursor-default'
                                         }`}
-                                        style={isPlanDay && !isSelected ? { background: 'rgba(139,92,246,0.06)' } : undefined}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                                            isSelected ? 'text-slate-900'
-                                            : isToday ? 'bg-[#111] text-white'
-                                            : isPlanStart ? 'bg-violet-600 text-white'
-                                            : hasData ? 'text-slate-800'
+                                            isToday ? 'bg-[#111] text-white'
+                                            : planBoundary === 'start' ? 'bg-emerald-500 text-white'
+                                            : planBoundary === 'end' ? 'bg-red-400 text-white'
+                                            : (hasData || planDay) ? 'text-slate-800'
                                             : 'text-slate-400'
                                         }`}>
                                             {day}
@@ -943,20 +991,26 @@ export default function MiCuentaPage() {
                             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-slate-400 text-xs">Intermitente</span></div>
                             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-400 text-xs">Otro</span></div>
                             <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-slate-400 text-xs">Pago</span></div>
-                            {planInicioKey && <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-violet-600" /><span className="text-slate-400 text-xs">Inicio de plan</span></div>}
-                            {lastMusculacionKey && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(139,92,246,0.18)' }} /><span className="text-slate-400 text-xs">Días de plan</span></div>}
+                            {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-100" /><span className="text-slate-400 text-xs">Plan activo</span></div>}
+                            {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-100" /><span className="text-slate-400 text-xs">Plan completado</span></div>}
                         </div>
                     </div>
 
-                    {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || selectedDay === planInicioKey) && (
+                    {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || planBoundaryMap[selectedDay]) && (
                         <div className={`${card} space-y-3`}>
                             <h3 className="text-slate-900 font-bold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </h3>
-                            {selectedDay === planInicioKey && (
-                                <div className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-violet-600 flex-shrink-0" />
-                                    <span className="text-violet-700 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
+                            {planBoundaryMap[selectedDay] === 'start' && (
+                                <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                                    <span className="text-emerald-700 text-sm font-semibold">Inicio de plan{planEj?.nombre ? ` — ${planEj.nombre}` : ''}</span>
+                                </div>
+                            )}
+                            {planBoundaryMap[selectedDay] === 'end' && (
+                                <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
+                                    <span className="text-red-600 text-sm font-semibold">Fin de plan</span>
                                 </div>
                             )}
                             {selectedAsistencias.map(a => (
