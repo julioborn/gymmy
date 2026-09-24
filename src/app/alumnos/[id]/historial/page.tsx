@@ -1804,6 +1804,57 @@ export default function HistorialAlumnoPage() {
 
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
 
+    // Planes tab — computed before return to avoid IIFE inside JSX
+    const planActivoEmb = alumno?.planEntrenamiento?.fechaInicio && !alumno?.planEntrenamiento?.terminado ? alumno.planEntrenamiento : null;
+    const planActivoEj = !planActivoEmb && planAlumnoActivo?.fechaInicio ? planAlumnoActivo : null;
+    const hayPlanActivo = !!(planActivoEmb || planActivoEj);
+    const totalPlanesCount = historialPlanesFiltrado.length + (hayPlanActivo ? 1 : 0);
+    const planActivoFiRaw = planActivoEmb ? planActivoEmb.fechaInicio : planActivoEj?.fechaInicio;
+    const planActivoFiInput = planActivoFiRaw ? convertirAFechaLocal(planActivoFiRaw) : '';
+    const planActivoFiLabel = planActivoFiRaw ? parseLocalDate(planActivoFiInput).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+    const planActivoTotal = planActivoEmb
+        ? (planActivoEmb.duracion ?? 0)
+        : (planActivoEj?.dias?.length || 0) * (planActivoEj?.totalSemanas || 1);
+    const planActivoHechas = Math.max(0, planActivoTotal - (diasRestantes ?? 0));
+    const planActivoPct = planActivoTotal > 0 ? Math.min(100, Math.round((planActivoHechas / planActivoTotal) * 100)) : 0;
+
+    const handleEditarPlanActivo = async () => {
+        const { value: vals } = await Swal.fire({
+            ...swalBase,
+            title: 'Editar plan activo',
+            html: `
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha de inicio</label>
+                    <input type="date" id="ep-fecha" class="swal2-input" value="${planActivoFiInput}">
+                    <label class="swal-form-label">Total de clases</label>
+                    <input type="number" id="ep-dur" class="swal2-input" value="${planActivoTotal}" min="1">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const fecha = (document.getElementById('ep-fecha') as HTMLInputElement).value;
+                const dur = parseInt((document.getElementById('ep-dur') as HTMLInputElement).value);
+                if (!fecha) { Swal.showValidationMessage('Ingresá una fecha'); return; }
+                if (!dur || dur < 1) { Swal.showValidationMessage('Ingresá un número válido'); return; }
+                return { fechaInicio: fecha, duracion: dur };
+            },
+        });
+        if (!vals) return;
+        const savedScroll = window.scrollY;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/plan`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fechaInicio: vals.fechaInicio, duracion: vals.duracion }),
+            });
+            if (res.ok) { void Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan actualizado' }); await fetchAlumno(); requestAnimationFrame(() => window.scrollTo(0, savedScroll)); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar' });
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al actualizar' }); }
+    };
+
     return (
         <>
         <div className="max-w-7xl mx-auto space-y-4">
@@ -1825,7 +1876,7 @@ export default function HistorialAlumnoPage() {
                             </span>
                             {diasRestantes != null && diasRestantes > 0 ? (
                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-slate-100 text-slate-500' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
-                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}quedan {diasRestantes}{(alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1)) || null) ? ` de ${alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1))}` : ''} entrenos
+                                    {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}quedan {diasRestantes}{((alumno.planEntrenamiento?.duracion ?? null) || ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1)) || null) ? ` de ${alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1))}` : ''} entrenos
                                 </span>
                             ) : diasRestantes === 0 ? (
                                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
@@ -1949,23 +2000,17 @@ export default function HistorialAlumnoPage() {
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
                             Marcar Pago
                         </button>
-                        {(() => {
-                            const planActivo = !!(
-                                (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado) ||
-                                planAlumnoActivo?.fechaInicio
-                            );
-                            return planActivo ? (
-                                <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-400 text-sm font-semibold rounded-xl cursor-not-allowed opacity-60">
-                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
-                                    Plan iniciado
-                                </button>
-                            ) : (
-                                <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
-                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
-                                    Iniciar Plan
-                                </button>
-                            );
-                        })()}
+                        {hayPlanActivo ? (
+                            <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-400 text-sm font-semibold rounded-xl cursor-not-allowed opacity-60">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
+                                Plan iniciado
+                            </button>
+                        ) : (
+                            <button onClick={iniciarPlan} className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
+                                Iniciar Plan
+                            </button>
+                        )}
                         <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all active:scale-95">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
                             Editar
@@ -2428,12 +2473,7 @@ export default function HistorialAlumnoPage() {
                         )}
 
                         {/* ── PLANES ── */}
-                        {activeTab === 'planes' && (() => {
-                            const planActivoEmb = alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado ? alumno.planEntrenamiento : null;
-                            const planActivoEj = !planActivoEmb && planAlumnoActivo?.fechaInicio ? planAlumnoActivo : null;
-                            const hayPlanActivo = !!(planActivoEmb || planActivoEj);
-                            const totalPlanesCount = historialPlanesFiltrado.length + (hayPlanActivo ? 1 : 0);
-                            return (
+                        {activeTab === 'planes' && (
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
@@ -2480,93 +2520,44 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 )}
                                 {/* Plan activo */}
-                                {hayPlanActivo && (() => {
-                                    const fiRaw = planActivoEmb ? planActivoEmb.fechaInicio : planActivoEj!.fechaInicio;
-                                    const fiInputVal = convertirAFechaLocal(fiRaw);
-                                    const fiLabel = parseLocalDate(fiInputVal).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                                    const total = planActivoEmb
-                                        ? planActivoEmb.duracion
-                                        : (planActivoEj!.dias?.length || 0) * (planActivoEj!.totalSemanas || 1);
-                                    const restantes = diasRestantes ?? 0;
-                                    const hechas = Math.max(0, total - restantes);
-                                    const pct = total > 0 ? Math.min(100, Math.round((hechas / total) * 100)) : 0;
-
-                                    const handleEditarPlanActivo = async () => {
-                                        const { value: vals } = await Swal.fire({
-                                            ...swalBase,
-                                            title: 'Editar plan activo',
-                                            html: `
-                                                <div class="swal-form-body">
-                                                    <label class="swal-form-label">Fecha de inicio</label>
-                                                    <input type="date" id="ep-fecha" class="swal2-input" value="${fiInputVal}">
-                                                    <label class="swal-form-label">Total de clases</label>
-                                                    <input type="number" id="ep-dur" class="swal2-input" value="${total}" min="1">
-                                                </div>
-                                            `,
-                                            focusConfirm: false,
-                                            showCancelButton: true,
-                                            confirmButtonText: 'Guardar',
-                                            cancelButtonText: 'Cancelar',
-                                            preConfirm: () => {
-                                                const fecha = (document.getElementById('ep-fecha') as HTMLInputElement).value;
-                                                const dur = parseInt((document.getElementById('ep-dur') as HTMLInputElement).value);
-                                                if (!fecha) { Swal.showValidationMessage('Ingresá una fecha'); return; }
-                                                if (!dur || dur < 1) { Swal.showValidationMessage('Ingresá un número válido'); return; }
-                                                return { fechaInicio: fecha, duracion: dur };
-                                            },
-                                        });
-                                        if (!vals) return;
-                                        const savedScroll = window.scrollY;
-                                        try {
-                                            const res = await fetch(`/api/alumnos/${id}/plan`, {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ fechaInicio: vals.fechaInicio, duracion: vals.duracion }),
-                                            });
-                                            if (res.ok) { void Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan actualizado' }); await fetchAlumno(); requestAnimationFrame(() => window.scrollTo(0, savedScroll)); }
-                                            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo actualizar' });
-                                        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al actualizar' }); }
-                                    };
-
-                                    return (
-                                        <div className="mb-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Plan activo</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-semibold text-slate-600">Inicio: {fiLabel}</span>
-                                                    <button
-                                                        onClick={handleEditarPlanActivo}
-                                                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition"
-                                                    >
-                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
-                                                        Editar
-                                                    </button>
-                                                </div>
+                                {hayPlanActivo && (
+                                    <div className="mb-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Plan activo</span>
                                             </div>
-                                            <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Total</p>
-                                                    <p className="font-bold text-slate-800">{total}</p>
-                                                </div>
-                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Hechas</p>
-                                                    <p className="font-bold text-slate-800">{hechas}</p>
-                                                </div>
-                                                <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                    <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Restan</p>
-                                                    <p className="font-bold text-emerald-600">{restantes}</p>
-                                                </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-semibold text-slate-600">Inicio: {planActivoFiLabel}</span>
+                                                <button
+                                                    onClick={handleEditarPlanActivo}
+                                                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                                                    Editar
+                                                </button>
                                             </div>
-                                            <div className="w-full bg-emerald-100 rounded-full h-1.5">
-                                                <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
-                                            </div>
-                                            <p className="text-right text-xs text-emerald-600 mt-1">{pct}%</p>
                                         </div>
-                                    );
-                                })()}
+                                        <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Total</p>
+                                                <p className="font-bold text-slate-800">{planActivoTotal}</p>
+                                            </div>
+                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Hechas</p>
+                                                <p className="font-bold text-slate-800">{planActivoHechas}</p>
+                                            </div>
+                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
+                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Restan</p>
+                                                <p className="font-bold text-emerald-600">{diasRestantes ?? 0}</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-full bg-emerald-100 rounded-full h-1.5">
+                                            <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${planActivoPct}%` }} />
+                                        </div>
+                                        <p className="text-right text-xs text-emerald-600 mt-1">{planActivoPct}%</p>
+                                    </div>
+                                )}
                                 {historialPlanesFiltrado.length > 0 ? (
                                     <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
                                         {historialPlanesFiltrado.map((plan: any, idx: number) => {
@@ -2625,8 +2616,7 @@ export default function HistorialAlumnoPage() {
                                     !hayPlanActivo && <p className="text-slate-400 text-sm text-center py-10">No hay planes registrados.</p>
                                 )}
                             </div>
-                            );
-                        })()}
+                        )}
 
                         {/* ── PAGOS ── */}
                         {activeTab === 'pagos' && (
