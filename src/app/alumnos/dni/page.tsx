@@ -30,7 +30,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
     const [actividadesDisponibles, setActividadesDisponibles] = useState<string[]>(['Musculación']);
-    const [feedback, setFeedback] = useState<{ nombre: string; cuotaPaga: boolean; actividad: string } | null>(null);
+    const [feedback, setFeedback] = useState<{ type: 'paid' | 'debt' | 'not_found'; nombre?: string; actividad: string } | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const formatDNIWithDots = (input: string): string => {
@@ -157,9 +157,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
         } catch {}
     };
 
-    const showFeedback = (nombre: string, cuotaPaga: boolean, act: string) => {
+    const showFeedback = (type: 'paid' | 'debt' | 'not_found', act: string, nombre?: string) => {
         if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-        setFeedback({ nombre, cuotaPaga, actividad: act });
+        setFeedback({ type, nombre, actividad: act });
         feedbackTimer.current = setTimeout(() => setFeedback(null), 4000);
     };
 
@@ -191,10 +191,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
         e.preventDefault();
         if (isLoadingRef.current) return;
         const cleanDNI = dniRef.current.replace(/\./g, '');
-        if (cleanDNI.length < 7 || cleanDNI.length > 8) {
-            Swal.fire({ ...swalDni, icon: 'error', title: 'DNI inválido', text: 'El DNI debe tener 7 u 8 dígitos.' });
-            return;
-        }
+        if (cleanDNI.length < 7 || cleanDNI.length > 8) return;
         isLoadingRef.current = true;
         setIsLoading(true);
         const fecha = new Date().toISOString();
@@ -217,13 +214,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
             const cuotaPaga = alumno.pagos?.some((p: any) => p.mes?.toLowerCase() === mesActual) ?? false;
 
             if (cuotaPaga) playSuccess(); else playDebt();
-            showFeedback(alumno.nombre, cuotaPaga, actividad);
+            showFeedback(cuotaPaga ? 'paid' : 'debt', actividad, alumno.nombre);
             clearDNI();
             cancelInactivityTimer();
         } catch (error: any) {
             playError();
             if (error.message === 'no_encontrado') {
-                Swal.fire({ ...swalDni, icon: 'warning', title: 'No encontrado', text: 'No hay ningún alumno registrado con ese DNI.' });
+                showFeedback('not_found', actividad);
             } else if (error.message.includes('Asistencia ya registrada')) {
                 Swal.fire({ ...swalDni, icon: 'info', title: 'Ya registrada', text: `Ya se registró asistencia para ${actividad} hoy.` });
             } else {
@@ -361,43 +358,71 @@ export default function RegistrarAsistenciaPorDNIPage() {
             {feedback && (
                 <div
                     className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 px-8"
-                    style={{ background: feedback.cuotaPaga ? '#15803d' : '#b91c1c' }}
+                    style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : '#1d4ed8' }}
                     onClick={() => { if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); }}
                 >
                     {/* Ícono */}
                     <div className="flex items-center justify-center rounded-full bg-white/20" style={{ width: 120, height: 120 }}>
-                        {feedback.cuotaPaga ? (
+                        {feedback.type === 'paid' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                                 <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
-                        ) : (
+                        ) : feedback.type === 'debt' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                                 <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="6" strokeLinecap="round"/>
+                            </svg>
+                        ) : (
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="20" r="5" fill="white"/>
+                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
                             </svg>
                         )}
                     </div>
 
-                    {/* Nombre */}
+                    {/* Nombre o mensaje */}
                     <div className="text-center">
-                        <p className="text-white/70 font-semibold tracking-widest uppercase" style={{ fontSize: 22 }}>¡Hola!</p>
-                        <h1 className="text-white font-black leading-none mt-1" style={{ fontSize: 'clamp(52px, 10vw, 96px)' }}>
-                            {feedback.nombre}
-                        </h1>
+                        {feedback.type === 'not_found' ? (
+                            <>
+                                <h1 className="text-white font-black leading-none" style={{ fontSize: 'clamp(44px, 9vw, 80px)' }}>
+                                    No registrado
+                                </h1>
+                                <p className="text-white/60 font-semibold mt-3" style={{ fontSize: 22 }}>
+                                    No hay ningún alumno con ese DNI
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-white/70 font-semibold tracking-widest uppercase" style={{ fontSize: 22 }}>¡Hola!</p>
+                                <h1 className="text-white font-black leading-none mt-1" style={{ fontSize: 'clamp(52px, 10vw, 96px)' }}>
+                                    {feedback.nombre}
+                                </h1>
+                            </>
+                        )}
                     </div>
 
                     {/* Actividad */}
-                    <span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}>
-                        {feedback.actividad}
-                    </span>
+                    {feedback.type !== 'not_found' && (
+                        <span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}>
+                            {feedback.actividad}
+                        </span>
+                    )}
 
-                    {/* Estado cuota */}
+                    {/* Estado */}
                     <div className="flex flex-col items-center gap-2">
-                        <span className="text-white font-black" style={{ fontSize: 32 }}>
-                            {feedback.cuotaPaga ? '✓ Cuota al día' : '✗ Cuota pendiente'}
-                        </span>
-                        <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
-                            Asistencia registrada
-                        </span>
+                        {feedback.type === 'not_found' ? (
+                            <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
+                                Revisá el DNI ingresado
+                            </span>
+                        ) : (
+                            <>
+                                <span className="text-white font-black" style={{ fontSize: 32 }}>
+                                    {feedback.type === 'paid' ? '✓ Cuota al día' : '✗ Cuota pendiente'}
+                                </span>
+                                <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
+                                    Asistencia registrada
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
