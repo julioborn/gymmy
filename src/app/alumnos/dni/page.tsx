@@ -112,25 +112,32 @@ export default function RegistrarAsistenciaPorDNIPage() {
     };
 
     const playDebt = () => {
-        try { (navigator as any).vibrate?.([100, 40, 100, 40, 150]); } catch {}
+        try { (navigator as any).vibrate?.([200, 100, 200, 100, 200]); } catch {}
         try {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new Ctx();
-            const notes: [number, number, number][] = [[380, 0, 0.28], [260, 0.3, 0.28], [180, 0.6, 0.45]];
-            notes.forEach(([freq, delay, dur]) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-                gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + delay + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
-                osc.start(ctx.currentTime + delay);
-                osc.stop(ctx.currentTime + delay + dur + 0.05);
-            });
-            setTimeout(() => ctx.close(), 1600);
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            const now = ctx.currentTime;
+            const step = 0.35; // duración de cada subida/bajada
+            // 3 ciclos completos: bajo → alto → bajo → alto → bajo → alto → bajo
+            osc.frequency.setValueAtTime(330, now);
+            osc.frequency.linearRampToValueAtTime(960, now + step);
+            osc.frequency.linearRampToValueAtTime(330, now + step * 2);
+            osc.frequency.linearRampToValueAtTime(960, now + step * 3);
+            osc.frequency.linearRampToValueAtTime(330, now + step * 4);
+            osc.frequency.linearRampToValueAtTime(960, now + step * 5);
+            osc.frequency.linearRampToValueAtTime(330, now + step * 6);
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.35, now + 0.04);
+            gain.gain.setValueAtTime(0.35, now + step * 6 - 0.08);
+            gain.gain.linearRampToValueAtTime(0, now + step * 6);
+            osc.start(now);
+            osc.stop(now + step * 6 + 0.05);
+            osc.onended = () => ctx.close();
         } catch {}
     };
 
