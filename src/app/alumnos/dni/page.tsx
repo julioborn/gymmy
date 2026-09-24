@@ -162,7 +162,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
         } catch {}
     };
 
-    const showFeedback = (type: 'paid' | 'debt' | 'not_found', act: string, nombre?: string) => {
+    const showFeedback = (type: 'paid' | 'debt' | 'not_found' | 'already', act: string, nombre?: string) => {
         if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
         setFeedback({ type, nombre, actividad: act });
         feedbackTimer.current = setTimeout(() => setFeedback(null), 4000);
