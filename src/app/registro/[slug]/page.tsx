@@ -332,6 +332,7 @@ export default function RegistroPage() {
                                 <div className="grid grid-cols-3 gap-2">
                                     <select value={form.diaNac}
                                         onChange={e => setField('diaNac', e.target.value)}
+                                        autoComplete="off"
                                         style={selectStyle(form.diaNac)}>
                                         <option value="">Día</option>
                                         {DIAS_MES.map(d => (
@@ -340,6 +341,7 @@ export default function RegistroPage() {
                                     </select>
                                     <select value={form.mesNac}
                                         onChange={e => setField('mesNac', e.target.value)}
+                                        autoComplete="off"
                                         style={selectStyle(form.mesNac)}>
                                         <option value="">Mes</option>
                                         {MESES.map(m => (
@@ -348,6 +350,7 @@ export default function RegistroPage() {
                                     </select>
                                     <select value={form.anioNac}
                                         onChange={e => setField('anioNac', e.target.value)}
+                                        autoComplete="off"
                                         style={selectStyle(form.anioNac)}>
                                         <option value="">Año</option>
                                         {ANIOS.map(a => (

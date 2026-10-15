@@ -162,15 +162,15 @@ export default function NuevoAlumnoPage() {
                             <div className="col-span-2 md:col-span-3">
                                 <label className={labelCls}>Fecha de nacimiento</label>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <select value={diaNac} onChange={e => setDiaNac(e.target.value)} className={selectCls}>
+                                    <select value={diaNac} onChange={e => setDiaNac(e.target.value)} autoComplete="off" className={selectCls}>
                                         <option value="">Día</option>
                                         {DIAS_MES.map(d => <option key={d} value={String(d)}>{d}</option>)}
                                     </select>
-                                    <select value={mesNac} onChange={e => setMesNac(e.target.value)} className={selectCls}>
+                                    <select value={mesNac} onChange={e => setMesNac(e.target.value)} autoComplete="off" className={selectCls}>
                                         <option value="">Mes</option>
                                         {MESES.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
-                                    <select value={anioNac} onChange={e => setAnioNac(e.target.value)} className={selectCls}>
+                                    <select value={anioNac} onChange={e => setAnioNac(e.target.value)} autoComplete="off" className={selectCls}>
                                         <option value="">Año</option>
                                         {ANIOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
                                     </select>
