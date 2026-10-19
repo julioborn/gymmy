@@ -72,7 +72,7 @@ export default function ListaAlumnosPage() {
     const [filtroArea, setFiltroArea] = useState('');
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
-    const [hoyExpanded, setHoyExpanded] = useState(true);
+    const [hoyExpanded, setHoyExpanded] = useState(false);
 
     const fetchAlumnos = async () => {
         setIsLoading(true);
