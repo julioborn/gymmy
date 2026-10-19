@@ -441,11 +441,23 @@ export default function MiCuentaPage() {
             })
             .catch(() => {});
 
+        // Refresh when app returns to foreground — covers visibilitychange (Android),
+        // pageshow from bfcache (iOS Safari PWA), and window focus
         const onVisible = () => {
             if (document.visibilityState === 'visible') fetchAlumno().catch(() => {});
         };
+        const onPageShow = (e: PageTransitionEvent) => {
+            if (e.persisted) fetchAlumno().catch(() => {});
+        };
+        const onFocus = () => fetchAlumno().catch(() => {});
         document.addEventListener('visibilitychange', onVisible);
-        return () => document.removeEventListener('visibilitychange', onVisible);
+        window.addEventListener('pageshow', onPageShow);
+        window.addEventListener('focus', onFocus);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisible);
+            window.removeEventListener('pageshow', onPageShow);
+            window.removeEventListener('focus', onFocus);
+        };
     }, []);
 
     if (loading) {
