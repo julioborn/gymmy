@@ -72,6 +72,7 @@ export default function ListaAlumnosPage() {
     const [filtroArea, setFiltroArea] = useState('');
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
+    const [hoyExpanded, setHoyExpanded] = useState(true);
 
     const fetchAlumnos = async () => {
         setIsLoading(true);
@@ -319,6 +320,56 @@ export default function ListaAlumnosPage() {
 
     const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
 
+    // ── Hoy en el gimnasio ──────────────────────────────────────────────────
+    type TurnSlot = 'mañana' | 'siesta' | 'tarde' | 'noche';
+    const getArgInfo = (fechaStr: string): { key: string; hour: number; hora: string } => {
+        const d = new Date(fechaStr);
+        const arg = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+        const key = `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+        const hour = arg.getUTCHours();
+        const hora = `${String(hour).padStart(2,'0')}:${String(arg.getUTCMinutes()).padStart(2,'0')}`;
+        return { key, hour, hora };
+    };
+    const todayArgKey = (() => {
+        const now = new Date();
+        const arg = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+        return `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+    })();
+    const slotOf = (hour: number): TurnSlot =>
+        hour < 12 ? 'mañana' : hour < 15 ? 'siesta' : hour < 20 ? 'tarde' : 'noche';
+
+    const hoyPorTurno: Record<TurnSlot, { nombre: string; apellido: string; actividad: string; hora: string; id: string }[]> = {
+        mañana: [], siesta: [], tarde: [], noche: [],
+    };
+    if (!isLoading) {
+        for (const alumno of alumnos) {
+            for (const a of (alumno.asistencia || [])) {
+                if (!a.presente) continue;
+                const { key, hour, hora } = getArgInfo(a.fecha);
+                if (key !== todayArgKey) continue;
+                hoyPorTurno[slotOf(hour)].push({
+                    nombre: alumno.nombre, apellido: alumno.apellido,
+                    actividad: a.actividad, hora, id: alumno._id,
+                });
+            }
+        }
+        for (const s of Object.keys(hoyPorTurno) as TurnSlot[]) {
+            hoyPorTurno[s].sort((a, b) => a.hora.localeCompare(b.hora));
+        }
+    }
+    const totalHoy = hoyPorTurno.mañana.length + hoyPorTurno.siesta.length + hoyPorTurno.tarde.length + hoyPorTurno.noche.length;
+    const SLOT_CONFIG: { key: TurnSlot; label: string; icon: string; bg: string; text: string }[] = [
+        { key: 'mañana', label: 'Mañana',  icon: '🌅', bg: 'bg-amber-50',  text: 'text-amber-700' },
+        { key: 'siesta', label: 'Siesta',  icon: '☀️', bg: 'bg-orange-50', text: 'text-orange-700' },
+        { key: 'tarde',  label: 'Tarde',   icon: '🌤️', bg: 'bg-sky-50',    text: 'text-sky-700'   },
+        { key: 'noche',  label: 'Noche',   icon: '🌙', bg: 'bg-indigo-50', text: 'text-indigo-700'},
+    ];
+    const ACTIVIDAD_COLOR: Record<string, string> = {
+        'Musculación': 'bg-blue-100 text-blue-700',
+        'Intermitente': 'bg-orange-100 text-orange-700',
+        'Otro': 'bg-yellow-100 text-yellow-700',
+    };
+
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8">
 
@@ -371,6 +422,72 @@ export default function ListaAlumnosPage() {
                         )}
                     </div>
                 </div>
+            </div>
+
+            {/* Hoy en el gimnasio */}
+            <div className={card}>
+                <button
+                    onClick={() => setHoyExpanded(v => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 sm:px-5"
+                >
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-sm font-bold text-slate-800">Hoy en el gimnasio</span>
+                        {!isLoading && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                {totalHoy}
+                            </span>
+                        )}
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-400 transition-transform duration-200 ${hoyExpanded ? 'rotate-180' : ''}`}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+
+                {hoyExpanded && (
+                    <div className="px-4 pb-4 sm:px-5">
+                        {isLoading ? (
+                            <div className="space-y-1.5">
+                                {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-slate-100 animate-pulse" />)}
+                            </div>
+                        ) : totalHoy === 0 ? (
+                            <p className="text-slate-400 text-sm text-center py-4">Nadie fue hoy todavía.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {SLOT_CONFIG.filter(s => hoyPorTurno[s.key].length > 0).map(slot => (
+                                    <div key={slot.key}>
+                                        <div className="flex items-center gap-1.5 mb-1.5">
+                                            <span className="text-sm">{slot.icon}</span>
+                                            <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
+                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {hoyPorTurno[slot.key].map((a, i) => (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => router.push(`/alumnos/${a.id}/historial`)}
+                                                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all border border-slate-100"
+                                                >
+                                                    <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                                                        {a.nombre?.[0]}{a.apellido?.[0]}
+                                                    </div>
+                                                    <span className="flex-1 text-sm font-semibold text-slate-700 truncate">
+                                                        {a.apellido}, {a.nombre}
+                                                    </span>
+                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-slate-100 text-slate-600'}`}>
+                                                        {a.actividad}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">
+                                                        {a.hora}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Body */}
