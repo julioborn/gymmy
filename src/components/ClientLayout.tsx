@@ -44,6 +44,8 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const [isOnline, setIsOnline] = useState(true);
     const [backOnlineMessage, setBackOnlineMessage] = useState(false);
     const [sessionReady, setSessionReady] = useState(false);
+    const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
+    const desktopMenuRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
 
     // ── Pull-to-refresh state ──
@@ -109,6 +111,18 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         window.addEventListener('offline', update);
         return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
     }, []);
+
+    // Close desktop menu on outside click
+    useEffect(() => {
+        if (!desktopMenuOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (desktopMenuRef.current && !desktopMenuRef.current.contains(e.target as Node)) {
+                setDesktopMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [desktopMenuOpen]);
 
     // ── Global touch gesture handlers ──
     useEffect(() => {
@@ -402,11 +416,62 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         />
                     </Link>
 
-                    <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
-                        style={isOnline
-                            ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
-                            : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
-                        } />
+                    <div className="flex items-center gap-3">
+                        {/* Online dot */}
+                        <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
+                            style={isOnline
+                                ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
+                                : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
+                            } />
+
+                        {/* Hamburger — desktop only */}
+                        {showNav && navItems.length > 0 && (
+                            <div className="relative hidden sm:block" ref={desktopMenuRef}>
+                                <button
+                                    type="button"
+                                    onClick={() => setDesktopMenuOpen(v => !v)}
+                                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
+                                    aria-label="Menú"
+                                >
+                                    {desktopMenuOpen ? (
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        </svg>
+                                    )}
+                                </button>
+
+                                {desktopMenuOpen && (
+                                    <div
+                                        className="absolute right-0 top-full mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden border border-white/10 z-50"
+                                        style={{ background: navBg }}
+                                    >
+                                        {navItems.map(item => {
+                                            const active = item.isActive(pathname);
+                                            return (
+                                                <Link
+                                                    key={item.href}
+                                                    href={item.href}
+                                                    onClick={() => setDesktopMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/10"
+                                                    style={{ color: active ? (acento2 ?? acento) : 'rgba(255,255,255,0.7)' }}
+                                                >
+                                                    {item.icon}
+                                                    <span className="text-sm font-semibold">{item.label}</span>
+                                                    {active && (
+                                                        <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: acento2 ?? acento }} />
+                                                    )}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -473,10 +538,9 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── MAIN CONTENT ── */}
             <main
-                className="flex-1 p-3 bg-slate-50"
+                className={`flex-1 p-3 bg-slate-50 ${showNav && !isRegistroPage ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
                     marginTop: isRegistroPage ? 0 : 'calc(88px + env(safe-area-inset-top, 0px))',
-                    paddingBottom: (showNav && !isRegistroPage) ? 'calc(5rem + env(safe-area-inset-bottom, 0px))' : undefined,
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,
@@ -485,10 +549,10 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 {children}
             </main>
 
-            {/* ── BOTTOM NAV ── */}
+            {/* ── BOTTOM NAV — mobile only ── */}
             {showNav && navItems.length > 0 && (
                 <nav
-                    className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.06]"
+                    className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.06] sm:hidden"
                     style={{ background: navBg, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
                 >
                     <div className="flex items-end h-[62px]">
