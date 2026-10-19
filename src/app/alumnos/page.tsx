@@ -73,6 +73,7 @@ export default function ListaAlumnosPage() {
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
     const [hoyExpanded, setHoyExpanded] = useState(false);
+    const [slotsExpanded, setSlotsExpanded] = useState<Record<string, boolean>>({ mañana: false, siesta: false, tarde: false, noche: false });
 
     const fetchAlumnos = async () => {
         setIsLoading(true);
@@ -358,11 +359,11 @@ export default function ListaAlumnosPage() {
         }
     }
     const totalHoy = hoyPorTurno.mañana.length + hoyPorTurno.siesta.length + hoyPorTurno.tarde.length + hoyPorTurno.noche.length;
-    const SLOT_CONFIG: { key: TurnSlot; label: string; icon: string; bg: string; text: string }[] = [
-        { key: 'mañana', label: 'Mañana',  icon: '🌅', bg: 'bg-amber-50',  text: 'text-amber-700' },
-        { key: 'siesta', label: 'Siesta',  icon: '☀️', bg: 'bg-orange-50', text: 'text-orange-700' },
-        { key: 'tarde',  label: 'Tarde',   icon: '🌤️', bg: 'bg-sky-50',    text: 'text-sky-700'   },
-        { key: 'noche',  label: 'Noche',   icon: '🌙', bg: 'bg-indigo-50', text: 'text-indigo-700'},
+    const SLOT_CONFIG: { key: TurnSlot; label: string; bg: string; text: string }[] = [
+        { key: 'mañana', label: 'Mañana',  bg: 'bg-amber-50',  text: 'text-amber-700' },
+        { key: 'siesta', label: 'Siesta',  bg: 'bg-orange-50', text: 'text-orange-700' },
+        { key: 'tarde',  label: 'Tarde',   bg: 'bg-sky-50',    text: 'text-sky-700'   },
+        { key: 'noche',  label: 'Noche',   bg: 'bg-indigo-50', text: 'text-indigo-700'},
     ];
     const ACTIVIDAD_COLOR: Record<string, string> = {
         'Musculación': 'bg-blue-100 text-blue-700',
@@ -452,36 +453,46 @@ export default function ListaAlumnosPage() {
                         ) : totalHoy === 0 ? (
                             <p className="text-slate-400 text-sm text-center py-4">Nadie fue hoy todavía.</p>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {SLOT_CONFIG.filter(s => hoyPorTurno[s.key].length > 0).map(slot => (
-                                    <div key={slot.key}>
-                                        <div className="flex items-center gap-1.5 mb-1.5">
-                                            <span className="text-sm">{slot.icon}</span>
-                                            <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
-                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
-                                        </div>
-                                        <div className="space-y-1">
-                                            {hoyPorTurno[slot.key].map((a, i) => (
-                                                <div
-                                                    key={i}
-                                                    onClick={() => router.push(`/alumnos/${a.id}/historial`)}
-                                                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all border border-slate-100"
-                                                >
-                                                    <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
-                                                        {a.nombre?.[0]}{a.apellido?.[0]}
+                                    <div key={slot.key} className="border border-slate-100 rounded-xl overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSlotsExpanded(prev => ({ ...prev, [slot.key]: !prev[slot.key] }))}
+                                            className="w-full flex items-center justify-between px-3 py-2"
+                                        >
+                                            <div className="flex items-center gap-1.5">
+                                                <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
+                                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
+                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-400 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </button>
+                                        {slotsExpanded[slot.key] && (
+                                            <div className="px-3 pb-2 space-y-1">
+                                                {hoyPorTurno[slot.key].map((a, i) => (
+                                                    <div
+                                                        key={i}
+                                                        onClick={() => router.push(`/alumnos/${a.id}/historial`)}
+                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all border border-slate-100"
+                                                    >
+                                                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                                                        </div>
+                                                        <span className="flex-1 text-sm font-semibold text-slate-700 truncate">
+                                                            {a.apellido}, {a.nombre}
+                                                        </span>
+                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-slate-100 text-slate-600'}`}>
+                                                            {a.actividad}
+                                                        </span>
+                                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">
+                                                            {a.hora}
+                                                        </span>
                                                     </div>
-                                                    <span className="flex-1 text-sm font-semibold text-slate-700 truncate">
-                                                        {a.apellido}, {a.nombre}
-                                                    </span>
-                                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                        {a.actividad}
-                                                    </span>
-                                                    <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">
-                                                        {a.hora}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
