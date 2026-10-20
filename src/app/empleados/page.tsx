@@ -168,6 +168,10 @@ export default function EmpleadosPage() {
             html: `
                 <div class="swal-form-body">
                     <div>
+                        <label class="swal-form-label">Nombre para mostrar</label>
+                        <input id="edit-nombre" class="swal2-input" value="${emp.nombre ?? ''}" autocomplete="off" placeholder="Ej: Recepción" />
+                    </div>
+                    <div>
                         <label class="swal-form-label">DNI / Número de acceso</label>
                         <input id="edit-username" class="swal2-input" value="${emp.username}" autocomplete="off" placeholder="Ej: 11111111" />
                         <p style="font-size:11px;color:#64748b;margin-top:4px;text-align:left">Es el número que usa para iniciar sesión</p>
@@ -187,6 +191,7 @@ export default function EmpleadosPage() {
             cancelButtonText: 'Cancelar',
             focusConfirm: false,
             preConfirm: () => {
+                const nombre = (document.getElementById('edit-nombre') as HTMLInputElement)?.value?.trim();
                 const username = (document.getElementById('edit-username') as HTMLInputElement)?.value?.trim();
                 const password = (document.getElementById('edit-password') as HTMLInputElement)?.value;
                 const role = (document.getElementById('edit-role') as HTMLSelectElement)?.value;
@@ -198,7 +203,7 @@ export default function EmpleadosPage() {
                     Swal.showValidationMessage('La contraseña debe tener al menos 6 caracteres');
                     return false;
                 }
-                return { username, role, ...(password ? { password } : {}) };
+                return { username, role, nombre: nombre || undefined, ...(password ? { password } : {}) };
             },
         });
 

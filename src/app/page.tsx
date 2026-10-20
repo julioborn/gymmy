@@ -116,6 +116,8 @@ export default function HomePage() {
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
+    const [alumnosHoy, setAlumnosHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string; id: string }[]>([]);
+    const [loadingHoy, setLoadingHoy] = useState(false);
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
         if (typeof window === 'undefined') return true;
@@ -146,6 +148,37 @@ export default function HomePage() {
     }, [session]);
 
     usePaymentEvents(fetchDashboard);
+
+    const fetchAlumnosHoy = () => {
+        if (!session || session.user?.role !== 'recepcion') return;
+        setLoadingHoy(true);
+        fetch('/api/alumnos')
+            .then(r => r.json())
+            .then(data => {
+                const arg = new Date(Date.now() - 3 * 60 * 60 * 1000);
+                const hoyKey = `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+                const hoy: typeof alumnosHoy = [];
+                for (const al of (data || [])) {
+                    for (const a of (al.asistencia || [])) {
+                        if (!a.presente) continue;
+                        const d = new Date(a.fecha);
+                        const da = new Date(d.getTime() - 3*60*60*1000);
+                        const k = `${da.getUTCFullYear()}-${String(da.getUTCMonth()+1).padStart(2,'0')}-${String(da.getUTCDate()).padStart(2,'0')}`;
+                        if (k !== hoyKey) continue;
+                        const hh = da.getUTCHours();
+                        const mm = da.getUTCMinutes();
+                        hoy.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`, id: al._id });
+                    }
+                }
+                hoy.sort((a, b) => b.hora.localeCompare(a.hora));
+                setAlumnosHoy(hoy);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingHoy(false));
+    };
+
+    useEffect(() => { fetchAlumnosHoy(); }, [session]);
+    usePaymentEvents(() => { if (session?.user?.role === 'recepcion') fetchAlumnosHoy(); });
 
     useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
@@ -335,6 +368,114 @@ export default function HomePage() {
             <span className="text-[11px] font-semibold text-slate-600 text-center">Mi plan</span>
         </Link>
     ) : null;
+
+    if (esRecepcion) {
+        const slotOf = (hora: string) => {
+            const h = parseInt(hora.split(':')[0]);
+            if (h < 12) return 'Mañana';
+            if (h < 15) return 'Siesta';
+            if (h < 20) return 'Tarde';
+            return 'Noche';
+        };
+        type Slot = 'Mañana' | 'Siesta' | 'Tarde' | 'Noche';
+        const porTurno: Record<Slot, typeof alumnosHoy> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+        for (const a of alumnosHoy) porTurno[slotOf(a.hora) as Slot].push(a);
+        const SLOTS: { key: Slot; color: string; bg: string; dot: string }[] = [
+            { key: 'Mañana', color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-400'  },
+            { key: 'Siesta', color: 'text-orange-700', bg: 'bg-orange-50', dot: 'bg-orange-400' },
+            { key: 'Tarde',  color: 'text-sky-700',    bg: 'bg-sky-50',    dot: 'bg-sky-400'    },
+            { key: 'Noche',  color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-400' },
+        ];
+        const nombreDisplay = capitalize((session.user as any)?.nombre ?? session.user?.username ?? 'Recepción');
+
+        return (
+            <div className="max-w-xl mx-auto pt-4 pb-16 px-4">
+
+                {/* Banner */}
+                <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden mb-4">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
+                    <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-20 bg-teal-400" />
+                    <div className="relative flex items-center justify-between">
+                        <div>
+                            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">{getGreeting()}</p>
+                            <h1 className="text-xl font-bold text-white mt-0.5">{nombreDisplay}</h1>
+                            <div className="flex items-center gap-2 mt-2">
+                                <span className="bg-teal-500/20 text-teal-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Recepción</span>
+                                <span className="text-slate-600 text-[10px]">·</span>
+                                <span className="text-slate-500 text-[10px]">{fmtDate()}</span>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-3xl font-bold text-white leading-none">{alumnosHoy.length}</p>
+                            <p className="text-slate-400 text-[11px] mt-1">hoy</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Accesos rápidos */}
+                <div className="flex gap-3 mb-4">
+                    <Link href="/alumnos" className="flex-1 flex items-center justify-center gap-2 bg-white border border-black/[0.07] rounded-xl py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                        </svg>
+                        Ver alumnos
+                    </Link>
+                    <Link href="/alumnos/nuevo" className="flex-1 flex items-center justify-center gap-2 bg-white border border-black/[0.07] rounded-xl py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Nuevo alumno
+                    </Link>
+                </div>
+
+                {/* Hoy en el gym */}
+                <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-800">Hoy en el gimnasio</span>
+                        {loadingHoy && (
+                            <div className="w-3.5 h-3.5 rounded-full border-2 border-slate-200 border-t-teal-500 animate-spin" />
+                        )}
+                    </div>
+                    {loadingHoy && alumnosHoy.length === 0 ? (
+                        <div className="p-4 space-y-2">
+                            {[1,2,3].map(i => <div key={i} className="h-10 rounded-xl bg-slate-100 animate-pulse" />)}
+                        </div>
+                    ) : alumnosHoy.length === 0 ? (
+                        <p className="text-slate-400 text-sm text-center py-8">Nadie llegó todavía hoy.</p>
+                    ) : (
+                        <div className="divide-y divide-slate-50">
+                            {SLOTS.filter(s => porTurno[s.key].length > 0).map(slot => (
+                                <div key={slot.key} className="px-4 py-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className={`w-2 h-2 rounded-full ${slot.dot}`} />
+                                        <span className={`text-xs font-bold uppercase tracking-wide ${slot.color}`}>{slot.key}</span>
+                                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.color}`}>{porTurno[slot.key].length}</span>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        {porTurno[slot.key].map((a, i) => (
+                                            <Link
+                                                key={i}
+                                                href={`/alumnos/${a.id}/historial`}
+                                                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] transition-all border border-slate-100"
+                                            >
+                                                <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                                                    {a.nombre?.[0]}{a.apellido?.[0]}
+                                                </div>
+                                                <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</span>
+                                                <span className="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-0.5 rounded-full shrink-0">{a.actividad}</span>
+                                                <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
