@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
-const ROLES_VALIDOS = ['dueño', 'admin', 'profesor', 'registro'];
+const ROLES_VALIDOS = ['dueño', 'admin', 'profesor', 'recepcion', 'registro'];
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
     const auth = await requireGymAuth();

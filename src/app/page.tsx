@@ -289,6 +289,7 @@ export default function HomePage() {
     const userRole = session.user?.role ?? '';
     const esDueño = userRole === 'dueño' || userRole === 'admin';
     const esProfesor = userRole === 'profesor';
+    const esRecepcion = userRole === 'recepcion';
     const visibleCards = NAV_CARDS.filter(c => {
         if (!c.role) return true;
         if (c.role === userRole) return true;
@@ -454,7 +455,7 @@ export default function HomePage() {
                             )}
 
                             {/* Cuotas */}
-                            {!esProfesor && (
+                            {!esProfesor && !esRecepcion && (
                                 <div className={card}>
                                     <p className={`${lbl} mb-3`}>Cuotas · {mesLabel}</p>
                                     <div className="flex items-stretch">
@@ -544,7 +545,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Columna derecha: configuración (desktop) / abajo en mobile */}
-                {!esProfesor && (
+                {!esProfesor && !esRecepcion && (
                     <div className="mt-5 lg:mt-0">
                         <p className={`${lbl} mb-3`}>Configuración</p>
                         <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">

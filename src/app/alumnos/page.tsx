@@ -397,7 +397,7 @@ export default function ListaAlumnosPage() {
                             </svg>
                             Registrar
                         </button>
-                        {session?.user?.role !== 'profesor' && (
+                        {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                             <>
                                 <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
                                 <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>

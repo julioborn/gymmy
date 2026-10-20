@@ -21,6 +21,7 @@ const ROLE_LABEL: Record<string, string> = {
     dueño: 'Dueño',
     admin: 'Admin',
     profesor: 'Profesor',
+    recepcion: 'Recepción',
     registro: 'Registro',
 };
 
@@ -28,6 +29,7 @@ const ROLE_BADGE: Record<string, string> = {
     dueño: 'bg-slate-700 text-white',
     admin: 'bg-slate-100 text-slate-700 border border-slate-200',
     profesor: 'bg-violet-100 text-violet-700 border border-violet-200',
+    recepcion: 'bg-teal-100 text-teal-700 border border-teal-200',
     registro: 'bg-amber-100 text-amber-700 border border-amber-200',
 };
 
@@ -35,6 +37,7 @@ const ROLE_AVATAR: Record<string, string> = {
     dueño: 'bg-slate-700',
     admin: 'bg-slate-800',
     profesor: 'bg-violet-500',
+    recepcion: 'bg-teal-500',
     registro: 'bg-amber-400',
 };
 
@@ -42,6 +45,7 @@ function roleSelectOptions(selected?: string) {
     return [
         { value: 'admin', label: 'Admin — acceso completo' },
         { value: 'profesor', label: 'Profesor — sin finanzas ni estadísticas' },
+        { value: 'recepcion', label: 'Recepción — sin finanzas ni estadísticas' },
         { value: 'registro', label: 'Registro — solo DNI' },
         { value: 'dueño', label: 'Dueño — acceso completo' },
     ]
@@ -52,7 +56,7 @@ function roleSelectOptions(selected?: string) {
         .join('');
 }
 
-const ROLE_ORDER: Record<string, number> = { dueño: 0, admin: 1, profesor: 2, registro: 3 };
+const ROLE_ORDER: Record<string, number> = { dueño: 0, admin: 1, profesor: 2, recepcion: 3, registro: 4 };
 
 export default function EmpleadosPage() {
     const { data: session, status } = useSession();

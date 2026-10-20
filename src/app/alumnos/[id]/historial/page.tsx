@@ -2374,7 +2374,7 @@ export default function HistorialAlumnoPage() {
                     {([
                         { key: 'asistencias' as const, label: 'Asistencias' },
                         { key: 'planes' as const,      label: 'Planes' },
-                        ...(session?.user?.role !== 'profesor' ? [{ key: 'pagos' as const, label: 'Pagos' }] : []),
+                        ...(!['profesor', 'recepcion'].includes(session?.user?.role ?? '') ? [{ key: 'pagos' as const, label: 'Pagos' }] : []),
                     ]).map(({ key, label }) => (
                         <button
                             key={key}
