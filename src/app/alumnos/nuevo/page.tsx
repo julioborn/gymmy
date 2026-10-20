@@ -204,7 +204,7 @@ export default function NuevoAlumnoPage() {
 
                 {/* Objetivo */}
                 <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-                    <SectionHeader title="Objetivo" subtitle="¿Cuál es la motivación del alumno?" />
+                    <SectionHeader title="Objetivo" />
                     <div className="p-5 space-y-2.5">
                         {AREAS.map(a => {
                             const sel = area === a.value;
