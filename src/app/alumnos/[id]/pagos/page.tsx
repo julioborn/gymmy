@@ -1,15 +1,17 @@
 'use client';
 
-
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAlumno } from '@/hooks/useAlumno';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 
 export default function PagosPage() {
     const { id } = useParams();
     const { alumno, loading } = useAlumno(id as string);
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [filtroAnio, setFiltroAnio] = useState('Todos');
@@ -17,6 +19,12 @@ export default function PagosPage() {
     const [orden, setOrden] = useState<'recientes' | 'antiguos'>('recientes');
     const [tarifas, setTarifas] = useState<any[]>([]);
     const [recargo, setRecargo] = useState<number>(0);
+
+    useEffect(() => {
+        if (status !== 'loading' && !['dueño', 'admin'].includes(session?.user?.role ?? '')) {
+            router.push('/');
+        }
+    }, [session, status, router]);
 
     useEffect(() => {
         const fetchTarifas = async () => {

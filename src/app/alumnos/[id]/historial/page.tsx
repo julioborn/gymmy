@@ -2372,10 +2372,10 @@ export default function HistorialAlumnoPage() {
                 {/* Tab nav */}
                 <div className="px-4 sm:px-5 flex border-b border-slate-100">
                     {([
-                        { key: 'asistencias', label: 'Asistencias' },
-                        { key: 'planes',      label: 'Planes' },
-                        { key: 'pagos',       label: 'Pagos' },
-                    ] as const).map(({ key, label }) => (
+                        { key: 'asistencias' as const, label: 'Asistencias' },
+                        { key: 'planes' as const,      label: 'Planes' },
+                        ...(session?.user?.role !== 'profesor' ? [{ key: 'pagos' as const, label: 'Pagos' }] : []),
+                    ]).map(({ key, label }) => (
                         <button
                             key={key}
                             onClick={() => handleTabClick(key)}

@@ -397,8 +397,12 @@ export default function ListaAlumnosPage() {
                             </svg>
                             Registrar
                         </button>
-                        <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
-                        <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>
+                        {session?.user?.role !== 'profesor' && (
+                            <>
+                                <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
+                                <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>
+                            </>
+                        )}
                         {session?.user?.role === 'dueño' && (
                             <button
                                 className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 active:scale-95 text-white px-3 py-1 rounded-full text-[11px] font-semibold transition-all"

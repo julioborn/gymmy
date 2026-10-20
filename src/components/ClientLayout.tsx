@@ -337,6 +337,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         };
 
         if (isDuenoAdmin) return [alumnos, empleados, inicio, finanzas, estadisticas];
+        if (role === 'profesor') return [alumnos, inicio];
         return [alumnos, inicio, miPerfil];
     })();
 
