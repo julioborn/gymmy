@@ -389,7 +389,7 @@ export default function HomePage() {
         const nombreDisplay = capitalize((session.user as any)?.nombre ?? session.user?.username ?? 'Recepción');
 
         return (
-            <div className="max-w-xl mx-auto pt-4 pb-16 px-4">
+            <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
 
                 {/* Banner */}
                 <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden mb-4">
