@@ -103,8 +103,9 @@ export default function EmpleadosPage() {
             html: `
                 <div class="swal-form-body">
                     <div>
-                        <label class="swal-form-label">Usuario</label>
-                        <input id="emp-username" class="swal2-input" placeholder="nombre_usuario" autocomplete="off" />
+                        <label class="swal-form-label">DNI / Número de acceso</label>
+                        <input id="emp-username" class="swal2-input" placeholder="Ej: 11111111" autocomplete="off" />
+                        <p style="font-size:11px;color:#64748b;margin-top:4px;text-align:left">Es el número que usa para iniciar sesión</p>
                     </div>
                     <div>
                         <label class="swal-form-label">Contraseña</label>
@@ -163,8 +164,9 @@ export default function EmpleadosPage() {
             html: `
                 <div class="swal-form-body">
                     <div>
-                        <label class="swal-form-label">Usuario</label>
-                        <input id="edit-username" class="swal2-input" value="${emp.username}" autocomplete="off" />
+                        <label class="swal-form-label">DNI / Número de acceso</label>
+                        <input id="edit-username" class="swal2-input" value="${emp.username}" autocomplete="off" placeholder="Ej: 11111111" />
+                        <p style="font-size:11px;color:#64748b;margin-top:4px;text-align:left">Es el número que usa para iniciar sesión</p>
                     </div>
                     <div>
                         <label class="swal-form-label">Contraseña nueva (opcional)</label>
