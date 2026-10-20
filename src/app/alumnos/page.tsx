@@ -75,8 +75,8 @@ export default function ListaAlumnosPage() {
     const [hoyExpanded, setHoyExpanded] = useState(false);
     const [slotsExpanded, setSlotsExpanded] = useState<Record<string, boolean>>({ mañana: false, siesta: false, tarde: false, noche: false });
 
-    const fetchAlumnos = async () => {
-        setIsLoading(true);
+    const fetchAlumnos = async (silent = false) => {
+        if (!silent) setIsLoading(true);
         try {
             const response = await fetch('/api/alumnos');
             if (!response.ok) throw new Error('Error en la solicitud');
@@ -90,7 +90,7 @@ export default function ListaAlumnosPage() {
         } catch {
             // silenced
         } finally {
-            setIsLoading(false);
+            if (!silent) setIsLoading(false);
         }
     };
 
@@ -102,7 +102,7 @@ export default function ListaAlumnosPage() {
             .catch(() => {});
     }, []);
 
-    usePaymentEvents(fetchAlumnos);
+    usePaymentEvents(() => fetchAlumnos(true));
 
     const fetchTarifas = async () => {
         try {

@@ -74,20 +74,31 @@ export default function LoginPage() {
     async function handleDniSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
-        const clean = dni.replace(/\D/g, '');
-        if (clean.length < 7) { setError('Ingresá tu DNI completo.'); return; }
+        const raw = dni.trim();
+        const hasLetters = /[a-zA-Z]/.test(raw);
+        const clean = raw.replace(/\D/g, '');
+
+        if (!hasLetters && clean.length < 7) { setError('Ingresá tu DNI o usuario.'); return; }
+        if (hasLetters && raw.length < 2) { setError('Ingresá tu usuario.'); return; }
 
         setLoading(true);
         try {
-            // Check staff first (staff can have numeric DNI as username)
-            const staffRes = await fetch(`/api/auth/staff/check?username=${clean}`);
+            // If input has letters it's a staff username — check staff only
+            const staffUsername = hasLetters ? raw : clean;
+            const staffRes = await fetch(`/api/auth/staff/check?username=${encodeURIComponent(staffUsername)}`);
             const staffData = await staffRes.json();
             if (staffData.found) {
-                setStep({ type: 'staff-password', username: clean, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null, nombre: staffData.nombre ?? null, apellido: staffData.apellido ?? null });
+                setStep({ type: 'staff-password', username: staffUsername, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null, nombre: staffData.nombre ?? null, apellido: staffData.apellido ?? null });
                 return;
             }
 
-            // Not staff — try as alumno
+            // Letters but not found as staff
+            if (hasLetters) {
+                setError('Usuario no encontrado. Revisá el usuario o usá tu DNI.');
+                return;
+            }
+
+            // All digits — try as alumno
             const alumnoRes = await fetch(`/api/auth/alumno/check?dni=${clean}`);
             const alumnoData = await alumnoRes.json();
             if (!alumnoData.found) {
@@ -218,15 +229,17 @@ export default function LoginPage() {
                     {step.type === 'identifier' && (
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-7">
-                                <h1 className="text-2xl font-bold text-slate-900">Ingresá tu DNI</h1>
+                                <h1 className="text-2xl font-bold text-slate-900">Ingresá tu DNI o usuario</h1>
                             </div>
                             <form onSubmit={handleDniSubmit} className="space-y-3">
                                 <input
                                     type="text"
-                                    inputMode="numeric"
                                     value={dni}
-                                    onChange={e => setDni(formatDNI(e.target.value))}
-                                    placeholder="00.000.000"
+                                    onChange={e => {
+                                        const v = e.target.value;
+                                        setDni(/[a-zA-Z]/.test(v) ? v : formatDNI(v));
+                                    }}
+                                    placeholder="DNI o usuario"
                                     required
                                     autoFocus
                                     className={inputCls}
