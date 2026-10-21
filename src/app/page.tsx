@@ -116,7 +116,7 @@ export default function HomePage() {
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
-    const [alumnosHoy, setAlumnosHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string; id: string }[]>([]);
+    const [alumnosHoy, setAlumnosHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean }[]>([]);
     const [loadingHoy, setLoadingHoy] = useState(false);
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
@@ -158,7 +158,9 @@ export default function HomePage() {
                 const arg = new Date(Date.now() - 3 * 60 * 60 * 1000);
                 const hoyKey = `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
                 const hoy: typeof alumnosHoy = [];
+                const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
                 for (const al of (data || [])) {
+                    const pagado = (al.pagos || []).some((p: any) => p.mes?.toLowerCase() === mesActual);
                     for (const a of (al.asistencia || [])) {
                         if (!a.presente) continue;
                         const d = new Date(a.fecha);
@@ -167,7 +169,7 @@ export default function HomePage() {
                         if (k !== hoyKey) continue;
                         const hh = da.getUTCHours();
                         const mm = da.getUTCMinutes();
-                        hoy.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`, id: al._id });
+                        hoy.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`, id: al._id, pagado });
                     }
                 }
                 hoy.sort((a, b) => b.hora.localeCompare(a.hora));
@@ -387,6 +389,8 @@ export default function HomePage() {
             { key: 'Noche',  color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-400' },
         ];
         const nombreDisplay = capitalize((session.user as any)?.nombre ?? session.user?.username ?? 'Recepción');
+        const diaHoy = new Date().getDate();
+        const pasoDiez = diaHoy > 10;
 
         return (
             <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
@@ -456,12 +460,22 @@ export default function HomePage() {
                                             <Link
                                                 key={i}
                                                 href={`/alumnos/${a.id}/historial`}
-                                                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] transition-all border border-slate-100"
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-xl active:scale-[0.99] transition-all border ${!a.pagado && pasoDiez ? 'border-red-200 bg-red-50 hover:bg-red-100' : 'border-slate-100 hover:bg-slate-50'}`}
                                             >
-                                                <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                 </div>
-                                                <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</span>
+                                                <span className={`flex-1 text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</span>
+                                                {!a.pagado && (
+                                                    pasoDiez ? (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
+                                                            Debe
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
+                                                    )
+                                                )}
                                                 <span className="text-[10px] bg-slate-100 text-slate-500 font-semibold px-2 py-0.5 rounded-full shrink-0">{a.actividad}</span>
                                                 <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                             </Link>
