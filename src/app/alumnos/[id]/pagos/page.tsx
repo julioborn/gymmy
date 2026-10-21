@@ -18,7 +18,8 @@ export default function PagosPage() {
     const [filtroMetodo, setFiltroMetodo] = useState('Todos');
     const [orden, setOrden] = useState<'recientes' | 'antiguos'>('recientes');
     const [tarifas, setTarifas] = useState<any[]>([]);
-    const [recargo, setRecargo] = useState<number>(0);
+    const [recargoDiez, setRecargoDiez] = useState<number>(0);
+    const [recargoMes, setRecargoMes] = useState<number>(0);
 
     useEffect(() => {
         if (status !== 'loading' && !['dueño', 'admin'].includes(session?.user?.role ?? '')) {
@@ -33,7 +34,8 @@ export default function PagosPage() {
                 const data = await res.json();
                 if (data.ok) {
                     setTarifas(data.tarifas);
-                    setRecargo(data.recargo || 0); // en caso de que venga
+                    setRecargoDiez(data.recargo || 0);
+                    setRecargoMes(data.recargoMes || 0);
                 }
             } catch {
                 // silenced
@@ -131,6 +133,11 @@ export default function PagosPage() {
 
         if (!metodoPago) return;
 
+        const diaActual = new Date().getDate();
+        const recargoRows = [];
+        if (recargoDiez > 0) recargoRows.push(`<div style="margin-top:8px;"><input type="checkbox" id="swal-rec-diez" ${diaActual > 10 ? 'checked' : ''}><label for="swal-rec-diez"> Recargo por día 10+ ($${recargoDiez.toFixed(2)})</label></div>`);
+        if (recargoMes > 0) recargoRows.push(`<div style="margin-top:4px;"><input type="checkbox" id="swal-rec-mes"><label for="swal-rec-mes"> Recargo por mes vencido ($${recargoMes.toFixed(2)})</label></div>`);
+
         const confirmacion = await Swal.fire({
             ...swalBase,
             title: 'Confirmar cobro',
@@ -138,14 +145,14 @@ export default function PagosPage() {
             <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
             <p>Método de pago: <strong>${metodoPago}</strong></p>
             <p>Precio: $${tarifaSeleccionada.valor}</p>
-            <div style="margin-top: 8px;">
-                <input type="checkbox" id="swal-aplicar-recargo" ${new Date().getDate() > 10 ? 'checked' : ''}>
-                <label for="swal-aplicar-recargo"> Aplicar recargo ($${recargo?.toFixed(2) || 0})</label>
-            </div>
+            ${recargoRows.join('')}
         `,
             preConfirm: () => {
-                const checkbox = document.getElementById('swal-aplicar-recargo') as HTMLInputElement;
-                return { aplicarRecargo: checkbox?.checked ?? false };
+                const chkDiez = document.getElementById('swal-rec-diez') as HTMLInputElement | null;
+                const chkMes = document.getElementById('swal-rec-mes') as HTMLInputElement | null;
+                return {
+                    montoRecargo: (chkDiez?.checked ? recargoDiez : 0) + (chkMes?.checked ? recargoMes : 0),
+                };
             },
             icon: 'info',
             showCancelButton: true,
@@ -155,8 +162,7 @@ export default function PagosPage() {
 
         if (!confirmacion.isConfirmed) return;
 
-        const aplicarRecargo = confirmacion.value?.aplicarRecargo;
-        const montoRecargo = aplicarRecargo ? recargo || 0 : 0;
+        const montoRecargo = confirmacion.value?.montoRecargo ?? 0;
         const total = tarifaSeleccionada.valor + montoRecargo;
 
         const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();

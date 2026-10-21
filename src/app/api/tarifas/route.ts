@@ -19,7 +19,8 @@ export async function GET() {
         return NextResponse.json({
             ok: true,
             tarifas,
-            recargo: recargoDoc?.monto || 0,
+            recargo: recargoDoc?.montoDiez || 0,
+            recargoMes: recargoDoc?.montoMes || 0,
         }, { status: 200 });
     } catch {
         return NextResponse.json({ ok: false, message: 'Error al obtener tarifas' }, { status: 500 });
