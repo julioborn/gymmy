@@ -122,6 +122,7 @@ export default function HomePage() {
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
     const [diasData, setDiasData]           = useState<DiaData[]>([]);
     const [diaExpandido, setDiaExpandido]   = useState<string | null>(null);
+    const [openSlots, setOpenSlots]         = useState<Set<string>>(new Set());
     const [loadingHoy, setLoadingHoy]       = useState(false);
     const [horaArg, setHoraArg]             = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
@@ -522,22 +523,17 @@ export default function HomePage() {
                             return (
                                 <button
                                     key={dia.key}
-                                    onClick={() => setDiaExpandido(sel ? null : dia.key)}
-                                    className={`flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl transition-all active:scale-95 ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
+                                    onClick={() => { setDiaExpandido(sel ? null : dia.key); setOpenSlots(new Set()); }}
+                                    className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl transition-all active:scale-95 min-w-[64px] ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
                                 >
-                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${sel ? 'text-slate-400' : 'text-slate-400'}`}>{dia.labelDay}</span>
-                                    <span className={`text-2xl font-bold leading-none ${sel ? 'text-white' : 'text-slate-800'}`}>{dia.labelNum}</span>
-                                    {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                                    {(!isToday || sel) && (
-                                        <span className={`text-[10px] font-bold min-w-[18px] text-center px-1.5 py-0.5 rounded-full ${total > 0 ? (sel ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>
-                                            {total > 0 ? total : '·'}
-                                        </span>
-                                    )}
-                                    {isToday && sel && (
-                                        <span className="text-[10px] font-bold min-w-[18px] text-center px-1.5 py-0.5 rounded-full bg-white/20 text-white">
-                                            {total > 0 ? total : '·'}
-                                        </span>
-                                    )}
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${sel ? 'text-slate-400' : 'text-slate-400'}`}>{dia.labelDay}</span>
+                                    <span className={`text-3xl font-bold leading-none ${sel ? 'text-white' : 'text-slate-800'}`}>{dia.labelNum}</span>
+                                    {isToday && !sel
+                                        ? <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                        : <span className={`text-xs font-bold ${total > 0 ? (sel ? 'text-white/70' : 'text-slate-400') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>
+                                            {total > 0 ? total : '—'}
+                                          </span>
+                                    }
                                 </button>
                             );
                         })
@@ -566,14 +562,22 @@ export default function HomePage() {
                                 {(() => {
                                     const bySlot: Record<Slot, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
                                     for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora) as Slot].push(a);
-                                    return SLOTS.filter(s => bySlot[s.key].length > 0).map(slot => (
+                                    return SLOTS.filter(s => bySlot[s.key].length > 0).map(slot => {
+                                        const slotOpen = openSlots.has(slot.key);
+                                        return (
                                         <div key={slot.key} className="border-b border-slate-50 last:border-0">
-                                            <div className={`flex items-center gap-2 px-4 py-2 ${slot.bg}`}>
+                                            <button
+                                                onClick={() => setOpenSlots(prev => { const n = new Set(prev); slotOpen ? n.delete(slot.key) : n.add(slot.key); return n; })}
+                                                className={`w-full flex items-center gap-2 px-4 py-2.5 ${slot.bg}`}
+                                            >
                                                 <span className={`w-2 h-2 rounded-full ${slot.dot}`} />
                                                 <span className={`text-xs font-bold uppercase tracking-wide ${slot.color}`}>{slot.key}</span>
                                                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 ${slot.color}`}>{bySlot[slot.key].length}</span>
-                                            </div>
-                                            <div className="divide-y divide-slate-50">
+                                                <svg className={`ml-auto w-4 h-4 ${slot.color} transition-transform duration-200 ${slotOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                            </button>
+                                            {slotOpen && <div className="divide-y divide-slate-50">
                                                 {bySlot[slot.key].map((a, i) => (
                                                     <Link
                                                         key={i}
@@ -600,9 +604,10 @@ export default function HomePage() {
                                                         <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                     </Link>
                                                 ))}
-                                            </div>
+                                            </div>}
                                         </div>
-                                    ));
+                                        );
+                                    });
                                 })()}
                                 {diaActivo.depaso.length > 0 && (
                                     <div className="border-t border-slate-100">
