@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useFCM } from '@/hooks/useFCM';
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import Swal from 'sweetalert2';
-import { swalDanger } from '@/utils/swalConfig';
+import { swalDanger, swalBase, swalNotify } from '@/utils/swalConfig';
 
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
@@ -218,6 +218,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     }, [pathname, router]);
 
     const [gymTema, setGymTema] = useState<GymTema | null>(null);
+    const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
 
     // Logo flip animation
     const [logoShown, setLogoShown]       = useState<string | null>(null);
@@ -227,9 +228,64 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         if (!sessionReady || !session?.user?.gimnasioId) return;
         fetch('/api/gimnasio/tema')
             .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) setGymTema(data); })
+            .then(data => {
+                if (data) {
+                    setGymTema(data);
+                    if (data.actividadesRecepcion?.length) setActividadesRecepcion(data.actividadesRecepcion);
+                }
+            })
             .catch(() => {});
     }, [sessionReady, session?.user?.gimnasioId]);
+
+    const handleAlumnoDePasoRecepcion = async () => {
+        const actividadesDisp = actividadesRecepcion.length > 0 ? actividadesRecepcion : ['Musculación'];
+        const { value: datos } = await Swal.fire({
+            ...swalBase,
+            title: 'Alumno de paso',
+            html: `
+                <div class="swal-form-body">
+                    <div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div>
+                    <div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div>
+                    <div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div>
+                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
+                    <div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Registrar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim();
+                const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim();
+                if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; }
+                return {
+                    nombre,
+                    apellido,
+                    actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value,
+                    monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0,
+                    metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value,
+                };
+            },
+        });
+        if (!datos) return;
+        try {
+            const res = await fetch('/api/alumnos-de-paso', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno de paso registrado' });
+                window.dispatchEvent(new CustomEvent('alumno-de-paso-registrado'));
+            } else {
+                const err = await res.json();
+                Swal.fire({ ...swalNotify, icon: 'error', title: err.error || 'Error al registrar' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar' });
+        }
+    };
 
     const navBg   = gymTema?.temaFondo  ?? '#0a0a0a';
     const acento  = gymTema?.temaAcento ?? '#10b981';
@@ -466,6 +522,44 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 </div>
             </header>
 
+            {/* ── RECEPCION SUBHEADER ── */}
+            {role === 'recepcion' && (
+                <div
+                    className="fixed left-0 right-0 z-30 bg-white border-b border-slate-200 px-3 py-2"
+                    style={{ top: 'calc(88px + env(safe-area-inset-top, 0px))' }}
+                >
+                    <div className="max-w-7xl mx-auto flex gap-2">
+                        <Link
+                            href="/alumnos"
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
+                        >
+                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
+                            <span>Ver alumnos</span>
+                        </Link>
+                        <Link
+                            href="/alumnos/nuevo"
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
+                        >
+                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            <span>Nuevo alumno</span>
+                        </Link>
+                        <button
+                            onClick={handleAlumnoDePasoRecepcion}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
+                        >
+                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                            <span>De paso</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* ── PULL-TO-REFRESH INDICATOR ── */}
             {(pullY > 4 || isRefreshing) && (
                 <div
@@ -531,7 +625,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             <main
                 className={`flex-1 p-3 bg-slate-50 ${showNav && !isRegistroPage ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
-                    marginTop: isRegistroPage ? 0 : 'calc(88px + env(safe-area-inset-top, 0px))',
+                    marginTop: isRegistroPage ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,

@@ -202,6 +202,13 @@ export default function HomePage() {
     useEffect(() => { fetchAlumnosDePasoHoy(); }, [session]);
 
     useEffect(() => {
+        const handler = () => fetchAlumnosDePasoHoy();
+        window.addEventListener('alumno-de-paso-registrado', handler);
+        return () => window.removeEventListener('alumno-de-paso-registrado', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
         fetch('/api/tarifas')
             .then(r => r.json())
@@ -465,10 +472,8 @@ export default function HomePage() {
         const diaHoy = new Date().getDate();
         const pasoDiez = diaHoy > 10;
 
-        const handleAlumnoDePaso = handleAlumnoDePasoGlobal;
-
         return (
-            <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8" style={{ paddingBottom: '5.5rem' }}>
+            <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8 pb-6">
 
                 {/* Banner */}
                 <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden mb-4">
@@ -483,30 +488,6 @@ export default function HomePage() {
                             <p className="text-3xl font-bold text-white leading-none">{alumnosHoy.length + alumnosDePasoHoy.length}</p>
                             <p className="text-slate-400 text-[11px] mt-1">hoy</p>
                         </div>
-                    </div>
-                </div>
-
-                {/* Barra de acciones fija en la parte inferior */}
-                <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 bg-slate-50/90 backdrop-blur-sm border-t border-slate-200">
-                    <div className="max-w-7xl mx-auto grid grid-cols-3 gap-2">
-                        <Link href="/alumnos" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                            </svg>
-                            Ver alumnos
-                        </Link>
-                        <Link href="/alumnos/nuevo" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            Nuevo alumno
-                        </Link>
-                        <button onClick={handleAlumnoDePaso} className="flex flex-col items-center justify-center gap-1.5 bg-teal-50 border border-teal-200 rounded-xl py-2.5 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 active:scale-[0.98] transition-all">
-                            <svg className="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                            </svg>
-                            De paso
-                        </button>
                     </div>
                 </div>
 
