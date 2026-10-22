@@ -165,13 +165,17 @@ export default function HomePage() {
             fetch('/api/alumnos-de-paso').then(r => r.json()),
         ]).then(([alumnosData, depasosData]) => {
             const nowArg = new Date(Date.now() + ARG);
+            const todayKey = `${nowArg.getUTCFullYear()}-${String(nowArg.getUTCMonth()+1).padStart(2,'0')}-${String(nowArg.getUTCDate()).padStart(2,'0')}`;
+            const dow = nowArg.getUTCDay(); // 0=dom..6=sáb
+            const daysToMon = dow === 0 ? 6 : dow - 1;
+            const monday = new Date(Date.UTC(nowArg.getUTCFullYear(), nowArg.getUTCMonth(), nowArg.getUTCDate() - daysToMon));
+            const WEEK_LABELS = ['LUN','MAR','MIÉ','JUE','VIE'];
             const dias: DiaData[] = [];
-            for (let i = 0; i < 10; i++) {
-                const d = new Date(Date.UTC(nowArg.getUTCFullYear(), nowArg.getUTCMonth(), nowArg.getUTCDate() - i));
+            for (let i = 0; i < 5; i++) {
+                const d = new Date(monday.getTime() + i * 86400000);
                 const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-                const labelDay = i === 0 ? 'HOY' : i === 1 ? 'AYER' : d.toLocaleDateString('es-AR', { weekday: 'short' }).replace('.','').toUpperCase();
                 const fechaLarga = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-                dias.push({ key, labelDay, labelNum: d.getUTCDate(), fechaLarga, alumnos: [], depaso: [] });
+                dias.push({ key, labelDay: WEEK_LABELS[i], labelNum: d.getUTCDate(), fechaLarga, alumnos: [], depaso: [] });
             }
             for (const al of (alumnosData || [])) {
                 const pagado = (al.pagos || []).some((p: any) => p.mes?.toLowerCase() === mesActual);
@@ -196,7 +200,7 @@ export default function HomePage() {
             }
             dias.forEach(d => d.depaso.sort((a, b) => b.hora.localeCompare(a.hora)));
             setDiasData(dias);
-            setDiaExpandido(dias[0].key);
+            setDiaExpandido(todayKey);
         })
         .catch(() => {})
         .finally(() => setLoadingHoy(false));
@@ -215,7 +219,7 @@ export default function HomePage() {
         if (session?.user?.role !== 'recepcion') return;
         const tick = () => {
             const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
-            setHoraArg(`${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`);
+            setHoraArg(`${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`);
         };
         tick();
         const id = setInterval(tick, 1000);
@@ -468,8 +472,26 @@ export default function HomePage() {
     if (esRecepcion) {
         const diaHoy = new Date().getDate();
         const pasoDiez = diaHoy > 10;
+        const ARG_OFF = -3 * 60 * 60 * 1000;
+        const nowArgUI = new Date(Date.now() + ARG_OFF);
+        const todayKey = `${nowArgUI.getUTCFullYear()}-${String(nowArgUI.getUTCMonth()+1).padStart(2,'0')}-${String(nowArgUI.getUTCDate()).padStart(2,'0')}`;
         const diaActivo = diasData.find(d => d.key === diaExpandido) ?? null;
         const totalActivo = diaActivo ? diaActivo.alumnos.length + diaActivo.depaso.length : 0;
+
+        const slotOf = (hora: string) => {
+            const h = parseInt(hora.split(':')[0]);
+            if (h < 12) return 'Mañana';
+            if (h < 15) return 'Siesta';
+            if (h < 20) return 'Tarde';
+            return 'Noche';
+        };
+        type Slot = 'Mañana' | 'Siesta' | 'Tarde' | 'Noche';
+        const SLOTS: { key: Slot; color: string; bg: string; dot: string }[] = [
+            { key: 'Mañana', color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-400'  },
+            { key: 'Siesta', color: 'text-orange-700', bg: 'bg-orange-50', dot: 'bg-orange-400' },
+            { key: 'Tarde',  color: 'text-sky-700',    bg: 'bg-sky-50',    dot: 'bg-sky-400'    },
+            { key: 'Noche',  color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-400' },
+        ];
 
         return (
             <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8 pb-6">
@@ -483,37 +505,46 @@ export default function HomePage() {
                             <p className="text-slate-400 text-xs mt-0.5">{fmtDate()}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-3xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--:--'}</p>
+                            <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--'}</p>
                             <p className="text-slate-600 text-[10px] mt-1">hora argentina</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Selector de días */}
+                {/* Selector de días (lun–vie) */}
                 <div className="flex gap-2 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: 'none' }}>
                     {loadingHoy && diasData.length === 0
                         ? [1,2,3,4,5].map(i => <div key={i} className="flex-shrink-0 w-16 h-20 rounded-2xl bg-slate-200 animate-pulse" />)
                         : diasData.map(dia => {
                             const total = dia.alumnos.length + dia.depaso.length;
                             const sel = diaExpandido === dia.key;
+                            const isToday = dia.key === todayKey;
                             return (
                                 <button
                                     key={dia.key}
                                     onClick={() => setDiaExpandido(sel ? null : dia.key)}
-                                    className={`flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2.5 rounded-2xl transition-all active:scale-95 ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
+                                    className={`flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl transition-all active:scale-95 ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
                                 >
                                     <span className={`text-[9px] font-bold uppercase tracking-widest ${sel ? 'text-slate-400' : 'text-slate-400'}`}>{dia.labelDay}</span>
                                     <span className={`text-2xl font-bold leading-none ${sel ? 'text-white' : 'text-slate-800'}`}>{dia.labelNum}</span>
-                                    <span className={`text-[10px] font-bold min-w-[18px] text-center px-1.5 py-0.5 rounded-full ${total > 0 ? (sel ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>
-                                        {total > 0 ? total : '·'}
-                                    </span>
+                                    {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                                    {(!isToday || sel) && (
+                                        <span className={`text-[10px] font-bold min-w-[18px] text-center px-1.5 py-0.5 rounded-full ${total > 0 ? (sel ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>
+                                            {total > 0 ? total : '·'}
+                                        </span>
+                                    )}
+                                    {isToday && sel && (
+                                        <span className="text-[10px] font-bold min-w-[18px] text-center px-1.5 py-0.5 rounded-full bg-white/20 text-white">
+                                            {total > 0 ? total : '·'}
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })
                     }
                 </div>
 
-                {/* Lista del día seleccionado */}
+                {/* Lista del día seleccionado con grupos por turno */}
                 {diaActivo && (
                     <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
                         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
@@ -531,45 +562,71 @@ export default function HomePage() {
                         ) : totalActivo === 0 ? (
                             <p className="text-slate-400 text-sm text-center py-10">Sin asistentes registrados.</p>
                         ) : (
-                            <div className="divide-y divide-slate-50">
-                                {diaActivo.alumnos.map((a, i) => (
-                                    <Link
-                                        key={i}
-                                        href={`/alumnos/${a.id}/historial`}
-                                        className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}
-                                    >
-                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                            <div>
+                                {(() => {
+                                    const bySlot: Record<Slot, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+                                    for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora) as Slot].push(a);
+                                    return SLOTS.filter(s => bySlot[s.key].length > 0).map(slot => (
+                                        <div key={slot.key} className="border-b border-slate-50 last:border-0">
+                                            <div className={`flex items-center gap-2 px-4 py-2 ${slot.bg}`}>
+                                                <span className={`w-2 h-2 rounded-full ${slot.dot}`} />
+                                                <span className={`text-xs font-bold uppercase tracking-wide ${slot.color}`}>{slot.key}</span>
+                                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 ${slot.color}`}>{bySlot[slot.key].length}</span>
+                                            </div>
+                                            <div className="divide-y divide-slate-50">
+                                                {bySlot[slot.key].map((a, i) => (
+                                                    <Link
+                                                        key={i}
+                                                        href={`/alumnos/${a.id}/historial`}
+                                                        className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
+                                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
+                                                            <p className="text-[10px] text-slate-400">{a.actividad}</p>
+                                                        </div>
+                                                        {!a.pagado && (
+                                                            pasoDiez ? (
+                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
+                                                                    Debe
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
+                                                            )
+                                                        )}
+                                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                    </Link>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
-                                            <p className="text-[10px] text-slate-400">{a.actividad}</p>
+                                    ));
+                                })()}
+                                {diaActivo.depaso.length > 0 && (
+                                    <div className="border-t border-slate-100">
+                                        <div className="flex items-center gap-2 px-4 py-2 bg-teal-50">
+                                            <span className="w-2 h-2 rounded-full bg-teal-400" />
+                                            <span className="text-xs font-bold uppercase tracking-wide text-teal-700">De paso</span>
+                                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 text-teal-700">{diaActivo.depaso.length}</span>
                                         </div>
-                                        {!a.pagado && (
-                                            pasoDiez ? (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
-                                                    Debe
-                                                </span>
-                                            ) : (
-                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
-                                            )
-                                        )}
-                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
-                                    </Link>
-                                ))}
-                                {diaActivo.depaso.map((a, i) => (
-                                    <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 bg-teal-50/50 hover:bg-teal-50">
-                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
-                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                                        <div className="divide-y divide-slate-50">
+                                            {diaActivo.depaso.map((a, i) => (
+                                                <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50/50">
+                                                    <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
+                                                        {a.nombre?.[0]}{a.apellido?.[0]}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p>
+                                                        <p className="text-[10px] text-teal-600">{a.actividad}</p>
+                                                    </div>
+                                                    <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p>
-                                            <p className="text-[10px] text-teal-600">De paso · {a.actividad}</p>
-                                        </div>
-                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         )}
                     </div>
