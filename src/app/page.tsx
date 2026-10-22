@@ -117,6 +117,7 @@ export default function HomePage() {
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
     const [alumnosHoy, setAlumnosHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean }[]>([]);
+    const [alumnosDePasoHoy, setAlumnosDePasoHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string }[]>([]);
     const [loadingHoy, setLoadingHoy] = useState(false);
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
@@ -179,8 +180,26 @@ export default function HomePage() {
             .finally(() => setLoadingHoy(false));
     };
 
+    const fetchAlumnosDePasoHoy = () => {
+        if (!session || !['recepcion', 'dueño', 'admin'].includes(session.user?.role ?? '')) return;
+        fetch('/api/alumnos-de-paso?hoy=1')
+            .then(r => r.json())
+            .then(d => {
+                if (!d.ok) return;
+                const lista = (d.registros || []).map((r: any) => {
+                    const fecha = new Date(r.fecha);
+                    const argFecha = new Date(fecha.getTime() - 3 * 60 * 60 * 1000);
+                    const hh = argFecha.getUTCHours();
+                    const mm = argFecha.getUTCMinutes();
+                    return { nombre: r.nombre, apellido: r.apellido, actividad: r.actividad, hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}` };
+                });
+                setAlumnosDePasoHoy(lista);
+            })
+            .catch(() => {});
+    };
+
     useEffect(() => { fetchAlumnosHoy(); }, [session]);
-    usePaymentEvents(() => { if (session?.user?.role === 'recepcion') fetchAlumnosHoy(); });
+    useEffect(() => { fetchAlumnosDePasoHoy(); }, [session]);
 
     useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
@@ -345,7 +364,61 @@ export default function HomePage() {
     const sub = 'text-xs text-slate-500 mt-1';
     const mesLabel = data ? capitalize(data.mes) : '';
 
+    const handleAlumnoDePasoGlobal = async () => {
+        const actividadesDisp = actividadesRecepcion.length > 0 ? actividadesRecepcion : ['Musculación'];
+        const { value: datos } = await Swal.fire({
+            ...swalBase,
+            title: 'Alumno de paso',
+            html: `
+                <div class="swal-form-body">
+                    <div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div>
+                    <div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div>
+                    <div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div>
+                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
+                    <div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Registrar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim();
+                const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim();
+                if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; }
+                return {
+                    nombre,
+                    apellido,
+                    actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value,
+                    monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0,
+                    metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value,
+                };
+            },
+        });
+        if (!datos) return;
+        try {
+            const res = await fetch('/api/alumnos-de-paso', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno de paso registrado' });
+                fetchAlumnosDePasoHoy();
+            } else {
+                const err = await res.json();
+                Swal.fire({ ...swalNotify, icon: 'error', title: err.error || 'Error al registrar' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar' });
+        }
+    };
+
     const configItems = [
+        {
+            label: 'Alumno de paso', sub: 'Registrar ingreso del día', onClick: handleAlumnoDePasoGlobal,
+            icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>,
+        },
         {
             label: 'Cuotas', sub: 'Precios por días/semana', onClick: handleConfiguracionTarifas,
             icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>,
@@ -392,6 +465,8 @@ export default function HomePage() {
         const diaHoy = new Date().getDate();
         const pasoDiez = diaHoy > 10;
 
+        const handleAlumnoDePaso = handleAlumnoDePasoGlobal;
+
         return (
             <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
 
@@ -417,19 +492,25 @@ export default function HomePage() {
                 </div>
 
                 {/* Accesos rápidos */}
-                <div className="flex gap-3 mb-4">
-                    <Link href="/alumnos" className="flex-1 flex items-center justify-center gap-2 bg-white border border-black/[0.07] rounded-xl py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                    <Link href="/alumnos" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                         </svg>
                         Ver alumnos
                     </Link>
-                    <Link href="/alumnos/nuevo" className="flex-1 flex items-center justify-center gap-2 bg-white border border-black/[0.07] rounded-xl py-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <Link href="/alumnos/nuevo" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         Nuevo alumno
                     </Link>
+                    <button onClick={handleAlumnoDePaso} className="flex flex-col items-center justify-center gap-1.5 bg-teal-50 border border-teal-200 rounded-xl py-3 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 active:scale-[0.98] transition-all">
+                        <svg className="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                        De paso
+                    </button>
                 </div>
 
                 {/* Hoy en el gym */}
@@ -483,6 +564,28 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+                    {/* Alumnos de paso de hoy */}
+                    {alumnosDePasoHoy.length > 0 && (
+                        <div className="border-t border-slate-100 px-4 py-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="w-2 h-2 rounded-full bg-teal-400" />
+                                <span className="text-xs font-bold uppercase tracking-wide text-teal-700">De paso</span>
+                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-teal-50 text-teal-700">{alumnosDePasoHoy.length}</span>
+                            </div>
+                            <div className="space-y-1.5">
+                                {alumnosDePasoHoy.map((a, i) => (
+                                    <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-xl border border-teal-100 bg-teal-50/50">
+                                        <div className="w-7 h-7 rounded-lg bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
+                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                                        </div>
+                                        <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</span>
+                                        <span className="text-[10px] bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full shrink-0">{a.actividad}</span>
+                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
