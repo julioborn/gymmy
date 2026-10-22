@@ -362,37 +362,76 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
             >
                 <div className="relative h-[88px] flex items-center justify-between px-4">
+                    {/* Hamburger — left side, all screen sizes when menu is shown */}
                     {showMenu ? (
-                        <button
-                            onClick={async () => {
-                                const first = await Swal.fire({
-                                    ...swalDanger,
-                                    title: 'Cerrar sesión',
-                                    text: '¿Querés salir de tu cuenta?',
-                                    icon: 'question',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Salir',
-                                    cancelButtonText: 'Cancelar',
-                                });
-                                if (!first.isConfirmed) return;
-                                const second = await Swal.fire({
-                                    ...swalDanger,
-                                    title: '¿Seguro?',
-                                    text: 'Se cerrará la sesión en este dispositivo.',
-                                    icon: 'warning',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Sí, cerrar',
-                                    cancelButtonText: 'Cancelar',
-                                });
-                                if (second.isConfirmed) signOut();
-                            }}
-                            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
-                            aria-label="Cerrar sesión"
-                        >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                            </svg>
-                        </button>
+                        <div className="relative" ref={desktopMenuRef}>
+                            <button
+                                type="button"
+                                onClick={() => setDesktopMenuOpen(v => !v)}
+                                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
+                                aria-label="Menú"
+                            >
+                                {desktopMenuOpen ? (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                    </svg>
+                                )}
+                            </button>
+
+                            {desktopMenuOpen && (
+                                <div
+                                    className="absolute left-0 top-full mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden border border-white/10 z-50"
+                                    style={{ background: navBg }}
+                                >
+                                    {navItems.map(item => {
+                                        const active = item.isActive(pathname);
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={() => setDesktopMenuOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/10"
+                                                style={{ color: active ? (acento2 ?? acento) : 'rgba(255,255,255,0.7)' }}
+                                            >
+                                                {item.icon}
+                                                <span className="text-sm font-semibold">{item.label}</span>
+                                                {active && (
+                                                    <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: acento2 ?? acento }} />
+                                                )}
+                                            </Link>
+                                        );
+                                    })}
+                                    <div className="border-t border-white/10">
+                                        <button
+                                            onClick={async () => {
+                                                setDesktopMenuOpen(false);
+                                                const { isConfirmed } = await Swal.fire({
+                                                    ...swalDanger,
+                                                    title: 'Cerrar sesión',
+                                                    text: '¿Querés salir de tu cuenta?',
+                                                    icon: 'question',
+                                                    showCancelButton: true,
+                                                    confirmButtonText: 'Salir',
+                                                    cancelButtonText: 'Cancelar',
+                                                });
+                                                if (isConfirmed) signOut();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/10 text-left"
+                                            style={{ color: '#f87171' }}
+                                        >
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                            </svg>
+                                            <span className="text-sm font-semibold">Cerrar sesión</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         <div className="w-8" />
                     )}
@@ -418,62 +457,12 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         />
                     </Link>
 
-                    <div className="flex items-center gap-3">
-                        {/* Online dot */}
-                        <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
-                            style={isOnline
-                                ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
-                                : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
-                            } />
-
-                        {/* Hamburger — desktop only */}
-                        {showNav && navItems.length > 0 && (
-                            <div className="relative hidden sm:block" ref={desktopMenuRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => setDesktopMenuOpen(v => !v)}
-                                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
-                                    aria-label="Menú"
-                                >
-                                    {desktopMenuOpen ? (
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                        </svg>
-                                    )}
-                                </button>
-
-                                {desktopMenuOpen && (
-                                    <div
-                                        className="absolute right-0 top-full mt-2 w-48 rounded-2xl shadow-2xl overflow-hidden border border-white/10 z-50"
-                                        style={{ background: navBg }}
-                                    >
-                                        {navItems.map(item => {
-                                            const active = item.isActive(pathname);
-                                            return (
-                                                <Link
-                                                    key={item.href}
-                                                    href={item.href}
-                                                    onClick={() => setDesktopMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/10"
-                                                    style={{ color: active ? (acento2 ?? acento) : 'rgba(255,255,255,0.7)' }}
-                                                >
-                                                    {item.icon}
-                                                    <span className="text-sm font-semibold">{item.label}</span>
-                                                    {active && (
-                                                        <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: acento2 ?? acento }} />
-                                                    )}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                    {/* Online dot — right side */}
+                    <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
+                        style={isOnline
+                            ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
+                            : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
+                        } />
                 </div>
             </header>
 

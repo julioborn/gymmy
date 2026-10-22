@@ -468,7 +468,7 @@ export default function HomePage() {
         const handleAlumnoDePaso = handleAlumnoDePasoGlobal;
 
         return (
-            <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
+            <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8" style={{ paddingBottom: '5.5rem' }}>
 
                 {/* Banner */}
                 <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden mb-4">
@@ -476,41 +476,38 @@ export default function HomePage() {
                     <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-20 bg-teal-400" />
                     <div className="relative flex items-center justify-between">
                         <div>
-                            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">{getGreeting()}</p>
-                            <h1 className="text-xl font-bold text-white mt-0.5">{nombreDisplay}</h1>
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="bg-teal-500/20 text-teal-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Recepción</span>
-                                <span className="text-slate-600 text-[10px]">·</span>
-                                <span className="text-slate-500 text-[10px]">{fmtDate()}</span>
-                            </div>
+                            <h1 className="text-2xl font-bold text-white">Recepción</h1>
+                            <p className="text-slate-500 text-[11px] mt-1">{fmtDate()}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-3xl font-bold text-white leading-none">{alumnosHoy.length}</p>
+                            <p className="text-3xl font-bold text-white leading-none">{alumnosHoy.length + alumnosDePasoHoy.length}</p>
                             <p className="text-slate-400 text-[11px] mt-1">hoy</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Accesos rápidos */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                    <Link href="/alumnos" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                        </svg>
-                        Ver alumnos
-                    </Link>
-                    <Link href="/alumnos/nuevo" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
-                        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                        Nuevo alumno
-                    </Link>
-                    <button onClick={handleAlumnoDePaso} className="flex flex-col items-center justify-center gap-1.5 bg-teal-50 border border-teal-200 rounded-xl py-3 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 active:scale-[0.98] transition-all">
-                        <svg className="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                        </svg>
-                        De paso
-                    </button>
+                {/* Barra de acciones fija en la parte inferior */}
+                <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 bg-slate-50/90 backdrop-blur-sm border-t border-slate-200">
+                    <div className="max-w-7xl mx-auto grid grid-cols-3 gap-2">
+                        <Link href="/alumnos" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
+                            Ver alumnos
+                        </Link>
+                        <Link href="/alumnos/nuevo" className="flex flex-col items-center justify-center gap-1.5 bg-white border border-black/[0.07] rounded-xl py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all">
+                            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Nuevo alumno
+                        </Link>
+                        <button onClick={handleAlumnoDePaso} className="flex flex-col items-center justify-center gap-1.5 bg-teal-50 border border-teal-200 rounded-xl py-2.5 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 active:scale-[0.98] transition-all">
+                            <svg className="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                            De paso
+                        </button>
+                    </div>
                 </div>
 
                 {/* Hoy en el gym */}
