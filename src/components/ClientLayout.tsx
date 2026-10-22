@@ -525,10 +525,10 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             {/* ── RECEPCION SUBHEADER ── */}
             {role === 'recepcion' && !isRegistroPage && !isLoginPage && (
                 <div
-                    className="fixed left-0 right-0 z-30 bg-[#111] py-2"
+                    className="fixed left-0 right-0 z-30 bg-[#111] py-2 px-3"
                     style={{ top: 'calc(88px + env(safe-area-inset-top, 0px))' }}
                 >
-                    <div className="max-w-7xl mx-auto px-7 lg:px-11 flex gap-2">
+                    <div className="max-w-7xl mx-auto px-4 lg:px-8 flex gap-2">
                         <Link
                             href="/alumnos"
                             className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
