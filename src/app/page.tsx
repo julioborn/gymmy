@@ -119,6 +119,7 @@ export default function HomePage() {
     const [alumnosHoy, setAlumnosHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean }[]>([]);
     const [alumnosDePasoHoy, setAlumnosDePasoHoy] = useState<{ nombre: string; apellido: string; actividad: string; hora: string }[]>([]);
     const [loadingHoy, setLoadingHoy] = useState(false);
+    const [openSlots, setOpenSlots] = useState<Set<string>>(new Set());
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
         if (typeof window === 'undefined') return true;
@@ -507,14 +508,26 @@ export default function HomePage() {
                         <p className="text-slate-400 text-sm text-center py-8">Nadie llegó todavía hoy.</p>
                     ) : (
                         <div className="divide-y divide-slate-50">
-                            {SLOTS.filter(s => porTurno[s.key].length > 0).map(slot => (
+                            {SLOTS.filter(s => porTurno[s.key].length > 0).map(slot => {
+                                const isOpen = openSlots.has(slot.key);
+                                return (
                                 <div key={slot.key} className="px-4 py-3">
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <button
+                                        onClick={() => setOpenSlots(prev => {
+                                            const next = new Set(prev);
+                                            if (next.has(slot.key)) next.delete(slot.key); else next.add(slot.key);
+                                            return next;
+                                        })}
+                                        className="w-full flex items-center gap-2 mb-2"
+                                    >
                                         <span className={`w-2 h-2 rounded-full ${slot.dot}`} />
                                         <span className={`text-xs font-bold uppercase tracking-wide ${slot.color}`}>{slot.key}</span>
                                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.color}`}>{porTurno[slot.key].length}</span>
-                                    </div>
-                                    <div className="space-y-1.5">
+                                        <svg className={`ml-auto w-3.5 h-3.5 ${slot.color} transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </button>
+                                    {isOpen && <div className="space-y-1.5">
                                         {porTurno[slot.key].map((a, i) => (
                                             <Link
                                                 key={i}
@@ -539,9 +552,10 @@ export default function HomePage() {
                                                 <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                             </Link>
                                         ))}
-                                    </div>
+                                    </div>}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                     {/* Alumnos de paso de hoy */}
