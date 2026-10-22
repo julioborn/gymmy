@@ -523,7 +523,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             </header>
 
             {/* ── RECEPCION SUBHEADER ── */}
-            {role === 'recepcion' && (
+            {role === 'recepcion' && !isRegistroPage && !isLoginPage && (
                 <div
                     className="fixed left-0 right-0 z-30 bg-white border-b border-slate-200 px-3 py-2"
                     style={{ top: 'calc(88px + env(safe-area-inset-top, 0px))' }}
