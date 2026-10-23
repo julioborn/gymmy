@@ -189,7 +189,8 @@ export default function ListaAlumnosPage() {
 
     const alumnosFiltrados = alumnos
         .filter((alumno) => {
-            const coincideBusqueda = alumno.nombre.toLowerCase().includes(busqueda.toLowerCase()) || alumno.dni.includes(busqueda);
+            const q = busqueda.toLowerCase();
+            const coincideBusqueda = alumno.nombre.toLowerCase().includes(q) || alumno.apellido.toLowerCase().includes(q) || alumno.dni.includes(busqueda);
             const coincideLetraApellido = filtroLetraApellido ? alumno.apellido.startsWith(filtroLetraApellido) : true;
             const coincideDiasEntrena = filtroDiasEntrena
                 ? alumno.diasEntrenaSemana === parseInt(filtroDiasEntrena)
@@ -430,7 +431,7 @@ export default function ListaAlumnosPage() {
             </div>
 
             {/* Hoy en el gimnasio */}
-            <div className={card}>
+            <div className={`${card} mb-4`}>
                 <button
                     onClick={() => setHoyExpanded(v => !v)}
                     className="w-full flex items-center justify-between px-4 py-3 sm:px-5"
