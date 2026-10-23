@@ -507,7 +507,6 @@ export default function HomePage() {
                         </div>
                         <div className="text-right">
                             <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--'}</p>
-                            <p className="text-slate-600 text-[10px] mt-1">hora argentina</p>
                         </div>
                     </div>
                 </div>

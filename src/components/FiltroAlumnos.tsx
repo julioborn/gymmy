@@ -19,6 +19,9 @@ const Chevron = () => (
     </svg>
 );
 
+const selectCls = "w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer";
+const labelCls = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 pl-0.5";
+
 export default function FiltrosAlumnos({
     busqueda,
     setBusqueda,
@@ -45,7 +48,7 @@ export default function FiltrosAlumnos({
                 </svg>
                 <input
                     type="text"
-                    placeholder="Buscar por nombre o documento..."
+                    placeholder="Buscar por nombre, apellido o documento..."
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                     className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:bg-white transition-colors"
@@ -62,72 +65,69 @@ export default function FiltrosAlumnos({
                 )}
             </div>
 
-            {/* Selects */}
-            <div className="flex gap-2 items-center">
-                <div className="relative flex-1">
-                    <select
-                        value={filtroPago}
-                        onChange={(e) => setFiltroPago(e.target.value)}
-                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                    >
-                        <option value="">Pago</option>
-                        <option value="pagado">Pagaron</option>
-                        <option value="no-pagado">Deben</option>
-                    </select>
-                    <Chevron />
-                </div>
+            {/* Selects con label arriba */}
+            <div className="flex gap-2 items-end">
 
-                <div className="relative flex-1">
-                    <select
-                        value={ordenDiasRestantes}
-                        onChange={(e) => setOrdenDiasRestantes(e.target.value)}
-                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                    >
-                        <option value="">Plan</option>
-                        <option value="asc">Plan ↑</option>
-                        <option value="desc">Plan ↓</option>
-                    </select>
-                    <Chevron />
-                </div>
-
-                {diasDisponibles.length > 0 && (
-                    <div className="relative flex-1">
-                        <select
-                            value={filtroDiasEntrena}
-                            onChange={(e) => setFiltroDiasEntrena(e.target.value)}
-                            className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                        >
-                            <option value="">Días/sem</option>
-                            {diasDisponibles.map((d) => (
-                                <option key={d} value={d}>{d} días</option>
-                            ))}
+                <div className="flex-1">
+                    <label className={labelCls}>Pago</label>
+                    <div className="relative">
+                        <select value={filtroPago} onChange={(e) => setFiltroPago(e.target.value)} className={selectCls}>
+                            <option value="" disabled hidden></option>
+                            <option value="pagado">Pagaron</option>
+                            <option value="no-pagado">Deben</option>
                         </select>
                         <Chevron />
                     </div>
+                </div>
+
+                <div className="flex-1">
+                    <label className={labelCls}>Plan</label>
+                    <div className="relative">
+                        <select value={ordenDiasRestantes} onChange={(e) => setOrdenDiasRestantes(e.target.value)} className={selectCls}>
+                            <option value="" disabled hidden></option>
+                            <option value="asc">Plan ↑</option>
+                            <option value="desc">Plan ↓</option>
+                        </select>
+                        <Chevron />
+                    </div>
+                </div>
+
+                {diasDisponibles.length > 0 && (
+                    <div className="flex-1">
+                        <label className={labelCls}>Días/sem</label>
+                        <div className="relative">
+                            <select value={filtroDiasEntrena} onChange={(e) => setFiltroDiasEntrena(e.target.value)} className={selectCls}>
+                                <option value="" disabled hidden></option>
+                                {diasDisponibles.map((d) => (
+                                    <option key={d} value={d}>{d} días</option>
+                                ))}
+                            </select>
+                            <Chevron />
+                        </div>
+                    </div>
                 )}
 
-                <div className="relative flex-1">
-                    <select
-                        value={filtroArea}
-                        onChange={(e) => setFiltroArea(e.target.value)}
-                        className="w-full appearance-none bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-                    >
-                        <option value="">Área</option>
-                        <option value="fuerza">💪 Fuerza y condición</option>
-                        <option value="masa_muscular">🏋️ Masa muscular</option>
-                        <option value="salud">❤️ Salud y calidad de vida</option>
-                        <option value="composicion">⚖️ Composición corporal</option>
-                        <option value="rendimiento">🏅 Rendimiento deportivo</option>
-                        <option value="formacion">🌱 Formación (10-17 años)</option>
-                        <option value="retomar">🔄 Retomar actividad</option>
-                    </select>
-                    <Chevron />
+                <div className="flex-1">
+                    <label className={labelCls}>Área</label>
+                    <div className="relative">
+                        <select value={filtroArea} onChange={(e) => setFiltroArea(e.target.value)} className={selectCls}>
+                            <option value="" disabled hidden></option>
+                            <option value="fuerza">💪 Fuerza</option>
+                            <option value="masa_muscular">🏋️ Masa musc.</option>
+                            <option value="salud">❤️ Salud</option>
+                            <option value="composicion">⚖️ Composición</option>
+                            <option value="rendimiento">🏅 Rendimiento</option>
+                            <option value="formacion">🌱 Formación</option>
+                            <option value="retomar">🔄 Retomar</option>
+                        </select>
+                        <Chevron />
+                    </div>
                 </div>
 
                 {hayFiltros && (
                     <button
                         onClick={limpiarFiltros}
-                        className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap px-1"
+                        className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap px-1 pb-2"
                     >
                         Limpiar
                     </button>
