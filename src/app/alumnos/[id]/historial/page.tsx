@@ -213,6 +213,7 @@ export default function HistorialAlumnoPage() {
     const [dayModalPagoDias, setDayModalPagoDias] = useState<number | null>(null);
     const [dayModalPagoMetodo, setDayModalPagoMetodo] = useState('');
     const [dayModalPagoRecargo, setDayModalPagoRecargo] = useState(true);
+    const [dayModalEspecial, setDayModalEspecial] = useState<{monto:number;dias:number;desde:string;hasta:string}|null>(null);
     const [dayModalSaving, setDayModalSaving] = useState(false);
     const [infoExpanded, setInfoExpanded] = useState(false);
 
@@ -1191,6 +1192,7 @@ export default function HistorialAlumnoPage() {
         setDayModalPagoDias(null);
         setDayModalPagoMetodo('');
         setDayModalPagoRecargo(true);
+        setDayModalEspecial(null);
     };
 
     const closeDayModal = () => {
@@ -1233,10 +1235,65 @@ export default function HistorialAlumnoPage() {
         }
     };
 
+    const handleEspecialCard = async () => {
+        const hoy = new Date().toISOString().split('T')[0];
+        const { value: datosEsp } = await Swal.fire({
+            ...swalBase,
+            title: 'Pago especial',
+            html: `<div class="swal-form-body">
+                <div><label class="swal-form-label">Monto ($) *</label><input id="esp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
+                <div><label class="swal-form-label">Días por semana *</label><input id="esp-dias" class="swal2-input" inputmode="numeric" placeholder="Ej: 3"></div>
+                <div><label class="swal-form-label">Desde *</label><input id="esp-desde" class="swal2-input" type="date" value="${hoy}"></div>
+                <div><label class="swal-form-label">Hasta *</label><input id="esp-hasta" class="swal2-input" type="date" value="${hoy}"></div>
+            </div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const monto = Number((document.getElementById('esp-monto') as HTMLInputElement).value.replace(/\D/g, ''));
+                const dias = Number((document.getElementById('esp-dias') as HTMLInputElement).value);
+                const desde = (document.getElementById('esp-desde') as HTMLInputElement).value;
+                const hasta = (document.getElementById('esp-hasta') as HTMLInputElement).value;
+                if (!monto || !dias || !desde || !hasta) { Swal.showValidationMessage('Completá todos los campos'); return; }
+                if (hasta < desde) { Swal.showValidationMessage('La fecha hasta debe ser igual o posterior a desde'); return; }
+                return { monto, dias, desde, hasta };
+            },
+        });
+        if (!datosEsp) return;
+        setDayModalEspecial(datosEsp);
+        setDayModalPagoDias(0);
+        setDayModalPagoRecargo(false);
+    };
+
     const submitDayModalPago = async () => {
-        if (!dayModalPagoDias || !dayModalPagoMetodo || !dayModal || dayModalSaving) return;
+        if (dayModalPagoDias === null || !dayModalPagoMetodo || !dayModal || dayModalSaving) return;
         setDayModalSaving(true);
         try {
+            if (dayModalPagoDias === 0 && dayModalEspecial) {
+                const mesDesde = new Date(dayModalEspecial.desde + 'T12:00:00').toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+                const res = await fetch('/api/alumnos/pagos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alumnoId: id,
+                        nuevoPago: {
+                            mes: `especial-${mesDesde}`,
+                            fechaPago: new Date().toISOString(),
+                            diasMusculacion: dayModalEspecial.dias,
+                            tarifa: dayModalEspecial.monto,
+                            metodoPago: dayModalPagoMetodo,
+                            recargo: 0,
+                            esEspecial: true,
+                            fechaDesde: new Date(dayModalEspecial.desde + 'T12:00:00').toISOString(),
+                            fechaHasta: new Date(dayModalEspecial.hasta + 'T12:00:00').toISOString(),
+                        },
+                    }),
+                });
+                if (res.ok) { closeDayModal(); await fetchAlumno(); }
+                else Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar pago' });
+                return;
+            }
             const tarifaSel = tarifas.find(t => t.dias === dayModalPagoDias);
             if (!tarifaSel) return;
             const selDate = new Date(dayModal + 'T12:00:00');
@@ -2935,12 +2992,24 @@ export default function HistorialAlumnoPage() {
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tarifa</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {tarifas.map(t => (
-                                            <button key={t.dias} onClick={() => setDayModalPagoDias(t.dias)}
+                                            <button key={t.dias} onClick={() => { setDayModalPagoDias(t.dias); setDayModalEspecial(null); }}
                                                 className={`flex flex-col items-start px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === t.dias ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-700'}`}>
                                                 <span className="font-bold text-lg">${t.valor.toLocaleString('es-AR')}</span>
                                                 <span className="text-xs opacity-80">{t.dias} días/sem</span>
                                             </button>
                                         ))}
+                                        <button onClick={handleEspecialCard}
+                                            className={`col-span-2 flex items-center justify-between px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === 0 ? 'bg-violet-600 border-violet-600 text-white' : 'bg-violet-50 border-violet-100 text-violet-700'}`}>
+                                            <div className="flex flex-col items-start">
+                                                <span className="font-bold text-base">★ Pago especial</span>
+                                                {dayModalPagoDias === 0 && dayModalEspecial ? (
+                                                    <span className="text-xs opacity-80">${dayModalEspecial.monto.toLocaleString('es-AR')} · {dayModalEspecial.dias} días/sem · {new Date(dayModalEspecial.desde + 'T12:00:00').toLocaleDateString('es-AR')} → {new Date(dayModalEspecial.hasta + 'T12:00:00').toLocaleDateString('es-AR')}</span>
+                                                ) : (
+                                                    <span className="text-xs opacity-70">Monto y fecha personalizada</span>
+                                                )}
+                                            </div>
+                                            <span className="text-base">›</span>
+                                        </button>
                                     </div>
                                 </div>
                                 <div>
@@ -2954,7 +3023,7 @@ export default function HistorialAlumnoPage() {
                                         ))}
                                     </div>
                                 </div>
-                                {(() => {
+                                {dayModalPagoDias !== 0 && (() => {
                                     const selDate = new Date(dayModal + 'T12:00:00');
                                     const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
                                     const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
@@ -2971,22 +3040,25 @@ export default function HistorialAlumnoPage() {
                                         </button>
                                     );
                                 })()}
-                                {dayModalPagoDias && (
+                                {dayModalPagoDias !== null && (
                                     <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
                                         <span className="text-slate-500 text-sm">Total a cobrar</span>
                                         <span className="text-slate-800 font-bold text-xl">
-                                            ${(() => {
-                                                const t = tarifas.find(t => t.dias === dayModalPagoDias);
-                                                if (!t) return '—';
-                                                const selDate = new Date(dayModal + 'T12:00:00');
-                                                const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-                                                const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
-                                                return (t.valor + (dayModalPagoRecargo ? recargoAplicable : 0)).toLocaleString('es-AR');
-                                            })()}
+                                            ${dayModalPagoDias === 0 && dayModalEspecial
+                                                ? dayModalEspecial.monto.toLocaleString('es-AR')
+                                                : (() => {
+                                                    const t = tarifas.find(t => t.dias === dayModalPagoDias);
+                                                    if (!t) return '—';
+                                                    const selDate = new Date(dayModal + 'T12:00:00');
+                                                    const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                                                    const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+                                                    return (t.valor + (dayModalPagoRecargo ? recargoAplicable : 0)).toLocaleString('es-AR');
+                                                })()
+                                            }
                                         </span>
                                     </div>
                                 )}
-                                <button onClick={submitDayModalPago} disabled={!dayModalPagoDias || !dayModalPagoMetodo || dayModalSaving}
+                                <button onClick={submitDayModalPago} disabled={dayModalPagoDias === null || !dayModalPagoMetodo || dayModalSaving}
                                     className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base transition disabled:opacity-40">
                                     {dayModalSaving ? 'Guardando...' : 'Confirmar cobro'}
                                 </button>
