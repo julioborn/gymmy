@@ -623,7 +623,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── MAIN CONTENT ── */}
             <main
-                className={`flex-1 p-3 bg-slate-50 ${showNav && !isRegistroPage ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
+                className={`flex-1 p-3 bg-slate-50 ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
                     marginTop: isRegistroPage ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
@@ -635,7 +635,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             </main>
 
             {/* ── BOTTOM NAV — mobile only ── */}
-            {showNav && navItems.length > 0 && (
+            {showNav && navItems.length > 0 && role !== 'recepcion' && (
                 <nav
                     className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.06] sm:hidden"
                     style={{ background: navBg, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
