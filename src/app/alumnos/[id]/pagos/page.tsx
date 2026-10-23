@@ -85,52 +85,111 @@ export default function PagosPage() {
 
     const handleAgregarPago = async () => {
         const opcionesTarifas = tarifas.reduce((options, tarifa) => {
-            options[tarifa.dias.toString()] = `${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana - $${tarifa.valor}`;
+            options[tarifa.dias.toString()] = `${tarifa.dias} día${tarifa.dias > 1 ? 's' : ''} por semana — $${tarifa.valor.toLocaleString('es-AR')}`;
             return options;
         }, {} as Record<string, string>);
 
-        const { value: diasMusculacion } = await Swal.fire({
+        const { value: seleccion } = await Swal.fire({
             ...swalBase,
-            title: 'Selecciona los días de musculación por semana',
+            title: 'Registrar pago',
             input: 'select',
-            inputOptions: opcionesTarifas,
-            inputPlaceholder: 'Selecciona una opción',
+            inputOptions: { ...opcionesTarifas, especial: '★ Pago especial' },
+            inputPlaceholder: 'Seleccioná una opción',
             showCancelButton: true,
             confirmButtonText: 'Siguiente',
             cancelButtonText: 'Cancelar',
         });
 
-        if (!diasMusculacion) return;
+        if (!seleccion) return;
 
-        const tarifaSeleccionada = tarifas.find(
-            (tarifa) => tarifa.dias === Number(diasMusculacion)
-        );
-
-        if (!tarifaSeleccionada) {
-            Swal.fire({
-                ...swalNotify,
-                icon: 'error',
-                title: 'No se encontró una tarifa para los días seleccionados.',
+        // ── PAGO ESPECIAL ──────────────────────────────────────────
+        if (seleccion === 'especial') {
+            const hoy = new Date().toISOString().split('T')[0];
+            const { value: datosEsp } = await Swal.fire({
+                ...swalBase,
+                title: 'Pago especial',
+                html: `
+                    <div class="swal-form-body">
+                        <div><label class="swal-form-label">Monto ($) *</label>
+                            <input id="esp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
+                        <div><label class="swal-form-label">Días por semana *</label>
+                            <input id="esp-dias" class="swal2-input" inputmode="numeric" placeholder="Ej: 3"></div>
+                        <div><label class="swal-form-label">Desde *</label>
+                            <input id="esp-desde" class="swal2-input" type="date" value="${hoy}"></div>
+                        <div><label class="swal-form-label">Hasta *</label>
+                            <input id="esp-hasta" class="swal2-input" type="date" value="${hoy}"></div>
+                    </div>`,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Siguiente',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const monto = Number((document.getElementById('esp-monto') as HTMLInputElement).value.replace(/\D/g, ''));
+                    const dias = Number((document.getElementById('esp-dias') as HTMLInputElement).value);
+                    const desde = (document.getElementById('esp-desde') as HTMLInputElement).value;
+                    const hasta = (document.getElementById('esp-hasta') as HTMLInputElement).value;
+                    if (!monto || !dias || !desde || !hasta) { Swal.showValidationMessage('Completá todos los campos'); return; }
+                    if (hasta < desde) { Swal.showValidationMessage('La fecha hasta debe ser igual o posterior a desde'); return; }
+                    return { monto, dias, desde, hasta };
+                },
             });
+            if (!datosEsp) return;
+
+            const { value: metodoPagoEsp } = await Swal.fire({
+                ...swalBase,
+                title: 'Método de pago',
+                input: 'radio',
+                inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
+                inputValidator: v => v ? null : 'Seleccioná un método',
+                confirmButtonText: 'Registrar',
+                cancelButtonText: 'Cancelar',
+            });
+            if (!metodoPagoEsp) return;
+
+            const mesDesde = new Date(datosEsp.desde + 'T12:00:00').toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+            try {
+                const res = await fetch('/api/alumnos/pagos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alumnoId: id,
+                        nuevoPago: {
+                            mes: `especial-${mesDesde}`,
+                            fechaPago: new Date().toISOString(),
+                            diasMusculacion: datosEsp.dias,
+                            tarifa: datosEsp.monto,
+                            recargo: 0,
+                            metodoPago: metodoPagoEsp,
+                            esEspecial: true,
+                            fechaDesde: new Date(datosEsp.desde + 'T12:00:00').toISOString(),
+                            fechaHasta: new Date(datosEsp.hasta + 'T12:00:00').toISOString(),
+                        },
+                    }),
+                });
+                if (!res.ok) throw new Error();
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago especial registrado' }).then(() => location.reload());
+            } catch {
+                Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar el pago' });
+            }
+            return;
+        }
+
+        // ── PAGO NORMAL ────────────────────────────────────────────
+        const tarifaSeleccionada = tarifas.find(t => t.dias === Number(seleccion));
+        if (!tarifaSeleccionada) {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Tarifa no encontrada' });
             return;
         }
 
         const { value: metodoPago } = await Swal.fire({
             ...swalBase,
-            title: 'Selecciona el método de pago',
+            title: 'Método de pago',
             input: 'radio',
-            inputOptions: {
-                efectivo: 'Efectivo',
-                transferencia: 'Transferencia',
-            },
-            inputValidator: (value) => {
-                if (!value) return 'Debes seleccionar un método de pago';
-                return null;
-            },
+            inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
+            inputValidator: v => v ? null : 'Debes seleccionar un método de pago',
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
         });
-
         if (!metodoPago) return;
 
         const diaActual = new Date().getDate();
@@ -142,52 +201,42 @@ export default function PagosPage() {
             ...swalBase,
             title: 'Confirmar cobro',
             html: `
-            <p>Días de musculación: <strong>${diasMusculacion}</strong></p>
-            <p>Método de pago: <strong>${metodoPago}</strong></p>
-            <p>Precio: $${tarifaSeleccionada.valor}</p>
-            ${recargoRows.join('')}
-        `,
+                <p>Días por semana: <strong>${seleccion}</strong></p>
+                <p>Método: <strong>${metodoPago}</strong></p>
+                <p>Precio: $${tarifaSeleccionada.valor.toLocaleString('es-AR')}</p>
+                ${recargoRows.join('')}`,
             preConfirm: () => {
                 const chkDiez = document.getElementById('swal-rec-diez') as HTMLInputElement | null;
                 const chkMes = document.getElementById('swal-rec-mes') as HTMLInputElement | null;
-                return {
-                    montoRecargo: (chkDiez?.checked ? recargoDiez : 0) + (chkMes?.checked ? recargoMes : 0),
-                };
+                return { montoRecargo: (chkDiez?.checked ? recargoDiez : 0) + (chkMes?.checked ? recargoMes : 0) };
             },
             icon: 'info',
             showCancelButton: true,
             confirmButtonText: 'Registrar',
             cancelButtonText: 'Cancelar',
         });
-
         if (!confirmacion.isConfirmed) return;
 
         const montoRecargo = confirmacion.value?.montoRecargo ?? 0;
-        const total = tarifaSeleccionada.valor + montoRecargo;
-
         const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
 
         try {
-            const response = await fetch(`/api/alumnos/pagos`, {
+            const response = await fetch('/api/alumnos/pagos', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     alumnoId: id,
                     nuevoPago: {
                         mes: mesActual,
-                        fechaPago: new Date(new Date().toISOString().split('T')[0] + "T12:00:00"),
-                        diasMusculacion: Number(diasMusculacion),
+                        fechaPago: new Date(new Date().toISOString().split('T')[0] + 'T12:00:00'),
+                        diasMusculacion: Number(seleccion),
                         tarifa: tarifaSeleccionada.valor,
                         recargo: montoRecargo,
                         metodoPago,
                     },
                 }),
             });
-
-            if (!response.ok) throw new Error('Error al registrar el pago');
-
+            if (!response.ok) throw new Error();
             Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago registrado correctamente' }).then(() => location.reload());
         } catch {
             Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo registrar el pago' });
@@ -331,15 +380,35 @@ export default function PagosPage() {
                 {pagosFiltrados.length > 0 ? (
                     <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                         {pagosFiltrados.map((pago: any, index: number) => (
-                            <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition flex justify-between items-center gap-4">
+                            <div key={index} className={`p-4 rounded-xl border transition flex justify-between items-center gap-4 ${pago.esEspecial ? 'bg-violet-50 border-violet-200 hover:bg-violet-100' : 'bg-slate-50 border-slate-100 hover:bg-slate-100'}`}>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-sm flex-1">
-                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Fecha</p><p className="font-medium text-slate-800">{new Date(pago.fechaPago).toLocaleDateString('es-AR')}</p></div>
-                                    <div><p className="text-xs text-slate-400 font-semibold uppercase">Mes</p><p className="font-medium text-slate-800 capitalize">{pago.mes}</p></div>
+                                    <div>
+                                        <p className="text-xs text-slate-400 font-semibold uppercase">Fecha pago</p>
+                                        <p className="font-medium text-slate-800">{new Date(pago.fechaPago).toLocaleDateString('es-AR')}</p>
+                                    </div>
+                                    <div>
+                                        {pago.esEspecial ? (
+                                            <>
+                                                <p className="text-xs text-violet-500 font-semibold uppercase">Especial</p>
+                                                <p className="font-medium text-slate-800 text-xs">
+                                                    {pago.fechaDesde ? new Date(pago.fechaDesde).toLocaleDateString('es-AR') : '—'}
+                                                    {' → '}
+                                                    {pago.fechaHasta ? new Date(pago.fechaHasta).toLocaleDateString('es-AR') : '—'}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-xs text-slate-400 font-semibold uppercase">Mes</p>
+                                                <p className="font-medium text-slate-800 capitalize">{pago.mes}</p>
+                                            </>
+                                        )}
+                                    </div>
                                     <div><p className="text-xs text-slate-400 font-semibold uppercase">Método</p><p className="font-medium text-slate-800 capitalize">{pago.metodoPago || '-'}</p></div>
                                     <div>
                                         <p className="text-xs text-slate-400 font-semibold uppercase">Total</p>
-                                        <p className="font-bold text-emerald-600">${pago.tarifa}</p>
+                                        <p className={`font-bold ${pago.esEspecial ? 'text-violet-600' : 'text-emerald-600'}`}>${pago.tarifa?.toLocaleString('es-AR')}</p>
                                         {pago.recargo ? <p className="text-xs text-slate-400">inc. ${pago.recargo} recargo</p> : null}
+                                        {pago.esEspecial && <p className="text-[10px] text-violet-400">{pago.diasMusculacion} día/s x sem.</p>}
                                     </div>
                                 </div>
                                 <button onClick={() => handleEliminarPago(pago._id)} className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition flex-shrink-0">
