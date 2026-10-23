@@ -122,7 +122,7 @@ export default function HomePage() {
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
     const [diasData, setDiasData]           = useState<DiaData[]>([]);
     const [diaExpandido, setDiaExpandido]   = useState<string | null>(null);
-    const [openSlots, setOpenSlots]         = useState<Set<string>>(new Set());
+    const [activeSlot, setActiveSlot]        = useState<string | null>(null);
     const [loadingHoy, setLoadingHoy]       = useState(false);
     const [horaArg, setHoraArg]             = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
@@ -523,7 +523,7 @@ export default function HomePage() {
                             return (
                                 <button
                                     key={dia.key}
-                                    onClick={() => { setDiaExpandido(sel ? null : dia.key); setOpenSlots(new Set()); }}
+                                    onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
                                     className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl transition-all active:scale-95 min-w-[64px] ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
                                 >
                                     <span className={`text-[10px] font-bold uppercase tracking-widest ${sel ? 'text-slate-400' : 'text-slate-400'}`}>{dia.labelDay}</span>
@@ -551,89 +551,100 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        {loadingHoy && totalActivo === 0 ? (
-                            <div className="p-4 space-y-2">
-                                {[1,2,3].map(i => <div key={i} className="h-11 rounded-xl bg-slate-100 animate-pulse" />)}
-                            </div>
-                        ) : totalActivo === 0 ? (
-                            <p className="text-slate-400 text-sm text-center py-10">Sin asistentes registrados.</p>
-                        ) : (
-                            <div>
-                                {(() => {
-                                    const bySlot: Record<Slot, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
-                                    for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora) as Slot].push(a);
-                                    return SLOTS.filter(s => bySlot[s.key].length > 0).map(slot => {
-                                        const slotOpen = openSlots.has(slot.key);
-                                        return (
-                                        <div key={slot.key} className="border-b border-slate-50 last:border-0">
-                                            <button
-                                                onClick={() => setOpenSlots(prev => { const n = new Set(prev); slotOpen ? n.delete(slot.key) : n.add(slot.key); return n; })}
-                                                className={`w-full flex items-center gap-2 px-4 py-2.5 ${slot.bg}`}
-                                            >
-                                                <span className={`w-2 h-2 rounded-full ${slot.dot}`} />
-                                                <span className={`text-xs font-bold uppercase tracking-wide ${slot.color}`}>{slot.key}</span>
-                                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 ${slot.color}`}>{bySlot[slot.key].length}</span>
-                                                <svg className={`ml-auto w-4 h-4 ${slot.color} transition-transform duration-200 ${slotOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                                </svg>
-                                            </button>
-                                            {slotOpen && <div className="divide-y divide-slate-50">
-                                                {bySlot[slot.key].map((a, i) => (
-                                                    <Link
-                                                        key={i}
-                                                        href={`/alumnos/${a.id}/historial`}
-                                                        className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}
-                                                    >
-                                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
+                        {(() => {
+                            const bySlot: Record<string, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+                            for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora)].push(a);
+                            return (
+                                <>
+                                    {/* 4 botones de turno */}
+                                    <div className="grid grid-cols-4 gap-2 p-3">
+                                        {SLOTS.map(slot => {
+                                            const count = bySlot[slot.key].length;
+                                            const isActive = activeSlot === slot.key;
+                                            return (
+                                                <button key={slot.key}
+                                                    onClick={() => setActiveSlot(isActive ? null : slot.key)}
+                                                    className={`flex flex-col items-center gap-1 py-3 rounded-2xl transition-all active:scale-95 ${
+                                                        isActive ? 'bg-[#111] shadow-md' : count > 0 ? slot.bg : 'bg-slate-50'
+                                                    }`}
+                                                >
+                                                    <span className={`text-2xl font-bold leading-none ${
+                                                        isActive ? 'text-white' : count > 0 ? slot.color : 'text-slate-300'
+                                                    }`}>
+                                                        {loadingHoy ? '·' : count}
+                                                    </span>
+                                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                                                        isActive ? 'text-slate-400' : count > 0 ? slot.color : 'text-slate-400'
+                                                    }`}>
+                                                        {slot.key}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Lista del turno activo */}
+                                    {activeSlot && (
+                                        <div className="border-t border-slate-100">
+                                            {bySlot[activeSlot].length === 0 ? (
+                                                <p className="text-slate-400 text-sm text-center py-8">Sin asistentes en este turno.</p>
+                                            ) : (
+                                                <div className="divide-y divide-slate-50">
+                                                    {bySlot[activeSlot].map((a, i) => (
+                                                        <Link key={i} href={`/alumnos/${a.id}/historial`}
+                                                            className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}>
+                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
+                                                                {a.nombre?.[0]}{a.apellido?.[0]}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
+                                                                <p className="text-[10px] text-slate-400">{a.actividad}</p>
+                                                            </div>
+                                                            {!a.pagado && (
+                                                                pasoDiez ? (
+                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
+                                                                        Debe
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
+                                                                )
+                                                            )}
+                                                            <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* De paso */}
+                                    {diaActivo.depaso.length > 0 && (
+                                        <div className="border-t border-slate-100">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-teal-50">
+                                                <span className="w-2 h-2 rounded-full bg-teal-400" />
+                                                <span className="text-xs font-bold uppercase tracking-wide text-teal-700">De paso</span>
+                                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 text-teal-700">{diaActivo.depaso.length}</span>
+                                            </div>
+                                            <div className="divide-y divide-slate-50">
+                                                {diaActivo.depaso.map((a, i) => (
+                                                    <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50/50">
+                                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
                                                             {a.nombre?.[0]}{a.apellido?.[0]}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
-                                                            <p className="text-[10px] text-slate-400">{a.actividad}</p>
+                                                            <p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p>
+                                                            <p className="text-[10px] text-teal-600">{a.actividad}</p>
                                                         </div>
-                                                        {!a.pagado && (
-                                                            pasoDiez ? (
-                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
-                                                                    Debe
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
-                                                            )
-                                                        )}
                                                         <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
-                                                    </Link>
+                                                    </div>
                                                 ))}
-                                            </div>}
+                                            </div>
                                         </div>
-                                        );
-                                    });
-                                })()}
-                                {diaActivo.depaso.length > 0 && (
-                                    <div className="border-t border-slate-100">
-                                        <div className="flex items-center gap-2 px-4 py-2 bg-teal-50">
-                                            <span className="w-2 h-2 rounded-full bg-teal-400" />
-                                            <span className="text-xs font-bold uppercase tracking-wide text-teal-700">De paso</span>
-                                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 text-teal-700">{diaActivo.depaso.length}</span>
-                                        </div>
-                                        <div className="divide-y divide-slate-50">
-                                            {diaActivo.depaso.map((a, i) => (
-                                                <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50/50">
-                                                    <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
-                                                        {a.nombre?.[0]}{a.apellido?.[0]}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p>
-                                                        <p className="text-[10px] text-teal-600">{a.actividad}</p>
-                                                    </div>
-                                                    <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
                 )}
 
