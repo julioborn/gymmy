@@ -415,7 +415,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             {/* ── HEADER ── */}
             <header
                 className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
-                style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: isRegistroPage ? 'none' : undefined }}
+                style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: (isRegistroPage || isStaticPage) ? 'none' : undefined }}
             >
                 <div className="relative h-[88px] flex items-center justify-between px-4">
                     {/* Hamburger — left side, all screen sizes when menu is shown */}
