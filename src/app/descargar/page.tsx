@@ -10,7 +10,7 @@ export default function DescargarPage() {
         <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-16">
 
             {/* Logo */}
-            <div className="mb-10">
+            <div className="mb-12">
                 <Image
                     src="/sporttime-logo.png"
                     alt="Sport Time"
@@ -22,7 +22,6 @@ export default function DescargarPage() {
             </div>
 
             {/* Título */}
-            <h1 className="text-slate-900 text-3xl font-bold tracking-tight mb-12">Gymmy</h1>
 
             {/* Botones */}
             <div className="w-full max-w-xs flex flex-col gap-4">
