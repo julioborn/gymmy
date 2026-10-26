@@ -12,11 +12,11 @@ export default function DescargarPage() {
             {/* Logo */}
             <div className="mb-10">
                 <Image
-                    src="/sporttime2.jpg"
-                    alt="Gymmy"
-                    width={130}
-                    height={130}
-                    className="rounded-3xl shadow-xl"
+                    src="/sporttime-logo.png"
+                    alt="Sport Time"
+                    width={140}
+                    height={140}
+                    className="rounded-3xl"
                     priority
                 />
             </div>
