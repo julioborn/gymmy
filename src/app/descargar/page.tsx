@@ -22,8 +22,7 @@ export default function DescargarPage() {
             </div>
 
             {/* Título */}
-            <h1 className="text-slate-900 text-3xl font-bold tracking-tight mb-1">Gymmy</h1>
-            <p className="text-slate-400 text-sm mb-12">Tu gimnasio en el bolsillo</p>
+            <h1 className="text-slate-900 text-3xl font-bold tracking-tight mb-12">Gymmy</h1>
 
             {/* Botones */}
             <div className="w-full max-w-xs flex flex-col gap-4">
