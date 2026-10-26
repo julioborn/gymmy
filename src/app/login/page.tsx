@@ -218,6 +218,7 @@ export default function LoginPage() {
                     {step.type === 'identifier' && (
                         <div className="px-7 pt-8 pb-7">
                             <div className="text-center mb-7">
+                                <img src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png" alt="SportTime" className="h-20 w-auto object-contain mx-auto mb-4" />
                                 <h1 className="text-2xl font-bold text-slate-900">Ingresá tu DNI</h1>
                             </div>
                             <form onSubmit={handleDniSubmit} className="space-y-3">
