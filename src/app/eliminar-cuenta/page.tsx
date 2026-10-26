@@ -39,7 +39,8 @@ export default function EliminarCuentaPage() {
                 <Image src="/sporttime-logo.png" alt="Sport Time" width={100} height={100} className="rounded-3xl" priority />
             </div>
 
-            <h1 className="text-white text-2xl font-bold mb-2 text-center">Eliminar cuenta</h1>
+            <h1 className="text-white text-2xl font-bold mb-1 text-center">SportTime</h1>
+            <h2 className="text-white/60 text-base font-semibold mb-2 text-center">Eliminar cuenta</h2>
             <p className="text-white/50 text-sm text-center mb-8 max-w-xs">
                 Ingresá tu {tipo === 'alumno' ? 'DNI' : 'email o nombre de usuario'} para eliminar tu cuenta y todos tus datos de forma permanente.
             </p>
