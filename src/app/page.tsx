@@ -175,7 +175,7 @@ export default function HomePage() {
             for (let i = 0; i < 5; i++) {
                 const d = new Date(monday.getTime() + i * 86400000);
                 const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-                const fechaLarga = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+                const fechaLarga = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
                 dias.push({ key, labelDay: WEEK_LABELS[i], labelNum: d.getUTCDate(), fechaLarga, alumnos: [], depaso: [] });
             }
             for (const al of (alumnosData || [])) {
