@@ -50,6 +50,8 @@ const EyeIcon = ({ open }: { open: boolean }) => open ? (
     </svg>
 );
 
+const LOGO = "https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png";
+
 export default function LoginPage() {
     const router = useRouter();
     const [step, setStep] = useState<Step>({ type: 'identifier' });
@@ -76,28 +78,18 @@ export default function LoginPage() {
         setError('');
         const clean = dni.replace(/\D/g, '');
         if (clean.length < 7) { setError('Ingresá tu DNI completo.'); return; }
-
         setLoading(true);
         try {
-            // Check staff first (staff can have numeric DNI as username)
             const staffRes = await fetch(`/api/auth/staff/check?username=${clean}`);
             const staffData = await staffRes.json();
             if (staffData.found) {
                 setStep({ type: 'staff-password', username: clean, gimnasioLogoUrl: staffData.gimnasioLogoUrl ?? null, nombre: staffData.nombre ?? null, apellido: staffData.apellido ?? null });
                 return;
             }
-
-            // Not staff — try as alumno
             const alumnoRes = await fetch(`/api/auth/alumno/check?dni=${clean}`);
             const alumnoData = await alumnoRes.json();
-            if (!alumnoData.found) {
-                setError('No encontramos ese DNI. Consultá con tu gimnasio.');
-                return;
-            }
-            if (alumnoData.multiple) {
-                setStep({ type: 'gym-select', gyms: alumnoData.gyms, dniRaw: dni });
-                return;
-            }
+            if (!alumnoData.found) { setError('No encontramos ese DNI. Consultá con tu gimnasio.'); return; }
+            if (alumnoData.multiple) { setStep({ type: 'gym-select', gyms: alumnoData.gyms, dniRaw: dni }); return; }
             if (alumnoData.hasPassword) {
                 setStep({ type: 'alumno-login', nombre: alumnoData.nombre, apellido: alumnoData.apellido, dni: clean, gimnasioId: alumnoData.gimnasioId, gimnasioNombre: alumnoData.gimnasioNombre, gimnasioLogoUrl: alumnoData.gimnasioLogoUrl ?? null });
             } else {
@@ -120,13 +112,9 @@ export default function LoginPage() {
             if (res?.error) { setError('Contraseña incorrecta.'); return; }
             const sessionRes = await fetch('/api/auth/session');
             const session = await sessionRes.json();
-            if (session?.user?.role === 'registro') {
-                router.push('/alumnos/dni');
-            } else if (session?.user?.role === 'superadmin') {
-                router.push('/superadmin');
-            } else {
-                router.push('/');
-            }
+            if (session?.user?.role === 'registro') router.push('/alumnos/dni');
+            else if (session?.user?.role === 'superadmin') router.push('/superadmin');
+            else router.push('/');
         } catch {
             setError('Error de conexión.');
         } finally {
@@ -186,21 +174,21 @@ export default function LoginPage() {
         router.push('/mi-cuenta');
     }
 
-    const inputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl px-4 py-4 text-lg font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-normal transition-all";
-    const passInputCls = "w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl pl-4 pr-12 py-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 placeholder:text-slate-300 transition-all";
-    const primaryBtn = "w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md shadow-slate-900/10";
+    const inputCls = "w-full bg-white/[0.06] border border-white/10 text-white rounded-2xl px-4 py-4 text-lg font-semibold text-center tracking-widest focus:outline-none focus:border-lime-400/60 focus:bg-white/[0.09] placeholder:text-white/20 placeholder:tracking-normal placeholder:font-normal transition-all";
+    const passInputCls = "w-full bg-white/[0.06] border border-white/10 text-white rounded-2xl pl-4 pr-12 py-4 text-base font-medium focus:outline-none focus:border-lime-400/60 focus:bg-white/[0.09] placeholder:text-white/25 transition-all";
+    const primaryBtn = "w-full bg-lime-400 hover:bg-lime-300 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] text-black py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2";
+
+    const gymLogo = (url: string | null) => url
+        ? <img src={url} alt="Gimnasio" className="h-16 w-auto object-contain mx-auto mb-5" />
+        : <img src={LOGO} alt="SportTime" className="h-16 w-auto object-contain mx-auto mb-5" />;
 
     return (
-        <div className="min-h-[calc(100vh-75px)] -m-3 flex flex-col items-center justify-start px-4 pt-10 pb-10 bg-slate-50">
-
+        <div className="min-h-screen -m-3 flex flex-col items-center justify-center px-4 py-10 bg-[#0a0a0a]">
             <div className="w-full max-w-[360px]">
 
                 {/* Back */}
                 {step.type !== 'identifier' && (
-                    <button
-                        onClick={reset}
-                        className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 text-sm font-medium transition-colors mb-4"
-                    >
+                    <button onClick={reset} className="flex items-center gap-1.5 text-white/40 hover:text-white/70 text-sm font-medium transition-colors mb-5">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
@@ -209,17 +197,18 @@ export default function LoginPage() {
                 )}
 
                 {/* Card */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/80 overflow-hidden border border-slate-100">
+                <div className="bg-[#111] rounded-3xl border border-white/[0.07] overflow-hidden shadow-2xl shadow-black/60">
 
-                    {/* Accent strip */}
-                    <div className="h-1 w-full bg-slate-900" />
+                    {/* Lime top bar */}
+                    <div className="h-[3px] w-full bg-lime-400" />
 
                     {/* ── DNI ── */}
                     {step.type === 'identifier' && (
-                        <div className="px-7 pt-8 pb-7">
-                            <div className="text-center mb-7">
-                                <img src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png" alt="SportTime" className="h-20 w-auto object-contain mx-auto mb-4" />
-                                <h1 className="text-2xl font-bold text-slate-900">Ingresá tu DNI</h1>
+                        <div className="px-7 pt-10 pb-8">
+                            <div className="text-center mb-8">
+                                <img src={LOGO} alt="SportTime" className="h-20 w-auto object-contain mx-auto mb-6" />
+                                <h1 className="text-2xl font-bold text-white">Ingresá tu DNI</h1>
+                                <p className="text-white/40 text-sm mt-1">Accedé a tu cuenta</p>
                             </div>
                             <form onSubmit={handleDniSubmit} className="space-y-3">
                                 <input
@@ -242,30 +231,18 @@ export default function LoginPage() {
 
                     {/* ── Contraseña staff ── */}
                     {step.type === 'staff-password' && (
-                        <div className="px-7 pt-8 pb-7">
+                        <div className="px-7 pt-10 pb-8">
                             <div className="text-center mb-7">
-                                {step.gimnasioLogoUrl ? (
-                                    <img src={step.gimnasioLogoUrl} alt="Gimnasio" className="h-20 w-auto object-contain mx-auto mb-4" />
-                                ) : (
-                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
-                                )}
-                                <h1 className="text-xl font-bold text-slate-900">
+                                {gymLogo(step.gimnasioLogoUrl)}
+                                <h1 className="text-xl font-bold text-white">
                                     {step.nombre ? `Hola, ${step.nombre.charAt(0).toUpperCase()}${step.nombre.slice(1).toLowerCase()}` : 'Ingresá tu contraseña'}
                                 </h1>
-                                {step.nombre && <p className="text-slate-400 text-sm mt-1">Ingresá tu contraseña</p>}
+                                {step.nombre && <p className="text-white/40 text-sm mt-1">Ingresá tu contraseña</p>}
                             </div>
                             <form onSubmit={handleStaffLogin} className="space-y-3">
                                 <div className="relative">
-                                    <input
-                                        type={showPass ? 'text' : 'password'}
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        placeholder="Contraseña"
-                                        required
-                                        autoFocus
-                                        className={passInputCls}
-                                    />
-                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" required autoFocus className={passInputCls} />
+                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                                         <EyeIcon open={showPass} />
                                     </button>
                                 </div>
@@ -279,28 +256,25 @@ export default function LoginPage() {
 
                     {/* ── Seleccionar gimnasio ── */}
                     {step.type === 'gym-select' && (
-                        <div className="px-7 pt-8 pb-7">
+                        <div className="px-7 pt-10 pb-8">
                             <div className="text-center mb-6">
-                                <h1 className="text-xl font-bold text-slate-900">¿Cuál es tu gimnasio?</h1>
-                                <p className="text-slate-400 text-sm mt-1">Tu DNI está en más de uno</p>
+                                <h1 className="text-xl font-bold text-white">¿Cuál es tu gimnasio?</h1>
+                                <p className="text-white/40 text-sm mt-1">Tu DNI está en más de uno</p>
                             </div>
                             <div className="space-y-2.5">
                                 {step.gyms.map(gym => (
-                                    <button
-                                        key={gym.gimnasioId}
-                                        onClick={() => handleGymSelect(gym)}
-                                        className="w-full bg-slate-50 hover:bg-slate-100 active:scale-[0.98] border border-slate-200 hover:border-slate-300 rounded-2xl px-4 py-3.5 text-left transition-all flex items-center gap-3"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                                            <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                    <button key={gym.gimnasioId} onClick={() => handleGymSelect(gym)}
+                                        className="w-full bg-white/[0.05] hover:bg-white/[0.09] active:scale-[0.98] border border-white/10 hover:border-lime-400/30 rounded-2xl px-4 py-3.5 text-left transition-all flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-white/[0.07] border border-white/10 flex items-center justify-center shrink-0">
+                                            <svg className="w-5 h-5 text-lime-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21" />
                                             </svg>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-slate-900 text-sm">{gym.gimnasioNombre}</p>
-                                            <p className="text-slate-400 text-xs mt-0.5">{gym.nombre} {gym.apellido}</p>
+                                            <p className="font-bold text-white text-sm">{gym.gimnasioNombre}</p>
+                                            <p className="text-white/40 text-xs mt-0.5">{gym.nombre} {gym.apellido}</p>
                                         </div>
-                                        <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <svg className="w-4 h-4 text-white/20 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                         </svg>
                                     </button>
@@ -311,40 +285,22 @@ export default function LoginPage() {
 
                     {/* ── Primer acceso alumno ── */}
                     {step.type === 'alumno-register' && (
-                        <div className="px-7 pt-8 pb-7">
+                        <div className="px-7 pt-10 pb-8">
                             <div className="text-center mb-6">
-                                {step.gimnasioLogoUrl ? (
-                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
-                                ) : (
-                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
-                                )}
-                                <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
-                                <p className="text-slate-400 text-sm mt-1">Primer acceso — creá tu contraseña</p>
+                                {gymLogo(step.gimnasioLogoUrl)}
+                                <h1 className="text-xl font-bold text-white">Hola, {step.nombre}</h1>
+                                <p className="text-white/40 text-sm mt-1">Primer acceso — creá tu contraseña</p>
                             </div>
                             <form onSubmit={handleAlumnoRegister} className="space-y-3">
                                 <div className="relative">
-                                    <input
-                                        type={showPass ? 'text' : 'password'}
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        placeholder="Nueva contraseña (mín. 6 caracteres)"
-                                        required
-                                        className={passInputCls}
-                                    />
-                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Nueva contraseña (mín. 6 caracteres)" required className={passInputCls} />
+                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                                         <EyeIcon open={showPass} />
                                     </button>
                                 </div>
                                 <div className="relative">
-                                    <input
-                                        type={showConfirmPass ? 'text' : 'password'}
-                                        value={confirmPassword}
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                        placeholder="Repetí la contraseña"
-                                        required
-                                        className={passInputCls}
-                                    />
-                                    <button type="button" onClick={() => setShowConfirmPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <input type={showConfirmPass ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repetí la contraseña" required className={passInputCls} />
+                                    <button type="button" onClick={() => setShowConfirmPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                                         <EyeIcon open={showConfirmPass} />
                                     </button>
                                 </div>
@@ -352,13 +308,10 @@ export default function LoginPage() {
                                 <button type="submit" disabled={loading} className={primaryBtn}>
                                     {loading ? <Spinner /> : 'Crear cuenta e ingresar'}
                                 </button>
-                                <p className="text-center text-slate-400 text-xs pt-1">
+                                <p className="text-center text-white/30 text-xs pt-1">
                                     ¿Ya tenés contraseña?{' '}
-                                    <button
-                                        type="button"
-                                        onClick={() => step.type === 'alumno-register' && setStep({ type: 'alumno-login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
-                                        className="text-slate-900 font-semibold hover:text-slate-600"
-                                    >
+                                    <button type="button" onClick={() => step.type === 'alumno-register' && setStep({ type: 'alumno-login', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
+                                        className="text-lime-400 font-semibold hover:text-lime-300">
                                         Ingresá acá
                                     </button>
                                 </p>
@@ -368,27 +321,16 @@ export default function LoginPage() {
 
                     {/* ── Login alumno ── */}
                     {step.type === 'alumno-login' && (
-                        <div className="px-7 pt-8 pb-7">
+                        <div className="px-7 pt-10 pb-8">
                             <div className="text-center mb-6">
-                                {step.gimnasioLogoUrl ? (
-                                    <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
-                                ) : (
-                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
-                                )}
-                                <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
+                                {gymLogo(step.gimnasioLogoUrl)}
+                                <h1 className="text-xl font-bold text-white">Hola, {step.nombre}</h1>
+                                <p className="text-white/40 text-sm mt-1">Ingresá tu contraseña</p>
                             </div>
                             <form onSubmit={handleAlumnoLogin} className="space-y-3">
                                 <div className="relative">
-                                    <input
-                                        type={showPass ? 'text' : 'password'}
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        placeholder="Contraseña"
-                                        required
-                                        autoFocus
-                                        className={passInputCls}
-                                    />
-                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" required autoFocus className={passInputCls} />
+                                    <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
                                         <EyeIcon open={showPass} />
                                     </button>
                                 </div>
@@ -396,13 +338,10 @@ export default function LoginPage() {
                                 <button type="submit" disabled={loading} className={primaryBtn}>
                                     {loading ? <Spinner /> : 'Ingresar'}
                                 </button>
-                                <p className="text-center text-slate-400 text-xs pt-1">
+                                <p className="text-center text-white/30 text-xs pt-1">
                                     ¿Olvidaste tu contraseña?{' '}
-                                    <button
-                                        type="button"
-                                        onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
-                                        className="text-slate-900 font-semibold hover:text-slate-600"
-                                    >
+                                    <button type="button" onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
+                                        className="text-lime-400 font-semibold hover:text-lime-300">
                                         Crear nueva
                                     </button>
                                 </p>
@@ -411,6 +350,8 @@ export default function LoginPage() {
                     )}
 
                 </div>
+
+                <p className="text-center text-white/20 text-xs mt-6">SportTime © 2026</p>
             </div>
         </div>
     );
@@ -418,11 +359,11 @@ export default function LoginPage() {
 
 function ErrorBanner({ message }: { message: string }) {
     return (
-        <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
+        <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3">
             <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
             </svg>
-            <p className="text-red-500 text-sm font-medium">{message}</p>
+            <p className="text-red-400 text-sm font-medium">{message}</p>
         </div>
     );
 }
