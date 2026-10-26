@@ -246,11 +246,7 @@ export default function LoginPage() {
                                 {step.gimnasioLogoUrl ? (
                                     <img src={step.gimnasioLogoUrl} alt="Gimnasio" className="h-20 w-auto object-contain mx-auto mb-4" />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-                                    </div>
+                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
                                 )}
                                 <h1 className="text-xl font-bold text-slate-900">
                                     {step.nombre ? `Hola, ${step.nombre.charAt(0).toUpperCase()}${step.nombre.slice(1).toLowerCase()}` : 'Ingresá tu contraseña'}
@@ -319,11 +315,7 @@ export default function LoginPage() {
                                 {step.gimnasioLogoUrl ? (
                                     <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-                                    </div>
+                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
                                 )}
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                                 <p className="text-slate-400 text-sm mt-1">Primer acceso — creá tu contraseña</p>
@@ -380,11 +372,7 @@ export default function LoginPage() {
                                 {step.gimnasioLogoUrl ? (
                                     <img src={step.gimnasioLogoUrl} alt={step.gimnasioNombre} className="h-20 w-auto object-contain mx-auto mb-4" />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-7 h-7 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-                                    </div>
+                                    <img src="/sporttime-logo.png" alt="SportTime" className="h-16 w-16 object-contain mx-auto mb-4 rounded-2xl" />
                                 )}
                                 <h1 className="text-xl font-bold text-slate-900">Hola, {step.nombre}</h1>
                             </div>

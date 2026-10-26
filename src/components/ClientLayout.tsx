@@ -496,13 +496,11 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         style={{ perspective: '600px' }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={logoShown
-                                ? logoShown
-                                : 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1785379248/gymmynobg_e7mszc.png'}
-                            alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'Gymmy'}
+                            src={logoShown ? logoShown : '/sporttime-logo.png'}
+                            alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'SportTime'}
                             style={{
-                                maxHeight: logoShown ? 80 : 42,
-                                maxWidth: logoShown ? 240 : 130,
+                                maxHeight: 52,
+                                maxWidth: logoShown ? 240 : 52,
                                 objectFit: 'contain',
                                 transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
                                 opacity: logoAnimating ? 0 : 1,
