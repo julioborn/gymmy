@@ -499,7 +499,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                             src={logoShown ? logoShown : '/sporttime-logo.png'}
                             alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'SportTime'}
                             style={{
-                                maxHeight: 52,
+                                maxHeight: logoShown ? 80 : 52,
                                 maxWidth: logoShown ? 240 : 52,
                                 objectFit: 'contain',
                                 transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
