@@ -415,7 +415,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             {/* ── HEADER ── */}
             <header
                 className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.4)]"
-                style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: (isRegistroPage || isStaticPage) ? 'none' : undefined }}
+                style={{ background: navBg, paddingTop: 'env(safe-area-inset-top)', display: (isRegistroPage || isStaticPage || isLoginPage) ? 'none' : undefined }}
             >
                 <div className="relative h-[88px] flex items-center justify-between px-4">
                     {/* Hamburger — left side, all screen sizes when menu is shown */}
@@ -623,7 +623,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             <main
                 className={`flex-1 ${isStaticPage ? '' : 'p-3 bg-slate-50'} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
-                    marginTop: (isRegistroPage || isStaticPage) ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
+                    marginTop: (isRegistroPage || isStaticPage || isLoginPage) ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,
