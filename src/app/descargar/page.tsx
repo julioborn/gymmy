@@ -44,7 +44,7 @@ export default function DescargarPage() {
                     </svg>
                     <div className="flex flex-col">
                         <span className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">Disponible en</span>
-                        <span className="text-base font-bold leading-tight">Google Play</span>
+                        <span className="text-base font-bold leading-tight">Android</span>
                     </div>
                 </Link>
 
@@ -61,7 +61,7 @@ export default function DescargarPage() {
                     </svg>
                     <div className="flex flex-col">
                         <span className="text-[10px] text-slate-500 font-medium uppercase tracking-widest">Descargá en el</span>
-                        <span className="text-base font-bold leading-tight">App Store</span>
+                        <span className="text-base font-bold leading-tight">iPhone</span>
                     </div>
                 </Link>
 
