@@ -623,9 +623,9 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── MAIN CONTENT ── */}
             <main
-                className={`flex-1 p-3 bg-slate-50 ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
+                className={`flex-1 ${isStaticPage ? '' : 'p-3 bg-slate-50'} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
-                    marginTop: isRegistroPage ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
+                    marginTop: (isRegistroPage || isStaticPage) ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,
