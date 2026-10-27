@@ -450,16 +450,32 @@ export default function MiCuentaPage() {
             cur.setDate(cur.getDate() + 1);
         }
     } else if (planEj?.fechaInicio) {
-        // If there's an outdated embedded plan that wasn't closed, show it as completed
+        // If there's an outdated embedded plan that wasn't closed, show it as completed ending on the Nth session
         if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && useEjPlan) {
             const oldStart = planDateToKey(alumno.planEntrenamiento.fechaInicio);
-            const newStartDate = new Date(planDateToKey(planEj.fechaInicio) + 'T12:00:00');
-            const oldEndDate = new Date(newStartDate.getTime() - 24 * 60 * 60 * 1000);
-            const oldEndStr = `${oldEndDate.getFullYear()}-${String(oldEndDate.getMonth()+1).padStart(2,'0')}-${String(oldEndDate.getDate()).padStart(2,'0')}`;
+            const oldStartDate = new Date(oldStart + 'T12:00:00');
+            const duracion = alumno.planEntrenamiento.duracion || 0;
+
+            // Find the Nth Musculación session (N = duracion) → actual end date of old plan
+            const sesiones = alumno.asistencia
+                .filter((a: Asistencia) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= oldStartDate)
+                .sort((a: Asistencia, b: Asistencia) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+            const endSession = duracion > 0 && sesiones.length >= duracion
+                ? sesiones[duracion - 1]
+                : sesiones[sesiones.length - 1];
+            const oldEndStr = endSession
+                ? toLocalDateKey(endSession.fecha)
+                : (() => {
+                    const d = new Date(planDateToKey(planEj.fechaInicio) + 'T12:00:00');
+                    d.setDate(d.getDate() - 1);
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                })();
+
             planBoundaryMap[oldStart] = 'start';
             planBoundaryMap[oldEndStr] = 'end';
             const cur = new Date(oldStart + 'T12:00:00');
-            while (cur <= oldEndDate) {
+            const endDate = new Date(oldEndStr + 'T12:00:00');
+            while (cur <= endDate) {
                 const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
                 planDaysMap[k] = 'completed';
                 cur.setDate(cur.getDate() + 1);

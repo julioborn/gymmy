@@ -1060,15 +1060,31 @@ export default function HistorialAlumnoPage() {
         }
         // Treat the outdated embedded plan as if it ended the day the new exercise plan started
     } else if (planAlumnoActivo?.fechaInicio) {
-        // If there's an older embedded plan that wasn't closed, show it as completed up to the new plan's start
+        // If there's an older embedded plan that wasn't closed, show it as completed ending on the Nth session
         if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && useEjPlan) {
             const oldStart = convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio);
-            const newStart = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
+            const oldStartDate = parseLocalDate(oldStart);
+            const duracion = alumno.planEntrenamiento.duracion || 0;
+
+            // Find the Nth Musculación session (N = duracion) → that's the actual end date
+            const sesiones = alumno.asistencia
+                .filter((a: Asistencia) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= oldStartDate)
+                .sort((a: Asistencia, b: Asistencia) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+            const endSession = duracion > 0 && sesiones.length >= duracion
+                ? sesiones[duracion - 1]
+                : sesiones[sesiones.length - 1];
+            const endStr = endSession
+                ? convertirAFechaLocal(endSession.fecha)
+                : (() => {
+                    const d = parseLocalDate(convertirAFechaLocal(planAlumnoActivo.fechaInicio));
+                    d.setDate(d.getDate() - 1);
+                    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                })();
+
             const curOld = parseLocalDate(oldStart);
-            const endOld = parseLocalDate(newStart);
-            endOld.setDate(endOld.getDate() - 1);
+            const endOld = parseLocalDate(endStr);
             planBoundaryMap[oldStart] = 'start';
-            planBoundaryMap[`${endOld.getFullYear()}-${String(endOld.getMonth()+1).padStart(2,'0')}-${String(endOld.getDate()).padStart(2,'0')}`] = 'end';
+            planBoundaryMap[endStr] = 'end';
             while (curOld <= endOld) {
                 const k = `${curOld.getFullYear()}-${String(curOld.getMonth()+1).padStart(2,'0')}-${String(curOld.getDate()).padStart(2,'0')}`;
                 planDaysMap[k] = 'completed';
