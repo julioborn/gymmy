@@ -571,13 +571,13 @@ export default function MiCuentaPage() {
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
-    const card = 'bg-[#111] border border-white/[0.07] rounded-2xl p-4';
-    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none text-white';
-    const sub = 'text-xs text-white/40 mt-1';
+    const card = 'bg-[#0f0f0f] border border-white/[0.06] rounded-2xl p-4';
+    const lbl = 'text-[10px] font-bold text-white/30 uppercase tracking-widest';
+    const num = 'text-4xl font-black leading-none text-white';
+    const sub = 'text-xs text-white/35 mt-1';
 
     return (
-        <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
+        <div className="max-w-lg mx-auto pt-3 pb-12 px-3 space-y-3">
 
             {/* ── PAGO RESULT BANNER ── */}
             {pagoResult && (
@@ -618,40 +618,23 @@ export default function MiCuentaPage() {
             )}
 
             {/* ── PROFILE BANNER ── */}
-            <div className="relative bg-[#111] rounded-2xl border border-white/[0.07] px-5 pt-5 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(163,230,53,0.08),transparent_55%)]" />
-                <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg bg-lime-400">
-                        <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
+            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] px-4 pt-4 pb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-lime-400 shadow-[0_0_24px_rgba(163,230,53,0.25)]">
+                        <span className="text-black font-black text-2xl tracking-tight">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-white font-bold text-lg leading-tight truncate">
+                        <h1 className="text-white font-black text-xl leading-tight truncate">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
-                        <div className="flex items-center gap-1.5 mt-1">
-                            <svg className="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-                            </svg>
-                            <span className="text-white/40 text-xs truncate">{gimnasioNombre}</span>
-                        </div>
+                        <p className="text-white/35 text-xs font-medium mt-0.5 truncate">{gimnasioNombre}</p>
                     </div>
-                </div>
-
-                <div className="mt-4 flex items-center gap-2 flex-wrap relative">
-                    <span className="ring-1 ring-white/10 bg-white/[0.06] text-white/50 text-xs font-medium px-3 py-1 rounded-full">
-                        DNI {alumno.dni}
-                    </span>
-                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        pagoEsteMes ? 'bg-lime-400/15 text-lime-400' : 'bg-red-500/15 text-red-400'
-                    }`}>
-                        {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
-                    </span>
                     {alumno.dni === '43844409' && (
                         <button
                             onClick={handleCheckIn}
                             disabled={checkingIn}
                             title="Marcar presente"
-                            className="ml-auto w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all"
+                            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/[0.06] hover:bg-white/10 active:scale-90 transition-all border border-white/[0.06]"
                         >
                             {checkingIn ? (
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -667,16 +650,26 @@ export default function MiCuentaPage() {
                         </button>
                     )}
                 </div>
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                    <span className="bg-white/[0.05] text-white/40 text-xs font-semibold px-3 py-1 rounded-full border border-white/[0.06]">
+                        DNI {alumno.dni}
+                    </span>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                        pagoEsteMes ? 'bg-lime-400/10 text-lime-400 border border-lime-400/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>
+                        {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
+                    </span>
+                </div>
             </div>
 
             {/* ── TAB SWITCHER ── */}
-            <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1">
+            <div className="flex gap-1 bg-[#0f0f0f] rounded-2xl p-1 border border-white/[0.06]">
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => changeTab(t)}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                            tab === t ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                            tab === t ? 'bg-lime-400 text-black' : 'text-white/30 hover:text-white/60'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
@@ -686,19 +679,19 @@ export default function MiCuentaPage() {
 
             {/* ── RESUMEN ── */}
             {tab === 'resumen' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                         <div className={card}>
-                            <p className={`${lbl} mb-3`}>Asistencias</p>
+                            <p className={`${lbl} mb-2`}>Asistencias</p>
                             <p className={num}>{asistenciasEsteMes.length}</p>
                             <p className={sub}>en {mesActual}</p>
                         </div>
                         <div className={card}>
-                            <p className={`${lbl} mb-3`}>Cuota</p>
-                            <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-white' : 'text-red-400'}`}>
+                            <p className={`${lbl} mb-2`}>Cuota</p>
+                            <p className={`text-2xl font-black leading-none ${pagoEsteMes ? 'text-white' : 'text-red-400'}`}>
                                 {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : 'Pendiente'}
                             </p>
-                            <p className={`${sub} ${pagoEsteMes ? 'text-lime-400/70' : ''}`}>
+                            <p className={`${sub} ${pagoEsteMes ? 'text-lime-400/60' : ''}`}>
                                 {pagoEsteMes ? 'Al día' : mesActual}
                             </p>
                         </div>
@@ -748,51 +741,68 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {planEj && !planEjComplete && (
-                        <div className={card}>
-                            <div className="flex items-center justify-between mb-3">
-                                <p className={lbl}>{planEj.nombre}</p>
-                                <span className="text-xs text-white/30 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
+                    {planEj && !planEjComplete && (() => {
+                        const pct = Math.min((planEjDone / (planEjTotal || 1)) * 100, 100);
+                        return (
+                            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] overflow-hidden">
+                                <div className="px-4 pt-4 pb-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[10px] font-bold text-lime-400/70 uppercase tracking-widest">Plan activo</span>
+                                        <span className="text-xs text-white/30 font-semibold tabular-nums">{planEjDone} / {planEjTotal} sesiones</span>
+                                    </div>
+                                    <p className="text-white font-bold text-base leading-tight truncate mb-3">{planEj.nombre}</p>
+                                    <div className="w-full bg-white/[0.06] rounded-full h-1.5">
+                                        <div className="h-1.5 rounded-full transition-all bg-lime-400"
+                                            style={{ width: `${pct}%` }} />
+                                    </div>
+                                </div>
+                                <div className="px-4 py-2.5 border-t border-white/[0.05] flex items-center justify-between">
+                                    <span className="text-xs text-white/30">{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</span>
+                                    <span className="text-xs font-bold text-lime-400">{Math.round(pct)}%</span>
+                                </div>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-                                <div className="h-2 rounded-full transition-all bg-lime-400"
-                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%` }} />
-                            </div>
-                            <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
-                        </div>
-                    )}
+                        );
+                    })()}
 
-                    {!planEj && tienePlan && (
-                        <div className={card}>
-                            <div className="flex items-center justify-between mb-3">
-                                <p className={lbl}>Plan activo</p>
-                                <span className="text-xs text-white/30 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                    {!planEj && tienePlan && (() => {
+                        const pct = Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100);
+                        return (
+                            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] overflow-hidden">
+                                <div className="px-4 pt-4 pb-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[10px] font-bold text-lime-400/70 uppercase tracking-widest">Plan activo</span>
+                                        <span className="text-xs text-white/30 font-semibold tabular-nums">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                                    </div>
+                                    <div className="w-full bg-white/[0.06] rounded-full h-1.5 mt-3">
+                                        <div className="h-1.5 rounded-full transition-all bg-lime-400"
+                                            style={{ width: `${pct}%` }} />
+                                    </div>
+                                </div>
+                                <div className="px-4 py-2.5 border-t border-white/[0.05] flex items-center justify-between">
+                                    <span className="text-xs text-white/30">{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</span>
+                                    <span className="text-xs font-bold text-lime-400">{Math.round(pct)}%</span>
+                                </div>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
-                                <div className="h-2 rounded-full transition-all bg-lime-400"
-                                    style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }} />
-                            </div>
-                            <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {(planEjComplete || (!planEj && plan?.terminado && plan?.fechaInicio && plan?.duracion)) && (
-                        <div className="bg-lime-400/10 border border-lime-400/20 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-lime-400/20 flex items-center justify-center flex-shrink-0">
-                                <IconTrophy className="w-6 h-6 text-lime-400" />
+                        <div className="bg-lime-400/[0.07] border border-lime-400/15 rounded-2xl p-4 flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-2xl bg-lime-400/15 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-5 h-5 text-lime-400" />
                             </div>
                             <div>
                                 <p className="text-lime-400 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-lime-400/60 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                <p className="text-lime-400/50 text-xs mt-0.5">Completaste todas las sesiones.</p>
                             </div>
                         </div>
                     )}
 
                     {/* ── SEMANA ── */}
-                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
-                        <div className="px-3 pt-3 pb-2.5 border-b border-white/[0.05] flex items-center justify-between gap-2">
+                    <div className="bg-[#0f0f0f] border border-white/[0.06] rounded-2xl overflow-hidden">
+                        <div className="px-4 pt-3 pb-3 flex items-center justify-between gap-2">
                             <button onClick={() => setAsistWeekOffset(o => o + 1)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0">
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-white/30 hover:text-white/60 transition-colors flex-shrink-0">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
@@ -801,56 +811,54 @@ export default function MiCuentaPage() {
                                 <p className="text-white text-sm font-bold leading-tight">
                                     {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
                                 </p>
-                                <p className="text-white/40 text-xs mt-0.5">
+                                <p className="text-white/30 text-xs mt-0.5">
                                     {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
                                 </p>
                             </div>
                             <button onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
                                 disabled={asistWeekOffset === 0}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0 disabled:opacity-30">
+                                className="w-8 h-8 flex items-center justify-center rounded-xl text-white/30 hover:text-white/60 transition-colors flex-shrink-0 disabled:opacity-20">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
                             </button>
                         </div>
 
+                        {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
+                            <div className="px-4 pb-3 flex items-center gap-1.5">
+                                {Array.from({ length: diasPorSemana }, (_, i) => (
+                                    <div key={i} className="h-1 flex-1 rounded-full"
+                                        style={{ background: i < musculacionEnSemana ? '#a3e635' : 'rgba(255,255,255,0.06)' }} />
+                                ))}
+                                <span className="text-[11px] text-white/30 font-bold shrink-0 ml-1 tabular-nums">{musculacionEnSemana}/{diasPorSemana}</span>
+                            </div>
+                        )}
+
                         {asistenciasEnSemana.length === 0 ? (
-                            <div className="px-4 py-7 text-center">
-                                <p className="text-white/30 text-sm">Sin asistencias esta semana.</p>
+                            <div className="px-4 py-6 text-center border-t border-white/[0.04]">
+                                <p className="text-white/25 text-sm">Sin asistencias esta semana</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/[0.04]">
+                            <div className="divide-y divide-white/[0.04] border-t border-white/[0.04]">
                                 {asistenciasEnSemana.map(a => {
                                     const d = new Date(a.fecha);
                                     return (
                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex flex-col items-center justify-center flex-shrink-0 border border-white/[0.06]">
-                                                <span className="text-white font-bold text-sm leading-none">{d.getDate()}</span>
-                                                <span className="text-white/40 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
+                                            <div className="w-11 h-11 rounded-xl bg-white/[0.04] flex flex-col items-center justify-center flex-shrink-0">
+                                                <span className="text-white font-black text-base leading-none">{d.getDate()}</span>
+                                                <span className="text-white/30 text-[10px] font-semibold leading-none mt-0.5 uppercase">{MESES_CORTO[d.getMonth()]}</span>
                                             </div>
-                                            <div className="flex-1 flex items-center gap-2 flex-wrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>
+                                            <div className="flex-1 flex items-center gap-2">
+                                                <span className={`text-xs font-bold px-3 py-1.5 rounded-xl ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>
                                                     {a.actividad}
                                                 </span>
-                                                <span className="text-xs text-white/40 font-medium">
-                                                    {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                                                </span>
                                             </div>
+                                            <span className="text-xs text-white/30 font-semibold tabular-nums">
+                                                {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                            </span>
                                         </div>
                                     );
                                 })}
-                            </div>
-                        )}
-
-                        {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
-                            <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.05] flex items-center gap-2">
-                                <div className="flex gap-1 flex-1">
-                                    {Array.from({ length: diasPorSemana }, (_, i) => (
-                                        <div key={i} className="h-1.5 flex-1 rounded-full"
-                                            style={{ background: i < musculacionEnSemana ? '#a3e635' : 'rgba(255,255,255,0.08)' }} />
-                                    ))}
-                                </div>
-                                <span className="text-xs text-white/40 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
                         )}
                     </div>
@@ -859,7 +867,7 @@ export default function MiCuentaPage() {
 
             {/* ── HISTORIAL ── */}
             {tab === 'historial' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <div className={card}>
                         <div className="flex items-center justify-between mb-4">
                             <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors">
@@ -986,7 +994,7 @@ export default function MiCuentaPage() {
                         </div>
                         <div className={card}>
                             <p className={`${lbl} mb-2`}>Pagado</p>
-                            <p className="text-xl font-bold leading-none text-white">
+                            <p className="text-2xl font-black leading-none text-white">
                                 ${Object.entries(pagosMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0).toLocaleString('es-AR')}
                             </p>
                             <p className={`${sub} capitalize`}>en {MESES_CORTO[calMonth]}</p>
