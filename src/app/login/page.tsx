@@ -351,7 +351,6 @@ export default function LoginPage() {
 
                 </div>
 
-                <p className="text-center text-white/20 text-xs mt-6">SportTime © 2026</p>
             </div>
         </div>
     );

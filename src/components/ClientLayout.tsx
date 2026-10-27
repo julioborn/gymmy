@@ -492,22 +492,12 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <div className="w-8" />
                     )}
 
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
-                        style={{ perspective: '600px' }}>
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={logoShown ? logoShown : '/sporttime-logo.png'}
-                            alt={logoShown ? (gymTema?.nombre ?? 'Gimnasio') : 'SportTime'}
-                            style={{
-                                maxHeight: logoShown ? 80 : 52,
-                                maxWidth: logoShown ? 240 : 52,
-                                objectFit: 'contain',
-                                transform: logoAnimating ? 'scaleX(0)' : 'scaleX(1)',
-                                opacity: logoAnimating ? 0 : 1,
-                                transition: logoAnimating
-                                    ? 'transform 0.18s ease-in, opacity 0.15s ease-in'
-                                    : 'transform 0.24s ease-out, opacity 0.22s ease-out, max-height 0.22s ease',
-                            }}
+                            src="/sporttime-logo.png"
+                            alt="SportTime"
+                            style={{ height: 44, width: 44, objectFit: 'contain' }}
                         />
                     </Link>
 
