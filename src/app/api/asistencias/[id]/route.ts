@@ -1,7 +1,6 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import PlanAlumno from '@/models/PlanAlumno';
-import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { sendToTokens } from '@/lib/notifications';
 
@@ -101,17 +100,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
                     { $set: { activo: false } }
                 );
 
-                if (alumno.email) {
-                    await enviarCorreoPlanTerminado(
-                        alumno.email,
-                        alumno.nombre,
-                        alumno.asistencia,
-                        {
-                            fechaInicio: fechaInicio.toISOString(),
-                            duracion: alumno.planEntrenamiento.duracion!,
-                        }
-                    );
-                }
             }
         }
 
