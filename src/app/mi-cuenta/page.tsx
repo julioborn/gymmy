@@ -531,6 +531,12 @@ export default function MiCuentaPage() {
     const initials = getInitials(alumno.nombre, alumno.apellido);
     const gimnasioNombre = (alumno.gimnasioId as any)?.nombre ?? '';
 
+    const daysInCurrentMonth = new Date(anioActual, now.getMonth() + 1, 0).getDate();
+    const monthAsistBars = Array.from({ length: daysInCurrentMonth }, (_, i) => {
+        const dayKey = `${anioActual}-${String(now.getMonth()+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
+        return (asistenciasMap[dayKey] || []).length;
+    });
+
     function prevMonth() {
         setSelectedDay(null);
         if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
@@ -625,33 +631,46 @@ export default function MiCuentaPage() {
                         <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
+                        <p className="text-white/40 text-xs font-medium mb-0.5">¡Hola!</p>
                         <h1 className="text-white font-bold text-lg leading-tight truncate">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
-                        <div className="flex items-center gap-1.5 mt-1">
+                        <div className="flex items-center gap-1.5 mt-0.5">
                             <svg className="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                             </svg>
                             <span className="text-white/40 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
+                    <button title="Configuración" className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.07] hover:bg-white/10 transition-colors flex-shrink-0">
+                        <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
                     <span className="ring-1 ring-white/10 bg-white/[0.06] text-white/50 text-xs font-medium px-3 py-1 rounded-full">
                         DNI {alumno.dni}
                     </span>
-                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                    <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
                         pagoEsteMes ? 'bg-lime-400/15 text-lime-400' : 'bg-red-500/15 text-red-400'
                     }`}>
+                        {pagoEsteMes && <span className="text-[11px]">👑</span>}
                         {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
                     </span>
+                    <button onClick={() => changeTab('historial')} className="ml-auto w-8 h-8 flex items-center justify-center rounded-xl bg-white/[0.07] hover:bg-white/10 transition-colors">
+                        <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
                     {alumno.dni === '43844409' && (
                         <button
                             onClick={handleCheckIn}
                             disabled={checkingIn}
                             title="Marcar presente"
-                            className="ml-auto w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all"
+                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all"
                         >
                             {checkingIn ? (
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -671,17 +690,24 @@ export default function MiCuentaPage() {
 
             {/* ── TAB SWITCHER ── */}
             <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1">
-                {(['resumen', 'historial', 'plan'] as const).map(t => (
-                    <button
-                        key={t}
-                        onClick={() => changeTab(t)}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                            tab === t ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'
-                        }`}
-                    >
-                        {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
-                    </button>
-                ))}
+                <button onClick={() => changeTab('resumen')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'resumen' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                    </svg>
+                    <span>Resumen</span>
+                </button>
+                <button onClick={() => changeTab('historial')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'historial' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <span>Historial</span>
+                </button>
+                <button onClick={() => changeTab('plan')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'plan' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
+                    </svg>
+                    <span>Mi Plan</span>
+                </button>
             </div>
 
             {/* ── RESUMEN ── */}
@@ -689,18 +715,31 @@ export default function MiCuentaPage() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div className={card}>
-                            <p className={`${lbl} mb-3`}>Asistencias</p>
+                            <p className={`${lbl} mb-2`}>Asistencias</p>
                             <p className={num}>{asistenciasEsteMes.length}</p>
                             <p className={sub}>en {mesActual}</p>
+                            <div className="flex items-end gap-[1.5px] h-7 mt-3">
+                                {monthAsistBars.map((count, i) => (
+                                    <div key={i} className="flex-1 rounded-[1px] transition-all"
+                                        style={{ height: count > 0 ? '100%' : '35%', backgroundColor: count > 0 ? '#a3e635' : 'rgba(255,255,255,0.07)' }} />
+                                ))}
+                            </div>
                         </div>
-                        <div className={card}>
-                            <p className={`${lbl} mb-3`}>Cuota</p>
+                        <div className={`${card} flex flex-col`}>
+                            <p className={`${lbl} mb-2`}>Cuota</p>
                             <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-white' : 'text-red-400'}`}>
                                 {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : 'Pendiente'}
                             </p>
-                            <p className={`${sub} ${pagoEsteMes ? 'text-lime-400/70' : ''}`}>
-                                {pagoEsteMes ? 'Al día' : mesActual}
-                            </p>
+                            <div className="flex items-end justify-between mt-auto pt-3">
+                                <p className={`text-sm font-semibold ${pagoEsteMes ? 'text-lime-400' : 'text-white/40'}`}>
+                                    {pagoEsteMes ? 'Al día' : mesActual}
+                                </p>
+                                {pagoEsteMes && (
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(163,230,53,0.15)' }}>
+                                        <IconCheck className="w-5 h-5 text-lime-400" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -751,28 +790,56 @@ export default function MiCuentaPage() {
                     {planEj && !planEjComplete && (
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
-                                <p className={lbl}>{planEj.nombre}</p>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
+                                    </svg>
+                                    <p className={lbl}>Plan activo</p>
+                                </div>
                                 <span className="text-xs text-white/30 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-3">
                                 <div className="h-2 rounded-full transition-all bg-lime-400"
                                     style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%` }} />
                             </div>
-                            <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
+                            <div className="flex items-center justify-between">
+                                <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
+                                <button onClick={() => changeTab('plan')}
+                                    className="flex items-center gap-1 text-xs font-semibold text-white/50 bg-white/[0.07] hover:bg-white/10 px-3 py-1.5 rounded-xl transition-colors">
+                                    Ver mi plan
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     {!planEj && tienePlan && (
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
-                                <p className={lbl}>Plan activo</p>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
+                                    </svg>
+                                    <p className={lbl}>Plan activo</p>
+                                </div>
                                 <span className="text-xs text-white/30 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-3">
                                 <div className="h-2 rounded-full transition-all bg-lime-400"
                                     style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }} />
                             </div>
-                            <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
+                            <div className="flex items-center justify-between">
+                                <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
+                                <button onClick={() => changeTab('historial')}
+                                    className="flex items-center gap-1 text-xs font-semibold text-white/50 bg-white/[0.07] hover:bg-white/10 px-3 py-1.5 rounded-xl transition-colors">
+                                    Ver historial
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     )}
 
@@ -788,72 +855,66 @@ export default function MiCuentaPage() {
                         </div>
                     )}
 
-                    {/* ── SEMANA ── */}
-                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
-                        <div className="px-3 pt-3 pb-2.5 border-b border-white/[0.05] flex items-center justify-between gap-2">
-                            <button onClick={() => setAsistWeekOffset(o => o + 1)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                                </svg>
-                            </button>
-                            <div className="text-center min-w-0">
-                                <p className="text-white text-sm font-bold leading-tight">
-                                    {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
-                                </p>
-                                <p className="text-white/40 text-xs mt-0.5">
-                                    {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                                </p>
-                            </div>
-                            <button onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
-                                disabled={asistWeekOffset === 0}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0 disabled:opacity-30">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {asistenciasEnSemana.length === 0 ? (
-                            <div className="px-4 py-7 text-center">
-                                <p className="text-white/30 text-sm">Sin asistencias esta semana.</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-white/[0.04]">
-                                {asistenciasEnSemana.map(a => {
-                                    const d = new Date(a.fecha);
-                                    return (
-                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex flex-col items-center justify-center flex-shrink-0 border border-white/[0.06]">
-                                                <span className="text-white font-bold text-sm leading-none">{d.getDate()}</span>
-                                                <span className="text-white/40 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
-                                            </div>
-                                            <div className="flex-1 flex items-center gap-2 flex-wrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>
-                                                    {a.actividad}
-                                                </span>
-                                                <span className="text-xs text-white/40 font-medium">
+                    {/* ── ÚLTIMAS ASISTENCIAS ── */}
+                    {(() => {
+                        const ultimas = [...alumno.asistencia]
+                            .filter(a => a.presente)
+                            .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+                            .slice(0, 4);
+                        if (ultimas.length === 0) return null;
+                        const actColor: Record<string, string> = {
+                            'Musculación': '#a3e635',
+                            'Intermitente': '#f97316',
+                            'Cardio': '#14b8a6',
+                            'Movilidad': '#6366f1',
+                            'Otro': '#eab308',
+                        };
+                        return (
+                            <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                                <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.05]">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                                        </svg>
+                                        <span className="font-bold text-sm text-white">Últimas asistencias</span>
+                                    </div>
+                                    <button onClick={() => changeTab('historial')} className="flex items-center gap-1 text-xs font-semibold text-lime-400/80 hover:text-lime-400 transition-colors">
+                                        Ver todas
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="divide-y divide-white/[0.04]">
+                                    {ultimas.map(a => {
+                                        const d = new Date(a.fecha);
+                                        const bg = actColor[a.actividad] || '#6b7280';
+                                        return (
+                                            <div key={a._id} className="flex items-center gap-3 px-4 py-3">
+                                                <div className="w-10 shrink-0">
+                                                    <p className="text-white font-bold text-base leading-none">{d.getDate()}</p>
+                                                    <p className="text-white/40 text-[10px] font-semibold uppercase leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</p>
+                                                </div>
+                                                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                                                    style={{ backgroundColor: `${bg}25` }}>
+                                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: bg }} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-white font-semibold text-sm truncate">{a.actividad}</p>
+                                                </div>
+                                                <span className="text-white/40 text-xs font-medium shrink-0">
                                                     {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
+                                                <svg className="w-4 h-4 text-white/15 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                </svg>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
-                            <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.05] flex items-center gap-2">
-                                <div className="flex gap-1 flex-1">
-                                    {Array.from({ length: diasPorSemana }, (_, i) => (
-                                        <div key={i} className="h-1.5 flex-1 rounded-full"
-                                            style={{ background: i < musculacionEnSemana ? '#a3e635' : 'rgba(255,255,255,0.08)' }} />
-                                    ))}
+                                        );
+                                    })}
                                 </div>
-                                <span className="text-xs text-white/40 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
-                        )}
-                    </div>
+                        );
+                    })()}
                 </div>
             )}
 
