@@ -646,7 +646,7 @@ export default function MiCuentaPage() {
                     }`}>
                         {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
                     </span>
-                    {alumno.dni === '43844409' && (
+                    {(
                         <button
                             onClick={handleCheckIn}
                             disabled={checkingIn}
