@@ -46,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-<body className="bg-slate-50 min-h-screen overscroll-none">
+<body className="bg-[#0a0a0a] min-h-screen overscroll-none">
         <ErrorBoundary>
           <ClientLayout>{children}</ClientLayout>
         </ErrorBoundary>

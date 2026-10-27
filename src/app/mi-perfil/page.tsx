@@ -58,12 +58,11 @@ interface PlanEj {
 }
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-// Returns "YYYY-MM-DD" in LOCAL timezone (avoids UTC midnight parsing pitfalls)
+
 function localDateStr(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// Returns "YYYY-MM-DD" of the Monday of the week containing `d`, in LOCAL timezone
 function getMondayStr(d: Date): string {
     const m = new Date(d);
     m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
@@ -74,14 +73,14 @@ const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
 const ACTIVIDAD_DOT: Record<string, string> = {
-    'Musculación': 'bg-blue-600',
+    'Musculación': 'bg-lime-400',
     'Intermitente': 'bg-orange-400',
     'Otro': 'bg-yellow-400',
 };
 const ACTIVIDAD_PILL: Record<string, string> = {
-    'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
-    'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
-    'Otro': 'bg-yellow-50 text-yellow-700 border border-yellow-100',
+    'Musculación': 'bg-lime-400/10 text-lime-400 border border-lime-400/20',
+    'Intermitente': 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+    'Otro': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
 };
 const COMBO_PALETTE = [
     { bg: 'rgba(244,163,71,0.07)', labelColor: '#d97706', dotColor: '#d97706' },
@@ -131,12 +130,12 @@ function IconSwitcherCard({
     onSetIcon: (name: string) => void;
 }) {
     const options = [
-        { name: 'default',    label: 'Gymmy',              src: '/icons/icon-192x192.png' },
+        { name: 'default',    label: 'SportTime',          src: '/icons/icon-192x192.png' },
         { name: 'Sporttime',  label: gymNombre ?? 'Gimnasio', src: gymLogoUrl },
     ];
     return (
-        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm px-4 py-3.5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ícono de la app</p>
+        <div className="bg-[#111] rounded-2xl border border-white/[0.07] px-4 py-3.5">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">Ícono de la app</p>
             <div className="flex gap-3">
                 {options.map(opt => {
                     const active = currentIcon === opt.name;
@@ -147,25 +146,25 @@ function IconSwitcherCard({
                             disabled={switchingIcon}
                             className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-2xl border-2 transition-all disabled:opacity-60 ${
                                 active
-                                    ? 'border-slate-900 bg-slate-50'
-                                    : 'border-transparent bg-slate-50 hover:border-slate-200'
+                                    ? 'border-lime-400 bg-lime-400/5'
+                                    : 'border-transparent bg-white/[0.03] hover:border-white/20'
                             }`}
                         >
                             <img
                                 src={opt.src}
                                 alt={opt.label}
-                                className="w-14 h-14 rounded-2xl object-cover shadow-sm"
+                                className="w-14 h-14 rounded-2xl object-cover"
                             />
-                            <span className="text-xs font-semibold text-slate-700">{opt.label}</span>
+                            <span className="text-xs font-semibold text-white/80">{opt.label}</span>
                             {active && (
-                                <span className="text-[10px] font-bold text-emerald-600">Activo</span>
+                                <span className="text-[10px] font-bold text-lime-400">Activo</span>
                             )}
                         </button>
                     );
                 })}
             </div>
             {switchingIcon && (
-                <p className="text-center text-xs text-slate-400 mt-2.5">Cambiando ícono...</p>
+                <p className="text-center text-xs text-white/40 mt-2.5">Cambiando ícono...</p>
             )}
         </div>
     );
@@ -212,8 +211,8 @@ export default function MiPerfilPage() {
     const [selectedDia, setSelectedDia] = useState(0);
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
 
-    const [acento, setAcento] = useState('#111111');
-    const [acento2, setAcento2] = useState('#10b981');
+    const [acento, setAcento] = useState('#a3e635');
+    const [acento2, setAcento2] = useState('#a3e635');
     const [currentIcon, setCurrentIcon] = useState<string>('default');
     const [switchingIcon, setSwitchingIcon] = useState(false);
     const [isNative, setIsNative] = useState(false);
@@ -248,7 +247,6 @@ export default function MiPerfilPage() {
                 const totalSemanas = data.totalSemanas || 5;
                 const diasLen = data.dias.length;
 
-                // Count ALL Musculación sessions since plan start
                 const sortedSessions = alumnoData.asistencia
                     .filter(a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= inicio)
                     .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
@@ -256,7 +254,6 @@ export default function MiPerfilPage() {
                 const lastSession = sortedSessions[sortedSessions.length - 1];
                 const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
                 const justAttended = lastSession && new Date(lastSession.fecha).getTime() > threeHoursAgo;
-                // < 3h since last session: stay on day just completed; > 3h: advance to next day
                 const effectiveDone = justAttended ? totalDone - 1 : totalDone;
                 const currentDayIdx = diasLen > 0 ? effectiveDone % diasLen : 0;
                 const currentWeek = diasLen > 0 ? Math.floor(effectiveDone / diasLen) + 1 : 1;
@@ -310,7 +307,6 @@ export default function MiPerfilPage() {
                     ...d,
                     ejercicios: d.ejercicios.map((e, ei) => {
                         if (ei === eIdx) return { ...e, [field]: value };
-                        // Propagar kgAlumno a todos los ejercicios del mismo combo
                         if (isKgField && targetCombo && e.grupoCombo === targetCombo) {
                             return { ...e, [field]: value };
                         }
@@ -353,17 +349,12 @@ export default function MiPerfilPage() {
 
     function parseSeries(semVal: string): number {
         if (!semVal) return 1;
-        // "Nde..." → N series (e.g. "3de4", "4de6")
         const deMatch = semVal.match(/^(\d+)\s*de/i);
         if (deMatch) return Math.min(Math.max(parseInt(deMatch[1]), 1), 6);
-        // "N series" → N series (e.g. "3 series (10-15)")
         const seriesMatch = semVal.match(/^(\d+)\s*series/i);
         if (seriesMatch) return Math.min(Math.max(parseInt(seriesMatch[1]), 1), 6);
-        // "N.M.P..." → count segments (e.g. "4.3.3.2", "10.10.10")
         if (/^\d+(\.\d+)+$/.test(semVal)) return Math.min(semVal.split('.').length, 6);
-        // "/" notation
         if (semVal.includes('/')) return Math.min(semVal.split('/').length, 6);
-        // "NxREP"
         const xMatch = semVal.match(/^(\d+)\s*[xX]/);
         if (xMatch) return Math.min(Math.max(parseInt(xMatch[1]), 1), 6);
         return 1;
@@ -395,7 +386,6 @@ export default function MiPerfilPage() {
             .then(async (d) => {
                 if (d.alumnoId) {
                     setAlumnoId(d.alumnoId);
-                    // Fetch alumno data and plan in parallel
                     const [alumnoData] = await Promise.all([
                         fetchAlumnoData(d.alumnoId),
                         fetchPlan(d.alumnoId),
@@ -410,7 +400,7 @@ export default function MiPerfilPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-slate-300" style={{ borderTopColor: acento, borderRightColor: acento }} />
+                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-white/10" style={{ borderTopColor: '#a3e635', borderRightColor: '#a3e635' }} />
             </div>
         );
     }
@@ -418,14 +408,14 @@ export default function MiPerfilPage() {
     if (!alumnoId || !alumno) {
         return (
             <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
-                <div className="bg-[#111] rounded-2xl px-5 pt-5 pb-5">
+                <div className="bg-[#111] rounded-2xl border border-white/[0.07] px-5 pt-5 pb-5">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: acento }}>
-                            <span className="text-white font-bold text-xl">{initials}</span>
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 bg-lime-400">
+                            <span className="text-black font-bold text-xl">{initials}</span>
                         </div>
                         <div>
                             <h1 className="text-white font-bold text-lg leading-tight">{myNombre} {myApellido}</h1>
-                            <span className="text-slate-400 text-xs">{roleLabel}</span>
+                            <span className="text-white/40 text-xs">{roleLabel}</span>
                         </div>
                     </div>
                 </div>
@@ -439,19 +429,18 @@ export default function MiPerfilPage() {
                     />
                 )}
 
-                <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm p-10 text-center">
-                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-10 text-center">
+                    <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                         </svg>
                     </div>
-                    <p className="text-slate-700 font-semibold mb-1">Activá tu perfil</p>
-                    <p className="text-slate-400 text-sm mb-5">Creá tu perfil de alumno para registrar asistencias y tu plan de entrenamiento.</p>
+                    <p className="text-white font-semibold mb-1">Activá tu perfil</p>
+                    <p className="text-white/40 text-sm mb-5">Creá tu perfil de alumno para registrar asistencias y tu plan de entrenamiento.</p>
                     <button
                         onClick={crearAlumnoVinculado}
                         disabled={creando}
-                        className="px-6 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition"
-                        style={{ background: acento }}
+                        className="px-6 py-2.5 rounded-xl text-sm font-bold text-black bg-lime-400 hover:bg-lime-300 disabled:opacity-60 transition"
                     >
                         {creando ? 'Creando...' : 'Activar perfil'}
                     </button>
@@ -499,7 +488,6 @@ export default function MiPerfilPage() {
         ).length;
     }
 
-    // PlanEj (PlanAlumno) stats para el Resumen — usa zona horaria local para evitar el bug UTC
     const planEjFechaInicio: Date | null = (() => {
         if (!planEj?.fechaInicio) return null;
         const s = planEj.fechaInicio.split('T')[0];
@@ -529,7 +517,6 @@ export default function MiPerfilPage() {
     const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    // Usar fecha local para evitar que '2026-09-14' se interprete como sept 13 en Argentina (UTC-3)
     const planInicioDate = planEjFechaInicio;
     const todayMonday = new Date(now);
     todayMonday.setDate(todayMonday.getDate() - ((todayMonday.getDay() + 6) % 7));
@@ -554,25 +541,24 @@ export default function MiPerfilPage() {
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
-    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none';
-    const sub = 'text-xs text-slate-500 mt-1';
+    const card = 'bg-[#111] border border-white/[0.07] rounded-2xl p-4';
+    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
+    const num = 'text-3xl font-bold leading-none text-white';
+    const sub = 'text-xs text-white/40 mt-1';
 
     return (
         <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* ── BANNER ── */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-30" style={{ background: acento2 }} />
+            <div className="relative bg-[#111] rounded-2xl border border-white/[0.07] px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(163,230,53,0.08),transparent_55%)]" />
                 <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: acento }}>
-                        <span className="text-white font-bold text-xl tracking-wide">{initials}</span>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg bg-lime-400">
+                        <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
                         <h1 className="text-white font-bold text-lg leading-tight truncate">{myNombre} {myApellido}</h1>
-                        <span className="text-slate-400 text-xs mt-1 block">{roleLabel}</span>
+                        <span className="text-white/40 text-xs mt-1 block">{roleLabel}</span>
                     </div>
                 </div>
             </div>
@@ -589,13 +575,13 @@ export default function MiPerfilPage() {
             )}
 
             {/* ── TABS ── */}
-            <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
+            <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1">
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => changeTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                            tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                            tab === t ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
@@ -609,19 +595,19 @@ export default function MiPerfilPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className={card}>
                             <p className={`${lbl} mb-3`}>Asistencias</p>
-                            <p className={`${num} text-slate-900`}>{asistenciasEsteMes.length}</p>
+                            <p className={num}>{asistenciasEsteMes.length}</p>
                             <p className={sub}>en {mesActual}</p>
                         </div>
                         <div className={card}>
                             <p className={`${lbl} mb-3`}>Plan</p>
                             {(planEj || tienePlan) ? (
                                 <>
-                                    <p className={`${num} text-slate-900`}>{planEj ? planEjDone : asistenciasEnPlan}</p>
+                                    <p className={num}>{planEj ? planEjDone : asistenciasEnPlan}</p>
                                     <p className={sub}>sesiones completadas</p>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-slate-400 text-sm font-medium mt-1">Sin plan</p>
+                                    <p className="text-white/40 text-sm font-medium mt-1">Sin plan</p>
                                     <p className={sub}>no asignado</p>
                                 </>
                             )}
@@ -632,12 +618,12 @@ export default function MiPerfilPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <p className={lbl}>{planEj.nombre}</p>
-                                <span className="text-xs text-slate-400 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
+                                <span className="text-xs text-white/40 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
                             </div>
-                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
                                 <div
-                                    className="h-2 rounded-full transition-all"
-                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%`, background: acento2 }}
+                                    className="h-2 rounded-full transition-all bg-lime-400"
+                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%` }}
                                 />
                             </div>
                             <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
@@ -648,12 +634,12 @@ export default function MiPerfilPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <p className={lbl}>Plan activo</p>
-                                <span className="text-xs text-slate-400 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                                <span className="text-xs text-white/40 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
                             </div>
-                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
                                 <div
-                                    className="h-2 rounded-full transition-all"
-                                    style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%`, background: acento2 }}
+                                    className="h-2 rounded-full transition-all bg-lime-400"
+                                    style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }}
                                 />
                             </div>
                             <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
@@ -661,39 +647,40 @@ export default function MiPerfilPage() {
                     )}
 
                     {(planEjComplete || (!planEj && plan?.terminado)) && (
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                <IconTrophy className="w-6 h-6 text-emerald-600" />
+                        <div className="bg-lime-400/10 border border-lime-400/20 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-lime-400/20 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-6 h-6 text-lime-400" />
                             </div>
                             <div>
-                                <p className="text-emerald-800 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-emerald-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                <p className="text-lime-400 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-lime-400/60 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                             </div>
                         </div>
                     )}
 
-                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">
-                        <div className="px-3 pt-3 pb-2.5 border-b border-black/[0.05] flex items-center justify-between gap-2">
+                    {/* ── SEMANA ── */}
+                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                        <div className="px-3 pt-3 pb-2.5 border-b border-white/[0.05] flex items-center justify-between gap-2">
                             <button
                                 onClick={() => setAsistWeekOffset(o => o + 1)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
                             <div className="text-center min-w-0">
-                                <p className="text-slate-800 text-sm font-bold leading-tight">
+                                <p className="text-white text-sm font-bold leading-tight">
                                     {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
                                 </p>
-                                <p className="text-slate-400 text-xs mt-0.5">
+                                <p className="text-white/40 text-xs mt-0.5">
                                     {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
                                 disabled={asistWeekOffset === 0}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0 disabled:opacity-30"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0 disabled:opacity-30"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -702,23 +689,23 @@ export default function MiPerfilPage() {
                         </div>
                         {asistenciasEnSemana.length === 0 ? (
                             <div className="px-4 py-7 text-center">
-                                <p className="text-slate-400 text-sm">Sin asistencias esta semana.</p>
+                                <p className="text-white/30 text-sm">Sin asistencias esta semana.</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-slate-100">
+                            <div className="divide-y divide-white/[0.04]">
                                 {asistenciasEnSemana.map(a => {
                                     const d = new Date(a.fecha);
                                     return (
                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-black/[0.06]">
-                                                <span className="text-slate-800 font-bold text-sm leading-none">{d.getDate()}</span>
-                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
+                                            <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex flex-col items-center justify-center flex-shrink-0 border border-white/[0.06]">
+                                                <span className="text-white font-bold text-sm leading-none">{d.getDate()}</span>
+                                                <span className="text-white/40 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
                                             </div>
                                             <div className="flex-1 flex items-center gap-2 flex-wrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
+                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>
                                                     {a.actividad}
                                                 </span>
-                                                <span className="text-xs text-slate-400 font-medium">
+                                                <span className="text-xs text-white/40 font-medium">
                                                     {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
                                             </div>
@@ -728,14 +715,14 @@ export default function MiPerfilPage() {
                             </div>
                         )}
                         {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
-                            <div className="px-4 py-2.5 bg-slate-50 border-t border-black/[0.05] flex items-center gap-2">
+                            <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.05] flex items-center gap-2">
                                 <div className="flex gap-1 flex-1">
                                     {Array.from({ length: diasPorSemana }, (_, i) => (
                                         <div key={i} className="h-1.5 flex-1 rounded-full"
-                                            style={{ background: i < musculacionEnSemana ? acento2 : '#e2e8f0' }} />
+                                            style={{ background: i < musculacionEnSemana ? '#a3e635' : 'rgba(255,255,255,0.08)' }} />
                                     ))}
                                 </div>
-                                <span className="text-xs text-slate-400 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
+                                <span className="text-xs text-white/40 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
                         )}
                     </div>
@@ -747,16 +734,16 @@ export default function MiPerfilPage() {
                 <div className="space-y-4">
                     <div className={card}>
                         <div className="flex items-center justify-between mb-4">
-                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
+                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
-                            <span className="text-slate-900 font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
+                            <span className="text-white font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
                             <button
                                 onClick={nextMonth}
                                 disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors disabled:opacity-30"
+                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors disabled:opacity-30"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -765,7 +752,7 @@ export default function MiPerfilPage() {
                         </div>
                         <div className="grid grid-cols-7 mb-1">
                             {DIAS_SEMANA.map(d => (
-                                <div key={d} className="text-center text-slate-400 text-xs font-semibold py-1">{d}</div>
+                                <div key={d} className="text-center text-white/30 text-xs font-semibold py-1">{d}</div>
                             ))}
                         </div>
                         <div className="grid grid-cols-7 gap-y-1">
@@ -784,57 +771,57 @@ export default function MiPerfilPage() {
                                         key={key}
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
-                                            isSelected ? 'bg-slate-100'
-                                            : isPlanStart ? 'bg-violet-100 hover:bg-violet-200'
-                                            : isPlanDay ? 'hover:bg-violet-50'
-                                            : hasData ? 'hover:bg-slate-50'
+                                            isSelected ? 'bg-white/10'
+                                            : isPlanStart ? 'bg-violet-500/20 hover:bg-violet-500/30'
+                                            : isPlanDay ? 'hover:bg-white/[0.04]'
+                                            : hasData ? 'hover:bg-white/[0.04]'
                                             : 'cursor-default'
                                         }`}
-                                        style={isPlanDay && !isSelected ? { background: 'rgba(139,92,246,0.06)' } : undefined}
+                                        style={isPlanDay && !isSelected ? { background: 'rgba(139,92,246,0.08)' } : undefined}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                                            isSelected ? 'text-slate-900'
-                                            : isToday ? 'bg-[#111] text-white'
-                                            : isPlanStart ? 'bg-violet-600 text-white'
-                                            : hasData ? 'text-slate-800'
-                                            : 'text-slate-400'
+                                            isSelected ? 'text-white'
+                                            : isToday ? 'bg-lime-400 text-black'
+                                            : isPlanStart ? 'bg-violet-500 text-white'
+                                            : hasData ? 'text-white'
+                                            : 'text-white/25'
                                         }`}>{day}</span>
                                         <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
                                             {asists.map((a, idx) => (
-                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
+                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-white/40'}`} />
                                             ))}
                                         </div>
                                     </button>
                                 );
                             })}
                         </div>
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-black/[0.06] flex-wrap">
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-400 text-xs">Musculación</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-slate-400 text-xs">Intermitente</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-400 text-xs">Otro</span></div>
-                            {planInicioKey && <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-violet-600" /><span className="text-slate-400 text-xs">Inicio de plan</span></div>}
-                            {lastMusculacionKey && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(139,92,246,0.18)' }} /><span className="text-slate-400 text-xs">Días de plan</span></div>}
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.06] flex-wrap">
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white/40 text-xs">Musculación</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/40 text-xs">Intermitente</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/40 text-xs">Otro</span></div>
+                            {planInicioKey && <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-violet-500" /><span className="text-white/40 text-xs">Inicio de plan</span></div>}
+                            {lastMusculacionKey && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm" style={{ background: 'rgba(139,92,246,0.2)' }} /><span className="text-white/40 text-xs">Días de plan</span></div>}
                         </div>
                     </div>
 
                     {selectedDay && selectedAsistencias.length > 0 && (
                         <div className={`${card} space-y-3`}>
-                            <h3 className="text-slate-900 font-bold text-sm capitalize">
+                            <h3 className="text-white font-bold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </h3>
                             {selectedDay === planInicioKey && (
-                                <div className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-violet-600 flex-shrink-0" />
-                                    <span className="text-violet-700 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
+                                <div className="flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
+                                    <span className="text-violet-400 text-sm font-semibold">Inicio de plan — {planEj?.nombre}</span>
                                 </div>
                             )}
                             {selectedAsistencias.map(a => (
                                 <div key={a._id} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
-                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>{a.actividad}</span>
+                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-white/40'}`} />
+                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>{a.actividad}</span>
                                     </div>
-                                    <span className="text-slate-400 text-xs font-medium">
+                                    <span className="text-white/40 text-xs font-medium">
                                         {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
@@ -845,14 +832,14 @@ export default function MiPerfilPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className={card}>
                             <p className={`${lbl} mb-2`}>Asistencias</p>
-                            <p className={`${num} text-slate-900`}>
+                            <p className={num}>
                                 {Object.entries(asistenciasMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, a]) => sum + a.length, 0)}
                             </p>
                             <p className={`${sub} capitalize`}>en {MESES_CORTO[calMonth]}</p>
                         </div>
                         <div className={card}>
                             <p className={`${lbl} mb-2`}>Sesiones totales</p>
-                            <p className={`${num} text-slate-900`}>{alumno.asistencia.filter(a => a.presente).length}</p>
+                            <p className={num}>{alumno.asistencia.filter(a => a.presente).length}</p>
                             <p className={sub}>historial completo</p>
                         </div>
                     </div>
@@ -864,19 +851,19 @@ export default function MiPerfilPage() {
                 <div className="space-y-3">
                     {loadingPlan && (
                         <div className="flex justify-center py-12">
-                            <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-slate-300" style={{ borderTopColor: acento }} />
+                            <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-white/10" style={{ borderTopColor: '#a3e635' }} />
                         </div>
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-10 text-center mt-2">
-                            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <div className="bg-[#111] rounded-2xl border border-white/[0.07] p-10 text-center mt-2">
+                            <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                 </svg>
                             </div>
-                            <p className="text-slate-600 font-semibold mb-1">Sin plan asignado</p>
-                            <p className="text-slate-400 text-sm">Todavía no tenés un plan de entrenamiento asignado.</p>
+                            <p className="text-white/70 font-semibold mb-1">Sin plan asignado</p>
+                            <p className="text-white/30 text-sm">Todavía no tenés un plan de entrenamiento asignado.</p>
                         </div>
                     )}
 
@@ -894,7 +881,6 @@ export default function MiPerfilPage() {
                         });
 
                         const planInicio = planEj.fechaInicio ? new Date(planEj.fechaInicio) : null;
-                        // Calendar-week-based using local date strings (avoids UTC boundary issues)
                         const diasLen = planEj.dias.length;
                         const sortedSessionsR = planInicio ? alumno.asistencia
                             .filter(a => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio)
@@ -911,44 +897,44 @@ export default function MiPerfilPage() {
 
                         return (
                             <>
-                                <div className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
+                                        <p className="text-white/40 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
-                                        <p className="text-slate-600 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
+                                        <p className="text-white/30 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
                                     </div>
-                                    <div className="shrink-0 text-center rounded-xl px-3 py-2" style={{ background: `${acento2}25` }}>
-                                        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: acento2 }}>Semana</p>
+                                    <div className="shrink-0 text-center rounded-xl px-3 py-2 bg-lime-400/10">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-lime-400">Semana</p>
                                         <p className="font-bold text-xl leading-none text-white">{sessionBasedWeekNum}</p>
-                                        <p className="text-xs" style={{ color: acento2 }}>de {totalSem}</p>
+                                        <p className="text-xs text-lime-400">de {totalSem}</p>
                                     </div>
                                 </div>
 
                                 {planEj.entradaCalor?.ejercicios?.length > 0 && (
-                                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
+                                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
                                         <button
                                             onClick={() => setShowCalentamiento(v => !v)}
-                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-slate-50 active:bg-slate-100 transition"
+                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span className="text-base">🔥</span>
-                                                <span className="text-sm font-semibold text-slate-700">Entrada en calor</span>
-                                                <span className="text-xs text-slate-400 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
+                                                <span className="text-sm font-semibold text-white/80">Entrada en calor</span>
+                                                <span className="text-xs text-white/30 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
                                             </div>
-                                            <svg className={`w-4 h-4 text-slate-300 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <svg className={`w-4 h-4 text-white/20 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {showCalentamiento && (
-                                            <div className="border-t border-black/[0.06] divide-y divide-slate-100">
-                                                <div className="px-4 py-2 bg-slate-50 flex items-center justify-between">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ejercicio</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Días 1/2/3</span>
+                                            <div className="border-t border-white/[0.06] divide-y divide-white/[0.04]">
+                                                <div className="px-4 py-2 bg-white/[0.02] flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Ejercicio</span>
+                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Días 1/2/3</span>
                                                 </div>
                                                 {planEj.entradaCalor.ejercicios.map((e, i) => (
                                                     <div key={i} className="flex items-center justify-between px-4 py-3">
-                                                        <p className="text-sm font-medium text-slate-700">{e.nombre}</p>
-                                                        <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
+                                                        <p className="text-sm font-medium text-white/80">{e.nombre}</p>
+                                                        <span className="text-xs font-bold text-white/30 bg-white/[0.05] px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -956,8 +942,9 @@ export default function MiPerfilPage() {
                                     </div>
                                 )}
 
-                                <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-3">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                {/* Semana selector */}
+                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-3">
+                                    <p className="text-xs font-bold text-white/30 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === sessionBasedWeekNum;
@@ -968,31 +955,32 @@ export default function MiPerfilPage() {
                                                     key={sem}
                                                     onClick={() => setSelectedSemana(sem)}
                                                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
-                                                        isSelected ? 'bg-slate-900 text-white shadow-sm'
-                                                        : isPast ? 'bg-slate-50 text-slate-400'
-                                                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                                                        isSelected ? 'bg-lime-400 text-black shadow-sm'
+                                                        : isPast ? 'bg-white/[0.05] text-white/30'
+                                                        : 'bg-white/[0.05] text-white/50 hover:bg-white/10'
                                                     }`}
                                                 >
                                                     {sem === totalSem ? 'DESC' : sem}
                                                     {isPast && (
-                                                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
-                                                            <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center pointer-events-none">
+                                                            <svg className="w-2 h-2 text-black" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                                             </svg>
                                                         </span>
                                                     )}
                                                     {isCurrent && !isSelected && (
-                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white" style={{ background: acento }} />
+                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full bg-lime-400" />
                                                     )}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                     {selectedSemana === totalSem && (
-                                        <p className="text-center text-xs text-slate-400 mt-2 font-medium">Semana de descarga</p>
+                                        <p className="text-center text-xs text-white/30 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
 
+                                {/* Día selector */}
                                 <div className="flex gap-1.5">
                                     {planEj.dias.map((d, i) => {
                                         const isDayDone = selectedSemana < sessionBasedWeekNum
@@ -1004,20 +992,20 @@ export default function MiPerfilPage() {
                                                 onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
-                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                                                        : 'bg-white text-slate-500 border-black/[0.08] hover:border-black/20'
+                                                        ? 'bg-lime-400 text-black border-lime-400 shadow-sm'
+                                                        : 'bg-[#111] text-white/50 border-white/[0.08] hover:border-white/20'
                                                 }`}
                                             >
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
                                                 {isDayDone && (
-                                                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
-                                                        <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center pointer-events-none">
+                                                        <svg className="w-2 h-2 text-black" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                                         </svg>
                                                     </span>
                                                 )}
-                                                {isCurrentDay && !isDayDone && (
-                                                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: acento }} />
+                                                {isCurrentDay && !isDayDone && selectedDia !== i && (
+                                                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-lime-400" />
                                                 )}
                                             </button>
                                         );
@@ -1025,29 +1013,29 @@ export default function MiPerfilPage() {
                                 </div>
 
                                 {dia?.bloqueActivacion && (
-                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
-                                        <p className="text-xs font-bold text-amber-700 mb-1">Bloque de activación</p>
-                                        <p className="text-sm text-amber-800 leading-snug">{dia.bloqueActivacion}</p>
+                                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
+                                        <p className="text-xs font-bold text-amber-400 mb-1">Bloque de activación</p>
+                                        <p className="text-sm text-amber-300/80 leading-snug">{dia.bloqueActivacion}</p>
                                     </div>
                                 )}
 
                                 {dia && (
-                                    <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
-                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-black/[0.07]">
+                                    <div className="bg-[#111] rounded-2xl border border-white/[0.07] overflow-hidden">
+                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-white/[0.07]">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Trepada</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide text-center leading-tight">Trepada</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-700 uppercase tracking-wide text-center leading-tight">Núcleo</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-white/60 uppercase tracking-wide text-center leading-tight">Núcleo</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide text-center leading-tight">Mis KG</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-lime-400 uppercase tracking-wide text-center leading-tight">Mis KG</p>
                                             </div>
                                         </div>
-                                        <div className="divide-y divide-slate-100">
+                                        <div className="divide-y divide-white/[0.04]">
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
                                                 const trepadaVal = getTrepadaField(ej, selectedSemana);
@@ -1060,7 +1048,7 @@ export default function MiPerfilPage() {
                                                     <div key={eIdx} style={combo ? { backgroundColor: combo.bg } : undefined}>
                                                         <button
                                                             onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
+                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-white/[0.03] transition-colors active:bg-white/[0.05]"
                                                         >
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
@@ -1070,37 +1058,37 @@ export default function MiPerfilPage() {
                                                                             <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: combo.labelColor }}>Combinado</span>
                                                                         </div>
                                                                     )}
-                                                                    <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
+                                                                    <p className="text-sm font-semibold text-white leading-tight">{ej.nombre}</p>
                                                                     {ej.kg && ej.kg !== '-' && (
-                                                                        <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
+                                                                        <p className="text-sm font-bold text-red-400 mt-0.5">{ej.kg} kg</p>
                                                                     )}
                                                                     {(() => {
                                                                         const obs = (ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
-                                                                        return obs ? <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{obs}</p> : null;
+                                                                        return obs ? <p className="text-[11px] text-white/30 mt-0.5 leading-snug">{obs}</p> : null;
                                                                     })()}
                                                                 </div>
-                                                                <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                                <IconChevron className={`w-3.5 h-3.5 text-white/20 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
-                                                            <div className="px-1 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-slate-500' : 'text-slate-200'}`}>
+                                                            <div className="px-1 py-3 border-l border-white/[0.06] flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-white/50' : 'text-white/10'}`}>
                                                                     {trepadaVal && trepadaVal !== '-' ? trepadaVal : '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
+                                                            <div className="px-2 py-3 border-l border-white/[0.06] flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-white/80' : 'text-white/15'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-1 py-2 border-l border-black/[0.06] flex items-center justify-center">
+                                                            <div className="px-1 py-2 border-l border-white/[0.06] flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
                                                                     const kgParts = kgVal ? kgVal.split(',').map(v => v.trim()).filter(Boolean) : [];
-                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-slate-200">—</span>;
-                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-emerald-600">{kgParts[0]}</span>;
+                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-white/15">—</span>;
+                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-lime-400">{kgParts[0]}</span>;
                                                                     return (
                                                                         <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">
                                                                             {kgParts.map((kg, i) => (
-                                                                                <span key={i} className="text-[10px] font-bold text-emerald-600 text-center leading-tight">{kg}</span>
+                                                                                <span key={i} className="text-[10px] font-bold text-lime-400 text-center leading-tight">{kg}</span>
                                                                             ))}
                                                                         </div>
                                                                     );
@@ -1113,19 +1101,19 @@ export default function MiPerfilPage() {
                                                             const kgParts = kgRaw.split(',').map(v => v.trim());
                                                             while (kgParts.length < seriesCount) kgParts.push('');
                                                             return (
-                                                                <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-black/[0.06] space-y-3">
+                                                                <div className="px-4 pb-4 pt-2 bg-white/[0.02] border-t border-white/[0.06] space-y-3">
                                                                     {ej.notas && (
-                                                                        <p className="text-xs text-slate-500 italic">{ej.notas}</p>
+                                                                        <p className="text-xs text-white/30 italic">{ej.notas}</p>
                                                                     )}
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">
+                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide mb-1.5 block">
                                                                             Mis KG{seriesCount > 1 && <span className="normal-case font-normal"> · {seriesCount} series</span>}
                                                                         </label>
                                                                         <div className={`grid gap-2 ${seriesCount === 1 ? 'grid-cols-1' : seriesCount <= 4 ? `grid-cols-${seriesCount}` : 'grid-cols-4'}`}>
                                                                             {Array.from({ length: seriesCount }, (_, si) => (
                                                                                 <div key={si} className="flex flex-col gap-0.5">
                                                                                     {seriesCount > 1 && (
-                                                                                        <span className="text-[10px] font-bold text-slate-400 text-center">S{si + 1}</span>
+                                                                                        <span className="text-[10px] font-bold text-white/30 text-center">S{si + 1}</span>
                                                                                     )}
                                                                                     <input
                                                                                         type="number"
@@ -1137,25 +1125,25 @@ export default function MiPerfilPage() {
                                                                                             newParts[si] = e.target.value;
                                                                                             updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, newParts.join(','));
                                                                                         }}
-                                                                                        className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                                        className="w-full border border-white/10 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
                                                                                     />
                                                                                 </div>
                                                                             ))}
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide">Observaciones</label>
                                                                         <input
                                                                             type="text"
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
+                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60"
                                                                         />
                                                                     </div>
                                                                     <button
                                                                         onClick={() => handleSaveEjercicio(eIdx)}
                                                                         disabled={savingEj === eIdx}
-                                                                        className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-slate-900 text-white hover:bg-slate-700 active:bg-slate-800"
+                                                                        className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-lime-400 text-black hover:bg-lime-300 active:bg-lime-500"
                                                                     >
                                                                         {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
                                                                     </button>
