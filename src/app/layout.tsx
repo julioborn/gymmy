@@ -34,10 +34,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "SportTime",
   },
-  icons: {
-    icon: "/sporttime-512.png",
-    apple: "/sporttime-512.png",
-  },
 };
 
 export default function RootLayout({
