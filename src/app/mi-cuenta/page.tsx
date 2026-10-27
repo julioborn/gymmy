@@ -481,15 +481,6 @@ export default function MiCuentaPage() {
                 cur.setDate(cur.getDate() + 1);
             }
         }
-        const startStr = toLocalDateKey(planEj.fechaInicio);
-        planBoundaryMap[startStr] = 'start';
-        const cur = new Date(startStr + 'T12:00:00');
-        const today = new Date(todayKey + 'T12:00:00');
-        while (cur <= today) {
-            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-            planDaysMap[k] = 'active';
-            cur.setDate(cur.getDate() + 1);
-        }
     }
 
     for (const plan of (alumno.planEntrenamientoHistorial || [])) {

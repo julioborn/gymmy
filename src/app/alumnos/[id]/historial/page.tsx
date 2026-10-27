@@ -1132,16 +1132,6 @@ export default function HistorialAlumnoPage() {
                 curOld.setDate(curOld.getDate() + 1);
             }
         }
-        const startStr = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
-        const cur = parseLocalDate(startStr);
-        planBoundaryMap[startStr] = 'start';
-        const totalSes = (planAlumnoActivo.dias?.length || 0) * (planAlumnoActivo.totalSemanas || 1);
-        planByDateMap[startStr] = { type: 'active', plan: { fechaInicio: startStr, duracion: totalSes, diasRestantes: diasRestantes ?? 0 } };
-        while (cur <= todayLocal) {
-            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-            planDaysMap[k] = 'active';
-            cur.setDate(cur.getDate() + 1);
-        }
     }
     for (const plan of alumno.planEntrenamientoHistorial || []) {
         if (!plan.fechaInicio || !plan.fechaFin) continue;

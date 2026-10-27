@@ -1,5 +1,6 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import PlanAlumno from '@/models/PlanAlumno';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { sendToTokens } from '@/lib/notifications';
 
@@ -114,15 +115,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const { id } = params;
 
     try {
-        const alumno = await Alumno.findOne({ _id: id, gimnasioId });
+        const alumno = await Alumno.findOneAndUpdate(
+            { _id: id, gimnasioId },
+            { $set: { 'planEntrenamiento.fechaInicio': null, 'planEntrenamiento.duracion': null, 'planEntrenamiento.diasRestantes': null, 'planEntrenamiento.terminado': false } },
+            { new: true }
+        );
 
         if (!alumno) {
             return new Response('Alumno no encontrado', { status: 404 });
         }
 
-        alumno.planEntrenamiento = undefined;
-
-        await alumno.save();
+        // Deactivate exercise plans so the calendar no longer shows green
+        await PlanAlumno.updateMany({ alumnoId: id, activo: true }, { $set: { activo: false } });
 
         return new Response(JSON.stringify({ message: 'Plan de entrenamiento eliminado correctamente' }), { status: 200 });
     } catch {
