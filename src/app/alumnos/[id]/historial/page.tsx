@@ -1039,7 +1039,16 @@ export default function HistorialAlumnoPage() {
 
     const planByDateMap: Record<string, { type: 'active'; plan: any } | { type: 'historial'; plan: any; planId: string }> = {};
 
-    if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado) {
+    // Prefer the newer plan: if planAlumnoActivo started after planEntrenamiento, use it as active
+    const embStart = alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado
+        ? new Date(alumno.planEntrenamiento.fechaInicio).getTime()
+        : 0;
+    const ejStart = planAlumnoActivo?.fechaInicio
+        ? new Date(planAlumnoActivo.fechaInicio).getTime()
+        : 0;
+    const useEjPlan = ejStart > embStart;
+
+    if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && !useEjPlan) {
         const startStr = convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio);
         const cur = parseLocalDate(startStr);
         planBoundaryMap[startStr] = 'start';
@@ -1049,7 +1058,23 @@ export default function HistorialAlumnoPage() {
             planDaysMap[k] = 'active';
             cur.setDate(cur.getDate() + 1);
         }
+        // Treat the outdated embedded plan as if it ended the day the new exercise plan started
     } else if (planAlumnoActivo?.fechaInicio) {
+        // If there's an older embedded plan that wasn't closed, show it as completed up to the new plan's start
+        if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && useEjPlan) {
+            const oldStart = convertirAFechaLocal(alumno.planEntrenamiento.fechaInicio);
+            const newStart = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
+            const curOld = parseLocalDate(oldStart);
+            const endOld = parseLocalDate(newStart);
+            endOld.setDate(endOld.getDate() - 1);
+            planBoundaryMap[oldStart] = 'start';
+            planBoundaryMap[`${endOld.getFullYear()}-${String(endOld.getMonth()+1).padStart(2,'0')}-${String(endOld.getDate()).padStart(2,'0')}`] = 'end';
+            while (curOld <= endOld) {
+                const k = `${curOld.getFullYear()}-${String(curOld.getMonth()+1).padStart(2,'0')}-${String(curOld.getDate()).padStart(2,'0')}`;
+                planDaysMap[k] = 'completed';
+                curOld.setDate(curOld.getDate() + 1);
+            }
+        }
         const startStr = convertirAFechaLocal(planAlumnoActivo.fechaInicio);
         const cur = parseLocalDate(startStr);
         planBoundaryMap[startStr] = 'start';

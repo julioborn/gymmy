@@ -433,7 +433,13 @@ export default function MiCuentaPage() {
     const planDaysMap: Record<string, 'active' | 'completed'> = {};
     const planBoundaryMap: Record<string, 'start' | 'end'> = {};
 
-    if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado) {
+    // Prefer the newer plan: if planEj started after planEntrenamiento, use it as active
+    const embStartTs = alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado
+        ? new Date(alumno.planEntrenamiento.fechaInicio).getTime() : 0;
+    const ejStartTs = planEj?.fechaInicio ? new Date(planEj.fechaInicio).getTime() : 0;
+    const useEjPlan = ejStartTs > embStartTs;
+
+    if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && !useEjPlan) {
         const startStr = planDateToKey(alumno.planEntrenamiento.fechaInicio);
         planBoundaryMap[startStr] = 'start';
         const cur = new Date(startStr + 'T12:00:00');
@@ -444,6 +450,21 @@ export default function MiCuentaPage() {
             cur.setDate(cur.getDate() + 1);
         }
     } else if (planEj?.fechaInicio) {
+        // If there's an outdated embedded plan that wasn't closed, show it as completed
+        if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado && useEjPlan) {
+            const oldStart = planDateToKey(alumno.planEntrenamiento.fechaInicio);
+            const newStartDate = new Date(planDateToKey(planEj.fechaInicio) + 'T12:00:00');
+            const oldEndDate = new Date(newStartDate.getTime() - 24 * 60 * 60 * 1000);
+            const oldEndStr = `${oldEndDate.getFullYear()}-${String(oldEndDate.getMonth()+1).padStart(2,'0')}-${String(oldEndDate.getDate()).padStart(2,'0')}`;
+            planBoundaryMap[oldStart] = 'start';
+            planBoundaryMap[oldEndStr] = 'end';
+            const cur = new Date(oldStart + 'T12:00:00');
+            while (cur <= oldEndDate) {
+                const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+                planDaysMap[k] = 'completed';
+                cur.setDate(cur.getDate() + 1);
+            }
+        }
         const startStr = toLocalDateKey(planEj.fechaInicio);
         planBoundaryMap[startStr] = 'start';
         const cur = new Date(startStr + 'T12:00:00');

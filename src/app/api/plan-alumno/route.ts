@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import PlanAlumno from '@/models/PlanAlumno';
+import Alumno from '@/models/Alumno';
 import { requireGymAuth } from '@/lib/requireAuth';
 
 export async function GET() {
@@ -33,8 +34,28 @@ export async function POST(req: NextRequest) {
 
     await connectMongoDB();
 
-    // Deactivate all previous active plans for this alumno before creating the new one
+    // Deactivate all previous active PlanAlumno for this alumno
     await PlanAlumno.updateMany({ alumnoId, activo: true }, { $set: { activo: false } });
+
+    // Archive embedded planEntrenamiento (simple tracking plan) to historial so the calendar shows it as completed
+    const alumnoDoc = await Alumno.findById(alumnoId);
+    if (alumnoDoc?.planEntrenamiento?.fechaInicio && !alumnoDoc.planEntrenamiento.terminado) {
+        const oldStart = new Date(alumnoDoc.planEntrenamiento.fechaInicio);
+        const newStart = normalizarFecha(fechaInicio);
+        const fechaFin = new Date(newStart.getTime() - 24 * 60 * 60 * 1000);
+        const asistenciasContadas = (alumnoDoc.asistencia || []).filter(
+            (a: any) => a.actividad === 'Musculación' && a.presente &&
+                new Date(a.fecha) >= oldStart && new Date(a.fecha) <= fechaFin
+        ).length;
+        alumnoDoc.planEntrenamientoHistorial.push({
+            fechaInicio: oldStart,
+            fechaFin,
+            duracion: alumnoDoc.planEntrenamiento.duracion || 0,
+            asistenciasContadas,
+        });
+        alumnoDoc.planEntrenamiento = undefined;
+        await alumnoDoc.save();
+    }
 
     const plan = await PlanAlumno.create({
         gimnasioId,
