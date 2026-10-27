@@ -571,13 +571,14 @@ export default function MiCuentaPage() {
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
-    const card = 'bg-[#0f0f0f] border border-white/[0.06] rounded-2xl p-4';
-    const lbl = 'text-[10px] font-bold text-white/30 uppercase tracking-widest';
+    const card = 'bg-black rounded-2xl p-4';
+    const lbl = 'text-[10px] font-bold text-white/35 uppercase tracking-widest';
     const num = 'text-4xl font-black leading-none text-white';
     const sub = 'text-xs text-white/35 mt-1';
 
     return (
-        <div className="max-w-lg mx-auto pt-3 pb-12 px-3 space-y-3">
+        <div className="-m-3 min-h-[100dvh] px-3 pt-3 pb-16" style={{ background: '#F97316' }}>
+        <div className="max-w-lg mx-auto space-y-3">
 
             {/* ── PAGO RESULT BANNER ── */}
             {pagoResult && (
@@ -618,32 +619,32 @@ export default function MiCuentaPage() {
             )}
 
             {/* ── PROFILE BANNER ── */}
-            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] px-4 pt-4 pb-4">
+            <div className="pt-2 pb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-lime-400 shadow-[0_0_24px_rgba(163,230,53,0.25)]">
-                        <span className="text-black font-black text-2xl tracking-tight">{initials}</span>
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 bg-black">
+                        <span className="text-white font-black text-2xl tracking-tight">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-white font-black text-xl leading-tight truncate">
+                        <h1 className="text-white font-black text-2xl leading-tight truncate drop-shadow-sm">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
-                        <p className="text-white/35 text-xs font-medium mt-0.5 truncate">{gimnasioNombre}</p>
+                        <p className="text-white/70 text-sm font-semibold mt-0.5 truncate">{gimnasioNombre}</p>
                     </div>
                     {alumno.dni === '43844409' && (
                         <button
                             onClick={handleCheckIn}
                             disabled={checkingIn}
                             title="Marcar presente"
-                            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/[0.06] hover:bg-white/10 active:scale-90 transition-all border border-white/[0.06]"
+                            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-black/20 hover:bg-black/30 active:scale-90 transition-all"
                         >
                             {checkingIn ? (
-                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                             ) : checkInResult === 'ok' ? (
                                 <IconCheck className="w-4 h-4 text-lime-400" />
                             ) : checkInResult === 'duplicate' ? (
-                                <IconClock className="w-4 h-4 text-amber-400" />
+                                <IconClock className="w-4 h-4 text-amber-300" />
                             ) : checkInResult === 'error' ? (
-                                <IconX className="w-4 h-4 text-red-400" />
+                                <IconX className="w-4 h-4 text-red-300" />
                             ) : (
                                 <span className="text-base leading-none select-none">✋</span>
                             )}
@@ -651,11 +652,11 @@ export default function MiCuentaPage() {
                     )}
                 </div>
                 <div className="mt-3 flex items-center gap-2 flex-wrap">
-                    <span className="bg-white/[0.05] text-white/40 text-xs font-semibold px-3 py-1 rounded-full border border-white/[0.06]">
+                    <span className="bg-black/20 text-white/80 text-xs font-bold px-3 py-1 rounded-full">
                         DNI {alumno.dni}
                     </span>
                     <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        pagoEsteMes ? 'bg-lime-400/10 text-lime-400 border border-lime-400/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                        pagoEsteMes ? 'bg-lime-400 text-black' : 'bg-white/20 text-white'
                     }`}>
                         {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
                     </span>
@@ -663,13 +664,13 @@ export default function MiCuentaPage() {
             </div>
 
             {/* ── TAB SWITCHER ── */}
-            <div className="flex gap-1 bg-[#0f0f0f] rounded-2xl p-1 border border-white/[0.06]">
+            <div className="flex gap-1 bg-black/25 rounded-2xl p-1">
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => changeTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                            tab === t ? 'bg-lime-400 text-black' : 'text-white/30 hover:text-white/60'
+                            tab === t ? 'bg-black text-white' : 'text-white/60 hover:text-white/90'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
@@ -698,7 +699,7 @@ export default function MiCuentaPage() {
                     </div>
 
                     {!pagoEsteMes && aliasGimnasio && (
-                        <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                        <div className="bg-black rounded-2xl overflow-hidden">
                             <div className="px-5 py-4 border-b border-white/[0.06]">
                                 <p className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-1">Transferí tu cuota</p>
                                 <div className="flex items-center justify-between gap-3">
@@ -744,7 +745,7 @@ export default function MiCuentaPage() {
                     {planEj && !planEjComplete && (() => {
                         const pct = Math.min((planEjDone / (planEjTotal || 1)) * 100, 100);
                         return (
-                            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] overflow-hidden">
+                            <div className="bg-black rounded-2xl overflow-hidden">
                                 <div className="px-4 pt-4 pb-3">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-[10px] font-bold text-lime-400/70 uppercase tracking-widest">Plan activo</span>
@@ -767,7 +768,7 @@ export default function MiCuentaPage() {
                     {!planEj && tienePlan && (() => {
                         const pct = Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100);
                         return (
-                            <div className="bg-[#0f0f0f] rounded-2xl border border-white/[0.06] overflow-hidden">
+                            <div className="bg-black rounded-2xl overflow-hidden">
                                 <div className="px-4 pt-4 pb-3">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-[10px] font-bold text-lime-400/70 uppercase tracking-widest">Plan activo</span>
@@ -799,7 +800,7 @@ export default function MiCuentaPage() {
                     )}
 
                     {/* ── SEMANA ── */}
-                    <div className="bg-[#0f0f0f] border border-white/[0.06] rounded-2xl overflow-hidden">
+                    <div className="bg-black rounded-2xl overflow-hidden">
                         <div className="px-4 pt-3 pb-3 flex items-center justify-between gap-2">
                             <button onClick={() => setAsistWeekOffset(o => o + 1)}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl text-white/30 hover:text-white/60 transition-colors flex-shrink-0">
@@ -1013,7 +1014,7 @@ export default function MiCuentaPage() {
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-[#111] rounded-2xl border border-white/[0.07] p-10 text-center mt-2">
+                        <div className="bg-black rounded-2xl p-10 text-center mt-2">
                             <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -1055,7 +1056,7 @@ export default function MiCuentaPage() {
 
                         return (
                             <>
-                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div className="bg-black rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
                                         <p className="text-white/40 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
@@ -1069,7 +1070,7 @@ export default function MiCuentaPage() {
                                 </div>
 
                                 {planEj.entradaCalor?.ejercicios?.length > 0 && (
-                                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                                    <div className="bg-black rounded-2xl overflow-hidden">
                                         <button onClick={() => setShowCalentamiento(v => !v)}
                                             className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition">
                                             <div className="flex items-center gap-2">
@@ -1099,7 +1100,7 @@ export default function MiCuentaPage() {
                                 )}
 
                                 {/* Semana selector */}
-                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-3">
+                                <div className="bg-black rounded-2xl p-3">
                                     <p className="text-xs font-bold text-white/30 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
@@ -1144,7 +1145,7 @@ export default function MiCuentaPage() {
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
                                                         ? 'bg-lime-400 text-black border-lime-400 shadow-sm'
-                                                        : 'bg-[#111] text-white/50 border-white/[0.08] hover:border-white/20'
+                                                        : 'bg-black/80 text-white/50 border-white/[0.08] hover:border-white/20'
                                                 }`}>
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
                                                 {isDayDone && (
@@ -1170,7 +1171,7 @@ export default function MiCuentaPage() {
                                 )}
 
                                 {dia && (
-                                    <div className="bg-[#111] rounded-2xl border border-white/[0.07] overflow-hidden">
+                                    <div className="bg-black rounded-2xl overflow-hidden">
                                         <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-white/[0.07]">
                                             <div className="px-4 py-2.5">
                                                 <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide">Ejercicio</p>
@@ -1259,7 +1260,7 @@ export default function MiCuentaPage() {
                                                                             <input type="text"
                                                                                 value={(ej[`trepada${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `trepada${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.07] focus:outline-none focus:border-lime-400/60 text-center"
                                                                             />
                                                                         </div>
                                                                         <div>
@@ -1267,7 +1268,7 @@ export default function MiCuentaPage() {
                                                                             <input type="text"
                                                                                 value={semVal}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `semana${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.07] focus:outline-none focus:border-lime-400/60 text-center"
                                                                             />
                                                                         </div>
                                                                     </div>
@@ -1288,7 +1289,7 @@ export default function MiCuentaPage() {
                                                                                             newParts[si] = e.target.value;
                                                                                             updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, newParts.join(','));
                                                                                         }}
-                                                                                        className="w-full border border-white/10 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                        className="w-full border border-white/10 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-white/[0.07] focus:outline-none focus:border-lime-400/60 text-center"
                                                                                     />
                                                                                 </div>
                                                                             ))}
@@ -1299,7 +1300,7 @@ export default function MiCuentaPage() {
                                                                         <input type="text"
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60"
+                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.07] focus:outline-none focus:border-lime-400/60"
                                                                         />
                                                                     </div>
                                                                     <button onClick={() => handleSaveEjercicio(eIdx)} disabled={savingEj === eIdx}
@@ -1320,6 +1321,7 @@ export default function MiCuentaPage() {
                     })()}
                 </div>
             )}
+        </div>
         </div>
     );
 }
