@@ -35,8 +35,8 @@ export const metadata: Metadata = {
     title: "SportTime",
   },
   icons: {
-    icon: "/icons/favicon.ico",
-    apple: "/api/pwa/icon",
+    icon: "/sporttime-512.png",
+    apple: "/sporttime-512.png",
   },
 };
 
