@@ -403,13 +403,13 @@ export default function MiCuentaPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-white/10" style={{ borderTopColor: '#a3e635', borderRightColor: '#a3e635' }} />
+                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-gray-200" style={{ borderTopColor: '#a3e635', borderRightColor: '#a3e635' }} />
             </div>
         );
     }
 
     if (!alumno) {
-        return <div className="text-white/30 text-center py-16 text-sm">Error al cargar tus datos.</div>;
+        return <div className="text-gray-400 text-center py-16 text-sm">Error al cargar tus datos.</div>;
     }
 
     const mesActual = MESES[now.getMonth()];
@@ -577,10 +577,10 @@ export default function MiCuentaPage() {
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
-    const card = 'bg-[#111] border border-white/[0.07] rounded-2xl p-4';
-    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none text-white';
-    const sub = 'text-xs text-white/40 mt-1';
+    const card = 'bg-white border border-gray-100 rounded-2xl p-4 shadow-sm';
+    const lbl = 'text-[10px] font-bold text-gray-400 uppercase tracking-widest';
+    const num = 'text-3xl font-bold leading-none text-gray-900';
+    const sub = 'text-xs text-gray-400 mt-1';
 
     return (
         <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
@@ -624,26 +624,26 @@ export default function MiCuentaPage() {
             )}
 
             {/* ── PROFILE BANNER ── */}
-            <div className="relative bg-[#111] rounded-2xl border border-white/[0.07] px-5 pt-5 pb-5 overflow-hidden">
+            <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm px-5 pt-5 pb-5 overflow-hidden">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(163,230,53,0.08),transparent_55%)]" />
                 <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg bg-lime-400">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md bg-lime-400">
                         <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-white/40 text-xs font-medium mb-0.5">¡Hola!</p>
-                        <h1 className="text-white font-bold text-lg leading-tight truncate">
+                        <p className="text-gray-400 text-xs font-medium mb-0.5">¡Hola!</p>
+                        <h1 className="text-gray-900 font-bold text-lg leading-tight truncate">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                            <svg className="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                             </svg>
-                            <span className="text-white/40 text-xs truncate">{gimnasioNombre}</span>
+                            <span className="text-gray-400 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
-                    <button title="Configuración" className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.07] hover:bg-white/10 transition-colors flex-shrink-0">
-                        <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <button title="Configuración" className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0">
+                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                         </svg>
@@ -651,17 +651,17 @@ export default function MiCuentaPage() {
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
-                    <span className="ring-1 ring-white/10 bg-white/[0.06] text-white/50 text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="ring-1 ring-gray-200 bg-gray-100 text-gray-500 text-xs font-medium px-3 py-1 rounded-full">
                         DNI {alumno.dni}
                     </span>
                     <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
-                        pagoEsteMes ? 'bg-lime-400/15 text-lime-400' : 'bg-red-500/15 text-red-400'
+                        pagoEsteMes ? 'bg-lime-100 text-lime-700' : 'bg-red-50 text-red-600'
                     }`}>
                         {pagoEsteMes && <span className="text-[11px]">👑</span>}
                         {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
                     </span>
-                    <button onClick={() => changeTab('historial')} className="ml-auto w-8 h-8 flex items-center justify-center rounded-xl bg-white/[0.07] hover:bg-white/10 transition-colors">
-                        <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <button onClick={() => changeTab('historial')} className="ml-auto w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                         </svg>
                     </button>
@@ -670,16 +670,16 @@ export default function MiCuentaPage() {
                             onClick={handleCheckIn}
                             disabled={checkingIn}
                             title="Marcar presente"
-                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:scale-90 transition-all"
+                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 active:scale-90 transition-all"
                         >
                             {checkingIn ? (
-                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                             ) : checkInResult === 'ok' ? (
-                                <IconCheck className="w-4 h-4 text-lime-400" />
+                                <IconCheck className="w-4 h-4 text-lime-600" />
                             ) : checkInResult === 'duplicate' ? (
-                                <IconClock className="w-4 h-4 text-amber-400" />
+                                <IconClock className="w-4 h-4 text-amber-500" />
                             ) : checkInResult === 'error' ? (
-                                <IconX className="w-4 h-4 text-red-400" />
+                                <IconX className="w-4 h-4 text-red-500" />
                             ) : (
                                 <span className="text-base leading-none select-none">✋</span>
                             )}
@@ -689,20 +689,20 @@ export default function MiCuentaPage() {
             </div>
 
             {/* ── TAB SWITCHER ── */}
-            <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1">
-                <button onClick={() => changeTab('resumen')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'resumen' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+            <div className="flex gap-1 bg-gray-200 rounded-2xl p-1">
+                <button onClick={() => changeTab('resumen')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'resumen' ? 'bg-lime-400 text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                     </svg>
                     <span>Resumen</span>
                 </button>
-                <button onClick={() => changeTab('historial')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'historial' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+                <button onClick={() => changeTab('historial')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'historial' ? 'bg-lime-400 text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     <span>Historial</span>
                 </button>
-                <button onClick={() => changeTab('plan')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'plan' ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'}`}>
+                <button onClick={() => changeTab('plan')} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === 'plan' ? 'bg-lime-400 text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
                     </svg>
@@ -721,22 +721,22 @@ export default function MiCuentaPage() {
                             <div className="flex items-end gap-[1.5px] h-7 mt-3">
                                 {monthAsistBars.map((count, i) => (
                                     <div key={i} className="flex-1 rounded-[1px] transition-all"
-                                        style={{ height: count > 0 ? '100%' : '35%', backgroundColor: count > 0 ? '#a3e635' : 'rgba(255,255,255,0.07)' }} />
+                                        style={{ height: count > 0 ? '100%' : '35%', backgroundColor: count > 0 ? '#a3e635' : '#e5e7eb' }} />
                                 ))}
                             </div>
                         </div>
                         <div className={`${card} flex flex-col`}>
                             <p className={`${lbl} mb-2`}>Cuota</p>
-                            <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-white' : 'text-red-400'}`}>
+                            <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-gray-900' : 'text-red-500'}`}>
                                 {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : 'Pendiente'}
                             </p>
                             <div className="flex items-end justify-between mt-auto pt-3">
-                                <p className={`text-sm font-semibold ${pagoEsteMes ? 'text-lime-400' : 'text-white/40'}`}>
+                                <p className={`text-sm font-semibold ${pagoEsteMes ? 'text-lime-600' : 'text-gray-400'}`}>
                                     {pagoEsteMes ? 'Al día' : mesActual}
                                 </p>
                                 {pagoEsteMes && (
-                                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(163,230,53,0.15)' }}>
-                                        <IconCheck className="w-5 h-5 text-lime-400" />
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-lime-100">
+                                        <IconCheck className="w-5 h-5 text-lime-600" />
                                     </div>
                                 )}
                             </div>
@@ -744,27 +744,27 @@ export default function MiCuentaPage() {
                     </div>
 
                     {!pagoEsteMes && aliasGimnasio && (
-                        <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
-                            <div className="px-5 py-4 border-b border-white/[0.06]">
-                                <p className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-1">Transferí tu cuota</p>
+                        <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="px-5 py-4 border-b border-gray-100">
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Transferí tu cuota</p>
                                 <div className="flex items-center justify-between gap-3">
-                                    <span className="text-white font-bold text-base truncate">{aliasGimnasio}</span>
+                                    <span className="text-gray-900 font-bold text-base truncate">{aliasGimnasio}</span>
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(aliasGimnasio);
                                             setAliasCopied(true);
                                             setTimeout(() => setAliasCopied(false), 2000);
                                         }}
-                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/10 transition text-white/60 text-xs font-semibold"
+                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 transition text-gray-600 text-xs font-semibold"
                                     >
                                         {aliasCopied ? (
                                             <>
-                                                <IconCheck className="w-3.5 h-3.5 text-lime-400" />
-                                                <span className="text-lime-400">Copiado</span>
+                                                <IconCheck className="w-3.5 h-3.5 text-lime-600" />
+                                                <span className="text-lime-600">Copiado</span>
                                             </>
                                         ) : (
                                             <>
-                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
                                                 </svg>
                                                 Copiar alias
@@ -805,7 +805,7 @@ export default function MiCuentaPage() {
                             <div className="flex items-center justify-between">
                                 <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
                                 <button onClick={() => changeTab('plan')}
-                                    className="flex items-center gap-1 text-xs font-semibold text-white/50 bg-white/[0.07] hover:bg-white/10 px-3 py-1.5 rounded-xl transition-colors">
+                                    className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl transition-colors">
                                     Ver mi plan
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -833,7 +833,7 @@ export default function MiCuentaPage() {
                             <div className="flex items-center justify-between">
                                 <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
                                 <button onClick={() => changeTab('historial')}
-                                    className="flex items-center gap-1 text-xs font-semibold text-white/50 bg-white/[0.07] hover:bg-white/10 px-3 py-1.5 rounded-xl transition-colors">
+                                    className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl transition-colors">
                                     Ver historial
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -844,13 +844,13 @@ export default function MiCuentaPage() {
                     )}
 
                     {(planEjComplete || (!planEj && plan?.terminado && plan?.fechaInicio && plan?.duracion)) && (
-                        <div className="bg-lime-400/10 border border-lime-400/20 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-lime-400/20 flex items-center justify-center flex-shrink-0">
-                                <IconTrophy className="w-6 h-6 text-lime-400" />
+                        <div className="bg-lime-50 border border-lime-200 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-lime-100 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-6 h-6 text-lime-600" />
                             </div>
                             <div>
-                                <p className="text-lime-400 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-lime-400/60 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                <p className="text-lime-700 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-lime-600/60 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                             </div>
                         </div>
                     )}
@@ -870,42 +870,42 @@ export default function MiCuentaPage() {
                             'Otro': '#eab308',
                         };
                         return (
-                            <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
-                                <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.05]">
+                            <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                                <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100">
                                     <div className="flex items-center gap-2">
-                                        <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
                                         </svg>
-                                        <span className="font-bold text-sm text-white">Últimas asistencias</span>
+                                        <span className="font-bold text-sm text-gray-900">Últimas asistencias</span>
                                     </div>
-                                    <button onClick={() => changeTab('historial')} className="flex items-center gap-1 text-xs font-semibold text-lime-400/80 hover:text-lime-400 transition-colors">
+                                    <button onClick={() => changeTab('historial')} className="flex items-center gap-1 text-xs font-semibold text-lime-600 hover:text-lime-700 transition-colors">
                                         Ver todas
                                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                         </svg>
                                     </button>
                                 </div>
-                                <div className="divide-y divide-white/[0.04]">
+                                <div className="divide-y divide-gray-100">
                                     {ultimas.map(a => {
                                         const d = new Date(a.fecha);
                                         const bg = actColor[a.actividad] || '#6b7280';
                                         return (
                                             <div key={a._id} className="flex items-center gap-3 px-4 py-3">
                                                 <div className="w-10 shrink-0">
-                                                    <p className="text-white font-bold text-base leading-none">{d.getDate()}</p>
-                                                    <p className="text-white/40 text-[10px] font-semibold uppercase leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</p>
+                                                    <p className="text-gray-900 font-bold text-base leading-none">{d.getDate()}</p>
+                                                    <p className="text-gray-400 text-[10px] font-semibold uppercase leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</p>
                                                 </div>
                                                 <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                                                     style={{ backgroundColor: `${bg}25` }}>
                                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: bg }} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-white font-semibold text-sm truncate">{a.actividad}</p>
+                                                    <p className="text-gray-900 font-semibold text-sm truncate">{a.actividad}</p>
                                                 </div>
-                                                <span className="text-white/40 text-xs font-medium shrink-0">
+                                                <span className="text-gray-400 text-xs font-medium shrink-0">
                                                     {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
-                                                <svg className="w-4 h-4 text-white/15 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                                 </svg>
                                             </div>
@@ -923,15 +923,15 @@ export default function MiCuentaPage() {
                 <div className="space-y-4">
                     <div className={card}>
                         <div className="flex items-center justify-between mb-4">
-                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors">
+                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
-                            <span className="text-white font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
+                            <span className="text-gray-900 font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
                             <button onClick={nextMonth}
                                 disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors disabled:opacity-30">
+                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors disabled:opacity-30">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
@@ -940,7 +940,7 @@ export default function MiCuentaPage() {
 
                         <div className="grid grid-cols-7 mb-1">
                             {DIAS_SEMANA.map(d => (
-                                <div key={d} className="text-center text-white/30 text-xs font-semibold py-1">{d}</div>
+                                <div key={d} className="text-center text-gray-400 text-xs font-semibold py-1">{d}</div>
                             ))}
                         </div>
 
@@ -960,19 +960,19 @@ export default function MiCuentaPage() {
                                         key={key}
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
-                                            isSelected ? 'bg-white/10'
-                                            : planDay === 'active' ? 'bg-lime-400/[0.07] hover:bg-lime-400/10'
-                                            : planDay === 'completed' ? 'bg-violet-500/[0.07] hover:bg-violet-500/10'
-                                            : hasData ? 'hover:bg-white/[0.04]'
+                                            isSelected ? 'bg-gray-200'
+                                            : planDay === 'active' ? 'bg-lime-50 hover:bg-lime-100'
+                                            : planDay === 'completed' ? 'bg-violet-50 hover:bg-violet-100'
+                                            : hasData ? 'hover:bg-gray-100'
                                             : 'cursor-default'
                                         }`}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
                                             isToday ? 'bg-lime-400 text-black'
-                                            : planBoundary === 'start' ? 'bg-lime-400/80 text-black'
+                                            : planBoundary === 'start' ? 'bg-lime-500 text-white'
                                             : planBoundary === 'end' ? 'bg-violet-500 text-white'
-                                            : (hasData || planDay) ? 'text-white'
-                                            : 'text-white/25'
+                                            : (hasData || planDay) ? 'text-gray-900'
+                                            : 'text-gray-300'
                                         }`}>
                                             {day}
                                         </span>
@@ -987,19 +987,19 @@ export default function MiCuentaPage() {
                             })}
                         </div>
 
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.06] flex-wrap">
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white/40 text-xs">Musculación</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/40 text-xs">Intermitente</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/40 text-xs">Otro</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-white/40 text-xs">Pago</span></div>
-                            {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-lime-400/20" /><span className="text-white/40 text-xs">Plan activo</span></div>}
-                            {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-500/20" /><span className="text-white/40 text-xs">Plan completado</span></div>}
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 flex-wrap">
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-gray-400 text-xs">Musculación</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-gray-400 text-xs">Intermitente</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-gray-400 text-xs">Otro</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-gray-400 text-xs">Pago</span></div>
+                            {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-lime-100 border border-lime-200" /><span className="text-gray-400 text-xs">Plan activo</span></div>}
+                            {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-100 border border-violet-200" /><span className="text-gray-400 text-xs">Plan completado</span></div>}
                         </div>
                     </div>
 
                     {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || planBoundaryMap[selectedDay]) && (
                         <div className={`${card} space-y-3`}>
-                            <h3 className="text-white font-bold text-sm capitalize">
+                            <h3 className="text-gray-900 font-bold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </h3>
                             {planBoundaryMap[selectedDay] === 'start' && (
@@ -1066,14 +1066,14 @@ export default function MiCuentaPage() {
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-[#111] rounded-2xl border border-white/[0.07] p-10 text-center mt-2">
-                            <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center mt-2">
+                            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                 </svg>
                             </div>
-                            <p className="text-white/70 font-semibold mb-1">Sin plan asignado</p>
-                            <p className="text-white/30 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
+                            <p className="text-gray-700 font-semibold mb-1">Sin plan asignado</p>
+                            <p className="text-gray-400 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
                         </div>
                     )}
 
@@ -1108,42 +1108,42 @@ export default function MiCuentaPage() {
 
                         return (
                             <>
-                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-white/40 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
-                                        <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
-                                        <p className="text-white/30 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
+                                        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
+                                        <h2 className="text-gray-900 font-bold text-base truncate">{planEj.nombre}</h2>
+                                        <p className="text-gray-400 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
                                     </div>
-                                    <div className="shrink-0 text-center rounded-xl px-3 py-2 bg-lime-400/10">
-                                        <p className="text-xs font-bold uppercase tracking-wide text-lime-400">Semana</p>
-                                        <p className="font-bold text-xl leading-none text-white">{sessionBasedWeekNum}</p>
-                                        <p className="text-xs text-lime-400">de {totalSem}</p>
+                                    <div className="shrink-0 text-center rounded-xl px-3 py-2 bg-lime-50 border border-lime-100">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-lime-600">Semana</p>
+                                        <p className="font-bold text-xl leading-none text-gray-900">{sessionBasedWeekNum}</p>
+                                        <p className="text-xs text-lime-600">de {totalSem}</p>
                                     </div>
                                 </div>
 
                                 {planEj.entradaCalor?.ejercicios?.length > 0 && (
-                                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                                    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
                                         <button onClick={() => setShowCalentamiento(v => !v)}
-                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition">
+                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-base">🔥</span>
-                                                <span className="text-sm font-semibold text-white/80">Entrada en calor</span>
-                                                <span className="text-xs text-white/30 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
+                                                <span className="text-sm font-semibold text-gray-700">Entrada en calor</span>
+                                                <span className="text-xs text-gray-400 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
                                             </div>
-                                            <svg className={`w-4 h-4 text-white/20 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <svg className={`w-4 h-4 text-gray-300 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {showCalentamiento && (
-                                            <div className="border-t border-white/[0.06] divide-y divide-white/[0.04]">
-                                                <div className="px-4 py-2 bg-white/[0.02] flex items-center justify-between">
-                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Ejercicio</span>
-                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Días 1/2/3</span>
+                                            <div className="border-t border-gray-100 divide-y divide-gray-100">
+                                                <div className="px-4 py-2 bg-gray-50 flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ejercicio</span>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Días 1/2/3</span>
                                                 </div>
                                                 {planEj.entradaCalor.ejercicios.map((e, i) => (
                                                     <div key={i} className="flex items-center justify-between px-4 py-3">
-                                                        <p className="text-sm font-medium text-white/80">{e.nombre}</p>
-                                                        <span className="text-xs font-bold text-white/30 bg-white/[0.05] px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
+                                                        <p className="text-sm font-medium text-gray-700">{e.nombre}</p>
+                                                        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1152,8 +1152,8 @@ export default function MiCuentaPage() {
                                 )}
 
                                 {/* Semana selector */}
-                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-3">
-                                    <p className="text-xs font-bold text-white/30 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-3">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === sessionBasedWeekNum;
@@ -1163,8 +1163,8 @@ export default function MiCuentaPage() {
                                                 <button key={sem} onClick={() => setSelectedSemana(sem)}
                                                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
                                                         isSelected ? 'bg-lime-400 text-black shadow-sm'
-                                                        : isPast ? 'bg-white/[0.05] text-white/30'
-                                                        : 'bg-white/[0.05] text-white/50 hover:bg-white/10'
+                                                        : isPast ? 'bg-gray-100 text-gray-400'
+                                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                                     }`}>
                                                     {sem === totalSem ? 'DESC' : sem}
                                                     {isPast && (
@@ -1182,7 +1182,7 @@ export default function MiCuentaPage() {
                                         })}
                                     </div>
                                     {selectedSemana === totalSem && (
-                                        <p className="text-center text-xs text-white/30 mt-2 font-medium">Semana de descarga</p>
+                                        <p className="text-center text-xs text-gray-400 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
 
@@ -1197,7 +1197,7 @@ export default function MiCuentaPage() {
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
                                                         ? 'bg-lime-400 text-black border-lime-400 shadow-sm'
-                                                        : 'bg-[#111] text-white/50 border-white/[0.08] hover:border-white/20'
+                                                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
                                                 }`}>
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
                                                 {isDayDone && (
@@ -1216,30 +1216,30 @@ export default function MiCuentaPage() {
                                 </div>
 
                                 {dia?.bloqueActivacion && (
-                                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
-                                        <p className="text-xs font-bold text-amber-400 mb-1">Bloque de activación</p>
-                                        <p className="text-sm text-amber-300/80 leading-snug">{dia.bloqueActivacion}</p>
+                                    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                                        <p className="text-xs font-bold text-amber-600 mb-1">Bloque de activación</p>
+                                        <p className="text-sm text-amber-700 leading-snug">{dia.bloqueActivacion}</p>
                                     </div>
                                 )}
 
                                 {dia && (
-                                    <div className="bg-[#111] rounded-2xl border border-white/[0.07] overflow-hidden">
-                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-white/[0.07]">
+                                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-gray-100">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
-                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide text-center leading-tight">Trepada</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-gray-100">
+                                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wide text-center leading-tight">Trepada</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
-                                                <p className="text-[8px] font-bold text-white/60 uppercase tracking-wide text-center leading-tight">Núcleo</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-gray-100">
+                                                <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wide text-center leading-tight">Núcleo</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
-                                                <p className="text-[8px] font-bold text-lime-400 uppercase tracking-wide text-center leading-tight">Mis KG</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-gray-100">
+                                                <p className="text-[8px] font-bold text-lime-600 uppercase tracking-wide text-center leading-tight">Mis KG</p>
                                             </div>
                                         </div>
 
-                                        <div className="divide-y divide-white/[0.04]">
+                                        <div className="divide-y divide-gray-100">
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
                                                 const trepadaVal = getTrepadaField(ej, selectedSemana);
@@ -1251,7 +1251,7 @@ export default function MiCuentaPage() {
                                                 return (
                                                     <div key={eIdx} style={combo ? { backgroundColor: combo.bg } : undefined}>
                                                         <button onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-white/[0.03] transition-colors active:bg-white/[0.05]">
+                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-gray-50 transition-colors active:bg-gray-100">
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
                                                                     {isFirstInCombo && combo && (
@@ -1260,33 +1260,33 @@ export default function MiCuentaPage() {
                                                                             <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: combo.labelColor }}>Combinado</span>
                                                                         </div>
                                                                     )}
-                                                                    <p className="text-sm font-semibold text-white leading-tight">{ej.nombre}</p>
+                                                                    <p className="text-sm font-semibold text-gray-900 leading-tight">{ej.nombre}</p>
                                                                     {ej.kg && ej.kg !== '-' && (
-                                                                        <p className="text-sm font-bold text-red-400 mt-0.5">{ej.kg} kg</p>
+                                                                        <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
                                                                     )}
                                                                     {(() => {
                                                                         const obs = (ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
-                                                                        return obs ? <p className="text-[11px] text-white/30 mt-0.5 leading-snug">{obs}</p> : null;
+                                                                        return obs ? <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">{obs}</p> : null;
                                                                     })()}
                                                                 </div>
-                                                                <IconChevron className={`w-3.5 h-3.5 text-white/20 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                                <IconChevron className={`w-3.5 h-3.5 text-gray-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
-                                                            <div className="px-1 py-3 border-l border-white/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-white/50' : 'text-white/10'}`}>
+                                                            <div className="px-1 py-3 border-l border-gray-100 flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-gray-500' : 'text-gray-200'}`}>
                                                                     {trepadaVal && trepadaVal !== '-' ? trepadaVal : '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-white/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-white/80' : 'text-white/15'}`}>
+                                                            <div className="px-2 py-3 border-l border-gray-100 flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-gray-800' : 'text-gray-200'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-1 py-2 border-l border-white/[0.06] flex items-center justify-center">
+                                                            <div className="px-1 py-2 border-l border-gray-100 flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
                                                                     const kgParts = kgVal ? kgVal.split(',').map(v => v.trim()).filter(Boolean) : [];
-                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-white/15">—</span>;
-                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-lime-400">{kgParts[0]}</span>;
+                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-gray-200">—</span>;
+                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-lime-600">{kgParts[0]}</span>;
                                                                     return (
                                                                         <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">
                                                                             {kgParts.map((kg, i) => (
@@ -1304,35 +1304,35 @@ export default function MiCuentaPage() {
                                                             const kgParts = kgRaw.split(',').map(v => v.trim());
                                                             while (kgParts.length < seriesCount) kgParts.push('');
                                                             return (
-                                                                <div className="px-4 pb-4 pt-2 bg-white/[0.02] border-t border-white/[0.06] space-y-3">
+                                                                <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-100 space-y-3">
                                                                     {ej.notas && <p className="text-xs text-white/30 italic">{ej.notas}</p>}
                                                                     <div className="grid grid-cols-2 gap-2">
                                                                         <div>
-                                                                            <label className="text-xs font-bold text-white/30 uppercase tracking-wide mb-1.5 block">Trepada</label>
+                                                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5 block">Trepada</label>
                                                                             <input type="text"
                                                                                 value={(ej[`trepada${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `trepada${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:border-lime-500 text-center"
                                                                             />
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-xs font-bold text-white/60 uppercase tracking-wide mb-1.5 block">Núcleo</label>
+                                                                            <label className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Núcleo</label>
                                                                             <input type="text"
                                                                                 value={semVal}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `semana${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:border-lime-500 text-center"
                                                                             />
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide mb-1.5 block">
+                                                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5 block">
                                                                             Mis KG{seriesCount > 1 && <span className="normal-case font-normal"> · {seriesCount} series</span>}
                                                                         </label>
                                                                         <div className={`grid gap-2 ${seriesCount === 1 ? 'grid-cols-1' : seriesCount <= 4 ? `grid-cols-${seriesCount}` : 'grid-cols-4'}`}>
                                                                             {Array.from({ length: seriesCount }, (_, si) => (
                                                                                 <div key={si} className="flex flex-col gap-0.5">
                                                                                     {seriesCount > 1 && (
-                                                                                        <span className="text-[10px] font-bold text-white/30 text-center">S{si + 1}</span>
+                                                                                        <span className="text-[10px] font-bold text-gray-400 text-center">S{si + 1}</span>
                                                                                     )}
                                                                                     <input type="number" inputMode="decimal" placeholder="kg"
                                                                                         value={kgParts[si] || ''}
@@ -1341,18 +1341,18 @@ export default function MiCuentaPage() {
                                                                                             newParts[si] = e.target.value;
                                                                                             updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, newParts.join(','));
                                                                                         }}
-                                                                                        className="w-full border border-white/10 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
+                                                                                        className="w-full border border-gray-200 rounded-xl px-2 py-2.5 text-sm font-semibold text-gray-900 bg-gray-50 focus:outline-none focus:border-lime-500 text-center"
                                                                                     />
                                                                                 </div>
                                                                             ))}
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide">Observaciones</label>
+                                                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Observaciones</label>
                                                                         <input type="text"
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60"
+                                                                            className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 bg-gray-50 focus:outline-none focus:border-lime-500"
                                                                         />
                                                                     </div>
                                                                     <button onClick={() => handleSaveEjercicio(eIdx)} disabled={savingEj === eIdx}
