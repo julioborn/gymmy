@@ -223,7 +223,7 @@ export default function GimnasioDetailPage() {
                         />
                         {editSlug && (
                             <p className="text-slate-400 text-xs mt-1.5 pl-1">
-                                gymmy.com.ar/registro/{editSlug}
+                                sporttime.com.ar/registro/{editSlug}
                             </p>
                         )}
                     </div>

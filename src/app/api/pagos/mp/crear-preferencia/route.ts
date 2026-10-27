@@ -9,7 +9,7 @@ import { MercadoPagoConfig, Preference } from 'mercadopago';
 export const dynamic = 'force-dynamic';
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const APP_URL = process.env.NEXTAUTH_URL || 'https://www.gymmy.com.ar';
+const APP_URL = process.env.NEXTAUTH_URL || 'https://www.sporttime.com.ar';
 
 export async function POST() {
     const auth = await requireAlumnoAuth();
