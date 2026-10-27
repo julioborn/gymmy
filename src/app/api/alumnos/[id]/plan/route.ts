@@ -92,7 +92,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         await alumno.save();
 
         if (alumno.fcmTokens?.length) {
-            sendGymNotif(gimnasioId, alumno.fcmTokens, {
+            sendGymNotif(gimnasioId?.toString() ?? '', alumno.fcmTokens, {
                 title: '🏋️ Plan iniciado',
                 body: `Tu plan de ${duracion} clases comenzó el ${new Date(fechaInicio).toLocaleDateString('es-AR')}. ¡A entrenar!`,
                 url: '/mi-cuenta',
