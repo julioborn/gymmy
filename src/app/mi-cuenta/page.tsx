@@ -627,8 +627,8 @@ export default function MiCuentaPage() {
             <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm px-5 pt-5 pb-5 overflow-hidden">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(163,230,53,0.08),transparent_55%)]" />
                 <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md bg-lime-400">
-                        <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md bg-orange-500">
+                        <span className="text-white font-bold text-xl tracking-wide">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
                         <p className="text-gray-400 text-xs font-medium mb-0.5">¡Hola!</p>
@@ -791,21 +791,21 @@ export default function MiCuentaPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
                                     </svg>
                                     <p className={lbl}>Plan activo</p>
                                 </div>
-                                <span className="text-xs text-white/30 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
+                                <span className="text-xs text-gray-400 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-3">
+                            <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
                                 <div className="h-2 rounded-full transition-all bg-lime-400"
                                     style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%` }} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
                                 <button onClick={() => changeTab('plan')}
-                                    className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl transition-colors">
+                                    className="flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-xl transition-colors">
                                     Ver mi plan
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -819,21 +819,21 @@ export default function MiCuentaPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
                                     </svg>
                                     <p className={lbl}>Plan activo</p>
                                 </div>
-                                <span className="text-xs text-white/30 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                                <span className="text-xs text-gray-400 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 mb-3">
+                            <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
                                 <div className="h-2 rounded-full transition-all bg-lime-400"
                                     style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
                                 <button onClick={() => changeTab('historial')}
-                                    className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl transition-colors">
+                                    className="flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-xl transition-colors">
                                     Ver historial
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
