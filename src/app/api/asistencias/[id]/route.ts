@@ -107,7 +107,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
         if (presente && alumno.fcmTokens?.length) {
             const actividadLabel = actividad === 'Musculación' ? 'musculación' : actividad.toLowerCase();
-            await sendGymNotif(gimnasioId, alumno.fcmTokens, {
+            await sendGymNotif(gimnasioId?.toString() ?? '', alumno.fcmTokens, {
                 title: '📋 Asistencia registrada',
                 body: `Tu asistencia de ${actividadLabel} de hoy fue registrada. ¡Buen entrenamiento!`,
                 url: '/mi-cuenta',
