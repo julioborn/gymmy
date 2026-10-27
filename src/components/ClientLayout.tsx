@@ -495,9 +495,9 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src="/sporttime-logo.png"
+                            src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png"
                             alt="SportTime"
-                            style={{ height: 44, width: 44, objectFit: 'contain' }}
+                            style={{ height: 48, width: 'auto', objectFit: 'contain' }}
                         />
                     </Link>
 
