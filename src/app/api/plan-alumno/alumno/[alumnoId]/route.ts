@@ -12,8 +12,17 @@ export async function GET(_req: NextRequest, { params }: { params: { alumnoId: s
     if (!session?.user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     await connectMongoDB();
-    const plan = await PlanAlumno.findOne({ alumnoId: params.alumnoId, activo: true }).sort({ createdAt: -1 });
-    return NextResponse.json(plan || null);
+
+    // Self-heal: if multiple active plans exist keep only the newest, deactivate the rest
+    const activePlans = await PlanAlumno.find({ alumnoId: params.alumnoId, activo: true })
+        .sort({ createdAt: -1 });
+
+    if (activePlans.length > 1) {
+        const staleIds = activePlans.slice(1).map(p => p._id);
+        await PlanAlumno.updateMany({ _id: { $in: staleIds } }, { $set: { activo: false } });
+    }
+
+    return NextResponse.json(activePlans[0] || null);
 }
 
 // PATCH: alumno guarda sus KG y observaciones

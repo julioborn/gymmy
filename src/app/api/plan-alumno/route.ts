@@ -32,6 +32,10 @@ export async function POST(req: NextRequest) {
     };
 
     await connectMongoDB();
+
+    // Deactivate all previous active plans for this alumno before creating the new one
+    await PlanAlumno.updateMany({ alumnoId, activo: true }, { $set: { activo: false } });
+
     const plan = await PlanAlumno.create({
         gimnasioId,
         alumnoId,
