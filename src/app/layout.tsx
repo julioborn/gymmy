@@ -25,14 +25,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Gymmy",
+  title: "SportTime",
   description: "Sistema de gestión de gimnasio",
   manifest: "/api/pwa/manifest",
   themeColor: "#111827",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Gymmy",
+    title: "SportTime",
   },
   icons: {
     icon: "/icons/favicon.ico",
