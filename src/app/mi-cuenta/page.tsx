@@ -48,27 +48,12 @@ interface Alumno {
 interface EjercicioAsignado {
     nombre: string;
     notas: string;
-    trepada1: string;
-    trepada2: string;
-    trepada3: string;
-    trepada4: string;
-    trepada5: string;
-    semana1: string;
-    semana2: string;
-    semana3: string;
-    semana4: string;
-    semana5: string;
+    trepada1: string; trepada2: string; trepada3: string; trepada4: string; trepada5: string;
+    semana1: string; semana2: string; semana3: string; semana4: string; semana5: string;
     kg: string;
-    kgAlumno1: string;
-    kgAlumno2: string;
-    kgAlumno3: string;
-    kgAlumno4: string;
-    kgAlumno5: string;
-    observacionesAlumno1: string;
-    observacionesAlumno2: string;
-    observacionesAlumno3: string;
-    observacionesAlumno4: string;
-    observacionesAlumno5: string;
+    kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string;
+    observacionesAlumno1: string; observacionesAlumno2: string; observacionesAlumno3: string;
+    observacionesAlumno4: string; observacionesAlumno5: string;
     grupoCombo: string;
 }
 
@@ -95,7 +80,7 @@ const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 
 const ACTIVIDAD_DOT: Record<string, string> = {
-    'Musculación': 'bg-blue-600',
+    'Musculación': 'bg-lime-400',
     'Intermitente': 'bg-orange-400',
     'Otro': 'bg-yellow-400',
 };
@@ -105,11 +90,10 @@ const COMBO_PALETTE = [
     { bg: 'rgba(59, 130, 246, 0.07)', labelColor: '#2563eb', dotColor: '#2563eb' },
     { bg: 'rgba(139, 92, 246, 0.07)', labelColor: '#7c3aed', dotColor: '#7c3aed' },
 ];
-
 const ACTIVIDAD_PILL: Record<string, string> = {
-    'Musculación': 'bg-blue-50 text-blue-700 border border-blue-100',
-    'Intermitente': 'bg-orange-50 text-orange-700 border border-orange-100',
-    'Otro': 'bg-yellow-50 text-yellow-700 border border-yellow-100',
+    'Musculación': 'bg-lime-400/10 text-lime-400 border border-lime-400/20',
+    'Intermitente': 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+    'Otro': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
 };
 
 function toLocalDateKey(fechaStr: string): string {
@@ -117,7 +101,6 @@ function toLocalDateKey(fechaStr: string): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Same as convertirAFechaLocal in historial — timezone-safe key for plan dates stored as UTC
 function planDateToKey(fecha: string | Date): string {
     const d = new Date(fecha);
     const offset = d.getTimezoneOffset();
@@ -204,14 +187,12 @@ export default function MiCuentaPage() {
 
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
-    const [savingPlan, setSavingPlan] = useState(false);
-    const [planSaved, setPlanSaved] = useState(false);
     const [savingEj, setSavingEj] = useState<number | null>(null);
     const [selectedSemana, setSelectedSemana] = useState(1);
     const [selectedDia, setSelectedDia] = useState(0);
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
-    const [acento, setAcento] = useState('#10b981');
-    const [acento2, setAcento2] = useState('#10b981');
+    const [acento, setAcento] = useState('#a3e635');
+    const [acento2, setAcento2] = useState('#a3e635');
     const [showCalentamiento, setShowCalentamiento] = useState(false);
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkInResult, setCheckInResult] = useState<'ok' | 'duplicate' | 'error' | null>(null);
@@ -234,7 +215,7 @@ export default function MiCuentaPage() {
             const r = await fetch('/api/gimnasio/alias');
             const d = await r.json();
             setAliasGimnasio(d.alias ?? '');
-        } catch { /* ignorar */ }
+        } catch { }
     }
 
     async function fetchPlan(alumnoId: string, alumnoData?: Alumno) {
@@ -255,7 +236,6 @@ export default function MiCuentaPage() {
                     const lastSession = sortedSessions[sortedSessions.length - 1];
                     const threeHoursAgo = Date.now() - 3 * 60 * 60 * 1000;
                     const justAttended = lastSession && new Date(lastSession.fecha).getTime() > threeHoursAgo;
-                    // < 3h since last session: stay on day just completed; > 3h: advance to next day
                     const effectiveDone = justAttended ? totalDone - 1 : totalDone;
                     const currentDayIdx = diasLen > 0 ? effectiveDone % diasLen : 0;
                     const currentWeek = diasLen > 0 ? Math.floor(effectiveDone / diasLen) + 1 : 1;
@@ -271,24 +251,6 @@ export default function MiCuentaPage() {
         }
     }
 
-    async function handleSavePlan() {
-        if (!planEj || !alumno) return;
-        setSavingPlan(true);
-        try {
-            const res = await fetch(`/api/plan-alumno/alumno/${alumno._id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
-            });
-            if (res.ok) {
-                setPlanSaved(true);
-                setTimeout(() => setPlanSaved(false), 2500);
-            }
-        } finally {
-            setSavingPlan(false);
-        }
-    }
-
     async function handleSaveEjercicio(ejIdx: number) {
         if (!planEj || !alumno) return;
         setSavingEj(ejIdx);
@@ -298,9 +260,7 @@ export default function MiCuentaPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ planId: planEj._id, dias: planEj.dias }),
             });
-            if (res.ok) {
-                setExpandedEj(null);
-            }
+            if (res.ok) setExpandedEj(null);
         } finally {
             setSavingEj(null);
         }
@@ -387,29 +347,15 @@ export default function MiCuentaPage() {
 
     function parseSeries(semVal: string): number {
         if (!semVal) return 1;
-        // "Nde..." → N series (e.g. "3de4", "4de6")
         const deMatch = semVal.match(/^(\d+)\s*de/i);
         if (deMatch) return Math.min(Math.max(parseInt(deMatch[1]), 1), 6);
-        // "N series" → N series (e.g. "3 series (10-15)")
         const seriesMatch = semVal.match(/^(\d+)\s*series/i);
         if (seriesMatch) return Math.min(Math.max(parseInt(seriesMatch[1]), 1), 6);
-        // "N.M.P..." → count segments (e.g. "4.3.3.2", "10.10.10")
         if (/^\d+(\.\d+)+$/.test(semVal)) return Math.min(semVal.split('.').length, 6);
-        // "/" notation
         if (semVal.includes('/')) return Math.min(semVal.split('/').length, 6);
-        // "NxREP"
         const xMatch = semVal.match(/^(\d+)\s*[xX]/);
         if (xMatch) return Math.min(Math.max(parseInt(xMatch[1]), 1), 6);
         return 1;
-    }
-
-    function getCurrentWeekLabel(plan: PlanEjAsignado): string {
-        if (!plan.fechaInicio) return '';
-        const inicio = new Date(plan.fechaInicio);
-        const hoy = new Date();
-        const dias = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-        const sem = Math.min(Math.max(Math.floor(dias / 7) + 1, 1), plan.totalSemanas || 5);
-        return sem.toString();
     }
 
     useEffect(() => {
@@ -441,14 +387,8 @@ export default function MiCuentaPage() {
             })
             .catch(() => {});
 
-        // Refresh when app returns to foreground — covers visibilitychange (Android),
-        // pageshow from bfcache (iOS Safari PWA), and window focus
-        const onVisible = () => {
-            if (document.visibilityState === 'visible') fetchAlumno().catch(() => {});
-        };
-        const onPageShow = (e: PageTransitionEvent) => {
-            if (e.persisted) fetchAlumno().catch(() => {});
-        };
+        const onVisible = () => { if (document.visibilityState === 'visible') fetchAlumno().catch(() => {}); };
+        const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) fetchAlumno().catch(() => {}); };
         const onFocus = () => fetchAlumno().catch(() => {});
         document.addEventListener('visibilitychange', onVisible);
         window.addEventListener('pageshow', onPageShow);
@@ -463,13 +403,13 @@ export default function MiCuentaPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-slate-300" style={{ borderTopColor: '#10b981', borderRightColor: '#10b981' }} />
+                <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-white/10" style={{ borderTopColor: '#a3e635', borderRightColor: '#a3e635' }} />
             </div>
         );
     }
 
     if (!alumno) {
-        return <div className="text-slate-500 text-center py-16 text-sm">Error al cargar tus datos.</div>;
+        return <div className="text-white/30 text-center py-16 text-sm">Error al cargar tus datos.</div>;
     }
 
     const mesActual = MESES[now.getMonth()];
@@ -493,7 +433,6 @@ export default function MiCuentaPage() {
     const planDaysMap: Record<string, 'active' | 'completed'> = {};
     const planBoundaryMap: Record<string, 'start' | 'end'> = {};
 
-    // Active plan
     if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento?.terminado) {
         const startStr = planDateToKey(alumno.planEntrenamiento.fechaInicio);
         planBoundaryMap[startStr] = 'start';
@@ -516,7 +455,6 @@ export default function MiCuentaPage() {
         }
     }
 
-    // Historical plans
     for (const plan of (alumno.planEntrenamientoHistorial || [])) {
         if (!plan.fechaInicio || !plan.fechaFin) continue;
         const startStr = planDateToKey(plan.fechaInicio);
@@ -547,7 +485,6 @@ export default function MiCuentaPage() {
         ).length;
     }
 
-    // PlanEj (PlanAlumno) stats para el Resumen — usa zona horaria local para evitar el bug UTC
     const planEjFechaInicio: Date | null = (() => {
         if (!planEj?.fechaInicio) return null;
         const s = planEj.fechaInicio.split('T')[0];
@@ -565,7 +502,6 @@ export default function MiCuentaPage() {
     const calDays = getCalendarDays(calYear, calMonth);
     const initials = getInitials(alumno.nombre, alumno.apellido);
     const gimnasioNombre = (alumno.gimnasioId as any)?.nombre ?? '';
-    const isSporttime = gimnasioNombre.toLowerCase().includes('sport');
 
     function prevMonth() {
         setSelectedDay(null);
@@ -582,13 +518,11 @@ export default function MiCuentaPage() {
     const selectedPagos = selectedDay ? (pagosMap[selectedDay] || []) : [];
 
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    // Usar fecha local (no UTC) para evitar que '2026-09-14' se interprete como sept 13 en Argentina
     const planInicioDate = planEjFechaInicio;
     const todayMonday = new Date(now);
     todayMonday.setDate(todayMonday.getDate() - ((todayMonday.getDay() + 6) % 7));
     todayMonday.setHours(0, 0, 0, 0);
     const currentCalWeekMs = todayMonday.getTime();
-
     const weekStartMs = currentCalWeekMs - asistWeekOffset * msPerWeek;
     const weekEndMs = weekStartMs + msPerWeek;
     const weekStart = new Date(weekStartMs);
@@ -609,38 +543,38 @@ export default function MiCuentaPage() {
     const musculacionEnSemana = asistenciasEnSemana.filter(a => a.actividad === 'Musculación').length;
     const diasPorSemana = planEj?.dias?.length ?? 0;
 
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
-    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none';
-    const sub = 'text-xs text-slate-500 mt-1';
+    const card = 'bg-[#111] border border-white/[0.07] rounded-2xl p-4';
+    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
+    const num = 'text-3xl font-bold leading-none text-white';
+    const sub = 'text-xs text-white/40 mt-1';
 
     return (
         <div className="max-w-lg mx-auto pt-4 pb-12 px-4 space-y-4">
 
             {/* ── PAGO RESULT BANNER ── */}
             {pagoResult && (
-                <div className={`mb-4 rounded-2xl px-4 py-3 flex items-center gap-3 ${
+                <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${
                     pagoResult === 'ok'
-                        ? 'bg-emerald-50 border border-emerald-200'
+                        ? 'bg-lime-400/10 border border-lime-400/20'
                         : pagoResult === 'pendiente'
-                        ? 'bg-amber-50 border border-amber-200'
-                        : 'bg-red-50 border border-red-200'
+                        ? 'bg-amber-500/10 border border-amber-500/20'
+                        : 'bg-red-500/10 border border-red-500/20'
                 }`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        pagoResult === 'ok' ? 'bg-emerald-100' : pagoResult === 'pendiente' ? 'bg-amber-100' : 'bg-red-100'
+                        pagoResult === 'ok' ? 'bg-lime-400/20' : pagoResult === 'pendiente' ? 'bg-amber-500/20' : 'bg-red-500/20'
                     }`}>
-                        {pagoResult === 'ok' && <IconCheck className="w-4 h-4 text-emerald-600" />}
-                        {pagoResult === 'pendiente' && <IconClock className="w-4 h-4 text-amber-600" />}
-                        {pagoResult === 'error' && <IconX className="w-4 h-4 text-red-500" />}
+                        {pagoResult === 'ok' && <IconCheck className="w-4 h-4 text-lime-400" />}
+                        {pagoResult === 'pendiente' && <IconClock className="w-4 h-4 text-amber-400" />}
+                        {pagoResult === 'error' && <IconX className="w-4 h-4 text-red-400" />}
                     </div>
                     <div className="flex-1">
                         <p className={`text-sm font-bold ${
-                            pagoResult === 'ok' ? 'text-emerald-800' : pagoResult === 'pendiente' ? 'text-amber-800' : 'text-red-700'
+                            pagoResult === 'ok' ? 'text-lime-400' : pagoResult === 'pendiente' ? 'text-amber-400' : 'text-red-400'
                         }`}>
                             {pagoResult === 'ok' ? '¡Pago recibido!' : pagoResult === 'pendiente' ? 'Pago en proceso' : 'El pago no se completó'}
                         </p>
                         <p className={`text-xs mt-0.5 ${
-                            pagoResult === 'ok' ? 'text-emerald-600' : pagoResult === 'pendiente' ? 'text-amber-600' : 'text-red-500'
+                            pagoResult === 'ok' ? 'text-lime-400/60' : pagoResult === 'pendiente' ? 'text-amber-400/60' : 'text-red-400/60'
                         }`}>
                             {pagoResult === 'ok'
                                 ? 'Tu cuota quedó registrada. ¡Gracias!'
@@ -649,48 +583,39 @@ export default function MiCuentaPage() {
                                 : 'Podés intentarlo de nuevo cuando quieras.'}
                         </p>
                     </div>
-                    <button onClick={() => setPagoResult(null)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <button onClick={() => setPagoResult(null)} className="text-white/30 hover:text-white/60 p-1">
                         <IconX className="w-4 h-4" />
                     </button>
                 </div>
             )}
 
             {/* ── PROFILE BANNER ── */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div
-                    className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-30"
-                    style={{ background: acento2 }}
-                />
-
+            <div className="relative bg-[#111] rounded-2xl border border-white/[0.07] px-5 pt-5 pb-5 overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(163,230,53,0.08),transparent_55%)]" />
                 <div className="flex items-center gap-4 relative">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: acento }}>
-                        <span className="text-white font-bold text-xl tracking-wide">{initials}</span>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg bg-lime-400">
+                        <span className="text-black font-bold text-xl tracking-wide">{initials}</span>
                     </div>
                     <div className="min-w-0 flex-1">
                         <h1 className="text-white font-bold text-lg leading-tight truncate">
                             {alumno.nombre} {alumno.apellido}
                         </h1>
                         <div className="flex items-center gap-1.5 mt-1">
-                            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="w-3.5 h-3.5 text-white/30 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                             </svg>
-                            <span className="text-slate-400 text-xs truncate">{gimnasioNombre}</span>
+                            <span className="text-white/40 text-xs truncate">{gimnasioNombre}</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap relative">
-                    <span className="ring-1 ring-white/20 bg-white/10 text-slate-300 text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="ring-1 ring-white/10 bg-white/[0.06] text-white/50 text-xs font-medium px-3 py-1 rounded-full">
                         DNI {alumno.dni}
                     </span>
-                    <span
-                        className="text-xs font-semibold px-3 py-1 rounded-full"
-                        style={pagoEsteMes
-                            ? { background: `${acento2}30`, color: acento2 }
-                            : { background: 'rgba(239,68,68,0.2)', color: '#f87171' }
-                        }
-                    >
+                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        pagoEsteMes ? 'bg-lime-400/15 text-lime-400' : 'bg-red-500/15 text-red-400'
+                    }`}>
                         {pagoEsteMes ? 'Cuota al día' : 'Cuota pendiente'}
                     </span>
                     {alumno.dni === '43844409' && (
@@ -703,7 +628,7 @@ export default function MiCuentaPage() {
                             {checkingIn ? (
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : checkInResult === 'ok' ? (
-                                <IconCheck className="w-4 h-4 text-emerald-400" />
+                                <IconCheck className="w-4 h-4 text-lime-400" />
                             ) : checkInResult === 'duplicate' ? (
                                 <IconClock className="w-4 h-4 text-amber-400" />
                             ) : checkInResult === 'error' ? (
@@ -717,15 +642,13 @@ export default function MiCuentaPage() {
             </div>
 
             {/* ── TAB SWITCHER ── */}
-            <div className="flex gap-1 bg-slate-100 rounded-2xl p-1">
+            <div className="flex gap-1 bg-[#1a1a1a] rounded-2xl p-1">
                 {(['resumen', 'historial', 'plan'] as const).map(t => (
                     <button
                         key={t}
                         onClick={() => changeTab(t)}
                         className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                            tab === t
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-400 hover:text-slate-600'
+                            tab === t ? 'bg-lime-400 text-black shadow-sm' : 'text-white/40 hover:text-white/70'
                         }`}
                     >
                         {t === 'resumen' ? 'Resumen' : t === 'historial' ? 'Historial' : 'Mi Plan'}
@@ -736,45 +659,41 @@ export default function MiCuentaPage() {
             {/* ── RESUMEN ── */}
             {tab === 'resumen' && (
                 <div className="space-y-4">
-
                     <div className="grid grid-cols-2 gap-3">
-                        {/* Asistencias este mes */}
                         <div className={card}>
                             <p className={`${lbl} mb-3`}>Asistencias</p>
-                            <p className={`${num} text-slate-900`}>{asistenciasEsteMes.length}</p>
+                            <p className={num}>{asistenciasEsteMes.length}</p>
                             <p className={sub}>en {mesActual}</p>
                         </div>
-
-                        {/* Cuota */}
                         <div className={card}>
                             <p className={`${lbl} mb-3`}>Cuota</p>
-                            <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-slate-900' : 'text-red-500'}`}>
+                            <p className={`text-xl font-bold leading-none ${pagoEsteMes ? 'text-white' : 'text-red-400'}`}>
                                 {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : 'Pendiente'}
                             </p>
-                            <p className={sub} style={pagoEsteMes ? { color: acento2 } : {}}>
+                            <p className={`${sub} ${pagoEsteMes ? 'text-lime-400/70' : ''}`}>
                                 {pagoEsteMes ? 'Al día' : mesActual}
                             </p>
                         </div>
                     </div>
 
                     {!pagoEsteMes && aliasGimnasio && (
-                        <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">
-                            <div className="px-5 py-4 border-b border-black/[0.06]">
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Transferí tu cuota</p>
+                        <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                            <div className="px-5 py-4 border-b border-white/[0.06]">
+                                <p className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-1">Transferí tu cuota</p>
                                 <div className="flex items-center justify-between gap-3">
-                                    <span className="text-slate-900 font-bold text-base truncate">{aliasGimnasio}</span>
+                                    <span className="text-white font-bold text-base truncate">{aliasGimnasio}</span>
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(aliasGimnasio);
                                             setAliasCopied(true);
                                             setTimeout(() => setAliasCopied(false), 2000);
                                         }}
-                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 text-xs font-semibold"
+                                        className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/10 transition text-white/60 text-xs font-semibold"
                                     >
                                         {aliasCopied ? (
                                             <>
-                                                <IconCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                                <span className="text-emerald-700">Copiado</span>
+                                                <IconCheck className="w-3.5 h-3.5 text-lime-400" />
+                                                <span className="text-lime-400">Copiado</span>
                                             </>
                                         ) : (
                                             <>
@@ -805,13 +724,11 @@ export default function MiCuentaPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <p className={lbl}>{planEj.nombre}</p>
-                                <span className="text-xs text-slate-400 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
+                                <span className="text-xs text-white/30 font-medium">{planEjDone} / {planEjTotal} sesiones</span>
                             </div>
-                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
-                                <div
-                                    className="h-2 rounded-full transition-all"
-                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%`, background: acento2 }}
-                                />
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                                <div className="h-2 rounded-full transition-all bg-lime-400"
+                                    style={{ width: `${Math.min((planEjDone / (planEjTotal || 1)) * 100, 100)}%` }} />
                             </div>
                             <p className={sub}>{Math.max(planEjTotal - planEjDone, 0)} sesiones restantes</p>
                         </div>
@@ -821,55 +738,48 @@ export default function MiCuentaPage() {
                         <div className={card}>
                             <div className="flex items-center justify-between mb-3">
                                 <p className={lbl}>Plan activo</p>
-                                <span className="text-xs text-slate-400 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
+                                <span className="text-xs text-white/30 font-medium">{asistenciasEnPlan} / {plan.duracion} sesiones</span>
                             </div>
-                            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
-                                <div
-                                    className="h-2 rounded-full transition-all"
-                                    style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%`, background: acento2 }}
-                                />
+                            <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+                                <div className="h-2 rounded-full transition-all bg-lime-400"
+                                    style={{ width: `${Math.min((asistenciasEnPlan / (plan.duracion || 1)) * 100, 100)}%` }} />
                             </div>
-                            <p className={sub}>
-                                {plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}
-                            </p>
+                            <p className={sub}>{plan.diasRestantes != null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
                         </div>
                     )}
 
                     {(planEjComplete || (!planEj && plan?.terminado && plan?.fechaInicio && plan?.duracion)) && (
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                <IconTrophy className="w-6 h-6 text-emerald-600" />
+                        <div className="bg-lime-400/10 border border-lime-400/20 rounded-2xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-lime-400/20 flex items-center justify-center flex-shrink-0">
+                                <IconTrophy className="w-6 h-6 text-lime-400" />
                             </div>
                             <div>
-                                <p className="text-emerald-800 font-bold text-sm">¡Plan completado!</p>
-                                <p className="text-emerald-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                <p className="text-lime-400 font-bold text-sm">¡Plan completado!</p>
+                                <p className="text-lime-400/60 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                             </div>
                         </div>
                     )}
 
-                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">
-                        <div className="px-3 pt-3 pb-2.5 border-b border-black/[0.05] flex items-center justify-between gap-2">
-                            <button
-                                onClick={() => setAsistWeekOffset(o => o + 1)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0"
-                            >
+                    {/* ── SEMANA ── */}
+                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                        <div className="px-3 pt-3 pb-2.5 border-b border-white/[0.05] flex items-center justify-between gap-2">
+                            <button onClick={() => setAsistWeekOffset(o => o + 1)}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
                             <div className="text-center min-w-0">
-                                <p className="text-slate-800 text-sm font-bold leading-tight">
+                                <p className="text-white text-sm font-bold leading-tight">
                                     {planWeekNum && planWeekNum >= 1 ? `Semana ${planWeekNum} del plan` : 'Asistencias'}
                                 </p>
-                                <p className="text-slate-400 text-xs mt-0.5">
+                                <p className="text-white/40 text-xs mt-0.5">
                                     {weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekEndMs - 1).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
+                            <button onClick={() => setAsistWeekOffset(o => Math.max(0, o - 1))}
                                 disabled={asistWeekOffset === 0}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors flex-shrink-0 disabled:opacity-30"
-                            >
+                                className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors flex-shrink-0 disabled:opacity-30">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
@@ -878,23 +788,23 @@ export default function MiCuentaPage() {
 
                         {asistenciasEnSemana.length === 0 ? (
                             <div className="px-4 py-7 text-center">
-                                <p className="text-slate-400 text-sm">Sin asistencias esta semana.</p>
+                                <p className="text-white/30 text-sm">Sin asistencias esta semana.</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-slate-100">
+                            <div className="divide-y divide-white/[0.04]">
                                 {asistenciasEnSemana.map(a => {
                                     const d = new Date(a.fecha);
                                     return (
                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex flex-col items-center justify-center flex-shrink-0 border border-black/[0.06]">
-                                                <span className="text-slate-800 font-bold text-sm leading-none">{d.getDate()}</span>
-                                                <span className="text-slate-400 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
+                                            <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex flex-col items-center justify-center flex-shrink-0 border border-white/[0.06]">
+                                                <span className="text-white font-bold text-sm leading-none">{d.getDate()}</span>
+                                                <span className="text-white/40 text-[10px] font-medium leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</span>
                                             </div>
                                             <div className="flex-1 flex items-center gap-2 flex-wrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>
+                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>
                                                     {a.actividad}
                                                 </span>
-                                                <span className="text-xs text-slate-400 font-medium">
+                                                <span className="text-xs text-white/40 font-medium">
                                                     {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                 </span>
                                             </div>
@@ -905,17 +815,14 @@ export default function MiCuentaPage() {
                         )}
 
                         {diasPorSemana > 0 && planWeekNum && planWeekNum >= 1 && (
-                            <div className="px-4 py-2.5 bg-slate-50 border-t border-black/[0.05] flex items-center gap-2">
+                            <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.05] flex items-center gap-2">
                                 <div className="flex gap-1 flex-1">
                                     {Array.from({ length: diasPorSemana }, (_, i) => (
-                                        <div
-                                            key={i}
-                                            className="h-1.5 flex-1 rounded-full"
-                                            style={{ background: i < musculacionEnSemana ? acento2 : '#e2e8f0' }}
-                                        />
+                                        <div key={i} className="h-1.5 flex-1 rounded-full"
+                                            style={{ background: i < musculacionEnSemana ? '#a3e635' : 'rgba(255,255,255,0.08)' }} />
                                     ))}
                                 </div>
-                                <span className="text-xs text-slate-400 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
+                                <span className="text-xs text-white/40 font-medium shrink-0">{musculacionEnSemana}/{diasPorSemana}</span>
                             </div>
                         )}
                     </div>
@@ -927,17 +834,15 @@ export default function MiCuentaPage() {
                 <div className="space-y-4">
                     <div className={card}>
                         <div className="flex items-center justify-between mb-4">
-                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
+                            <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                                 </svg>
                             </button>
-                            <span className="text-slate-900 font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
-                            <button
-                                onClick={nextMonth}
+                            <span className="text-white font-bold capitalize text-sm">{MESES[calMonth]} {calYear}</span>
+                            <button onClick={nextMonth}
                                 disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors disabled:opacity-30"
-                            >
+                                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.05] text-white/40 transition-colors disabled:opacity-30">
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                 </svg>
@@ -946,7 +851,7 @@ export default function MiCuentaPage() {
 
                         <div className="grid grid-cols-7 mb-1">
                             {DIAS_SEMANA.map(d => (
-                                <div key={d} className="text-center text-slate-400 text-xs font-semibold py-1">{d}</div>
+                                <div key={d} className="text-center text-white/30 text-xs font-semibold py-1">{d}</div>
                             ))}
                         </div>
 
@@ -961,88 +866,83 @@ export default function MiCuentaPage() {
                                 const hasData = asists.length > 0 || pagos.length > 0;
                                 const planDay = planDaysMap[key];
                                 const planBoundary = planBoundaryMap[key];
-
                                 return (
                                     <button
                                         key={key}
                                         onClick={() => setSelectedDay(isSelected ? null : key)}
                                         className={`relative flex flex-col items-center py-1.5 rounded-xl transition-all ${
-                                            isSelected
-                                                ? 'bg-slate-100'
-                                                : planDay === 'active'
-                                                ? 'bg-emerald-50 hover:bg-emerald-100'
-                                                : planDay === 'completed'
-                                                ? 'bg-red-50 hover:bg-red-100'
-                                                : hasData
-                                                ? 'hover:bg-slate-50'
-                                                : 'cursor-default'
+                                            isSelected ? 'bg-white/10'
+                                            : planDay === 'active' ? 'bg-lime-400/[0.07] hover:bg-lime-400/10'
+                                            : planDay === 'completed' ? 'bg-violet-500/[0.07] hover:bg-violet-500/10'
+                                            : hasData ? 'hover:bg-white/[0.04]'
+                                            : 'cursor-default'
                                         }`}
                                     >
                                         <span className={`text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full ${
-                                            isToday ? 'bg-[#111] text-white'
-                                            : planBoundary === 'start' ? 'bg-emerald-500 text-white'
-                                            : planBoundary === 'end' ? 'bg-red-400 text-white'
-                                            : (hasData || planDay) ? 'text-slate-800'
-                                            : 'text-slate-400'
+                                            isToday ? 'bg-lime-400 text-black'
+                                            : planBoundary === 'start' ? 'bg-lime-400/80 text-black'
+                                            : planBoundary === 'end' ? 'bg-violet-500 text-white'
+                                            : (hasData || planDay) ? 'text-white'
+                                            : 'text-white/25'
                                         }`}>
                                             {day}
                                         </span>
                                         <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
                                             {asists.map((a, idx) => (
-                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
+                                                <span key={idx} className={`w-1.5 h-1.5 rounded-full ${ACTIVIDAD_DOT[a.actividad] || 'bg-white/40'}`} />
                                             ))}
-                                            {pagos.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                                            {pagos.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
                                         </div>
                                     </button>
                                 );
                             })}
                         </div>
 
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-black/[0.06] flex-wrap">
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-400 text-xs">Musculación</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-slate-400 text-xs">Intermitente</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-400 text-xs">Otro</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-slate-400 text-xs">Pago</span></div>
-                            {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-100" /><span className="text-slate-400 text-xs">Plan activo</span></div>}
-                            {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-100" /><span className="text-slate-400 text-xs">Plan completado</span></div>}
+                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.06] flex-wrap">
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white/40 text-xs">Musculación</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/40 text-xs">Intermitente</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/40 text-xs">Otro</span></div>
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-white/40 text-xs">Pago</span></div>
+                            {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-lime-400/20" /><span className="text-white/40 text-xs">Plan activo</span></div>}
+                            {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-violet-500/20" /><span className="text-white/40 text-xs">Plan completado</span></div>}
                         </div>
                     </div>
 
                     {selectedDay && (selectedAsistencias.length > 0 || selectedPagos.length > 0 || planBoundaryMap[selectedDay]) && (
                         <div className={`${card} space-y-3`}>
-                            <h3 className="text-slate-900 font-bold text-sm capitalize">
+                            <h3 className="text-white font-bold text-sm capitalize">
                                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                             </h3>
                             {planBoundaryMap[selectedDay] === 'start' && (
-                                <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                                    <span className="text-emerald-700 text-sm font-semibold">Inicio de plan{planEj?.nombre ? ` — ${planEj.nombre}` : ''}</span>
+                                <div className="flex items-center gap-2 bg-lime-400/10 border border-lime-400/20 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-lime-400 flex-shrink-0" />
+                                    <span className="text-lime-400 text-sm font-semibold">Inicio de plan{planEj?.nombre ? ` — ${planEj.nombre}` : ''}</span>
                                 </div>
                             )}
                             {planBoundaryMap[selectedDay] === 'end' && (
-                                <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
-                                    <span className="text-red-600 text-sm font-semibold">Fin de plan</span>
+                                <div className="flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-xl px-3 py-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
+                                    <span className="text-violet-400 text-sm font-semibold">Fin de plan</span>
                                 </div>
                             )}
                             {selectedAsistencias.map(a => (
                                 <div key={a._id} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-slate-400'}`} />
-                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-slate-100 text-slate-600'}`}>{a.actividad}</span>
+                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ACTIVIDAD_DOT[a.actividad] || 'bg-white/40'}`} />
+                                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${ACTIVIDAD_PILL[a.actividad] || 'bg-white/10 text-white/60'}`}>{a.actividad}</span>
                                     </div>
-                                    <span className="text-slate-400 text-xs font-medium">
+                                    <span className="text-white/40 text-xs font-medium">
                                         {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
                             ))}
                             {selectedPagos.map(p => (
-                                <div key={p._id} className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                                <div key={p._id} className="flex items-center justify-between bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-3 py-2.5">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                                        <span className="text-emerald-700 text-sm font-semibold capitalize">Pago — {p.mes}</span>
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                                        <span className="text-emerald-400 text-sm font-semibold capitalize">Pago — {p.mes}</span>
                                     </div>
-                                    <span className="text-emerald-700 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
+                                    <span className="text-emerald-400 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
                                 </div>
                             ))}
                         </div>
@@ -1051,14 +951,14 @@ export default function MiCuentaPage() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className={card}>
                             <p className={`${lbl} mb-2`}>Asistencias</p>
-                            <p className={`${num} text-slate-900`}>
+                            <p className={num}>
                                 {Object.entries(asistenciasMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, a]) => sum + a.length, 0)}
                             </p>
                             <p className={`${sub} capitalize`}>en {MESES_CORTO[calMonth]}</p>
                         </div>
                         <div className={card}>
                             <p className={`${lbl} mb-2`}>Pagado</p>
-                            <p className={`text-xl font-bold leading-none text-slate-900`}>
+                            <p className="text-xl font-bold leading-none text-white">
                                 ${Object.entries(pagosMap).filter(([key]) => key.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + p.tarifa, 0), 0).toLocaleString('es-AR')}
                             </p>
                             <p className={`${sub} capitalize`}>en {MESES_CORTO[calMonth]}</p>
@@ -1072,26 +972,24 @@ export default function MiCuentaPage() {
                 <div className="space-y-3">
                     {loadingPlan && (
                         <div className="flex justify-center py-12">
-                            <div className="border-t-2 border-r-2 border-emerald-500 rounded-full w-8 h-8 animate-spin" />
+                            <div className="border-t-2 border-r-2 rounded-full w-8 h-8 animate-spin border-white/10" style={{ borderTopColor: '#a3e635' }} />
                         </div>
                     )}
 
                     {!loadingPlan && !planEj && (
-                        <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-10 text-center mt-2">
-                            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <div className="bg-[#111] rounded-2xl border border-white/[0.07] p-10 text-center mt-2">
+                            <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                 </svg>
                             </div>
-                            <p className="text-slate-600 font-semibold mb-1">Sin plan asignado</p>
-                            <p className="text-slate-400 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
+                            <p className="text-white/70 font-semibold mb-1">Sin plan asignado</p>
+                            <p className="text-white/30 text-sm">Tu entrenador todavía no te asignó un plan de entrenamiento.</p>
                         </div>
                     )}
 
                     {!loadingPlan && planEj && (() => {
                         const totalSem = planEj.totalSemanas || 5;
-                        const currentWeekStr = getCurrentWeekLabel(planEj);
-                        const currentWeekNum = parseInt(currentWeekStr) || 1;
                         const dia = planEj.dias[selectedDia];
                         const totalSesiones = totalSem * planEj.dias.length;
 
@@ -1107,11 +1005,11 @@ export default function MiCuentaPage() {
                         const diasLen = planEj.dias.length;
                         const sortedSessionsR = (planInicio && alumno)
                             ? alumno.asistencia
-                                .filter((a: { actividad: string; presente: boolean; fecha: string }) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio)
-                                .sort((a: { fecha: string }, b: { fecha: string }) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+                                .filter((a) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= planInicio)
+                                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
                             : [];
                         const totalDoneR = sortedSessionsR.length;
-                        const lastSessionR = sortedSessionsR[sortedSessionsR.length - 1] as { fecha: string } | undefined;
+                        const lastSessionR = sortedSessionsR[sortedSessionsR.length - 1];
                         const threeHoursAgoR = Date.now() - 3 * 60 * 60 * 1000;
                         const justAttendedR = lastSessionR && new Date(lastSessionR.fecha).getTime() > threeHoursAgoR;
                         const effectiveDoneR = justAttendedR ? totalDoneR - 1 : totalDoneR;
@@ -1121,45 +1019,42 @@ export default function MiCuentaPage() {
 
                         return (
                             <>
-                                {/* Plan header — negro como elemento visual de identidad */}
-                                <div className="bg-[#111] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
+                                        <p className="text-white/40 text-xs font-semibold uppercase tracking-wide">{planEj.categoria}</p>
                                         <h2 className="text-white font-bold text-base truncate">{planEj.nombre}</h2>
-                                        <p className="text-slate-600 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
+                                        <p className="text-white/30 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas · {planEj.dias.length} días/sem</p>
                                     </div>
-                                    <div className="shrink-0 text-center rounded-xl px-3 py-2" style={{ background: `${acento2}25` }}>
-                                        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: acento2 }}>Semana</p>
+                                    <div className="shrink-0 text-center rounded-xl px-3 py-2 bg-lime-400/10">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-lime-400">Semana</p>
                                         <p className="font-bold text-xl leading-none text-white">{sessionBasedWeekNum}</p>
-                                        <p className="text-xs" style={{ color: acento2 }}>de {totalSem}</p>
+                                        <p className="text-xs text-lime-400">de {totalSem}</p>
                                     </div>
                                 </div>
 
                                 {planEj.entradaCalor?.ejercicios?.length > 0 && (
-                                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
-                                        <button
-                                            onClick={() => setShowCalentamiento(v => !v)}
-                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-slate-50 active:bg-slate-100 transition"
-                                        >
+                                    <div className="bg-[#111] border border-white/[0.07] rounded-2xl overflow-hidden">
+                                        <button onClick={() => setShowCalentamiento(v => !v)}
+                                            className="w-full flex items-center justify-between gap-2 px-4 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-base">🔥</span>
-                                                <span className="text-sm font-semibold text-slate-700">Entrada en calor</span>
-                                                <span className="text-xs text-slate-400 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
+                                                <span className="text-sm font-semibold text-white/80">Entrada en calor</span>
+                                                <span className="text-xs text-white/30 font-medium">{planEj.entradaCalor.ejercicios.length} ejercicios</span>
                                             </div>
-                                            <svg className={`w-4 h-4 text-slate-300 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                            <svg className={`w-4 h-4 text-white/20 transition-transform duration-200 ${showCalentamiento ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {showCalentamiento && (
-                                            <div className="border-t border-black/[0.06] divide-y divide-slate-100">
-                                                <div className="px-4 py-2 bg-slate-50 flex items-center justify-between">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ejercicio</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Días 1/2/3</span>
+                                            <div className="border-t border-white/[0.06] divide-y divide-white/[0.04]">
+                                                <div className="px-4 py-2 bg-white/[0.02] flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Ejercicio</span>
+                                                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Días 1/2/3</span>
                                                 </div>
                                                 {planEj.entradaCalor.ejercicios.map((e, i) => (
                                                     <div key={i} className="flex items-center justify-between px-4 py-3">
-                                                        <p className="text-sm font-medium text-slate-700">{e.nombre}</p>
-                                                        <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
+                                                        <p className="text-sm font-medium text-white/80">{e.nombre}</p>
+                                                        <span className="text-xs font-bold text-white/30 bg-white/[0.05] px-2 py-0.5 rounded-lg ml-3 shrink-0">S/R</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1167,72 +1062,64 @@ export default function MiCuentaPage() {
                                     </div>
                                 )}
 
-                                {/* Week selector */}
-                                <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm p-3">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 px-1">Semana</p>
+                                {/* Semana selector */}
+                                <div className="bg-[#111] border border-white/[0.07] rounded-2xl p-3">
+                                    <p className="text-xs font-bold text-white/30 uppercase tracking-wide mb-2 px-1">Semana</p>
                                     <div className="flex gap-1.5">
                                         {Array.from({ length: totalSem }, (_, i) => i + 1).map((sem) => {
                                             const isCurrent = sem === sessionBasedWeekNum;
                                             const isSelected = sem === selectedSemana;
                                             const isPast = sem < sessionBasedWeekNum;
                                             return (
-                                                <button
-                                                    key={sem}
-                                                    onClick={() => setSelectedSemana(sem)}
+                                                <button key={sem} onClick={() => setSelectedSemana(sem)}
                                                     className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden ${
-                                                        isSelected
-                                                            ? 'bg-slate-900 text-white shadow-sm'
-                                                            : isPast
-                                                            ? 'bg-slate-50 text-slate-400'
-                                                            : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                                                    }`}
-                                                >
+                                                        isSelected ? 'bg-lime-400 text-black shadow-sm'
+                                                        : isPast ? 'bg-white/[0.05] text-white/30'
+                                                        : 'bg-white/[0.05] text-white/50 hover:bg-white/10'
+                                                    }`}>
                                                     {sem === totalSem ? 'DESC' : sem}
                                                     {isPast && (
-                                                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
-                                                            <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center pointer-events-none">
+                                                            <svg className="w-2 h-2 text-black" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                                             </svg>
                                                         </span>
                                                     )}
                                                     {isCurrent && !isSelected && (
-                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full border border-white" style={{ background: acento }} />
+                                                        <span className="absolute -top-1 -right-0.5 w-2 h-2 rounded-full bg-lime-400" />
                                                     )}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                     {selectedSemana === totalSem && (
-                                        <p className="text-center text-xs text-slate-400 mt-2 font-medium">Semana de descarga</p>
+                                        <p className="text-center text-xs text-white/30 mt-2 font-medium">Semana de descarga</p>
                                     )}
                                 </div>
 
-                                {/* Day selector */}
+                                {/* Día selector */}
                                 <div className="flex gap-1.5">
                                     {planEj.dias.map((d, i) => {
                                         const isDayDone = selectedSemana < sessionBasedWeekNum
                                             || (selectedSemana === sessionBasedWeekNum && i < currentDayIdx);
                                         const isCurrentDay = selectedSemana === sessionBasedWeekNum && i === currentDayIdx;
                                         return (
-                                            <button
-                                                key={i}
-                                                onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
+                                            <button key={i} onClick={() => { setSelectedDia(i); setExpandedEj(null); }}
                                                 className={`relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden ${
                                                     selectedDia === i
-                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                                                        : 'bg-white text-slate-500 border-black/[0.08] hover:border-black/20'
-                                                }`}
-                                            >
+                                                        ? 'bg-lime-400 text-black border-lime-400 shadow-sm'
+                                                        : 'bg-[#111] text-white/50 border-white/[0.08] hover:border-white/20'
+                                                }`}>
                                                 <span className="text-sm font-bold leading-none">{`Día ${i + 1}`}</span>
                                                 {isDayDone && (
-                                                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 flex items-center justify-center pointer-events-none">
-                                                        <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                                                    <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center pointer-events-none">
+                                                        <svg className="w-2 h-2 text-black" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                                         </svg>
                                                     </span>
                                                 )}
-                                                {isCurrentDay && !isDayDone && (
-                                                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: acento }} />
+                                                {isCurrentDay && !isDayDone && selectedDia !== i && (
+                                                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-lime-400" />
                                                 )}
                                             </button>
                                         );
@@ -1240,30 +1127,30 @@ export default function MiCuentaPage() {
                                 </div>
 
                                 {dia?.bloqueActivacion && (
-                                    <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
-                                        <p className="text-xs font-bold text-amber-700 mb-1">Bloque de activación</p>
-                                        <p className="text-sm text-amber-800 leading-snug">{dia.bloqueActivacion}</p>
+                                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
+                                        <p className="text-xs font-bold text-amber-400 mb-1">Bloque de activación</p>
+                                        <p className="text-sm text-amber-300/80 leading-snug">{dia.bloqueActivacion}</p>
                                     </div>
                                 )}
 
                                 {dia && (
-                                    <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
-                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-black/[0.07]">
+                                    <div className="bg-[#111] rounded-2xl border border-white/[0.07] overflow-hidden">
+                                        <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-white/[0.07]">
                                             <div className="px-4 py-2.5">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p>
+                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide">Ejercicio</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Trepada</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-white/30 uppercase tracking-wide text-center leading-tight">Trepada</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-slate-700 uppercase tracking-wide text-center leading-tight">Núcleo</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-white/60 uppercase tracking-wide text-center leading-tight">Núcleo</p>
                                             </div>
-                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-black/[0.06]">
-                                                <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide text-center leading-tight">Mis KG</p>
+                                            <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.06]">
+                                                <p className="text-[8px] font-bold text-lime-400 uppercase tracking-wide text-center leading-tight">Mis KG</p>
                                             </div>
                                         </div>
 
-                                        <div className="divide-y divide-slate-100">
+                                        <div className="divide-y divide-white/[0.04]">
                                             {dia.ejercicios.map((ej, eIdx) => {
                                                 const semVal = getSemanaField(ej, selectedSemana);
                                                 const trepadaVal = getTrepadaField(ej, selectedSemana);
@@ -1274,10 +1161,8 @@ export default function MiCuentaPage() {
                                                 const isFirstInCombo = combo && (!prevEj?.grupoCombo || prevEj.grupoCombo !== ej.grupoCombo);
                                                 return (
                                                     <div key={eIdx} style={combo ? { backgroundColor: combo.bg } : undefined}>
-                                                        <button
-                                                            onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
-                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100"
-                                                        >
+                                                        <button onClick={() => setExpandedEj(isExpanded ? null : eIdx)}
+                                                            className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-white/[0.03] transition-colors active:bg-white/[0.05]">
                                                             <div className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 min-w-0">
                                                                     {isFirstInCombo && combo && (
@@ -1286,37 +1171,37 @@ export default function MiCuentaPage() {
                                                                             <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: combo.labelColor }}>Combinado</span>
                                                                         </div>
                                                                     )}
-                                                                    <p className="text-sm font-semibold text-slate-800 leading-tight">{ej.nombre}</p>
+                                                                    <p className="text-sm font-semibold text-white leading-tight">{ej.nombre}</p>
                                                                     {ej.kg && ej.kg !== '-' && (
-                                                                        <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>
+                                                                        <p className="text-sm font-bold text-red-400 mt-0.5">{ej.kg} kg</p>
                                                                     )}
                                                                     {(() => {
                                                                         const obs = (ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
-                                                                        return obs ? <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{obs}</p> : null;
+                                                                        return obs ? <p className="text-[11px] text-white/30 mt-0.5 leading-snug">{obs}</p> : null;
                                                                     })()}
                                                                 </div>
-                                                                <IconChevron className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                                <IconChevron className={`w-3.5 h-3.5 text-white/20 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                             </div>
-                                                            <div className="px-1 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-slate-500' : 'text-slate-200'}`}>
+                                                            <div className="px-1 py-3 border-l border-white/[0.06] flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${trepadaVal && trepadaVal !== '-' ? 'text-white/50' : 'text-white/10'}`}>
                                                                     {trepadaVal && trepadaVal !== '-' ? trepadaVal : '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-2 py-3 border-l border-black/[0.06] flex items-center justify-center">
-                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-slate-800' : 'text-slate-300'}`}>
+                                                            <div className="px-2 py-3 border-l border-white/[0.06] flex items-center justify-center">
+                                                                <span className={`text-sm font-bold text-center leading-tight ${semVal ? 'text-white/80' : 'text-white/15'}`}>
                                                                     {semVal || '—'}
                                                                 </span>
                                                             </div>
-                                                            <div className="px-1 py-2 border-l border-black/[0.06] flex items-center justify-center">
+                                                            <div className="px-1 py-2 border-l border-white/[0.06] flex items-center justify-center">
                                                                 {(() => {
                                                                     const kgVal = (ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || '';
                                                                     const kgParts = kgVal ? kgVal.split(',').map(v => v.trim()).filter(Boolean) : [];
-                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-slate-200">—</span>;
-                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-emerald-600">{kgParts[0]}</span>;
+                                                                    if (kgParts.length === 0) return <span className="text-xs font-bold text-white/15">—</span>;
+                                                                    if (kgParts.length === 1) return <span className="text-sm font-bold text-lime-400">{kgParts[0]}</span>;
                                                                     return (
                                                                         <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">
                                                                             {kgParts.map((kg, i) => (
-                                                                                <span key={i} className="text-[10px] font-bold text-emerald-600 text-center leading-tight">{kg}</span>
+                                                                                <span key={i} className="text-[10px] font-bold text-lime-400 text-center leading-tight">{kg}</span>
                                                                             ))}
                                                                         </div>
                                                                     );
@@ -1330,70 +1215,59 @@ export default function MiCuentaPage() {
                                                             const kgParts = kgRaw.split(',').map(v => v.trim());
                                                             while (kgParts.length < seriesCount) kgParts.push('');
                                                             return (
-                                                                <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-black/[0.06] space-y-3">
-                                                                    {ej.notas && (
-                                                                        <p className="text-xs text-slate-500 italic">{ej.notas}</p>
-                                                                    )}
+                                                                <div className="px-4 pb-4 pt-2 bg-white/[0.02] border-t border-white/[0.06] space-y-3">
+                                                                    {ej.notas && <p className="text-xs text-white/30 italic">{ej.notas}</p>}
                                                                     <div className="grid grid-cols-2 gap-2">
                                                                         <div>
-                                                                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">Trepada</label>
-                                                                            <input
-                                                                                type="text"
+                                                                            <label className="text-xs font-bold text-white/30 uppercase tracking-wide mb-1.5 block">Trepada</label>
+                                                                            <input type="text"
                                                                                 value={(ej[`trepada${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `trepada${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
                                                                             />
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 block">Núcleo</label>
-                                                                            <input
-                                                                                type="text"
+                                                                            <label className="text-xs font-bold text-white/60 uppercase tracking-wide mb-1.5 block">Núcleo</label>
+                                                                            <input type="text"
                                                                                 value={semVal}
                                                                                 onChange={(e) => updateEjAlumno(eIdx, `semana${selectedSemana}`, e.target.value)}
-                                                                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                                className="w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
                                                                             />
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">
+                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide mb-1.5 block">
                                                                             Mis KG{seriesCount > 1 && <span className="normal-case font-normal"> · {seriesCount} series</span>}
                                                                         </label>
                                                                         <div className={`grid gap-2 ${seriesCount === 1 ? 'grid-cols-1' : seriesCount <= 4 ? `grid-cols-${seriesCount}` : 'grid-cols-4'}`}>
                                                                             {Array.from({ length: seriesCount }, (_, si) => (
                                                                                 <div key={si} className="flex flex-col gap-0.5">
                                                                                     {seriesCount > 1 && (
-                                                                                        <span className="text-[10px] font-bold text-slate-400 text-center">S{si + 1}</span>
+                                                                                        <span className="text-[10px] font-bold text-white/30 text-center">S{si + 1}</span>
                                                                                     )}
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        inputMode="decimal"
-                                                                                        placeholder="kg"
+                                                                                    <input type="number" inputMode="decimal" placeholder="kg"
                                                                                         value={kgParts[si] || ''}
                                                                                         onChange={(e) => {
                                                                                             const newParts = [...kgParts];
                                                                                             newParts[si] = e.target.value;
                                                                                             updateEjAlumno(eIdx, `kgAlumno${selectedSemana}`, newParts.join(','));
                                                                                         }}
-                                                                                        className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 text-center"
+                                                                                        className="w-full border border-white/10 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60 text-center"
                                                                                     />
                                                                                 </div>
                                                                             ))}
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
-                                                                        <input
-                                                                            type="text"
+                                                                        <label className="text-xs font-bold text-white/30 uppercase tracking-wide">Observaciones</label>
+                                                                        <input type="text"
                                                                             value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string) || ''}
                                                                             onChange={(e) => updateEjAlumno(eIdx, `observacionesAlumno${selectedSemana}`, e.target.value)}
-                                                                            className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
+                                                                            className="mt-1 w-full border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white bg-[#1a1a1a] focus:outline-none focus:border-lime-400/60"
                                                                         />
                                                                     </div>
-                                                                    <button
-                                                                        onClick={() => handleSaveEjercicio(eIdx)}
-                                                                        disabled={savingEj === eIdx}
-                                                                        className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-slate-900 text-white hover:bg-slate-700 active:bg-slate-800"
-                                                                    >
+                                                                    <button onClick={() => handleSaveEjercicio(eIdx)} disabled={savingEj === eIdx}
+                                                                        className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-lime-400 text-black hover:bg-lime-300 active:bg-lime-500">
                                                                         {savingEj === eIdx ? 'Guardando...' : 'Guardar'}
                                                                     </button>
                                                                 </div>
