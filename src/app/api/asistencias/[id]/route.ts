@@ -1,5 +1,6 @@
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
+import PlanAlumno from '@/models/PlanAlumno';
 import { enviarCorreoPlanTerminado } from '@/utils/emailPlan';
 import { requireGymAuth } from '@/lib/requireAuth';
 import { sendToTokens } from '@/lib/notifications';
@@ -93,6 +94,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
                     asistenciasContadas: asistenciasValidas.length,
                     horarioMasFrecuente: diaTexto,
                 });
+
+                // Deactivate the matching exercise plan (PlanAlumno) so the calendar shows it as completed
+                await PlanAlumno.updateMany(
+                    { alumnoId: alumno._id, activo: true },
+                    { $set: { activo: false } }
+                );
 
                 if (alumno.email) {
                     await enviarCorreoPlanTerminado(
