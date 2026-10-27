@@ -1,6 +1,6 @@
 import connectMongoDB from './mongodb';
 import Alumno from '@/models/Alumno';
-import { sendToTokens, notifyOwners } from './notifications';
+import { sendGymNotif, notifyOwners } from './notifications';
 import mongoose from 'mongoose';
 
 // Notifica alumnos que no pagaron el mes actual y estamos en los últimos días del mes
@@ -21,7 +21,7 @@ export async function cronVencimientoCuotas() {
             (p: any) => p.mes.toLowerCase() === mesActual
         );
         if (!pagoCorriente) {
-            await sendToTokens(alumno.fcmTokens, {
+            await sendGymNotif(alumno.gimnasioId?.toString() ?? '', alumno.fcmTokens, {
                 title: '⚠️ Cuota pendiente',
                 body: `Recordá abonar tu cuota de ${mesActual}. ¡Gracias!`,
                 url: '/mi-cuenta',
@@ -80,7 +80,7 @@ export async function cronAusenciaProlongada() {
         );
 
         if (diasAusente >= 7) {
-            await sendToTokens(alumno.fcmTokens, {
+            await sendGymNotif(alumno.gimnasioId?.toString() ?? '', alumno.fcmTokens, {
                 title: '🏃 ¡Te extrañamos!',
                 body: `Hace ${diasAusente} días que no venís al gym. ¡Volvé a entrenar!`,
                 url: '/mi-cuenta',

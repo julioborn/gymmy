@@ -2,7 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import PlanAlumno from '@/models/PlanAlumno';
 import { requireGymAuth } from '@/lib/requireAuth';
-import { sendToTokens } from '@/lib/notifications';
+import { sendGymNotif } from '@/lib/notifications';
 
 // Devuelve "YYYY-MM-DD" en zona horaria Argentina (UTC-3)
 function toArgDate(d: Date): string {
@@ -107,7 +107,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
         if (presente && alumno.fcmTokens?.length) {
             const actividadLabel = actividad === 'Musculación' ? 'musculación' : actividad.toLowerCase();
-            await sendToTokens(alumno.fcmTokens, {
+            await sendGymNotif(gimnasioId, alumno.fcmTokens, {
                 title: '📋 Asistencia registrada',
                 body: `Tu asistencia de ${actividadLabel} de hoy fue registrada. ¡Buen entrenamiento!`,
                 url: '/mi-cuenta',

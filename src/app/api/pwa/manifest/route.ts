@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const defaultIcon192 = `${origin}/icons/icon-192x192.png`;
     const defaultIcon512 = `${origin}/icons/icon-512x512.png`;
 
-    let gymName = 'Gymmy';
+    let gymName = 'SportTime';
     let icon192 = defaultIcon192;
     let icon512 = defaultIcon512;
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
                 .select('nombre logoUrl')
                 .lean() as any;
             if (gym) {
-                gymName = gym.nombre || 'Gymmy';
+                gymName = gym.nombre || 'SportTime';
                 if (gym.logoUrl) {
                     icon192 = gym.logoUrl;
                     icon512 = gym.logoUrl;

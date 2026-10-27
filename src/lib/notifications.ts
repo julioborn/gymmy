@@ -2,13 +2,17 @@ export interface NotifPayload {
     title: string;
     body: string;
     url?: string;
+    icon?: string;
     data?: Record<string, string>;
 }
+
+const DEFAULT_ICON = '/icons/icon-192x192.png';
 
 export async function sendToTokens(tokens: string[], payload: NotifPayload) {
     if (!tokens.length) return;
 
     const { default: admin } = await import('./firebaseAdmin');
+    const icon = payload.icon || DEFAULT_ICON;
 
     const messages = tokens.map(token => ({
         token,
@@ -19,8 +23,8 @@ export async function sendToTokens(tokens: string[], payload: NotifPayload) {
             notification: {
                 title: payload.title,
                 body: payload.body,
-                icon: '/icons/icon-192x192.png',
-                badge: '/icons/icon-192x192.png',
+                icon,
+                badge: icon,
                 requireInteraction: false,
             },
         },
@@ -43,6 +47,29 @@ export async function sendToToken(token: string, payload: NotifPayload) {
     return sendToTokens([token], payload);
 }
 
+async function getGymIcon(gimnasioId: string): Promise<string> {
+    try {
+        const { default: connectMongoDB } = await import('./mongodb');
+        const { default: mongoose } = await import('mongoose');
+        await connectMongoDB();
+        const gym = await mongoose.connection.db!
+            .collection('gimnasios')
+            .findOne(
+                { _id: new mongoose.Types.ObjectId(gimnasioId) },
+                { projection: { logoUrl: 1 } }
+            ) as any;
+        return gym?.logoUrl || DEFAULT_ICON;
+    } catch {
+        return DEFAULT_ICON;
+    }
+}
+
+export async function sendGymNotif(gimnasioId: string, tokens: string[], payload: NotifPayload) {
+    if (!tokens.length) return;
+    const icon = await getGymIcon(gimnasioId);
+    return sendToTokens(tokens, { ...payload, icon });
+}
+
 export async function getOwnerTokens(gimnasioId: string): Promise<string[]> {
     const { default: connectMongoDB } = await import('./mongodb');
     const { default: mongoose } = await import('mongoose');
@@ -60,5 +87,5 @@ export async function notifyOwners(gimnasioId: string, payload: NotifPayload) {
     if (!gimnasioId) return;
     const tokens = await getOwnerTokens(gimnasioId);
     if (!tokens.length) return;
-    return sendToTokens(tokens, payload);
+    return sendGymNotif(gimnasioId, tokens, payload);
 }

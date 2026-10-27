@@ -2,7 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireGymAuth } from '@/lib/requireAuth';
-import { sendToTokens, notifyOwners } from '@/lib/notifications';
+import { sendGymNotif, notifyOwners } from '@/lib/notifications';
 
 export async function POST(request: NextRequest) {
     const auth = await requireGymAuth();
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         console.log('[Pagos] fcmTokens:', alumnoActualizado.fcmTokens);
         if (alumnoActualizado.fcmTokens?.length) {
             const mesLabel = nuevoPago.mes ? ` de ${nuevoPago.mes}` : '';
-            const result = await sendToTokens(alumnoActualizado.fcmTokens, {
+            const result = await sendGymNotif(gimnasioId?.toString() ?? '', alumnoActualizado.fcmTokens, {
                 title: '✅ Pago registrado',
                 body: `Tu cuota${mesLabel} fue registrada correctamente. Total: $${tarifaFinal}`,
                 url: '/mi-cuenta',

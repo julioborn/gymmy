@@ -2,7 +2,7 @@ import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import PlanAlumno from '@/models/PlanAlumno';
 import { requireGymAuth } from '@/lib/requireAuth';
-import { sendToTokens } from '@/lib/notifications';
+import { sendGymNotif } from '@/lib/notifications';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
     const auth = await requireGymAuth();
@@ -92,7 +92,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         await alumno.save();
 
         if (alumno.fcmTokens?.length) {
-            sendToTokens(alumno.fcmTokens, {
+            sendGymNotif(gimnasioId, alumno.fcmTokens, {
                 title: '🏋️ Plan iniciado',
                 body: `Tu plan de ${duracion} clases comenzó el ${new Date(fechaInicio).toLocaleDateString('es-AR')}. ¡A entrenar!`,
                 url: '/mi-cuenta',
