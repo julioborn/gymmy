@@ -20,8 +20,27 @@ export async function POST(request: Request, { params }: { params: { id: string 
             return new Response('Alumno no encontrado', { status: 404 });
         }
 
-        if (!alumno.asistencia) {
-            alumno.asistencia = [];
+        if (!alumno.asistencia) alumno.asistencia = [];
+
+        // Archive existing active embedded plan to historial before creating new one
+        if (alumno.planEntrenamiento?.fechaInicio && !alumno.planEntrenamiento.terminado) {
+            const oldStart = new Date(alumno.planEntrenamiento.fechaInicio);
+            const oldDuracion = alumno.planEntrenamiento.duracion || 0;
+            const sesionesViejas = alumno.asistencia
+                .filter((a: any) => a.actividad === 'Musculación' && a.presente && new Date(a.fecha) >= oldStart)
+                .sort((a: any, b: any) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+            const lastIdx = oldDuracion > 0 && sesionesViejas.length >= oldDuracion ? oldDuracion - 1 : sesionesViejas.length - 1;
+            const lastSession = sesionesViejas[lastIdx];
+            const fechaFinViejo = lastSession
+                ? new Date(lastSession.fecha)
+                : new Date(new Date(fechaInicio).getTime() - 86400000);
+            alumno.planEntrenamientoHistorial.push({
+                fechaInicio: oldStart,
+                fechaFin: fechaFinViejo,
+                duracion: oldDuracion,
+                asistenciasContadas: Math.min(sesionesViejas.length, oldDuracion || sesionesViejas.length),
+            });
+            alumno.planEntrenamiento = undefined;
         }
 
         const actividadesPrevias = alumno.asistencia.filter(

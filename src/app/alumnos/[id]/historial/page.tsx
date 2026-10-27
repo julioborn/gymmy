@@ -260,6 +260,47 @@ export default function HistorialAlumnoPage() {
         } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al eliminar' }); }
     };
 
+    const handleAgregarPlanHistorial = async () => {
+        const { value: vals } = await Swal.fire({
+            ...swalBase,
+            title: 'Agregar plan al historial',
+            html: `
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Fecha de inicio</label>
+                    <input id="sw-fi" type="date" class="swal-input" />
+                    <label class="swal-form-label">Fecha de fin</label>
+                    <input id="sw-ff" type="date" class="swal-input" />
+                    <label class="swal-form-label">Total sesiones planificadas</label>
+                    <input id="sw-dur" type="number" min="1" class="swal-input" placeholder="ej: 18" />
+                    <label class="swal-form-label">Sesiones realizadas</label>
+                    <input id="sw-asis" type="number" min="0" class="swal-input" placeholder="ej: 18" />
+                </div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Agregar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const fi = (document.getElementById('sw-fi') as HTMLInputElement).value;
+                const ff = (document.getElementById('sw-ff') as HTMLInputElement).value;
+                const dur = parseInt((document.getElementById('sw-dur') as HTMLInputElement).value) || 0;
+                const asis = parseInt((document.getElementById('sw-asis') as HTMLInputElement).value) || 0;
+                if (!fi || !ff) { Swal.showValidationMessage('Completá las fechas'); return false; }
+                if (new Date(fi) > new Date(ff)) { Swal.showValidationMessage('La fecha de inicio debe ser antes que la de fin'); return false; }
+                return { fi, ff, dur, asis };
+            },
+        });
+        if (!vals) return;
+        try {
+            const res = await fetch(`/api/alumnos/${id}/plan/historial`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fechaInicio: vals.fi, fechaFin: vals.ff, duracion: vals.dur, asistenciasContadas: vals.asis }),
+            });
+            if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Plan agregado al historial' }); fetchAlumno(); }
+            else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo agregar' });
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al agregar' }); }
+    };
+
     const handleEliminarPlanHistorial = async (planId: string) => {
         const { isConfirmed } = await Swal.fire({
             ...swalDanger,
@@ -2583,6 +2624,10 @@ export default function HistorialAlumnoPage() {
                                         <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">{totalPlanesCount}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={handleAgregarPlanHistorial}
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+                                        >+ Historial</button>
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'plan')}
                                             style={{ color: acento }}
