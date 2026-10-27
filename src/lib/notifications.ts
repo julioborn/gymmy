@@ -64,9 +64,9 @@ async function getGymIcon(gimnasioId: string): Promise<string> {
     }
 }
 
-export async function sendGymNotif(gimnasioId: string, tokens: string[], payload: NotifPayload) {
+export async function sendGymNotif(gimnasioId: string | null | undefined, tokens: string[], payload: NotifPayload) {
     if (!tokens.length) return;
-    const icon = await getGymIcon(gimnasioId);
+    const icon = await getGymIcon(gimnasioId ?? '');
     return sendToTokens(tokens, { ...payload, icon });
 }
 
