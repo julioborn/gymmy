@@ -611,7 +611,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── MAIN CONTENT ── */}
             <main
-                className={`flex-1 ${isStaticPage ? '' : 'p-3 bg-slate-50'} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
+                className={`flex-1 ${isStaticPage ? '' : `p-3 ${role === 'alumno' ? 'bg-[#0a0a0a]' : 'bg-slate-50'}`} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
                     marginTop: (isRegistroPage || isStaticPage || isLoginPage) ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
