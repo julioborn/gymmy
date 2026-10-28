@@ -370,7 +370,7 @@ export default function HomePage() {
                 <div className="fixed inset-0 pointer-events-none"
                     style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-                <div className="relative max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3 min-h-screen">
+                <div className="relative max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3">
 
                     {/* ── TOP BAR ────────────────────────────────────────── */}
                     <BlurFade delay={0}>
@@ -410,13 +410,13 @@ export default function HomePage() {
                     </BlurFade>
 
                     {/* ── MAIN GRID ──────────────────────────────────────── */}
-                    <div className="flex gap-4 flex-1">
+                    <div className="flex gap-4">
 
                         {/* LEFT: day selector + slot stats */}
                         <BlurFade delay={0.06} className="flex flex-col gap-2.5 w-52 shrink-0">
                             {/* Day pills */}
                             <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col gap-1">
-                                <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
+                                <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
                                 {loadingHoy && diasData.length === 0
                                     ? [1,2,3,4,5].map(i => <div key={i} className="h-10 rounded-xl bg-white/[0.06] animate-pulse" />)
                                     : diasData.map(dia => {
@@ -431,12 +431,12 @@ export default function HomePage() {
                                                     sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
                                                 )}>
                                                 <div className="flex items-center gap-2.5">
-                                                    <span className={cn('text-[9px] font-black uppercase tracking-[0.14em] w-5', sel ? 'text-black/50' : 'text-white/60')}>{dia.labelDay}</span>
-                                                    <span className={cn('text-xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/75')}>{dia.labelNum}</span>
+                                                    <span className={cn('text-[11px] font-black uppercase tracking-[0.14em] w-6', sel ? 'text-black/50' : 'text-white/60')}>{dia.labelDay}</span>
+                                                    <span className={cn('text-2xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/75')}>{dia.labelNum}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
-                                                    {total > 0 && <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/60' : 'text-white/65')}>{total}</span>}
+                                                    {total > 0 && <span className={cn('text-sm font-bold tabular-nums', sel ? 'text-black/60' : 'text-white/65')}>{total}</span>}
                                                 </div>
                                             </button>
                                         );
@@ -463,10 +463,10 @@ export default function HomePage() {
                                                     {slot.icon}
                                                 </span>
                                                 <div>
-                                                    <p className={cn('text-xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/35')}>
+                                                    <p className={cn('text-2xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/35')}>
                                                         {loadingHoy ? '·' : count}
                                                     </p>
-                                                    <p className={cn('text-[8px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/50' : count > 0 ? slot.accent : 'text-white/35')}>
+                                                    <p className={cn('text-[10px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/50' : count > 0 ? slot.accent : 'text-white/35')}>
                                                         {slot.key}
                                                     </p>
                                                 </div>
@@ -482,7 +482,7 @@ export default function HomePage() {
                                     <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2.5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <UserCheck size={12} className="text-lime-400" />
-                                            <span className="text-white/70 text-[11px] font-semibold">Total hoy</span>
+                                            <span className="text-white/70 text-xs font-semibold">Total hoy</span>
                                         </div>
                                         <span className="text-white font-black text-base tabular-nums">{totalActivo}</span>
                                     </div>
@@ -490,7 +490,7 @@ export default function HomePage() {
                                         <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <AlertTriangle size={12} className="text-red-400" />
-                                                <span className="text-red-400/70 text-[11px] font-semibold">Con deuda</span>
+                                                <span className="text-red-400/70 text-xs font-semibold">Con deuda</span>
                                             </div>
                                             <span className="text-red-400 font-black text-base tabular-nums">{deudoresHoy}</span>
                                         </div>
@@ -501,16 +501,16 @@ export default function HomePage() {
 
                         {/* RIGHT: attendee list */}
                         <BlurFade delay={0.1} className="flex-1 flex flex-col gap-0 min-w-0">
-                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex-1 flex flex-col">
+                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex flex-col">
                                 {/* List header */}
                                 <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
                                     <div className="flex items-center gap-3">
                                         <Activity size={15} className="text-lime-400" />
-                                        <span className="text-white font-bold text-sm capitalize">
+                                        <span className="text-white font-bold text-base capitalize">
                                             {diaActivo?.fechaLarga ?? 'Seleccioná un día'}
                                         </span>
                                         {activeSlot && (
-                                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/75">
+                                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/75">
                                                 {activeSlot}
                                             </span>
                                         )}
@@ -521,12 +521,12 @@ export default function HomePage() {
                                         )}
                                         {activeSlot && (
                                             <button onClick={() => { setActiveSlot(null); setListPage(0); }}
-                                                className="text-[10px] text-white/60 hover:text-white font-semibold transition-colors">
+                                                className="text-xs text-white/60 hover:text-white font-semibold transition-colors">
                                                 Ver todos
                                             </button>
                                         )}
                                         {listToShow.length > 0 && (
-                                            <span className="text-white/60 text-xs font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
+                                            <span className="text-white/60 text-sm font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
                                         )}
                                     </div>
                                 </div>
@@ -564,16 +564,16 @@ export default function HomePage() {
                                                                     debe ? 'hover:bg-red-500/10' : 'hover:bg-white/[0.04]',
                                                                 )}>
                                                                 <div className={cn(
-                                                                    'w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0',
+                                                                    'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0',
                                                                     debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/60',
                                                                 )}>
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/90')}>
+                                                                    <p className={cn('font-semibold text-base truncate', debe ? 'text-red-300' : 'text-white/90')}>
                                                                         {a.apellido}, {a.nombre}
                                                                     </p>
-                                                                    <p className="text-[10px] text-white/55 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-xs text-white/55 mt-0.5">{a.actividad}</p>
                                                                 </div>
                                                                 {debe && (
                                                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
@@ -584,7 +584,7 @@ export default function HomePage() {
                                                                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.07] text-white/55 shrink-0">Sin cuota</span>
                                                                 )}
                                                                 <div className="flex items-center gap-1 shrink-0">
-                                                                    <span className="text-white/55 text-xs tabular-nums font-medium">{a.hora}</span>
+                                                                    <span className="text-white/55 text-sm tabular-nums font-medium">{a.hora}</span>
                                                                     <ChevronRight size={11} className="text-white/30 group-hover:text-white/60 transition-colors" />
                                                                 </div>
                                                             </Link>
@@ -633,14 +633,14 @@ export default function HomePage() {
                                                     <div className="divide-y divide-white/[0.04]">
                                                         {diaActivo.depaso.map((a, i) => (
                                                             <div key={`dp-${i}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-teal-400/[0.04] transition-colors">
-                                                                <div className="w-8 h-8 rounded-xl bg-teal-400/10 flex items-center justify-center text-xs font-bold text-teal-400 shrink-0">
+                                                                <div className="w-10 h-10 rounded-xl bg-teal-400/10 flex items-center justify-center text-sm font-bold text-teal-400 shrink-0">
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="text-sm font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
-                                                                    <p className="text-[10px] text-teal-400/70 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-base font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
+                                                                    <p className="text-xs text-teal-400/70 mt-0.5">{a.actividad}</p>
                                                                 </div>
-                                                                <span className="text-white/55 text-xs tabular-nums font-medium shrink-0">{a.hora}</span>
+                                                                <span className="text-white/55 text-sm tabular-nums font-medium shrink-0">{a.hora}</span>
                                                             </div>
                                                         ))}
                                                     </div>
