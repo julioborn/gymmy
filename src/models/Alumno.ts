@@ -46,6 +46,8 @@ export interface IAlumno extends Document {
     gimnasioId: mongoose.Types.ObjectId;
     password?: string;
     fcmTokens?: string[];
+    resetPasswordToken?: string;
+    resetPasswordExpiry?: Date;
 }
 
 // Interfaz para el plan de entrenamiento
