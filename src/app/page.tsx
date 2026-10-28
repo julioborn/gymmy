@@ -374,22 +374,22 @@ export default function HomePage() {
 
                     {/* ── TOP BAR ────────────────────────────────────────── */}
                     <BlurFade delay={0}>
-                        <div className="relative flex items-center justify-between">
+                        <div className="relative flex items-center justify-between" style={{ minHeight: 72 }}>
                             {/* Left: label */}
-                            <div className="flex items-center w-[280px] shrink-0">
+                            <div className="flex items-center w-[280px] shrink-0 self-center">
                                 <span className="text-white/30 text-[11px] font-bold uppercase tracking-[0.2em]">Recepción</span>
                             </div>
 
                             {/* Center: clock — truly centered via absolute */}
-                            <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none py-2">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <p className="text-white font-black text-5xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                                     {horaArg || '--:--'}
                                 </p>
-                                <p className="text-white/25 text-[10px] mt-2 capitalize font-medium tracking-wide">{fmtDate()}</p>
+                                <p className="text-white/25 text-[10px] mt-1.5 capitalize font-medium tracking-wide">{fmtDate()}</p>
                             </div>
 
                             {/* Right: action buttons */}
-                            <div className="flex items-center gap-2 w-[280px] shrink-0 justify-end">
+                            <div className="flex items-center gap-2 w-[280px] shrink-0 justify-end self-center">
                                 <Link href="/alumnos"
                                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold">
                                     <Users size={13} />
