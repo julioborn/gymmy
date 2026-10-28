@@ -824,7 +824,7 @@ export default function HomePage() {
                                         </p>
                                         {data.planesVenciendo.length > 0 ? (
                                             <div className="space-y-2">
-                                                {data.planesVenciendo.slice(0, 3).map(a => (
+                                                {data.planesVenciendo.slice(0, 2).map(a => (
                                                     <Link key={a._id} href={`/alumnos/${a._id}/historial`}
                                                         className="flex items-center gap-2 group">
                                                         <span className={cn(
