@@ -420,19 +420,19 @@ export default function MiCuentaPage() {
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-[#f2f2f7]">
             {/* Pad for bottom nav */}
             <div className="pb-24">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
-                <div className="relative bg-[#0a0a0a] overflow-hidden">
+                <div className="relative bg-[#0a0a0a] overflow-hidden rounded-b-[2.5rem]">
                     {/* Dot grid */}
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'20px 20px' }} />
                     {/* Glow accents */}
                     <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl" style={{ background: `${acento}18` }} />
                     <div className="absolute -bottom-6 -left-4 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
 
-                    <div className="relative px-5 pt-8 pb-10">
+                    <div className="relative px-5 pt-10 pb-12">
                         {/* Gym name top */}
                         {gimnasioNombre && (
                             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-[0.16em] mb-5">{gimnasioNombre}</p>
@@ -530,7 +530,7 @@ export default function MiCuentaPage() {
                 </div>
 
                 {/* Content area */}
-                <div className="px-4 pt-4 space-y-4">
+                <div className="px-4 pt-5 space-y-3">
 
                     {/* Pago result banner */}
                     {pagoResult && (
