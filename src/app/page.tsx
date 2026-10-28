@@ -52,7 +52,7 @@ function BlurFade({ children, delay = 0, className }: { children: React.ReactNod
 // ─── Magic UI: AnimatedBar ────────────────────────────────────────────────────
 function AnimatedBar({ pct, color }: { pct: number; color: string }) {
     return (
-        <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+        <div className="w-full bg-white/[0.1] rounded-full h-1 overflow-hidden">
             <motion.div
                 className={cn('h-full rounded-full', color)}
                 initial={{ width: 0 }}
@@ -122,10 +122,10 @@ const NAV_CARDS = [
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white border border-slate-100 rounded-2xl p-4 animate-pulse">
-            <div className="w-24 h-2 bg-slate-100 rounded mb-4" />
-            <div className="w-14 h-8 bg-slate-100 rounded mb-2" />
-            <div className="w-20 h-2 bg-slate-100 rounded" />
+        <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl p-4 animate-pulse">
+            <div className="w-24 h-2 bg-white/[0.1] rounded mb-4" />
+            <div className="w-14 h-8 bg-white/[0.1] rounded mb-2" />
+            <div className="w-20 h-2 bg-white/[0.1] rounded" />
         </div>
     );
 }
@@ -133,18 +133,14 @@ function SkeletonCard() {
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={cn(
-            'bg-white border border-slate-100 rounded-2xl p-4',
-            'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]',
-            className,
-        )}>
+        <div className={cn('bg-white/[0.06] border border-white/[0.09] rounded-2xl p-4', className)}>
             {children}
         </div>
     );
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
-    return <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-2">{children}</p>;
+    return <p className="text-[9px] font-bold text-white/45 uppercase tracking-[0.12em] mb-2">{children}</p>;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -319,7 +315,7 @@ export default function HomePage() {
         return false;
     });
 
-    const pagoBarColor = !data ? 'bg-slate-200' : data.porcentajePagados >= 80 ? 'bg-emerald-500' : data.porcentajePagados >= 50 ? 'bg-amber-400' : 'bg-red-500';
+    const pagoBarColor = !data ? 'bg-white/[0.1]' : data.porcentajePagados >= 80 ? 'bg-lime-400' : data.porcentajePagados >= 50 ? 'bg-amber-400' : 'bg-red-500';
     const mesLabel = data ? capitalize(data.mes) : '';
 
     const configItems = [
@@ -662,106 +658,64 @@ export default function HomePage() {
         : capitalize(session.user?.username ?? 'Usuario');
 
     return (
-        <div className="min-h-screen bg-slate-50/60">
-            <div className="max-w-5xl mx-auto px-4 pt-4 pb-20 lg:pt-6 lg:px-6">
+        <div className="min-h-screen bg-[#0a0a0a]">
+            {/* Dot grid */}
+            <div className="fixed inset-0 pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-                {/* ── Hero Banner ───────────────────────────────────────────── */}
+            <div className="relative max-w-5xl mx-auto px-4 pt-4 pb-20">
+
+                {/* ── HERO ────────────────────────────────────────────────── */}
                 <BlurFade delay={0}>
-                    <div className="relative bg-[#0a0a0a] rounded-3xl overflow-hidden mb-5">
-                        {/* Dot grid */}
+                    <div className="relative bg-[#111] rounded-[2rem] overflow-hidden mb-4">
                         <div className="absolute inset-0"
-                            style={{
-                                backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-                                backgroundSize: '22px 22px',
-                            }} />
-                        {/* Gradient accents */}
-                        <div className="absolute top-0 right-0 w-80 h-40 bg-gradient-to-bl from-white/[0.04] to-transparent" />
-                        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
-                        <div className="absolute -bottom-8 right-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl" />
+                            style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                        <div className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl" style={{ background: 'rgba(163,230,53,0.06)' }} />
+                        <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/[0.06] rounded-full blur-3xl" />
 
-                        <div className="relative px-6 py-6 lg:px-8 lg:py-8">
-                            <div className="lg:flex lg:items-center lg:justify-between lg:gap-8">
-                                {/* Left */}
-                                <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.14em]">
-                                            {getGreeting()}
-                                        </span>
-                                        <span className="text-slate-700 text-[10px]">·</span>
-                                        <span className="text-[10px] text-slate-500 capitalize">{fmtDate()}</span>
-                                    </div>
+                        <div className="relative px-5 pt-5 pb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.14em]">{getGreeting()}</span>
+                                <span className="text-white/20 text-[10px]">·</span>
+                                <span className="text-[10px] text-white/35 capitalize">{fmtDate()}</span>
+                            </div>
 
-                                    <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight mb-2">
-                                        {userName}
-                                    </h1>
+                            <h1 className="text-2xl font-bold text-white tracking-tight mb-2">{userName}</h1>
 
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="inline-flex items-center gap-1.5 bg-white/[0.07] border border-white/[0.08] text-slate-300 text-[10px] font-semibold px-3 py-1 rounded-full capitalize">
-                                            {session.user?.role}
-                                        </span>
-                                        {gimnasioNombre && (
-                                            <span className="text-slate-600 text-[10px] truncate max-w-[180px]">{gimnasioNombre}</span>
-                                        )}
-                                    </div>
-                                </div>
+                            <div className="flex items-center gap-2 flex-wrap mb-5">
+                                <span className="inline-flex items-center bg-white/[0.08] border border-white/[0.1] text-white/60 text-[10px] font-semibold px-3 py-1 rounded-full capitalize">
+                                    {session.user?.role}
+                                </span>
+                                {gimnasioNombre && (
+                                    <span className="text-white/35 text-[10px] truncate max-w-[200px]">{gimnasioNombre}</span>
+                                )}
+                            </div>
 
-                                {/* Desktop nav */}
-                                <div className="hidden lg:flex items-center gap-2 shrink-0 mt-0">
-                                    {visibleCards.map((c) => (
-                                        <Link key={c.href} href={c.href}
-                                            className="group flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.07] hover:bg-white/[0.1] hover:border-white/[0.14] transition-all">
-                                            <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
-                                                {c.icon}
-                                            </div>
-                                            <span className="text-[10px] font-semibold text-slate-400 group-hover:text-slate-300 transition-colors">{c.label}</span>
-                                        </Link>
-                                    ))}
-                                    {esProfesor && session.user?.id && (
-                                        <Link href="/mi-perfil#plan"
-                                            className="group flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.07] hover:bg-white/[0.1] hover:border-white/[0.14] transition-all">
-                                            <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
-                                                <FileText size={18} className="text-white" />
-                                            </div>
-                                            <span className="text-[10px] font-semibold text-slate-400 group-hover:text-slate-300 transition-colors">Mi plan</span>
-                                        </Link>
-                                    )}
-                                </div>
+                            {/* Nav pills — horizontal scroll en mobile */}
+                            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+                                {visibleCards.map((c) => (
+                                    <Link key={c.href} href={c.href}
+                                        className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.07] border border-white/[0.09] hover:bg-white/[0.13] active:scale-95 transition-all text-white/70 hover:text-white text-xs font-semibold shrink-0">
+                                        <span className="opacity-80">{c.icon}</span>
+                                        {c.label}
+                                    </Link>
+                                ))}
+                                {esProfesor && session.user?.id && (
+                                    <Link href="/mi-perfil#plan"
+                                        className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.07] border border-white/[0.09] hover:bg-white/[0.13] active:scale-95 transition-all text-white/70 hover:text-white text-xs font-semibold shrink-0">
+                                        <FileText size={14} className="opacity-80" />
+                                        Mi plan
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
                 </BlurFade>
 
-                {/* ── Mobile Quick Nav ──────────────────────────────────────── */}
-                <BlurFade delay={0.06} className="lg:hidden mb-5">
-                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                        <div className="flex justify-around">
-                            {visibleCards.map((c) => (
-                                <Link key={c.href} href={c.href}
-                                    className="flex flex-col items-center gap-2 group active:opacity-70 transition-opacity">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)] group-active:scale-95 transition-transform">
-                                        {c.icon}
-                                    </div>
-                                    <span className="text-[10px] font-semibold text-slate-500">{c.label}</span>
-                                </Link>
-                            ))}
-                            {esProfesor && session.user?.id && (
-                                <Link href="/mi-perfil#plan"
-                                    className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-                                        <FileText size={18} className="text-white" />
-                                    </div>
-                                    <span className="text-[10px] font-semibold text-slate-500">Mi plan</span>
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </BlurFade>
+                {/* ── STATS + CONFIG ──────────────────────────────────────── */}
+                <div className="lg:grid lg:grid-cols-[1fr_260px] lg:gap-4 lg:items-start">
 
-                {/* ── Stats + Config ────────────────────────────────────────── */}
-                <div className="lg:grid lg:grid-cols-[1fr_272px] lg:gap-5 lg:items-start">
-
-                    {/* Stats */}
+                    {/* Stats grid */}
                     <div>
                         {loading ? (
                             <div className="grid grid-cols-2 gap-3">
@@ -772,30 +726,30 @@ export default function HomePage() {
 
                                 {/* Balance */}
                                 {esDueño && (
-                                    <BlurFade delay={0.12}>
+                                    <BlurFade delay={0.1}>
                                         <StatCard>
                                             <div className="flex items-start justify-between mb-3">
                                                 <StatLabel>Balance · {mesLabel}</StatLabel>
                                                 <button onClick={toggleBalance}
-                                                    className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors shrink-0 -mt-0.5">
+                                                    className="w-6 h-6 rounded-lg bg-white/[0.07] flex items-center justify-center text-white/40 hover:text-white/70 transition-colors shrink-0 -mt-0.5">
                                                     {showBalance ? <Eye size={12} /> : <EyeOff size={12} />}
                                                 </button>
                                             </div>
-                                            <p className={cn('text-2xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-600' : 'text-red-500')}>
+                                            <p className={cn('text-2xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-400' : 'text-red-400')}>
                                                 {showBalance
                                                     ? <>{data.balance < 0 ? '−' : ''}$<NumberTicker value={Math.abs(data.balance)} /></>
                                                     : '$ ••••'}
                                             </p>
                                             {showBalance && (
-                                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-50">
+                                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.06]">
                                                     <div>
-                                                        <p className="text-[11px] font-bold text-emerald-500">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
-                                                        <p className="text-[9px] text-slate-400">ingresos</p>
+                                                        <p className="text-[11px] font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                                        <p className="text-[9px] text-white/35">ingresos</p>
                                                     </div>
-                                                    <div className="w-px h-5 bg-slate-100 shrink-0" />
+                                                    <div className="w-px h-5 bg-white/[0.08] shrink-0" />
                                                     <div>
                                                         <p className="text-[11px] font-bold text-red-400">−${fmt(data.gastosMes)}</p>
-                                                        <p className="text-[9px] text-slate-400">egresos</p>
+                                                        <p className="text-[9px] text-white/35">egresos</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -805,69 +759,69 @@ export default function HomePage() {
 
                                 {/* Cuotas */}
                                 {!esProfesor && !esRecepcion && (
-                                    <BlurFade delay={0.16}>
+                                    <BlurFade delay={0.14}>
                                         <StatCard>
                                             <StatLabel>Cuotas · {mesLabel}</StatLabel>
                                             <div className="flex items-stretch gap-2 mb-3">
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-2xl font-bold text-emerald-600 leading-none tabular-nums">
+                                                    <p className="text-2xl font-bold text-emerald-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.pagados} />
                                                     </p>
-                                                    <p className="text-[9px] text-emerald-500 mt-1 font-semibold">Pagaron</p>
+                                                    <p className="text-[9px] text-emerald-400/70 mt-1 font-semibold">Pagaron</p>
                                                 </div>
-                                                <div className="w-px bg-slate-100 self-stretch" />
+                                                <div className="w-px bg-white/[0.07] self-stretch" />
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-2xl font-bold text-red-500 leading-none tabular-nums">
+                                                    <p className="text-2xl font-bold text-red-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.totalAlumnos - data.pagados} />
                                                     </p>
-                                                    <p className="text-[9px] text-red-400 mt-1 font-semibold">Deben</p>
+                                                    <p className="text-[9px] text-red-400/70 mt-1 font-semibold">Deben</p>
                                                 </div>
                                             </div>
                                             <AnimatedBar pct={data.porcentajePagados} color={pagoBarColor} />
-                                            <p className="text-[9px] text-slate-400 mt-1.5 text-right font-medium">{data.porcentajePagados}% pagado</p>
+                                            <p className="text-[9px] text-white/35 mt-1.5 text-right font-medium">{data.porcentajePagados}% pagado</p>
                                         </StatCard>
                                     </BlurFade>
                                 )}
 
                                 {/* Asistencias hoy */}
-                                <BlurFade delay={0.20}>
+                                <BlurFade delay={0.18}>
                                     <StatCard>
                                         <StatLabel>Asistencias · Hoy</StatLabel>
-                                        <p className="text-3xl font-bold text-slate-900 leading-none tabular-nums mb-2">
+                                        <p className="text-3xl font-bold text-white leading-none tabular-nums mb-2">
                                             <NumberTicker value={data.asistenciasHoy} />
                                         </p>
                                         {data.asistenciasHoy > 0 ? (
                                             <div className="flex gap-3 flex-wrap">
                                                 {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
-                                                        <p className="text-[9px] text-slate-400">Mañana</p>
+                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
+                                                        <p className="text-[9px] text-white/40">Mañana</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
-                                                        <p className="text-[9px] text-slate-400">Siesta</p>
+                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
+                                                        <p className="text-[9px] text-white/40">Siesta</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
-                                                        <p className="text-[9px] text-slate-400">Tarde</p>
+                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
+                                                        <p className="text-[9px] text-white/40">Tarde</p>
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-[11px] text-slate-400">Sin registros aún</p>
+                                            <p className="text-[11px] text-white/35">Sin registros aún</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
 
                                 {/* Planes venciendo */}
-                                <BlurFade delay={0.24}>
+                                <BlurFade delay={0.22}>
                                     <StatCard>
                                         <StatLabel>Planes venciendo</StatLabel>
-                                        <p className={cn('text-3xl font-bold leading-none tabular-nums mb-2', data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900')}>
+                                        <p className={cn('text-3xl font-bold leading-none tabular-nums mb-2', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
                                             <NumberTicker value={data.planesVenciendo.length} />
                                         </p>
                                         {data.planesVenciendo.length > 0 ? (
@@ -881,14 +835,14 @@ export default function HomePage() {
                                                         )}>
                                                             {a.diasRestantes}
                                                         </span>
-                                                        <span className="text-[10px] text-slate-600 truncate group-hover:text-slate-900 transition-colors">
+                                                        <span className="text-[10px] text-white/60 truncate group-hover:text-white/90 transition-colors">
                                                             {a.apellido}, {a.nombre}
                                                         </span>
                                                     </Link>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-[11px] text-slate-400">Sin vencimientos</p>
+                                            <p className="text-[11px] text-white/35">Sin vencimientos</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
@@ -896,37 +850,37 @@ export default function HomePage() {
                         )}
                     </div>
 
-                    {/* ── Config Panel ───────────────────────────────────────── */}
+                    {/* Config panel */}
                     {!esProfesor && !esRecepcion && (
-                        <BlurFade delay={0.28} className="mt-5 lg:mt-0">
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-3">Configuración</p>
-                            <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
+                        <BlurFade delay={0.26} className="mt-4 lg:mt-0">
+                            <p className="text-[9px] font-bold text-white/35 uppercase tracking-[0.12em] mb-3">Configuración</p>
+                            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl overflow-hidden">
                                 {configItems.map((item, idx, arr) => (
                                     <div key={item.label}>
                                         <button onClick={item.onClick}
-                                            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                                            <div className="w-8 h-8 rounded-xl bg-[#0a0a0a] flex items-center justify-center shrink-0">
+                                            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.09] transition-colors text-left">
+                                            <div className="w-8 h-8 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0">
                                                 {item.icon}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-[13px] text-slate-800">{item.label}</p>
-                                                <p className="text-[10px] text-slate-400 truncate">{item.sub}</p>
+                                                <p className="font-semibold text-[13px] text-white/90">{item.label}</p>
+                                                <p className="text-[10px] text-white/40 truncate">{item.sub}</p>
                                             </div>
-                                            <ChevronRight size={13} className="text-slate-300 shrink-0" />
+                                            <ChevronRight size={13} className="text-white/25 shrink-0" />
                                         </button>
-                                        {idx < arr.length - 1 && <div className="border-t border-slate-50 mx-4" />}
+                                        {idx < arr.length - 1 && <div className="border-t border-white/[0.05] mx-4" />}
                                     </div>
                                 ))}
 
                                 {/* Actividades recepción */}
-                                <div className="border-t border-slate-50 px-4 py-3.5">
+                                <div className="border-t border-white/[0.05] px-4 py-3.5">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-[#0a0a0a] flex items-center justify-center shrink-0">
+                                        <div className="w-8 h-8 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0">
                                             <Users size={15} className="text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-[13px] text-slate-800">Recepción</p>
-                                            <p className="text-[10px] text-slate-400">Actividades disponibles</p>
+                                            <p className="font-semibold text-[13px] text-white/90">Recepción</p>
+                                            <p className="text-[10px] text-white/40">Actividades disponibles</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -938,13 +892,13 @@ export default function HomePage() {
                                                     disabled={savingActividades || esUltima}
                                                     className={cn(
                                                         'flex items-center justify-between px-3 py-2 rounded-xl transition-colors',
-                                                        activa ? 'bg-emerald-50' : 'bg-slate-50',
+                                                        activa ? 'bg-lime-400/[0.08]' : 'bg-white/[0.04]',
                                                     )}>
-                                                    <span className={cn('text-[13px] font-medium', activa ? 'text-emerald-800' : 'text-slate-500')}>
+                                                    <span className={cn('text-[13px] font-medium', activa ? 'text-lime-400' : 'text-white/50')}>
                                                         {act}
                                                     </span>
-                                                    <div className={cn('w-9 h-5 rounded-full relative transition-colors', activa ? 'bg-emerald-500' : 'bg-slate-200')}>
-                                                        <div className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all"
+                                                    <div className={cn('w-9 h-5 rounded-full relative transition-colors', activa ? 'bg-lime-400' : 'bg-white/[0.15]')}>
+                                                        <div className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all"
                                                             style={{ left: activa ? '18px' : '2px' }} />
                                                     </div>
                                                 </button>
