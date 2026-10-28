@@ -784,33 +784,35 @@ export default function HomePage() {
                                 {/* Asistencias hoy */}
                                 <BlurFade delay={0.18}>
                                     <StatCard>
-                                        <StatLabel>Asistencias · Hoy</StatLabel>
-                                        <p className="text-4xl font-bold text-white leading-none tabular-nums mb-3">
-                                            <NumberTicker value={data.asistenciasHoy} />
-                                        </p>
+                                        <div className="flex items-start justify-between mb-3">
+                                            <StatLabel>Asistencias · Hoy</StatLabel>
+                                            <p className="text-3xl font-bold text-white leading-none tabular-nums -mt-0.5">
+                                                <NumberTicker value={data.asistenciasHoy} />
+                                            </p>
+                                        </div>
                                         {data.asistenciasHoy > 0 ? (
-                                            <div className="flex gap-3 flex-wrap">
+                                            <div className="flex gap-4 flex-wrap">
                                                 {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
+                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.manana}</p>
                                                         <p className="text-[10px] text-white/50 mt-0.5">Mañana</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
+                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
                                                         <p className="text-[10px] text-white/50 mt-0.5">Siesta</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
+                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
                                                         <p className="text-[10px] text-white/50 mt-0.5">Tarde</p>
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-white/50 mt-1">Sin registros aún</p>
+                                            <p className="text-xs text-white/50">Sin registros aún</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
@@ -818,13 +820,15 @@ export default function HomePage() {
                                 {/* Planes venciendo */}
                                 <BlurFade delay={0.22}>
                                     <StatCard>
-                                        <StatLabel>Planes venciendo</StatLabel>
-                                        <p className={cn('text-4xl font-bold leading-none tabular-nums mb-3', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
-                                            <NumberTicker value={data.planesVenciendo.length} />
-                                        </p>
+                                        <div className="flex items-start justify-between mb-3">
+                                            <StatLabel>Planes venciendo</StatLabel>
+                                            <p className={cn('text-3xl font-bold leading-none tabular-nums -mt-0.5', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
+                                                <NumberTicker value={data.planesVenciendo.length} />
+                                            </p>
+                                        </div>
                                         {data.planesVenciendo.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {data.planesVenciendo.slice(0, 2).map(a => (
+                                            <div className="space-y-1.5">
+                                                {data.planesVenciendo.slice(0, 3).map(a => (
                                                     <Link key={a._id} href={`/alumnos/${a._id}/historial`}
                                                         className="flex items-center gap-2 group">
                                                         <span className={cn(
@@ -840,7 +844,7 @@ export default function HomePage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-white/50 mt-1">Sin vencimientos</p>
+                                            <p className="text-xs text-white/50">Sin vencimientos</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
