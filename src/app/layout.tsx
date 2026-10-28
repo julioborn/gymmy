@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   manifest: "/api/pwa/manifest",
   themeColor: "#111827",
   icons: {
-    icon: '/api/pwa/icon',
-    apple: '/api/pwa/icon',
+    icon: '/icons/icon-512x512.png',
+    apple: '/icons/icon-512x512.png',
   },
   appleWebApp: {
     capable: true,
