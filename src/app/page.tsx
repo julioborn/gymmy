@@ -7,31 +7,80 @@ import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
+import { motion, animate } from 'framer-motion';
+import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from 'clsx';
+import {
+    Users, Briefcase, TrendingUp, BarChart3,
+    Eye, EyeOff, ChevronRight, UserPlus,
+    Banknote, AlertCircle, FileText, Link2,
+} from 'lucide-react';
 
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+
+// ─── Magic UI: NumberTicker ────────────────────────────────────────────────────
+function NumberTicker({ value, prefix = '' }: { value: number; prefix?: string }) {
+    const [display, setDisplay] = useState(0);
+    useEffect(() => {
+        const ctrl = animate(0, value, {
+            duration: 1.1,
+            ease: [0.16, 1, 0.3, 1],
+            onUpdate(v) { setDisplay(Math.floor(v)); },
+        });
+        return ctrl.stop;
+    }, [value]);
+    return <>{prefix}{display.toLocaleString('es-AR')}</>;
+}
+
+// ─── Magic UI: BlurFade ────────────────────────────────────────────────────────
+function BlurFade({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
+    return (
+        <motion.div
+            className={className}
+            initial={{ opacity: 0, filter: 'blur(6px)', y: 10 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+        >
+            {children}
+        </motion.div>
+    );
+}
+
+// ─── Magic UI: AnimatedBar ────────────────────────────────────────────────────
+function AnimatedBar({ pct, color }: { pct: number; color: string }) {
+    return (
+        <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
+            <motion.div
+                className={cn('h-full rounded-full', color)}
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            />
+        </div>
+    );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getGreeting(): string {
     const h = new Date().getHours();
     if (h < 12) return 'Buenos días';
     if (h < 19) return 'Buenas tardes';
     return 'Buenas noches';
 }
-
 function capitalize(text: string): string {
     return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
 }
-
-function fmt(n: number): string {
-    return n.toLocaleString('es-AR');
-}
-
+function fmt(n: number): string { return n.toLocaleString('es-AR'); }
 function fmtDate(): string {
     return new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 type Tarifa = { dias: number; valor: number };
-
 type AlumnoAsistencia = { nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean };
-type DePasoEntry    = { nombre: string; apellido: string; actividad: string; hora: string };
-type DiaData        = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
+type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string };
+type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
 
 type DashboardData = {
     totalAlumnos: number;
@@ -48,69 +97,57 @@ type DashboardData = {
     mes: string;
 };
 
+// ─── Nav cards ────────────────────────────────────────────────────────────────
 const NAV_CARDS = [
     {
-        href: '/alumnos',
-        label: 'Alumnos',
-        desc: 'Ver y gestionar alumnos',
-        iconBg: 'bg-slate-700',
-        role: null as string | null,
-        icon: (
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-            </svg>
-        ),
+        href: '/alumnos', label: 'Alumnos', role: null as string | null,
+        icon: <Users size={18} className="text-white" />,
     },
     {
-        href: '/empleados',
-        label: 'Empleados',
-        desc: 'Gestionar equipo',
-        iconBg: 'bg-slate-800',
-        role: 'dueño' as string | null,
-        icon: (
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-            </svg>
-        ),
+        href: '/empleados', label: 'Empleados', role: 'dueño' as string | null,
+        icon: <Briefcase size={18} className="text-white" />,
     },
     {
-        href: '/alumnos/finanzas',
-        label: 'Finanzas',
-        desc: 'Control de ingresos',
-        iconBg: 'bg-amber-400',
-        role: 'dueño' as string | null,
-        icon: (
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-        ),
+        href: '/alumnos/finanzas', label: 'Finanzas', role: 'dueño' as string | null,
+        icon: <TrendingUp size={18} className="text-white" />,
     },
     {
-        href: '/alumnos/estadisticas',
-        label: 'Estadísticas',
-        desc: 'Métricas del gimnasio',
-        iconBg: 'bg-slate-800',
-        role: 'dueño' as string | null,
-        icon: (
-            <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-            </svg>
-        ),
+        href: '/alumnos/estadisticas', label: 'Estadísticas', role: 'dueño' as string | null,
+        icon: <BarChart3 size={18} className="text-white" />,
     },
 ];
 
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white border border-black/[0.07] rounded-2xl p-4 animate-pulse shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 mb-3" />
-            <div className="h-7 w-16 bg-slate-100 rounded mb-2" />
-            <div className="h-2.5 w-20 bg-slate-100 rounded" />
+        <div className="bg-white border border-slate-100 rounded-2xl p-4 animate-pulse">
+            <div className="w-24 h-2 bg-slate-100 rounded mb-4" />
+            <div className="w-14 h-8 bg-slate-100 rounded mb-2" />
+            <div className="w-20 h-2 bg-slate-100 rounded" />
         </div>
     );
 }
 
+// ─── Stat Card wrapper ────────────────────────────────────────────────────────
+function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
+    return (
+        <div className={cn(
+            'bg-white border border-slate-100 rounded-2xl p-4',
+            'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]',
+            className,
+        )}>
+            {children}
+        </div>
+    );
+}
+
+function StatLabel({ children }: { children: React.ReactNode }) {
+    return <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-2">{children}</p>;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
     const router = useRouter();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -120,11 +157,11 @@ export default function HomePage() {
     const [aliasGimnasio, setAliasGimnasio] = useState<string>('');
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
-    const [diasData, setDiasData]           = useState<DiaData[]>([]);
-    const [diaExpandido, setDiaExpandido]   = useState<string | null>(null);
-    const [activeSlot, setActiveSlot]        = useState<string | null>(null);
-    const [loadingHoy, setLoadingHoy]       = useState(false);
-    const [horaArg, setHoraArg]             = useState('');
+    const [diasData, setDiasData] = useState<DiaData[]>([]);
+    const [diaExpandido, setDiaExpandido] = useState<string | null>(null);
+    const [activeSlot, setActiveSlot] = useState<string | null>(null);
+    const [loadingHoy, setLoadingHoy] = useState(false);
+    const [horaArg, setHoraArg] = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
         if (typeof window === 'undefined') return true;
@@ -150,10 +187,7 @@ export default function HomePage() {
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => {
-        fetchDashboard();
-    }, [session]);
-
+    useEffect(() => { fetchDashboard(); }, [session]);
     usePaymentEvents(fetchDashboard);
 
     const fetchAsistencias = () => {
@@ -166,15 +200,15 @@ export default function HomePage() {
             fetch('/api/alumnos-de-paso').then(r => r.json()),
         ]).then(([alumnosData, depasosData]) => {
             const nowArg = new Date(Date.now() + ARG);
-            const todayKey = `${nowArg.getUTCFullYear()}-${String(nowArg.getUTCMonth()+1).padStart(2,'0')}-${String(nowArg.getUTCDate()).padStart(2,'0')}`;
-            const dow = nowArg.getUTCDay(); // 0=dom..6=sáb
+            const todayKey = `${nowArg.getUTCFullYear()}-${String(nowArg.getUTCMonth() + 1).padStart(2, '0')}-${String(nowArg.getUTCDate()).padStart(2, '0')}`;
+            const dow = nowArg.getUTCDay();
             const daysToMon = dow === 0 ? 6 : dow - 1;
             const monday = new Date(Date.UTC(nowArg.getUTCFullYear(), nowArg.getUTCMonth(), nowArg.getUTCDate() - daysToMon));
-            const WEEK_LABELS = ['LUN','MAR','MIÉ','JUE','VIE'];
+            const WEEK_LABELS = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE'];
             const dias: DiaData[] = [];
             for (let i = 0; i < 5; i++) {
                 const d = new Date(monday.getTime() + i * 86400000);
-                const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+                const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
                 const fechaLarga = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
                 dias.push({ key, labelDay: WEEK_LABELS[i], labelNum: d.getUTCDate(), fechaLarga, alumnos: [], depaso: [] });
             }
@@ -183,44 +217,43 @@ export default function HomePage() {
                 for (const a of (al.asistencia || [])) {
                     if (!a.presente) continue;
                     const dArg = new Date(new Date(a.fecha).getTime() + ARG);
-                    const k = `${dArg.getUTCFullYear()}-${String(dArg.getUTCMonth()+1).padStart(2,'0')}-${String(dArg.getUTCDate()).padStart(2,'0')}`;
+                    const k = `${dArg.getUTCFullYear()}-${String(dArg.getUTCMonth() + 1).padStart(2, '0')}-${String(dArg.getUTCDate()).padStart(2, '0')}`;
                     const dia = dias.find(d => d.key === k);
                     if (!dia) continue;
                     const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                    dia.alumnos.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`, id: al._id, pagado });
+                    dia.alumnos.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado });
                 }
             }
             dias.forEach(d => d.alumnos.sort((a, b) => b.hora.localeCompare(a.hora)));
             for (const dp of (depasosData?.registros || [])) {
                 const dArg = new Date(new Date(dp.fecha).getTime() + ARG);
-                const k = `${dArg.getUTCFullYear()}-${String(dArg.getUTCMonth()+1).padStart(2,'0')}-${String(dArg.getUTCDate()).padStart(2,'0')}`;
+                const k = `${dArg.getUTCFullYear()}-${String(dArg.getUTCMonth() + 1).padStart(2, '0')}-${String(dArg.getUTCDate()).padStart(2, '0')}`;
                 const dia = dias.find(d => d.key === k);
                 if (!dia) continue;
                 const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}` });
+                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}` });
             }
             dias.forEach(d => d.depaso.sort((a, b) => b.hora.localeCompare(a.hora)));
             setDiasData(dias);
             setDiaExpandido(todayKey);
         })
-        .catch(() => {})
-        .finally(() => setLoadingHoy(false));
+            .catch(() => { })
+            .finally(() => setLoadingHoy(false));
     };
 
     useEffect(() => { fetchAsistencias(); }, [session]);
-
     useEffect(() => {
         const handler = () => fetchAsistencias();
         window.addEventListener('alumno-de-paso-registrado', handler);
         return () => window.removeEventListener('alumno-de-paso-registrado', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (session?.user?.role !== 'recepcion') return;
         const tick = () => {
             const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
-            setHoraArg(`${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`);
+            setHoraArg(`${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`);
         };
         tick();
         const id = setInterval(tick, 1000);
@@ -229,138 +262,44 @@ export default function HomePage() {
 
     useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
-        fetch('/api/tarifas')
-            .then(r => r.json())
-            .then(d => { setTarifas(d.tarifas || []); })
-            .catch(() => { });
-        fetch('/api/recargo')
-            .then(r => r.json())
-            .then(d => { setRecargoDiez(d.montoDiez ?? 0); setRecargoMes(d.montoMes ?? 0); })
-            .catch(() => { });
-        fetch('/api/gimnasio/alias')
-            .then(r => r.json())
-            .then(d => { setAliasGimnasio(d.alias ?? ''); setGimnasioNombre(d.nombre ?? ''); })
-            .catch(() => { });
-        fetch('/api/gimnasio/tema')
-            .then(r => r.json())
-            .then(d => { if (d?.actividadesRecepcion?.length) setActividadesRecepcion(d.actividadesRecepcion); })
-            .catch(() => { });
+        fetch('/api/tarifas').then(r => r.json()).then(d => setTarifas(d.tarifas || [])).catch(() => { });
+        fetch('/api/recargo').then(r => r.json()).then(d => { setRecargoDiez(d.montoDiez ?? 0); setRecargoMes(d.montoMes ?? 0); }).catch(() => { });
+        fetch('/api/gimnasio/alias').then(r => r.json()).then(d => { setAliasGimnasio(d.alias ?? ''); setGimnasioNombre(d.nombre ?? ''); }).catch(() => { });
+        fetch('/api/gimnasio/tema').then(r => r.json()).then(d => { if (d?.actividadesRecepcion?.length) setActividadesRecepcion(d.actividadesRecepcion); }).catch(() => { });
     }, [session]);
 
     const handleConfiguracionTarifas = async () => {
-        if (tarifas.length === 0) {
-            await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recargá la página.' });
-            return;
-        }
-        const tarifaInputs = tarifas.map(t => `
-            <div>
-                <label class="swal-form-label">Días ${t.dias} por semana</label>
-                <input type="number" id="tarifa-${t.dias}" class="swal2-input" value="${t.valor}">
-            </div>
-        `).join('');
-        const result = await Swal.fire({
-            ...swalBase,
-            title: 'Configurar Cuotas',
-            html: `<div class="swal-form-body">${tarifaInputs}</div>`,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Aceptar',
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => tarifas.map(t => ({
-                ...t,
-                valor: Number((document.getElementById(`tarifa-${t.dias}`) as HTMLInputElement).value),
-            })),
-        });
+        if (tarifas.length === 0) { await Swal.fire({ ...swalNotify, icon: 'error', title: 'No se encontraron cuotas. Por favor, recargá la página.' }); return; }
+        const tarifaInputs = tarifas.map(t => `<div><label class="swal-form-label">Días ${t.dias} por semana</label><input type="number" id="tarifa-${t.dias}" class="swal2-input" value="${t.valor}"></div>`).join('');
+        const result = await Swal.fire({ ...swalBase, title: 'Configurar Cuotas', html: `<div class="swal-form-body">${tarifaInputs}</div>`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'Aceptar', cancelButtonText: 'Cancelar', preConfirm: () => tarifas.map(t => ({ ...t, valor: Number((document.getElementById(`tarifa-${t.dias}`) as HTMLInputElement).value) })) });
         const nuevasTarifas = result.value as Tarifa[] | undefined;
-        if (nuevasTarifas) {
-            try {
-                const res = await fetch('/api/tarifas', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevasTarifas) });
-                if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' }); setTarifas(nuevasTarifas); }
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' }); }
-        }
+        if (nuevasTarifas) { try { const res = await fetch('/api/tarifas', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevasTarifas) }); if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Cuotas actualizadas' }); setTarifas(nuevasTarifas); } else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar las cuotas' }); } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar las cuotas' }); } }
     };
 
     const handleConfiguracionRecargos = async () => {
-        const { value: result } = await Swal.fire({
-            ...swalBase,
-            title: 'Configurar Recargos',
-            html: `
-                <div class="swal-form-body">
-                    <div style="margin-bottom:1rem;">
-                        <label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label>
-                        <input type="text" inputmode="numeric" id="recargo-diez" class="swal2-input" value="${recargoDiez}" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="swal-form-label">Recargo pasando el mes completo ($)</label>
-                        <input type="text" inputmode="numeric" id="recargo-mes" class="swal2-input" value="${recargoMes}" placeholder="0">
-                    </div>
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const rawD = (document.getElementById('recargo-diez') as HTMLInputElement)?.value ?? '';
-                const rawM = (document.getElementById('recargo-mes') as HTMLInputElement)?.value ?? '';
-                const d = parseInt(rawD.replace(/\D/g, ''), 10) || 0;
-                const m = parseInt(rawM.replace(/\D/g, ''), 10) || 0;
-                return { montoDiez: d, montoMes: m };
-            },
-        });
-        if (result) {
-            try {
-                const res = await fetch('/api/recargo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(result) });
-                if (res.ok) { setRecargoDiez(result.montoDiez); setRecargoMes(result.montoMes); Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargos actualizados' }); }
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar los recargos' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' }); }
-        }
+        const { value: result } = await Swal.fire({ ...swalBase, title: 'Configurar Recargos', html: `<div class="swal-form-body"><div style="margin-bottom:1rem;"><label class="swal-form-label">Recargo pasando el día 10 del mes ($)</label><input type="text" inputmode="numeric" id="recargo-diez" class="swal2-input" value="${recargoDiez}" placeholder="0"></div><div><label class="swal-form-label">Recargo pasando el mes completo ($)</label><input type="text" inputmode="numeric" id="recargo-mes" class="swal2-input" value="${recargoMes}" placeholder="0"></div></div>`, showCancelButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', preConfirm: () => { const rawD = (document.getElementById('recargo-diez') as HTMLInputElement)?.value ?? ''; const rawM = (document.getElementById('recargo-mes') as HTMLInputElement)?.value ?? ''; const d = parseInt(rawD.replace(/\D/g, ''), 10) || 0; const m = parseInt(rawM.replace(/\D/g, ''), 10) || 0; return { montoDiez: d, montoMes: m }; } });
+        if (result) { try { const res = await fetch('/api/recargo', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(result) }); if (res.ok) { setRecargoDiez(result.montoDiez); setRecargoMes(result.montoMes); Swal.fire({ ...swalNotify, icon: 'success', title: 'Recargos actualizados' }); } else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudieron actualizar los recargos' }); } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' }); } }
     };
 
     const handleConfiguracionAlias = async () => {
-        const { value: nuevoAlias } = await Swal.fire({
-            ...swalBase,
-            title: 'Alias de pago',
-            html: `<p style="font-size:13px;color:#64748b;margin-bottom:12px;">Ingresá el alias de tu cuenta de Mercado Pago para que los alumnos puedan transferirte.</p>`,
-            input: 'text',
-            inputPlaceholder: 'ejemplo.gimnasio.mp',
-            inputValue: aliasGimnasio,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (v) => !v?.trim() ? 'El alias no puede estar vacío' : null,
-        });
-        if (nuevoAlias && nuevoAlias.trim() !== aliasGimnasio) {
-            try {
-                const res = await fetch('/api/gimnasio/alias', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ alias: nuevoAlias.trim() }),
-                });
-                if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); }
-                else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' });
-            } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); }
-        }
+        const { value: nuevoAlias } = await Swal.fire({ ...swalBase, title: 'Alias de pago', html: `<p style="font-size:13px;color:#64748b;margin-bottom:12px;">Ingresá el alias de tu cuenta de Mercado Pago para que los alumnos puedan transferirte.</p>`, input: 'text', inputPlaceholder: 'ejemplo.gimnasio.mp', inputValue: aliasGimnasio, showCancelButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', inputValidator: (v) => !v?.trim() ? 'El alias no puede estar vacío' : null });
+        if (nuevoAlias && nuevoAlias.trim() !== aliasGimnasio) { try { const res = await fetch('/api/gimnasio/alias', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ alias: nuevoAlias.trim() }) }); if (res.ok) { setAliasGimnasio(nuevoAlias.trim()); Swal.fire({ ...swalNotify, icon: 'success', title: 'Alias guardado' }); } else Swal.fire({ ...swalNotify, icon: 'error', title: 'No se pudo guardar el alias' }); } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al guardar el alias' }); } }
     };
 
     const TODAS_ACTIVIDADES = ['Musculación', 'Intermitente', 'Otro'];
 
     const handleToggleActividad = async (actividad: string) => {
-        const nuevas = actividadesRecepcion.includes(actividad)
-            ? actividadesRecepcion.filter(a => a !== actividad)
-            : [...actividadesRecepcion, actividad];
-        if (nuevas.length === 0) return; // mínimo 1
+        const nuevas = actividadesRecepcion.includes(actividad) ? actividadesRecepcion.filter(a => a !== actividad) : [...actividadesRecepcion, actividad];
+        if (nuevas.length === 0) return;
         setSavingActividades(true);
-        try {
-            const res = await fetch('/api/gimnasio/tema', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ actividadesRecepcion: nuevas }),
-            });
-            if (res.ok) setActividadesRecepcion(nuevas);
-        } finally {
-            setSavingActividades(false);
-        }
+        try { const res = await fetch('/api/gimnasio/tema', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actividadesRecepcion: nuevas }) }); if (res.ok) setActividadesRecepcion(nuevas); } finally { setSavingActividades(false); }
+    };
+
+    const handleAlumnoDePasoGlobal = async () => {
+        const actividadesDisp = actividadesRecepcion.length > 0 ? actividadesRecepcion : ['Musculación'];
+        const { value: datos } = await Swal.fire({ ...swalBase, title: 'Alumno de paso', html: `<div class="swal-form-body"><div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div><div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div><div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div><div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div><div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div></div>`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'Registrar', cancelButtonText: 'Cancelar', preConfirm: () => { const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim(); const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim(); if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; } return { nombre, apellido, actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value, monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0, metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value }; } });
+        if (!datos) return;
+        try { const res = await fetch('/api/alumnos-de-paso', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) }); if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno de paso registrado' }); fetchAsistencias(); } else { const err = await res.json(); Swal.fire({ ...swalNotify, icon: 'error', title: err.error || 'Error al registrar' }); } } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar' }); }
     };
 
     if (!session) return null;
@@ -377,169 +316,59 @@ export default function HomePage() {
         return false;
     });
 
-    const isSporttime = gimnasioNombre.toLowerCase().includes('sport');
-    const pagoColor = !data ? '' : data.porcentajePagados >= 80 ? 'text-emerald-600' : data.porcentajePagados >= 50 ? 'text-amber-600' : 'text-red-600';
     const pagoBarColor = !data ? 'bg-slate-200' : data.porcentajePagados >= 80 ? 'bg-emerald-500' : data.porcentajePagados >= 50 ? 'bg-amber-400' : 'bg-red-500';
-    const balanceColor = !data ? '' : data.balance >= 0 ? 'text-emerald-600' : 'text-red-600';
-    const balanceBg = !data ? 'bg-slate-400' : data.balance >= 0 ? 'bg-emerald-500' : 'bg-red-500';
-
-    // Un único token de card aplicado a TODAS las stat cards — sin excepciones
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
-    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none';
-    const sub = 'text-xs text-slate-500 mt-1';
     const mesLabel = data ? capitalize(data.mes) : '';
 
-    const handleAlumnoDePasoGlobal = async () => {
-        const actividadesDisp = actividadesRecepcion.length > 0 ? actividadesRecepcion : ['Musculación'];
-        const { value: datos } = await Swal.fire({
-            ...swalBase,
-            title: 'Alumno de paso',
-            html: `
-                <div class="swal-form-body">
-                    <div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div>
-                    <div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div>
-                    <div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div>
-                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
-                    <div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div>
-                </div>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Registrar',
-            cancelButtonText: 'Cancelar',
-            preConfirm: () => {
-                const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim();
-                const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim();
-                if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; }
-                return {
-                    nombre,
-                    apellido,
-                    actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value,
-                    monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0,
-                    metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value,
-                };
-            },
-        });
-        if (!datos) return;
-        try {
-            const res = await fetch('/api/alumnos-de-paso', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datos),
-            });
-            if (res.ok) {
-                Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno de paso registrado' });
-                fetchAsistencias();
-            } else {
-                const err = await res.json();
-                Swal.fire({ ...swalNotify, icon: 'error', title: err.error || 'Error al registrar' });
-            }
-        } catch {
-            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar' });
-        }
-    };
-
     const configItems = [
-        {
-            label: 'Alumno de paso', sub: 'Registrar ingreso del día', onClick: handleAlumnoDePasoGlobal,
-            icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>,
-        },
-        {
-            label: 'Cuotas', sub: 'Precios por días/semana', onClick: handleConfiguracionTarifas,
-            icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>,
-        },
-        {
-            label: 'Recargo', sub: 'Día 10 y mes vencido', onClick: handleConfiguracionRecargos,
-            icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>,
-        },
-        {
-            label: 'Alias de pago', sub: aliasGimnasio || 'Sin configurar', onClick: handleConfiguracionAlias,
-            icon: <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" /></svg>,
-        },
+        { label: 'Alumno de paso', sub: 'Registrar ingreso del día', onClick: handleAlumnoDePasoGlobal, icon: <UserPlus size={15} className="text-white" /> },
+        { label: 'Cuotas', sub: 'Precios por días/semana', onClick: handleConfiguracionTarifas, icon: <Banknote size={15} className="text-white" /> },
+        { label: 'Recargo', sub: 'Día 10 y mes vencido', onClick: handleConfiguracionRecargos, icon: <AlertCircle size={15} className="text-white" /> },
+        { label: 'Alias de pago', sub: aliasGimnasio || 'Sin configurar', onClick: handleConfiguracionAlias, icon: <Link2 size={15} className="text-white" /> },
     ];
 
-    const profesorPlanCard = esProfesor && session.user?.id ? (
-        <Link href="/mi-perfil#plan" className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
-            <div className="w-14 h-14 rounded-full bg-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.18)] flex items-center justify-center">
-                <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-            </div>
-            <span className="text-[11px] font-semibold text-slate-600 text-center">Mi plan</span>
-        </Link>
-    ) : null;
-
+    // ── Recepción view (unchanged) ─────────────────────────────────────────────
     if (esRecepcion) {
         const diaHoy = new Date().getDate();
         const pasoDiez = diaHoy > 10;
         const ARG_OFF = -3 * 60 * 60 * 1000;
         const nowArgUI = new Date(Date.now() + ARG_OFF);
-        const todayKey = `${nowArgUI.getUTCFullYear()}-${String(nowArgUI.getUTCMonth()+1).padStart(2,'0')}-${String(nowArgUI.getUTCDate()).padStart(2,'0')}`;
+        const todayKey = `${nowArgUI.getUTCFullYear()}-${String(nowArgUI.getUTCMonth() + 1).padStart(2, '0')}-${String(nowArgUI.getUTCDate()).padStart(2, '0')}`;
         const diaActivo = diasData.find(d => d.key === diaExpandido) ?? null;
         const totalActivo = diaActivo ? diaActivo.alumnos.length + diaActivo.depaso.length : 0;
-
-        const slotOf = (hora: string) => {
-            const h = parseInt(hora.split(':')[0]);
-            if (h < 12) return 'Mañana';
-            if (h < 15) return 'Siesta';
-            if (h < 20) return 'Tarde';
-            return 'Noche';
-        };
+        const slotOf = (hora: string) => { const h = parseInt(hora.split(':')[0]); if (h < 12) return 'Mañana'; if (h < 15) return 'Siesta'; if (h < 20) return 'Tarde'; return 'Noche'; };
         type Slot = 'Mañana' | 'Siesta' | 'Tarde' | 'Noche';
-        const SLOTS: { key: Slot; color: string; bg: string; dot: string }[] = [
-            { key: 'Mañana', color: 'text-amber-700',  bg: 'bg-amber-50',  dot: 'bg-amber-400'  },
-            { key: 'Siesta', color: 'text-orange-700', bg: 'bg-orange-50', dot: 'bg-orange-400' },
-            { key: 'Tarde',  color: 'text-sky-700',    bg: 'bg-sky-50',    dot: 'bg-sky-400'    },
-            { key: 'Noche',  color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-400' },
+        const SLOTS: { key: Slot; color: string; bg: string }[] = [
+            { key: 'Mañana', color: 'text-amber-700', bg: 'bg-amber-50' },
+            { key: 'Siesta', color: 'text-orange-700', bg: 'bg-orange-50' },
+            { key: 'Tarde', color: 'text-sky-700', bg: 'bg-sky-50' },
+            { key: 'Noche', color: 'text-indigo-700', bg: 'bg-indigo-50' },
         ];
-
         return (
             <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8 pb-6">
-
-                {/* Banner con reloj */}
                 <div className="relative bg-[#111] rounded-2xl px-5 pt-4 pb-4 overflow-hidden mb-4">
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.04),transparent_60%)]" />
                     <div className="relative flex items-center justify-between">
-                        <div>
-                            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Recepción</p>
-                            <p className="text-slate-400 text-xs mt-0.5">{fmtDate()}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--'}</p>
-                        </div>
+                        <div><p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Recepción</p><p className="text-slate-400 text-xs mt-0.5">{fmtDate()}</p></div>
+                        <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--'}</p>
                     </div>
                 </div>
-
-                {/* Selector de días (lun–vie) */}
                 <div className="flex gap-2 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: 'none' }}>
                     {loadingHoy && diasData.length === 0
-                        ? [1,2,3,4,5].map(i => <div key={i} className="flex-shrink-0 w-16 h-20 rounded-2xl bg-slate-200 animate-pulse" />)
+                        ? [1, 2, 3, 4, 5].map(i => <div key={i} className="flex-shrink-0 w-16 h-20 rounded-2xl bg-slate-200 animate-pulse" />)
                         : diasData.map(dia => {
                             const total = dia.alumnos.length + dia.depaso.length;
                             const sel = diaExpandido === dia.key;
                             const isToday = dia.key === todayKey;
                             return (
-                                <button
-                                    key={dia.key}
-                                    onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
-                                    className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl transition-all active:scale-95 min-w-[64px] ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
-                                >
-                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${sel ? 'text-slate-400' : 'text-slate-400'}`}>{dia.labelDay}</span>
+                                <button key={dia.key} onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
+                                    className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl transition-all active:scale-95 min-w-[64px] ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{dia.labelDay}</span>
                                     <span className={`text-3xl font-bold leading-none ${sel ? 'text-white' : 'text-slate-800'}`}>{dia.labelNum}</span>
-                                    {isToday && !sel
-                                        ? <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                        : <span className={`text-xs font-bold ${total > 0 ? (sel ? 'text-white/70' : 'text-slate-400') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>
-                                            {total > 0 ? total : '—'}
-                                          </span>
-                                    }
+                                    {isToday && !sel ? <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> : <span className={`text-xs font-bold ${total > 0 ? (sel ? 'text-white/70' : 'text-slate-400') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>{total > 0 ? total : '—'}</span>}
                                 </button>
                             );
-                        })
-                    }
+                        })}
                 </div>
-
-                {/* Lista del día seleccionado con grupos por turno */}
                 {diaActivo && (
                     <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
                         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
@@ -549,66 +378,37 @@ export default function HomePage() {
                                 {totalActivo > 0 && <span className="text-xs text-slate-400 font-semibold">{totalActivo} {totalActivo === 1 ? 'asistente' : 'asistentes'}</span>}
                             </div>
                         </div>
-
                         {(() => {
                             const bySlot: Record<string, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
                             for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora)].push(a);
                             return (
                                 <>
-                                    {/* 4 botones de turno */}
                                     <div className="grid grid-cols-4 gap-2 p-3">
                                         {SLOTS.map(slot => {
                                             const count = bySlot[slot.key].length;
                                             const isActive = activeSlot === slot.key;
                                             return (
-                                                <button key={slot.key}
-                                                    onClick={() => setActiveSlot(isActive ? null : slot.key)}
-                                                    className={`flex flex-col items-center gap-1 py-3 rounded-2xl transition-all active:scale-95 ${
-                                                        isActive ? 'bg-[#111] shadow-md' : count > 0 ? slot.bg : 'bg-slate-50'
-                                                    }`}
-                                                >
-                                                    <span className={`text-2xl font-bold leading-none ${
-                                                        isActive ? 'text-white' : count > 0 ? slot.color : 'text-slate-300'
-                                                    }`}>
-                                                        {loadingHoy ? '·' : count}
-                                                    </span>
-                                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${
-                                                        isActive ? 'text-slate-400' : count > 0 ? slot.color : 'text-slate-400'
-                                                    }`}>
-                                                        {slot.key}
-                                                    </span>
+                                                <button key={slot.key} onClick={() => setActiveSlot(isActive ? null : slot.key)}
+                                                    className={`flex flex-col items-center gap-1 py-3 rounded-2xl transition-all active:scale-95 ${isActive ? 'bg-[#111] shadow-md' : count > 0 ? slot.bg : 'bg-slate-50'}`}>
+                                                    <span className={`text-2xl font-bold leading-none ${isActive ? 'text-white' : count > 0 ? slot.color : 'text-slate-300'}`}>{loadingHoy ? '·' : count}</span>
+                                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive ? 'text-slate-400' : count > 0 ? slot.color : 'text-slate-400'}`}>{slot.key}</span>
                                                 </button>
                                             );
                                         })}
                                     </div>
-
-                                    {/* Lista del turno activo */}
                                     {activeSlot && (
                                         <div className="border-t border-slate-100">
-                                            {bySlot[activeSlot].length === 0 ? (
-                                                <p className="text-slate-400 text-sm text-center py-8">Sin asistentes en este turno.</p>
-                                            ) : (
+                                            {bySlot[activeSlot].length === 0 ? <p className="text-slate-400 text-sm text-center py-8">Sin asistentes en este turno.</p> : (
                                                 <div className="divide-y divide-slate-50">
                                                     {bySlot[activeSlot].map((a, i) => (
                                                         <Link key={i} href={`/alumnos/${a.id}/historial`}
                                                             className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}>
-                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-                                                                {a.nombre?.[0]}{a.apellido?.[0]}
-                                                            </div>
+                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>{a.nombre?.[0]}{a.apellido?.[0]}</div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
                                                                 <p className="text-[10px] text-slate-400">{a.actividad}</p>
                                                             </div>
-                                                            {!a.pagado && (
-                                                                pasoDiez ? (
-                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6c0 3.25-1.5 5-1.5 5h15S16 11.25 16 8a6 6 0 0 0-6-6Zm0 14a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2Z"/></svg>
-                                                                        Debe
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>
-                                                                )
-                                                            )}
+                                                            {!a.pagado && (pasoDiez ? <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">Debe</span> : <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>)}
                                                             <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                         </Link>
                                                     ))}
@@ -616,8 +416,6 @@ export default function HomePage() {
                                             )}
                                         </div>
                                     )}
-
-                                    {/* De paso */}
                                     {diaActivo.depaso.length > 0 && (
                                         <div className="border-t border-slate-100">
                                             <div className="flex items-center gap-2 px-4 py-2 bg-teal-50">
@@ -628,13 +426,8 @@ export default function HomePage() {
                                             <div className="divide-y divide-slate-50">
                                                 {diaActivo.depaso.map((a, i) => (
                                                     <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50/50">
-                                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">
-                                                            {a.nombre?.[0]}{a.apellido?.[0]}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p>
-                                                            <p className="text-[10px] text-teal-600">{a.actividad}</p>
-                                                        </div>
+                                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">{a.nombre?.[0]}{a.apellido?.[0]}</div>
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p><p className="text-[10px] text-teal-600">{a.actividad}</p></div>
                                                         <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                     </div>
                                                 ))}
@@ -646,253 +439,281 @@ export default function HomePage() {
                         })()}
                     </div>
                 )}
-
             </div>
         );
     }
 
+    // ── Dueño / Admin / Profesor view ─────────────────────────────────────────
+    const userName = (session.user as any)?.nombre
+        ? capitalize((session.user as any).nombre)
+        : capitalize(session.user?.username ?? 'Usuario');
+
     return (
-        <div className="max-w-7xl mx-auto pt-4 pb-16 px-4 lg:px-8">
+        <div className="min-h-screen bg-slate-50/60">
+            <div className="max-w-5xl mx-auto px-4 pt-4 pb-20 lg:pt-6 lg:px-6">
 
-            {/* ── Banner ── */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden lg:px-8 lg:py-7 mb-5">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div className={`pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25 ${isSporttime ? 'bg-[#d1e08b]' : 'bg-emerald-400'}`} />
-                <div className="relative lg:flex lg:items-center lg:justify-between">
-                    <div>
-                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">{getGreeting()}</p>
-                        <h1 className="text-xl font-bold text-white mt-0.5 truncate lg:text-2xl">
-                            {(session.user as any)?.nombre
-                                ? capitalize((session.user as any).nombre)
-                                : capitalize(session.user?.username ?? 'Usuario')}
-                        </h1>
-                        <div className="flex items-center gap-2 mt-2.5">
-                            <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full capitalize">
-                                {session.user?.role}
-                            </span>
-                            <span className="text-slate-600 text-[10px]">·</span>
-                            <span className="text-slate-500 text-[10px] capitalize">{fmtDate()}</span>
-                        </div>
-                    </div>
-                    {/* Accesos rápidos inline en el banner — solo desktop */}
-                    <div className="hidden lg:flex items-center gap-6 mt-0">
-                        {visibleCards.map((card_nav) => (
-                            <Link key={card_nav.href} href={card_nav.href}
-                                className="flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity">
-                                <div className="w-12 h-12 rounded-full bg-white/10 ring-1 ring-white/10 flex items-center justify-center">
-                                    {card_nav.icon}
-                                </div>
-                                <span className="text-[11px] font-semibold text-slate-400">{card_nav.label}</span>
-                            </Link>
-                        ))}
-                        {esProfesor && session.user?.id && (
-                            <Link href="/mi-perfil#plan" className="flex flex-col items-center gap-1.5 hover:opacity-80 transition-opacity">
-                                <div className="w-12 h-12 rounded-full bg-white/10 ring-1 ring-white/10 flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                    </svg>
-                                </div>
-                                <span className="text-[11px] font-semibold text-slate-400">Mi plan</span>
-                            </Link>
-                        )}
-                    </div>
-                </div>
-            </div>
+                {/* ── Hero Banner ───────────────────────────────────────────── */}
+                <BlurFade delay={0}>
+                    <div className="relative bg-[#0a0a0a] rounded-3xl overflow-hidden mb-5">
+                        {/* Dot grid */}
+                        <div className="absolute inset-0"
+                            style={{
+                                backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
+                                backgroundSize: '22px 22px',
+                            }} />
+                        {/* Gradient accents */}
+                        <div className="absolute top-0 right-0 w-80 h-40 bg-gradient-to-bl from-white/[0.04] to-transparent" />
+                        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+                        <div className="absolute -bottom-8 right-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl" />
 
-            {/* ── Accesos rápidos — solo mobile ── */}
-            <div className="lg:hidden mb-5">
-                <p className={`${lbl} mb-4`}>Accesos rápidos</p>
-                <div className="flex justify-around">
-                    {visibleCards.map((card_nav) => (
-                        <Link key={card_nav.href} href={card_nav.href}
-                            className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
-                            <div className="w-14 h-14 rounded-full bg-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.18)] flex items-center justify-center">
-                                {card_nav.icon}
+                        <div className="relative px-6 py-6 lg:px-8 lg:py-8">
+                            <div className="lg:flex lg:items-center lg:justify-between lg:gap-8">
+                                {/* Left */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.14em]">
+                                            {getGreeting()}
+                                        </span>
+                                        <span className="text-slate-700 text-[10px]">·</span>
+                                        <span className="text-[10px] text-slate-500 capitalize">{fmtDate()}</span>
+                                    </div>
+
+                                    <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight mb-2">
+                                        {userName}
+                                    </h1>
+
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="inline-flex items-center gap-1.5 bg-white/[0.07] border border-white/[0.08] text-slate-300 text-[10px] font-semibold px-3 py-1 rounded-full capitalize">
+                                            {session.user?.role}
+                                        </span>
+                                        {gimnasioNombre && (
+                                            <span className="text-slate-600 text-[10px] truncate max-w-[180px]">{gimnasioNombre}</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Desktop nav */}
+                                <div className="hidden lg:flex items-center gap-2 shrink-0 mt-0">
+                                    {visibleCards.map((c) => (
+                                        <Link key={c.href} href={c.href}
+                                            className="group flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.07] hover:bg-white/[0.1] hover:border-white/[0.14] transition-all">
+                                            <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                                {c.icon}
+                                            </div>
+                                            <span className="text-[10px] font-semibold text-slate-400 group-hover:text-slate-300 transition-colors">{c.label}</span>
+                                        </Link>
+                                    ))}
+                                    {esProfesor && session.user?.id && (
+                                        <Link href="/mi-perfil#plan"
+                                            className="group flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.07] hover:bg-white/[0.1] hover:border-white/[0.14] transition-all">
+                                            <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                                <FileText size={18} className="text-white" />
+                                            </div>
+                                            <span className="text-[10px] font-semibold text-slate-400 group-hover:text-slate-300 transition-colors">Mi plan</span>
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
-                            <span className="text-[11px] font-semibold text-slate-600 text-center">{card_nav.label}</span>
-                        </Link>
-                    ))}
-                    {profesorPlanCard}
-                </div>
-            </div>
-
-            {/* ── Contenido principal: 2 columnas en desktop ── */}
-            <div className="lg:grid lg:grid-cols-[1fr_300px] lg:gap-6 lg:items-start">
-
-                {/* Columna izquierda: stat cards */}
-                <div>
-                    {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {[0,1,2,3].map(i => <SkeletonCard key={i} />)}
                         </div>
-                    ) : data && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    </div>
+                </BlurFade>
 
-                            {/* Balance del mes */}
-                            {esDueño && (
-                                <div className={card}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <p className={lbl}>Balance · {mesLabel}</p>
-                                        <button onClick={toggleBalance} className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
-                                            aria-label={showBalance ? 'Ocultar balance' : 'Mostrar balance'}>
-                                            {showBalance ? (
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                                                </svg>
+                {/* ── Mobile Quick Nav ──────────────────────────────────────── */}
+                <BlurFade delay={0.06} className="lg:hidden mb-5">
+                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                        <div className="flex justify-around">
+                            {visibleCards.map((c) => (
+                                <Link key={c.href} href={c.href}
+                                    className="flex flex-col items-center gap-2 group active:opacity-70 transition-opacity">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)] group-active:scale-95 transition-transform">
+                                        {c.icon}
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-slate-500">{c.label}</span>
+                                </Link>
+                            ))}
+                            {esProfesor && session.user?.id && (
+                                <Link href="/mi-perfil#plan"
+                                    className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+                                        <FileText size={18} className="text-white" />
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-slate-500">Mi plan</span>
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                </BlurFade>
+
+                {/* ── Stats + Config ────────────────────────────────────────── */}
+                <div className="lg:grid lg:grid-cols-[1fr_272px] lg:gap-5 lg:items-start">
+
+                    {/* Stats */}
+                    <div>
+                        {loading ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                {[0, 1, 2, 3].map(i => <SkeletonCard key={i} />)}
+                            </div>
+                        ) : data && (
+                            <div className="grid grid-cols-2 gap-3">
+
+                                {/* Balance */}
+                                {esDueño && (
+                                    <BlurFade delay={0.12}>
+                                        <StatCard>
+                                            <div className="flex items-start justify-between mb-3">
+                                                <StatLabel>Balance · {mesLabel}</StatLabel>
+                                                <button onClick={toggleBalance}
+                                                    className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors shrink-0 -mt-0.5">
+                                                    {showBalance ? <Eye size={12} /> : <EyeOff size={12} />}
+                                                </button>
+                                            </div>
+                                            <p className={cn('text-2xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-600' : 'text-red-500')}>
+                                                {showBalance
+                                                    ? <>{data.balance < 0 ? '−' : ''}$<NumberTicker value={Math.abs(data.balance)} /></>
+                                                    : '$ ••••'}
+                                            </p>
+                                            {showBalance && (
+                                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-50">
+                                                    <div>
+                                                        <p className="text-[11px] font-bold text-emerald-500">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                                        <p className="text-[9px] text-slate-400">ingresos</p>
+                                                    </div>
+                                                    <div className="w-px h-5 bg-slate-100 shrink-0" />
+                                                    <div>
+                                                        <p className="text-[11px] font-bold text-red-400">−${fmt(data.gastosMes)}</p>
+                                                        <p className="text-[9px] text-slate-400">egresos</p>
+                                                    </div>
+                                                </div>
                                             )}
-                                        </button>
-                                    </div>
-                                    <p className={`${num} ${data.balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                        {showBalance ? `$${fmt(data.balance)}` : '$ ••••••'}
-                                    </p>
-                                    <p className={sub}>balance del mes</p>
-                                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-50">
-                                        <div>
-                                            <p className="text-xs font-bold text-emerald-600">
-                                                {showBalance ? `+$${fmt(data.ingresosCuotas + data.ingresosExtra)}` : '+$ ••••'}
-                                            </p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">ingresos</p>
-                                        </div>
-                                        <div className="w-px h-6 bg-slate-100" />
-                                        <div>
-                                            <p className="text-xs font-bold text-red-500">
-                                                {showBalance ? `−$${fmt(data.gastosMes)}` : '−$ ••••'}
-                                            </p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">egresos</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                        </StatCard>
+                                    </BlurFade>
+                                )}
 
-                            {/* Cuotas */}
-                            {!esProfesor && !esRecepcion && (
-                                <div className={card}>
-                                    <p className={`${lbl} mb-3`}>Cuotas · {mesLabel}</p>
-                                    <div className="flex items-stretch">
-                                        <div className="flex-1 text-center">
-                                            <p className={`${num} text-emerald-600`}>{data.pagados}</p>
-                                            <p className={`${sub} text-emerald-500`}>Pagaron</p>
-                                        </div>
-                                        <div className="w-px bg-slate-100 mx-3 self-stretch" />
-                                        <div className="flex-1 text-center">
-                                            <p className={`${num} text-red-500`}>{data.totalAlumnos - data.pagados}</p>
-                                            <p className={`${sub} text-red-400`}>Pendientes</p>
-                                        </div>
-                                        <div className="w-px bg-slate-100 mx-3 self-stretch" />
-                                        <div className="flex-1 text-center">
-                                            <p className={`${num} text-slate-800`}>{data.totalAlumnos}</p>
-                                            <p className={sub}>Total</p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-3 w-full bg-slate-100 rounded-full h-1 overflow-hidden">
-                                        <div className={`h-full rounded-full transition-all duration-700 ${pagoBarColor}`} style={{ width: `${data.porcentajePagados}%` }} />
-                                    </div>
-                                </div>
-                            )}
+                                {/* Cuotas */}
+                                {!esProfesor && !esRecepcion && (
+                                    <BlurFade delay={0.16}>
+                                        <StatCard>
+                                            <StatLabel>Cuotas · {mesLabel}</StatLabel>
+                                            <div className="flex items-stretch gap-2 mb-3">
+                                                <div className="flex-1 text-center">
+                                                    <p className="text-2xl font-bold text-emerald-600 leading-none tabular-nums">
+                                                        <NumberTicker value={data.pagados} />
+                                                    </p>
+                                                    <p className="text-[9px] text-emerald-500 mt-1 font-semibold">Pagaron</p>
+                                                </div>
+                                                <div className="w-px bg-slate-100 self-stretch" />
+                                                <div className="flex-1 text-center">
+                                                    <p className="text-2xl font-bold text-red-500 leading-none tabular-nums">
+                                                        <NumberTicker value={data.totalAlumnos - data.pagados} />
+                                                    </p>
+                                                    <p className="text-[9px] text-red-400 mt-1 font-semibold">Deben</p>
+                                                </div>
+                                            </div>
+                                            <AnimatedBar pct={data.porcentajePagados} color={pagoBarColor} />
+                                            <p className="text-[9px] text-slate-400 mt-1.5 text-right font-medium">{data.porcentajePagados}% pagado</p>
+                                        </StatCard>
+                                    </BlurFade>
+                                )}
 
-                            {/* Asistencias hoy */}
-                            <div className={card}>
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="min-w-0">
-                                        <p className={`${lbl} mb-1`}>Asistencias · Hoy</p>
+                                {/* Asistencias hoy */}
+                                <BlurFade delay={0.20}>
+                                    <StatCard>
+                                        <StatLabel>Asistencias · Hoy</StatLabel>
+                                        <p className="text-3xl font-bold text-slate-900 leading-none tabular-nums mb-2">
+                                            <NumberTicker value={data.asistenciasHoy} />
+                                        </p>
                                         {data.asistenciasHoy > 0 ? (
-                                            <div className="flex gap-4 mt-2">
+                                            <div className="flex gap-3 flex-wrap">
                                                 {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.manana}</p>
-                                                        <p className="text-[10px] text-slate-400">☀️ Mañana</p>
+                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
+                                                        <p className="text-[9px] text-slate-400">Mañana</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.siesta}</p>
-                                                        <p className="text-[10px] text-slate-400">🌤 Siesta</p>
+                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
+                                                        <p className="text-[9px] text-slate-400">Siesta</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-800">{data.asistenciasHoyFranja.tarde}</p>
-                                                        <p className="text-[10px] text-slate-400">🌆 Tarde</p>
+                                                        <p className="text-xs font-bold text-slate-700 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
+                                                        <p className="text-[9px] text-slate-400">Tarde</p>
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-slate-400 mt-1">Sin registros aún</p>
+                                            <p className="text-[11px] text-slate-400">Sin registros aún</p>
                                         )}
-                                    </div>
-                                    <p className={`${num} text-slate-900 shrink-0`}>{data.asistenciasHoy}</p>
-                                </div>
-                            </div>
+                                    </StatCard>
+                                </BlurFade>
 
-                            {/* Planes */}
-                            <div className={card}>
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="min-w-0 flex-1">
-                                        <p className={`${lbl} mb-1`}>Planes</p>
+                                {/* Planes venciendo */}
+                                <BlurFade delay={0.24}>
+                                    <StatCard>
+                                        <StatLabel>Planes venciendo</StatLabel>
+                                        <p className={cn('text-3xl font-bold leading-none tabular-nums mb-2', data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900')}>
+                                            <NumberTicker value={data.planesVenciendo.length} />
+                                        </p>
                                         {data.planesVenciendo.length > 0 ? (
-                                            <div className="mt-2 space-y-1.5">
+                                            <div className="space-y-2">
                                                 {data.planesVenciendo.slice(0, 3).map(a => (
-                                                    <Link key={a._id} href={`/alumnos/${a._id}/historial`} className="flex items-center gap-2">
-                                                        <span className={`text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white ${a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400'}`}>
+                                                    <Link key={a._id} href={`/alumnos/${a._id}/historial`}
+                                                        className="flex items-center gap-2 group">
+                                                        <span className={cn(
+                                                            'text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center text-white shrink-0 leading-none',
+                                                            a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400',
+                                                        )}>
                                                             {a.diasRestantes}
                                                         </span>
-                                                        <span className="text-xs text-slate-600 truncate">{a.apellido}, {a.nombre}</span>
+                                                        <span className="text-[10px] text-slate-600 truncate group-hover:text-slate-900 transition-colors">
+                                                            {a.apellido}, {a.nombre}
+                                                        </span>
                                                     </Link>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-slate-400 mt-1">Sin vencimientos</p>
+                                            <p className="text-[11px] text-slate-400">Sin vencimientos</p>
                                         )}
-                                    </div>
-                                    <p className={`${num} ${data.planesVenciendo.length > 0 ? 'text-amber-500' : 'text-slate-900'} shrink-0`}>
-                                        {data.planesVenciendo.length}
-                                    </p>
-                                </div>
+                                    </StatCard>
+                                </BlurFade>
                             </div>
+                        )}
+                    </div>
 
-                        </div>
-                    )}
-                </div>
+                    {/* ── Config Panel ───────────────────────────────────────── */}
+                    {!esProfesor && !esRecepcion && (
+                        <BlurFade delay={0.28} className="mt-5 lg:mt-0">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-3">Configuración</p>
+                            <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
+                                {configItems.map((item, idx, arr) => (
+                                    <div key={item.label}>
+                                        <button onClick={item.onClick}
+                                            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
+                                            <div className="w-8 h-8 rounded-xl bg-[#0a0a0a] flex items-center justify-center shrink-0">
+                                                {item.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-[13px] text-slate-800">{item.label}</p>
+                                                <p className="text-[10px] text-slate-400 truncate">{item.sub}</p>
+                                            </div>
+                                            <ChevronRight size={13} className="text-slate-300 shrink-0" />
+                                        </button>
+                                        {idx < arr.length - 1 && <div className="border-t border-slate-50 mx-4" />}
+                                    </div>
+                                ))}
 
-                {/* Columna derecha: configuración (desktop) / abajo en mobile */}
-                {!esProfesor && !esRecepcion && (
-                    <div className="mt-5 lg:mt-0">
-                        <p className={`${lbl} mb-3`}>Configuración</p>
-                        <div className="bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] overflow-hidden">
-                            {configItems.map((item, idx, arr) => (
-                                <div key={item.label}>
-                                    <button onClick={item.onClick} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors text-left">
-                                        <div className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center shrink-0">
-                                            {item.icon}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm text-slate-800">{item.label}</p>
-                                            <p className="text-xs text-slate-400 truncate">{item.sub}</p>
-                                        </div>
-                                        <svg className="w-4 h-4 text-slate-300 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5 15.75 12l-7.5 7.5" />
-                                        </svg>
-                                    </button>
-                                    {idx < arr.length - 1 && <div className="border-t border-black/[0.04] mx-4" />}
-                                </div>
-                            ))}
-                            {/* Actividades de recepción */}
-                            <div className="border-t border-black/[0.04]">
-                                <div className="px-4 py-3.5">
+                                {/* Actividades recepción */}
+                                <div className="border-t border-slate-50 px-4 py-3.5">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center shrink-0">
-                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                            </svg>
+                                        <div className="w-8 h-8 rounded-xl bg-[#0a0a0a] flex items-center justify-center shrink-0">
+                                            <Users size={15} className="text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-sm text-slate-800">Recepción</p>
-                                            <p className="text-xs text-slate-400">Actividades disponibles</p>
+                                            <p className="font-semibold text-[13px] text-slate-800">Recepción</p>
+                                            <p className="text-[10px] text-slate-400">Actividades disponibles</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -900,25 +721,18 @@ export default function HomePage() {
                                             const activa = actividadesRecepcion.includes(act);
                                             const esUltima = activa && actividadesRecepcion.length === 1;
                                             return (
-                                                <button
-                                                    key={act}
-                                                    onClick={() => handleToggleActividad(act)}
+                                                <button key={act} onClick={() => handleToggleActividad(act)}
                                                     disabled={savingActividades || esUltima}
-                                                    className="flex items-center justify-between px-3 py-2 rounded-xl transition-colors"
-                                                    style={{ background: activa ? '#f0fdf4' : '#f8fafc' }}
-                                                    title={esUltima ? 'Debe haber al menos una actividad' : ''}
-                                                >
-                                                    <span className="text-sm font-medium" style={{ color: activa ? '#065f46' : '#64748b' }}>
+                                                    className={cn(
+                                                        'flex items-center justify-between px-3 py-2 rounded-xl transition-colors',
+                                                        activa ? 'bg-emerald-50' : 'bg-slate-50',
+                                                    )}>
+                                                    <span className={cn('text-[13px] font-medium', activa ? 'text-emerald-800' : 'text-slate-500')}>
                                                         {act}
                                                     </span>
-                                                    <div
-                                                        className="w-9 h-5 rounded-full relative transition-colors"
-                                                        style={{ background: activa ? '#10b981' : '#cbd5e1' }}
-                                                    >
-                                                        <div
-                                                            className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all"
-                                                            style={{ left: activa ? '18px' : '2px' }}
-                                                        />
+                                                    <div className={cn('w-9 h-5 rounded-full relative transition-colors', activa ? 'bg-emerald-500' : 'bg-slate-200')}>
+                                                        <div className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all"
+                                                            style={{ left: activa ? '18px' : '2px' }} />
                                                     </div>
                                                 </button>
                                             );
@@ -926,12 +740,10 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
-
+                        </BlurFade>
+                    )}
+                </div>
             </div>
-
         </div>
     );
 }
