@@ -88,8 +88,8 @@ interface PlanEjAsignado {
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
-const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-lime-400', 'Intermitente': 'bg-orange-400', 'Otro': 'bg-yellow-400' };
-const ACTIVIDAD_COLOR: Record<string, string> = { 'Musculación': '#a3e635', 'Intermitente': '#f97316', 'Otro': '#eab308' };
+const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-blue-400', 'Intermitente': 'bg-orange-400', 'Otro': 'bg-yellow-400' };
+const ACTIVIDAD_COLOR: Record<string, string> = { 'Musculación': '#60a5fa', 'Intermitente': '#f97316', 'Otro': '#eab308' };
 const COMBO_PALETTE = [
     { bg: 'rgba(244,163,71,0.07)', labelColor: '#d97706', dotColor: '#d97706' },
     { bg: 'rgba(16,185,129,0.07)', labelColor: '#059669', dotColor: '#059669' },
