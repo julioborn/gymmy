@@ -138,6 +138,8 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     nivelExperiencia: { type: String, required: false, enum: ['nunca', 'alguna_vez', 'hace_tiempo'], default: null },
     password: { type: String, select: false },
     fcmTokens: { type: [String], default: [], select: false },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpiry: { type: Date, select: false },
 });
 
 AlumnoSchema.index({ dni: 1, gimnasioId: 1 }, { unique: true });

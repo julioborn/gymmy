@@ -340,10 +340,9 @@ export default function LoginPage() {
                                 </button>
                                 <p className="text-center text-white/30 text-xs pt-1">
                                     ¿Olvidaste tu contraseña?{' '}
-                                    <button type="button" onClick={() => step.type === 'alumno-login' && setStep({ type: 'alumno-register', nombre: step.nombre, apellido: step.apellido, dni: step.dni, gimnasioId: step.gimnasioId, gimnasioNombre: step.gimnasioNombre, gimnasioLogoUrl: step.gimnasioLogoUrl })}
-                                        className="text-lime-400 font-semibold hover:text-lime-300">
-                                        Crear nueva
-                                    </button>
+                                    <a href="/forgot-password" className="text-orange-400 font-semibold hover:text-orange-300">
+                                        Recuperar
+                                    </a>
                                 </p>
                             </form>
                         </div>
