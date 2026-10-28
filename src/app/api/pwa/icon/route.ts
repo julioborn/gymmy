@@ -7,7 +7,7 @@ import Gimnasio from '@/models/Gimnasio';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const fallback = `${req.nextUrl.origin}/icons/apple-touch-icon.png`;
+    const fallback = `${req.nextUrl.origin}/icons/sporttime-icon.png`;
 
     try {
         const session = await getServerSession(authOptions);
