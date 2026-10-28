@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "SportTime",
   description: "Sistema de gestión de gimnasio",
-  manifest: "/api/pwa/manifest",
+  manifest: "/manifest.json",
   themeColor: "#111111",
   icons: {
     icon: '/icons/icon-512x512.png',

@@ -7,8 +7,6 @@ import Gimnasio from '@/models/Gimnasio';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const origin = req.nextUrl.origin;
-
     let gymName = 'SportTime';
 
     try {
