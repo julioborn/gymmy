@@ -6,13 +6,19 @@ export interface NotifPayload {
     data?: Record<string, string>;
 }
 
-const DEFAULT_ICON = '/icons/icon-192x192.png';
+function getBaseUrl(): string {
+    if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL.replace(/\/$/, '');
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+    return 'https://sporttime.com.ar';
+}
+
+const DEFAULT_ICON = () => `${getBaseUrl()}/icons/icon-192x192.png`;
 
 export async function sendToTokens(tokens: string[], payload: NotifPayload) {
     if (!tokens.length) return;
 
     const { default: admin } = await import('./firebaseAdmin');
-    const icon = payload.icon || DEFAULT_ICON;
+    const icon = payload.icon || DEFAULT_ICON();
 
     const messages = tokens.map(token => ({
         token,
@@ -58,9 +64,13 @@ async function getGymIcon(gimnasioId: string): Promise<string> {
                 { _id: new mongoose.Types.ObjectId(gimnasioId) },
                 { projection: { logoUrl: 1 } }
             ) as any;
-        return gym?.logoUrl || DEFAULT_ICON;
+        if (gym?.logoUrl) {
+            const url = gym.logoUrl as string;
+            return url.startsWith('http') ? url : `${getBaseUrl()}${url}`;
+        }
+        return DEFAULT_ICON();
     } catch {
-        return DEFAULT_ICON;
+        return DEFAULT_ICON();
     }
 }
 
