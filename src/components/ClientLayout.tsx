@@ -89,7 +89,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     useEffect(() => {
         if (!sessionReady || status === 'loading') return;
         if (status !== 'unauthenticated') return;
-        const publicPaths = ['/login', '/registro', '/soporte', '/privacidad', '/eliminar-cuenta', '/descargar'];
+        const publicPaths = ['/login', '/registro', '/soporte', '/privacidad', '/eliminar-cuenta', '/descargar', '/forgot-password', '/reset-password'];
         const isPublic = publicPaths.some(p => pathname.startsWith(p));
         if (isPublic) return;
         // Small grace period to avoid transient unauthenticated flashes on reload
@@ -305,7 +305,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     }, [gymLogo]);
 
     const role = session?.user?.role;
-    const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta' || pathname === '/descargar';
+    const isStaticPage = pathname === '/soporte' || pathname === '/privacidad' || pathname === '/eliminar-cuenta' || pathname === '/descargar' || pathname.startsWith('/forgot-password') || pathname.startsWith('/reset-password');
     const isLoginPage = pathname.startsWith('/login');
     const isRegistroPage = pathname.startsWith('/registro/') || pathname === '/alumnos/dni';
     const showNav = !isLoginPage && !isStaticPage && !isRegistroPage && role !== 'superadmin' && role !== 'registro' && role !== 'alumno' && !!session;
