@@ -12,7 +12,7 @@ import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
 import {
     Users, Briefcase, TrendingUp, BarChart3,
-    Eye, EyeOff, ChevronRight, UserPlus,
+    Eye, EyeOff, ChevronRight, ChevronLeft, UserPlus,
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
     Activity, UserCheck, Clock,
@@ -162,6 +162,7 @@ export default function HomePage() {
     const [diasData, setDiasData] = useState<DiaData[]>([]);
     const [diaExpandido, setDiaExpandido] = useState<string | null>(null);
     const [activeSlot, setActiveSlot] = useState<string | null>(null);
+    const [listPage, setListPage] = useState(0);
     const [loadingHoy, setLoadingHoy] = useState(false);
     const [horaArg, setHoraArg] = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
@@ -356,9 +357,12 @@ export default function HomePage() {
 
         const deudoresHoy = diaActivo?.alumnos.filter(a => !a.pagado && pasoDiez).length ?? 0;
 
-        const listToShow: AlumnoAsistencia[] = activeSlot
+        const PAGE_SIZE = 8;
+        const allList: AlumnoAsistencia[] = activeSlot
             ? (bySlot[activeSlot] ?? [])
             : (diaActivo?.alumnos ?? []);
+        const totalPages = Math.ceil(allList.length / PAGE_SIZE);
+        const listToShow = allList.slice(listPage * PAGE_SIZE, (listPage + 1) * PAGE_SIZE);
 
         return (
             <div className="min-h-screen bg-[#0a0a0a]">
@@ -366,7 +370,7 @@ export default function HomePage() {
                 <div className="fixed inset-0 pointer-events-none"
                     style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-                <div className="relative max-w-[1400px] mx-auto px-5 py-3 flex flex-col gap-3 min-h-screen">
+                <div className="relative max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3 min-h-screen">
 
                     {/* ── TOP BAR ────────────────────────────────────────── */}
                     <BlurFade delay={0}>
@@ -377,11 +381,11 @@ export default function HomePage() {
                             </div>
 
                             {/* Center: clock — truly centered via absolute */}
-                            <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
-                                <p className="text-white font-black text-4xl tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                            <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none py-2">
+                                <p className="text-white font-black text-5xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                                     {horaArg || '--:--'}
                                 </p>
-                                <p className="text-white/25 text-[10px] mt-1 capitalize font-medium">{fmtDate()}</p>
+                                <p className="text-white/25 text-[10px] mt-2 capitalize font-medium tracking-wide">{fmtDate()}</p>
                             </div>
 
                             {/* Right: action buttons */}
@@ -421,7 +425,7 @@ export default function HomePage() {
                                         const isToday = dia.key === todayKey;
                                         return (
                                             <button key={dia.key}
-                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
+                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); setListPage(0); }}
                                                 className={cn(
                                                     'flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left',
                                                     sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
@@ -447,7 +451,7 @@ export default function HomePage() {
                                         const isActive = activeSlot === slot.key;
                                         return (
                                             <button key={slot.key}
-                                                onClick={() => setActiveSlot(isActive ? null : slot.key)}
+                                                onClick={() => { setActiveSlot(isActive ? null : slot.key); setListPage(0); }}
                                                 className={cn(
                                                     'flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-left',
                                                     isActive
@@ -516,7 +520,7 @@ export default function HomePage() {
                                             <div className="w-4 h-4 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin" />
                                         )}
                                         {activeSlot && (
-                                            <button onClick={() => setActiveSlot(null)}
+                                            <button onClick={() => { setActiveSlot(null); setListPage(0); }}
                                                 className="text-[10px] text-white/30 hover:text-white/60 font-semibold transition-colors">
                                                 Ver todos
                                             </button>
@@ -586,6 +590,35 @@ export default function HomePage() {
                                                             </Link>
                                                         );
                                                     })}
+                                                </div>
+                                            )}
+
+                                            {/* Pagination */}
+                                            {totalPages > 1 && (
+                                                <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
+                                                    <button
+                                                        onClick={() => setListPage(p => Math.max(0, p - 1))}
+                                                        disabled={listPage === 0}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                        <ChevronLeft size={14} /> Anterior
+                                                    </button>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {Array.from({ length: totalPages }, (_, i) => (
+                                                            <button key={i} onClick={() => setListPage(i)}
+                                                                className={cn(
+                                                                    'w-7 h-7 rounded-lg text-xs font-bold transition-all',
+                                                                    i === listPage ? 'bg-lime-400 text-black' : 'text-white/30 hover:text-white hover:bg-white/[0.06]',
+                                                                )}>
+                                                                {i + 1}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setListPage(p => Math.min(totalPages - 1, p + 1))}
+                                                        disabled={listPage === totalPages - 1}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                        Siguiente <ChevronRight size={14} />
+                                                    </button>
                                                 </div>
                                             )}
 
