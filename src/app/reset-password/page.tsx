@@ -48,11 +48,8 @@ function ResetPasswordForm() {
                 </svg>
             </div>
             <h2 className="text-white text-xl font-bold mb-2">¡Listo!</h2>
-            <p className="text-white/50 text-sm mb-6">Tu contraseña fue actualizada.</p>
-            <button onClick={() => router.push('/login')}
-                className="px-6 py-3 rounded-2xl bg-orange-500 hover:bg-orange-400 text-white font-bold text-sm transition-colors">
-                Ir al login
-            </button>
+            <p className="text-white/50 text-sm">Tu contraseña fue actualizada.</p>
+            <p className="text-white/40 text-sm mt-3">Abrí la aplicación e iniciá sesión con tu nueva contraseña.</p>
         </div>
     ) : (
         <>
