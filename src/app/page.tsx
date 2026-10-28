@@ -122,10 +122,10 @@ const NAV_CARDS = [
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl p-4 animate-pulse">
-            <div className="w-24 h-2 bg-white/[0.1] rounded mb-4" />
-            <div className="w-14 h-8 bg-white/[0.1] rounded mb-2" />
-            <div className="w-20 h-2 bg-white/[0.1] rounded" />
+        <div className="bg-white/[0.1] border border-white/[0.15] rounded-2xl p-4 animate-pulse h-[160px]">
+            <div className="w-24 h-2 bg-white/[0.12] rounded mb-4" />
+            <div className="w-14 h-8 bg-white/[0.12] rounded mb-2" />
+            <div className="w-20 h-2 bg-white/[0.12] rounded" />
         </div>
     );
 }
@@ -133,7 +133,7 @@ function SkeletonCard() {
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={cn('bg-white/[0.09] border border-white/[0.13] rounded-2xl p-4 flex flex-col min-h-[150px]', className)}>
+        <div className={cn('bg-white/[0.15] border border-white/[0.22] rounded-2xl p-4 flex flex-col h-[160px] overflow-hidden', className)}>
             {children}
         </div>
     );
