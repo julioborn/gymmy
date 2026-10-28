@@ -296,7 +296,7 @@ export default function MiCuentaPage() {
     // ── Loading ───────────────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#f2f2f7] pb-24">
+            <div className="min-h-screen bg-[#0a0a0a] pb-24">
                 {/* Hero skeleton */}
                 <div className="mx-4 mt-4 bg-[#1a1a1a] rounded-[2rem] p-5 overflow-hidden relative">
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.03) 1px,transparent 1px)', backgroundSize:'20px 20px' }} />
@@ -445,7 +445,7 @@ export default function MiCuentaPage() {
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-[#f2f2f7]">
+        <div className="min-h-screen bg-[#0a0a0a]">
             {/* Pad for bottom nav */}
             <div style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 20px))' }}>
 
