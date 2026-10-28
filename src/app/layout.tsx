@@ -29,6 +29,10 @@ export const metadata: Metadata = {
   description: "Sistema de gestión de gimnasio",
   manifest: "/api/pwa/manifest",
   themeColor: "#111827",
+  icons: {
+    icon: '/api/pwa/icon',
+    apple: '/api/pwa/icon',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
