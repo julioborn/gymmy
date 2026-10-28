@@ -43,9 +43,9 @@ function BlurFade({ children, delay = 0, className }: { children: React.ReactNod
 }
 
 // ─── Magic UI: Animated Progress ──────────────────────────────────────────────
-function AnimatedProgress({ pct, color = 'bg-lime-400' }: { pct: number; color?: string }) {
+function AnimatedProgress({ pct, color = 'bg-lime-400', trackColor = 'bg-white/10' }: { pct: number; color?: string; trackColor?: string }) {
     return (
-        <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+        <div className={cn('w-full rounded-full h-1.5 overflow-hidden', trackColor)}>
             <motion.div
                 className={cn('h-full rounded-full', color)}
                 initial={{ width: 0 }}
@@ -451,12 +451,13 @@ export default function MiCuentaPage() {
             <div className="pb-10">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
-                <div className="mx-4 mt-4 relative bg-[#0a0a0a] overflow-hidden rounded-[2rem]">
+                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)' }}>
+                <div className="relative bg-[#111] overflow-hidden rounded-[30px]">
                     {/* Dot grid */}
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'20px 20px' }} />
                     {/* Glow accents */}
-                    <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl" style={{ background: `${acento}18` }} />
-                    <div className="absolute -bottom-6 -left-4 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-25" style={{ background: '#10b981' }} />
+                    <div className="absolute -bottom-6 -left-4 w-40 h-40 rounded-full blur-3xl opacity-20" style={{ background: '#f97316' }} />
 
                     <div className="relative px-5 pt-5 pb-5">
                         <div className="flex items-center gap-4">
@@ -533,6 +534,7 @@ export default function MiCuentaPage() {
                         </BlurFade>
                     </div>
                 </div>
+                </div>
 
                 {/* ── TAB SELECTOR ── */}
                 <div className="sticky top-[calc(88px+env(safe-area-inset-top,0px))] z-20 bg-[#0a0a0a]/90 backdrop-blur-lg px-4 pb-3 pt-4">
@@ -590,65 +592,73 @@ export default function MiCuentaPage() {
                     {tab === 'resumen' && (
                         <div className="space-y-4">
 
-                            {/* Plan progress card */}
-                            {(planEj && !planEjComplete) && (
-                                <BlurFade delay={0.05}>
-                                    <div className="bg-[#0a0a0a] rounded-2xl p-5 overflow-hidden relative">
-                                        <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.04) 1px,transparent 1px)', backgroundSize:'18px 18px' }} />
-                                        <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl" style={{ background:`${acento}20` }} />
-                                        <div className="relative">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Plan activo</p>
-                                                    <p className="text-white font-bold text-base leading-snug">{planEj.nombre}</p>
-                                                    <p className="text-slate-500 text-xs mt-0.5">{planEj.categoria}</p>
-                                                </div>
-                                                <div className="text-right shrink-0 ml-3">
-                                                    <p className="text-white font-black text-3xl leading-none tabular-nums" style={{ color: acento }}>
-                                                        <NumberTicker value={planEjDone} />
-                                                    </p>
-                                                    <p className="text-slate-500 text-[10px] mt-0.5">de {planEjTotal} sesiones</p>
-                                                </div>
-                                            </div>
-                                            <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" />
-                                            <div className="flex items-center justify-between mt-3">
-                                                <p className="text-slate-400 text-[11px]">{Math.max(planEjTotal-planEjDone,0)} sesiones restantes</p>
-                                                <button onClick={()=>changeTab('plan')}
-                                                    className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-xl transition-colors"
-                                                    style={{ background:`${acento}18`, color:acento }}>
-                                                    Ver plan <ChevronRight size={12} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </BlurFade>
-                            )}
+                            {/* Plan activo + Asistencias mes — side by side */}
+                            <div className="grid grid-cols-2 gap-3">
 
-                            {(!planEj && tienePlan) && (
-                                <BlurFade delay={0.05}>
-                                    <div className="bg-[#0a0a0a] rounded-2xl p-5 relative overflow-hidden">
-                                        <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.04) 1px,transparent 1px)', backgroundSize:'18px 18px' }} />
-                                        <div className="relative">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Plan activo</p>
-                                                    <p className="text-white font-bold text-base">{asistenciasEnPlan} de {plan.duracion} sesiones</p>
-                                                </div>
-                                                <p className="text-3xl font-black text-lime-400 tabular-nums">
+                                {/* Plan progress card */}
+                                {(planEj && !planEjComplete) && (
+                                    <BlurFade delay={0.05}>
+                                        <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg h-full flex flex-col">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Plan activo</p>
+                                            <p className="text-slate-900 font-bold text-sm leading-snug truncate">{planEj.nombre}</p>
+                                            <p className="text-slate-400 text-[10px] mt-0.5 mb-3 truncate">{planEj.categoria}</p>
+                                            <div className="flex items-end justify-between mb-3">
+                                                <p className="font-black text-3xl leading-none tabular-nums" style={{ color: acento }}>
+                                                    <NumberTicker value={planEjDone} />
+                                                </p>
+                                                <p className="text-slate-400 text-[10px] text-right">de {planEjTotal}<br/>sesiones</p>
+                                            </div>
+                                            <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-slate-100" />
+                                            <button onClick={()=>changeTab('plan')}
+                                                className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold"
+                                                style={{ color: acento }}>
+                                                Ver plan <ChevronRight size={12} />
+                                            </button>
+                                        </div>
+                                    </BlurFade>
+                                )}
+
+                                {(!planEj && tienePlan) && (
+                                    <BlurFade delay={0.05}>
+                                        <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg h-full flex flex-col">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Plan activo</p>
+                                            <div className="flex items-end justify-between mb-3">
+                                                <p className="text-lime-500 font-black text-3xl leading-none tabular-nums">
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
+                                                <p className="text-slate-400 text-[10px] text-right">de {plan.duracion}<br/>sesiones</p>
                                             </div>
-                                            <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" />
-                                            <div className="flex items-center justify-between mt-3">
-                                                <p className="text-slate-400 text-[11px]">{plan.diasRestantes!=null ? `${plan.diasRestantes} sesiones restantes` : 'En curso'}</p>
-                                                <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-[11px] font-bold text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl">
-                                                    Ver historial <ChevronRight size={12} />
-                                                </button>
-                                            </div>
+                                            <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-slate-100" />
+                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold text-lime-500">
+                                                Ver historial <ChevronRight size={12} />
+                                            </button>
+                                        </div>
+                                    </BlurFade>
+                                )}
+
+                                {/* Asistencias este mes */}
+                                <BlurFade delay={0.15}>
+                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg h-full flex flex-col">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Asistencias</p>
+                                        <p className="text-[9px] font-semibold text-slate-300 capitalize mb-2">{mesActual}</p>
+                                        <p className="text-slate-900 font-black text-3xl leading-none tabular-nums mb-auto">
+                                            <NumberTicker value={asistenciasEsteMes.length} />
+                                        </p>
+                                        {/* Mini bar chart */}
+                                        <div className="flex items-end gap-[2px] h-8 mt-3">
+                                            {monthAsistBars.map((count, i) => (
+                                                <motion.div key={i} className="flex-1 rounded-sm"
+                                                    style={{ backgroundColor: count > 0 ? acento : '#f1f5f9' }}
+                                                    initial={{ height: 0 }}
+                                                    animate={{ height: count > 0 ? '100%' : '30%' }}
+                                                    transition={{ duration: 0.4, delay: 0.3 + i * 0.015, ease: 'easeOut' }}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 </BlurFade>
-                            )}
+
+                            </div>
 
                             {/* Plan completado */}
                             {(planEjComplete || (!planEj && plan?.terminado)) && (
@@ -687,34 +697,6 @@ export default function MiCuentaPage() {
                                     </div>
                                 </BlurFade>
                             )}
-
-                            {/* Asistencias este mes */}
-                            <BlurFade delay={0.15}>
-                                <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Asistencias en {mesActual}</p>
-                                            <p className="text-slate-900 font-black text-3xl leading-none mt-1 tabular-nums">
-                                                <NumberTicker value={asistenciasEsteMes.length} />
-                                            </p>
-                                        </div>
-                                        <button onClick={()=>changeTab('historial')} className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors">
-                                            <ChevronRight size={16} />
-                                        </button>
-                                    </div>
-                                    {/* Mini bar chart */}
-                                    <div className="flex items-end gap-[2px] h-8">
-                                        {monthAsistBars.map((count, i) => (
-                                            <motion.div key={i} className="flex-1 rounded-sm"
-                                                style={{ backgroundColor: count > 0 ? acento : '#f1f5f9' }}
-                                                initial={{ height: 0 }}
-                                                animate={{ height: count > 0 ? '100%' : '30%' }}
-                                                transition={{ duration: 0.4, delay: 0.3 + i * 0.015, ease: 'easeOut' }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </BlurFade>
 
                             {/* Últimas asistencias */}
                             {(() => {
