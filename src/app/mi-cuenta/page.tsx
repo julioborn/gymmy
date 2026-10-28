@@ -425,26 +425,21 @@ export default function MiCuentaPage() {
             <div className="pb-24">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
-                <div className="relative bg-[#0a0a0a] overflow-hidden rounded-b-[2.5rem]">
+                <div className="mx-4 mt-4 relative bg-[#0a0a0a] overflow-hidden rounded-[2rem]">
                     {/* Dot grid */}
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'20px 20px' }} />
                     {/* Glow accents */}
                     <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl" style={{ background: `${acento}18` }} />
                     <div className="absolute -bottom-6 -left-4 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
 
-                    <div className="relative px-5 pt-10 pb-12">
-                        {/* Gym name top */}
-                        {gimnasioNombre && (
-                            <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-[0.16em] mb-5">{gimnasioNombre}</p>
-                        )}
-
+                    <div className="relative px-5 pt-5 pb-5">
                         <div className="flex items-center gap-4">
                             {/* Avatar */}
                             <BlurFade delay={0}>
                                 <div className="relative shrink-0">
-                                    <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl"
+                                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl"
                                         style={{ background: 'linear-gradient(135deg, #f97316, #fb923c)' }}>
-                                        <span className="text-white font-bold text-3xl tracking-wide">{initials}</span>
+                                        <span className="text-white font-bold text-2xl tracking-wide">{initials}</span>
                                     </div>
                                     {/* Status dot */}
                                     <span className={cn(
@@ -461,7 +456,7 @@ export default function MiCuentaPage() {
 
                             {/* Name + info */}
                             <BlurFade delay={0.08} className="flex-1 min-w-0">
-                                <h1 className="text-white font-bold text-2xl leading-tight truncate">
+                                <h1 className="text-white font-bold text-xl leading-tight truncate">
                                     {alumno.nombre} {alumno.apellido}
                                 </h1>
                                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -478,27 +473,11 @@ export default function MiCuentaPage() {
                                     </span>
                                 </div>
                             </BlurFade>
-
-                            {/* Check-in */}
-                            {alumno.dni === '43844409' && (
-                                <BlurFade delay={0.12}>
-                                    <button onClick={handleCheckIn} disabled={checkingIn}
-                                        className="w-11 h-11 rounded-2xl bg-white/[0.08] border border-white/[0.1] flex items-center justify-center active:scale-90 transition-all">
-                                        {checkingIn
-                                            ? <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                            : checkInResult === 'ok' ? <CheckCircle2 size={20} className="text-lime-400" />
-                                            : checkInResult === 'duplicate' ? <Clock3 size={20} className="text-amber-400" />
-                                            : checkInResult === 'error' ? <XCircle size={20} className="text-red-400" />
-                                            : <span className="text-lg">✋</span>
-                                        }
-                                    </button>
-                                </BlurFade>
-                            )}
                         </div>
 
                         {/* Quick stats row */}
                         <BlurFade delay={0.16}>
-                            <div className="flex gap-2 mt-6">
+                            <div className="flex gap-2 mt-4">
                                 <div className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-2xl px-3 py-3 text-center">
                                     <p className="text-white font-bold text-xl leading-none tabular-nums">
                                         <NumberTicker value={asistenciasEsteMes.length} />
