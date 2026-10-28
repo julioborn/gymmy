@@ -12,9 +12,11 @@ function maskEmail(email: string): string {
 
 async function sendReset(alumno: any, emailDest: string) {
     const token = crypto.randomBytes(32).toString('hex');
-    alumno.resetPasswordToken = token;
-    alumno.resetPasswordExpiry = new Date(Date.now() + 1000 * 60 * 60);
-    await alumno.save();
+    const expiry = new Date(Date.now() + 1000 * 60 * 60);
+    await Alumno.updateOne(
+        { _id: alumno._id },
+        { $set: { resetPasswordToken: token, resetPasswordExpiry: expiry } }
+    );
 
     const baseUrl = process.env.NEXTAUTH_URL || 'https://sporttime.com.ar';
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
