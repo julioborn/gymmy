@@ -220,7 +220,7 @@ export default function ListaAlumnosPage() {
 
     const Loader = () => (
         <div className="flex justify-center items-center h-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-slate-400"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white/30"></div>
         </div>
     );
 
@@ -320,7 +320,7 @@ export default function ListaAlumnosPage() {
         XLSX.writeFile(workbook, `Alumnos_${mesLabel.replace(' ', '_')}.xlsx`);
     };
 
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
+    const card = 'bg-white/[0.08] border border-white/[0.12] rounded-2xl';
 
     // ── Hoy en el gimnasio ──────────────────────────────────────────────────
     type TurnSlot = 'mañana' | 'siesta' | 'tarde' | 'noche';
@@ -361,15 +361,15 @@ export default function ListaAlumnosPage() {
     }
     const totalHoy = hoyPorTurno.mañana.length + hoyPorTurno.siesta.length + hoyPorTurno.tarde.length + hoyPorTurno.noche.length;
     const SLOT_CONFIG: { key: TurnSlot; label: string; bg: string; text: string }[] = [
-        { key: 'mañana', label: 'Mañana',  bg: 'bg-amber-50',  text: 'text-amber-700' },
-        { key: 'siesta', label: 'Siesta',  bg: 'bg-orange-50', text: 'text-orange-700' },
-        { key: 'tarde',  label: 'Tarde',   bg: 'bg-sky-50',    text: 'text-sky-700'   },
-        { key: 'noche',  label: 'Noche',   bg: 'bg-indigo-50', text: 'text-indigo-700'},
+        { key: 'mañana', label: 'Mañana',  bg: 'bg-amber-400/10',  text: 'text-amber-400' },
+        { key: 'siesta', label: 'Siesta',  bg: 'bg-orange-400/10', text: 'text-orange-400' },
+        { key: 'tarde',  label: 'Tarde',   bg: 'bg-sky-400/10',    text: 'text-sky-400'   },
+        { key: 'noche',  label: 'Noche',   bg: 'bg-indigo-400/10', text: 'text-indigo-400'},
     ];
     const ACTIVIDAD_COLOR: Record<string, string> = {
-        'Musculación': 'bg-blue-100 text-blue-700',
-        'Intermitente': 'bg-orange-100 text-orange-700',
-        'Otro': 'bg-yellow-100 text-yellow-700',
+        'Musculación': 'bg-blue-400/20 text-blue-400',
+        'Intermitente': 'bg-orange-400/20 text-orange-400',
+        'Otro': 'bg-yellow-400/20 text-yellow-400',
     };
 
     return (
@@ -434,17 +434,17 @@ export default function ListaAlumnosPage() {
             <div className={`${card} mb-4`}>
                 <button
                     onClick={() => setHoyExpanded(v => !v)}
-                    className="w-full flex items-center justify-between px-4 py-3 sm:px-5"
+                    className="w-full flex items-center justify-between px-4 py-3.5 sm:px-5"
                 >
                     <div className="flex items-center gap-2.5">
-                        <span className="text-sm font-bold text-slate-800">Hoy en el gimnasio</span>
+                        <span className="text-sm font-bold text-white">Hoy en el gimnasio</span>
                         {!isLoading && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-400/15 text-emerald-400">
                                 {totalHoy}
                             </span>
                         )}
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-400 transition-transform duration-200 ${hoyExpanded ? 'rotate-180' : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 ${hoyExpanded ? 'rotate-180' : ''}`}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                     </svg>
                 </button>
@@ -453,24 +453,24 @@ export default function ListaAlumnosPage() {
                     <div className="px-4 pb-4 sm:px-5">
                         {isLoading ? (
                             <div className="space-y-1.5">
-                                {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-slate-100 animate-pulse" />)}
+                                {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-white/[0.08] animate-pulse" />)}
                             </div>
                         ) : totalHoy === 0 ? (
-                            <p className="text-slate-400 text-sm text-center py-4">Nadie fue hoy todavía.</p>
+                            <p className="text-white/40 text-sm text-center py-4">Nadie fue hoy todavía.</p>
                         ) : (
                             <div className="space-y-2">
                                 {SLOT_CONFIG.filter(s => hoyPorTurno[s.key].length > 0).map(slot => (
-                                    <div key={slot.key} className="border border-slate-100 rounded-xl overflow-hidden">
+                                    <div key={slot.key} className="border border-white/[0.08] bg-white/[0.04] rounded-xl overflow-hidden">
                                         <button
                                             type="button"
                                             onClick={() => setSlotsExpanded(prev => ({ ...prev, [slot.key]: !prev[slot.key] }))}
-                                            className="w-full flex items-center justify-between px-3 py-2"
+                                            className="w-full flex items-center justify-between px-3 py-2.5"
                                         >
                                             <div className="flex items-center gap-1.5">
                                                 <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
                                                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
                                             </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-400 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
@@ -480,18 +480,18 @@ export default function ListaAlumnosPage() {
                                                     <div
                                                         key={i}
                                                         onClick={() => router.push(`/alumnos/${a.id}/historial`)}
-                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all border border-slate-100"
+                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all border border-white/[0.06]"
                                                     >
-                                                        <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                                                        <div className="w-7 h-7 rounded-lg bg-white/[0.1] flex items-center justify-center text-xs font-bold text-white/70 shrink-0">
                                                             {a.nombre?.[0]}{a.apellido?.[0]}
                                                         </div>
-                                                        <span className="flex-1 text-sm font-semibold text-slate-700 truncate">
+                                                        <span className="flex-1 text-sm font-semibold text-white/85 truncate">
                                                             {a.apellido}, {a.nombre}
                                                         </span>
-                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-slate-100 text-slate-600'}`}>
+                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
                                                             {a.actividad}
                                                         </span>
-                                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">
+                                                        <span className="text-xs text-white/40 font-medium shrink-0 tabular-nums">
                                                             {a.hora}
                                                         </span>
                                                     </div>
@@ -537,12 +537,12 @@ export default function ListaAlumnosPage() {
                 {isLoading ? (
                     <div className="space-y-2">
                         {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="h-16 rounded-2xl bg-slate-100 animate-pulse" />
+                            <div key={i} className="h-16 rounded-2xl bg-white/[0.08] animate-pulse" />
                         ))}
                     </div>
                 ) : alumnosFiltrados.length === 0 ? (
                     <div className="py-14 text-center">
-                        <p className="text-slate-400 text-sm font-medium">No se encontraron alumnos</p>
+                        <p className="text-white/40 text-sm font-medium">No se encontraron alumnos</p>
                     </div>
                 ) : (
                     <>
@@ -558,26 +558,26 @@ export default function ListaAlumnosPage() {
                                     : dr === 0
                                         ? 'text-red-500'
                                         : dr <= 5
-                                            ? 'text-amber-500'
-                                            : 'text-slate-400';
+                                            ? 'text-amber-400'
+                                            : 'text-white/40';
                                 return (
                                     <div
                                         key={alumno._id}
-                                        className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 active:scale-[0.99] cursor-pointer transition-all"
+                                        className="flex items-center gap-3 p-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.99] cursor-pointer transition-all"
                                         onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
                                     >
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${pagado ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${pagado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                                             {alumno.nombre?.[0]}{alumno.apellido?.[0]}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-slate-800 text-sm truncate">
+                                            <p className="font-semibold text-white text-sm truncate">
                                                 {alumno.apellido}, {alumno.nombre}
                                             </p>
                                             <p className={`text-xs mt-0.5 ${planColor}`}>
                                                 {alumno.edad ? `${alumno.edad} años · ` : ''}{planText}
                                             </p>
                                             {alumno.area && (
-                                                <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 bg-slate-100 text-slate-500">
+                                                <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 bg-white/[0.1] text-white/50">
                                                     {({
                                                         salud: '❤️ Salud', rendimiento: '🏅 Rend.', formacion: '🌱 Formación',
                                                         fuerza: '💪 Fuerza', masa_muscular: '🏋️ Masa musc.', composicion: '⚖️ Composición', retomar: '🔄 Retomar',
@@ -587,21 +587,21 @@ export default function ListaAlumnosPage() {
                                         </div>
                                         <div className="shrink-0 flex items-center gap-2">
                                             {pagado ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                                                     </svg>
                                                     Pagó
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
                                                     </svg>
                                                     Debe
                                                 </span>
                                             )}
-                                            <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <svg className="w-4 h-4 text-white/25" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                             </svg>
                                         </div>
