@@ -133,7 +133,7 @@ function SkeletonCard() {
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={cn('bg-white/[0.15] border border-white/[0.22] rounded-2xl p-4 flex flex-col h-[160px] overflow-hidden', className)}>
+        <div className={cn('bg-white/[0.15] border border-white/[0.22] rounded-2xl p-4 flex flex-col h-[140px] sm:h-[160px] overflow-hidden', className)}>
             {children}
         </div>
     );
@@ -720,7 +720,7 @@ export default function HomePage() {
                                 {[0, 1, 2, 3].map(i => <SkeletonCard key={i} />)}
                             </div>
                         ) : data && (
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
                                 {/* Balance */}
                                 {esDueño && (
