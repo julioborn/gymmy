@@ -371,23 +371,9 @@ export default function HomePage() {
                     {/* ── TOP BAR ────────────────────────────────────────── */}
                     <BlurFade delay={0}>
                         <div className="relative flex items-center justify-between">
-                            {/* Left: status + gym */}
-                            <div className="flex items-center gap-3 w-[280px] shrink-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-50" />
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-400" />
-                                    </span>
-                                    <span className="text-lime-400 text-[10px] font-bold uppercase tracking-[0.18em]">En línea</span>
-                                </div>
-                                <div className="w-px h-3.5 bg-white/10" />
-                                <span className="text-white/25 text-[10px] font-bold uppercase tracking-widest">Recepción</span>
-                                {gimnasioNombre && (
-                                    <>
-                                        <div className="w-px h-3.5 bg-white/10" />
-                                        <span className="text-white/40 text-[11px] font-medium truncate max-w-[100px]">{gimnasioNombre}</span>
-                                    </>
-                                )}
+                            {/* Left: label */}
+                            <div className="flex items-center w-[280px] shrink-0">
+                                <span className="text-white/30 text-[11px] font-bold uppercase tracking-[0.2em]">Recepción</span>
                             </div>
 
                             {/* Center: clock — truly centered via absolute */}
@@ -411,7 +397,7 @@ export default function HomePage() {
                                     Nuevo
                                 </Link>
                                 <button onClick={handleAlumnoDePasoGlobal}
-                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20">
+                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20 whitespace-nowrap">
                                     <UserPlus size={13} />
                                     De paso
                                 </button>
