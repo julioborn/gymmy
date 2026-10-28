@@ -385,7 +385,6 @@ export default function HomePage() {
                                 <p className="text-white font-black text-5xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                                     {horaArg || '--:--'}
                                 </p>
-                                <p className="text-white/55 text-[10px] mt-1.5 capitalize font-medium tracking-wide">{fmtDate()}</p>
                             </div>
 
                             {/* Right: action buttons */}
