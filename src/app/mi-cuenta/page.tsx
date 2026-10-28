@@ -322,8 +322,10 @@ export default function MiCuentaPage() {
                     <div className="bg-white rounded-2xl p-5 h-28 animate-pulse" />
                     <div className="bg-white rounded-2xl p-5 h-40 animate-pulse" />
                 </div>
-                {/* Bottom nav skeleton */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 h-16" />
+                {/* Tab selector skeleton */}
+                <div className="px-4 pt-4">
+                    <div className="bg-white/[0.06] rounded-2xl h-12 animate-pulse" />
+                </div>
             </div>
         );
     }
@@ -446,8 +448,7 @@ export default function MiCuentaPage() {
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-[#0a0a0a]">
-            {/* Pad for bottom nav */}
-            <div style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 20px))' }}>
+            <div className="pb-10">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
                 <div className="mx-4 mt-4 relative bg-[#0a0a0a] overflow-hidden rounded-[2rem]">
@@ -503,14 +504,14 @@ export default function MiCuentaPage() {
                         {/* Quick stats row */}
                         <BlurFade delay={0.16}>
                             <div className="flex gap-2 mt-4">
-                                <div className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-2xl px-3 py-3 text-center">
+                                <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
                                     <p className="text-white font-bold text-xl leading-none tabular-nums">
                                         <NumberTicker value={asistenciasEsteMes.length} />
                                     </p>
                                     <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">Asist. mes</p>
                                 </div>
                                 {(tienePlan || planEj) && (
-                                    <div className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-2xl px-3 py-3 text-center">
+                                    <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
                                         <p className="text-white font-bold text-xl leading-none tabular-nums">
                                             {planEj
                                                 ? <NumberTicker value={planEjDone} />
@@ -520,7 +521,7 @@ export default function MiCuentaPage() {
                                         <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">Sesiones plan</p>
                                     </div>
                                 )}
-                                <div className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-2xl px-3 py-3 text-center">
+                                <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
                                     <p className={cn('font-bold text-xl leading-none', pagoEsteMes ? 'text-lime-400' : 'text-red-400')}>
                                         {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '—'}
                                     </p>
@@ -533,8 +534,27 @@ export default function MiCuentaPage() {
                     </div>
                 </div>
 
+                {/* ── TAB SELECTOR ── */}
+                <div className="sticky top-[calc(88px+env(safe-area-inset-top,0px))] z-20 bg-[#0a0a0a]/90 backdrop-blur-lg px-4 pb-3 pt-4">
+                    <div className="bg-white/[0.08] rounded-2xl p-1 flex">
+                        {TABS.map(t => {
+                            const isActive = tab === t.key;
+                            return (
+                                <button key={t.key} onClick={() => changeTab(t.key)}
+                                    className={cn(
+                                        'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                        isActive ? 'bg-white/[0.12] text-white' : 'text-white/40 hover:text-white/60',
+                                    )}>
+                                    <span className={isActive ? 'text-lime-400' : ''}>{t.icon}</span>
+                                    {t.label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 {/* Content area */}
-                <div className="px-4 pt-5 space-y-3">
+                <div className="px-4 pt-4 space-y-3">
 
                     {/* Pago result banner */}
                     {pagoResult && (
@@ -648,7 +668,7 @@ export default function MiCuentaPage() {
                             {/* Cuota pendiente + pago */}
                             {!pagoEsteMes && aliasGimnasio && (
                                 <BlurFade delay={0.1}>
-                                    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                                    <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
                                         <div className="px-4 py-4">
                                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Transferí tu cuota</p>
                                             <div className="flex items-center justify-between gap-3">
@@ -670,7 +690,7 @@ export default function MiCuentaPage() {
 
                             {/* Asistencias este mes */}
                             <BlurFade delay={0.15}>
-                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Asistencias en {mesActual}</p>
@@ -703,7 +723,7 @@ export default function MiCuentaPage() {
                                 if (!ultimas.length) return null;
                                 return (
                                     <BlurFade delay={0.2}>
-                                        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                                        <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
                                             <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-50">
                                                 <p className="font-bold text-sm text-slate-900">Últimas asistencias</p>
                                                 <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-xs font-semibold text-lime-600">
@@ -742,7 +762,7 @@ export default function MiCuentaPage() {
                     {tab === 'historial' && (
                         <div className="space-y-4">
                             <BlurFade delay={0.05}>
-                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
                                     <div className="flex items-center justify-between mb-5">
                                         <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
                                             <ChevronLeft size={18} />
@@ -805,7 +825,7 @@ export default function MiCuentaPage() {
 
                             {selectedDay && (selectedAsistencias.length>0 || selectedPagos.length>0 || planBoundaryMap[selectedDay]) && (
                                 <BlurFade delay={0}>
-                                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
+                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg space-y-3">
                                         <p className="font-bold text-slate-900 capitalize text-sm">
                                             {new Date(selectedDay+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}
                                         </p>
@@ -847,14 +867,14 @@ export default function MiCuentaPage() {
 
                             <BlurFade delay={0.1}>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Asistencias</p>
                                         <p className="text-2xl font-bold text-slate-900 tabular-nums">
                                             {Object.entries(asistenciasMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,a])=>s+a.length,0)}
                                         </p>
                                         <p className="text-xs text-slate-400 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
                                     </div>
-                                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pagado</p>
                                         <p className="text-2xl font-bold text-slate-900 tabular-nums">
                                             ${Object.entries(pagosMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,ps])=>s+ps.reduce((x,p)=>x+p.tarifa,0),0).toLocaleString('es-AR')}
@@ -1134,35 +1154,6 @@ export default function MiCuentaPage() {
                 </div>
             </div>
 
-            {/* ── BOTTOM TAB BAR ──────────────────────────────────────────── */}
-            <div className="fixed bottom-0 left-0 right-0 z-50">
-                <div className="bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/[0.06]">
-                    <div className="max-w-lg mx-auto flex items-stretch">
-                        {TABS.map(t => {
-                            const isActive = tab === t.key;
-                            return (
-                                <button key={t.key} onClick={()=>changeTab(t.key)}
-                                    className="relative flex-1 flex flex-col items-center justify-center gap-1 pt-3 pb-safe transition-all active:scale-90"
-                                    style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}>
-                                    {isActive && (
-                                        <motion.div
-                                            className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-lime-400 rounded-full"
-                                            layoutId="tab-indicator"
-                                            transition={{ type:'spring', stiffness:400, damping:30 }}
-                                        />
-                                    )}
-                                    <div className={cn('transition-colors', isActive ? 'text-lime-400' : 'text-white/30')}>
-                                        {t.icon}
-                                    </div>
-                                    <span className={cn('text-[10px] font-bold transition-colors', isActive ? 'text-lime-400' : 'text-white/30')}>
-                                        {t.label}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
