@@ -14,6 +14,8 @@ import {
     Users, Briefcase, TrendingUp, BarChart3,
     Eye, EyeOff, ChevronRight, UserPlus,
     Banknote, AlertCircle, FileText, Link2,
+    Sun, Moon, Sunset, Coffee, AlertTriangle,
+    Activity, UserCheck, Clock,
 } from 'lucide-react';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
@@ -326,7 +328,7 @@ export default function HomePage() {
         { label: 'Alias de pago', sub: aliasGimnasio || 'Sin configurar', onClick: handleConfiguracionAlias, icon: <Link2 size={15} className="text-white" /> },
     ];
 
-    // ── Recepción view (unchanged) ─────────────────────────────────────────────
+    // ── Recepción view ────────────────────────────────────────────────────────
     if (esRecepcion) {
         const diaHoy = new Date().getDate();
         const pasoDiez = diaHoy > 10;
@@ -335,110 +337,310 @@ export default function HomePage() {
         const todayKey = `${nowArgUI.getUTCFullYear()}-${String(nowArgUI.getUTCMonth() + 1).padStart(2, '0')}-${String(nowArgUI.getUTCDate()).padStart(2, '0')}`;
         const diaActivo = diasData.find(d => d.key === diaExpandido) ?? null;
         const totalActivo = diaActivo ? diaActivo.alumnos.length + diaActivo.depaso.length : 0;
-        const slotOf = (hora: string) => { const h = parseInt(hora.split(':')[0]); if (h < 12) return 'Mañana'; if (h < 15) return 'Siesta'; if (h < 20) return 'Tarde'; return 'Noche'; };
+        const slotOf = (hora: string) => {
+            const h = parseInt(hora.split(':')[0]);
+            if (h < 12) return 'Mañana';
+            if (h < 15) return 'Siesta';
+            if (h < 20) return 'Tarde';
+            return 'Noche';
+        };
         type Slot = 'Mañana' | 'Siesta' | 'Tarde' | 'Noche';
-        const SLOTS: { key: Slot; color: string; bg: string }[] = [
-            { key: 'Mañana', color: 'text-amber-700', bg: 'bg-amber-50' },
-            { key: 'Siesta', color: 'text-orange-700', bg: 'bg-orange-50' },
-            { key: 'Tarde', color: 'text-sky-700', bg: 'bg-sky-50' },
-            { key: 'Noche', color: 'text-indigo-700', bg: 'bg-indigo-50' },
+        const SLOTS: { key: Slot; icon: React.ReactNode; accent: string; accentBg: string }[] = [
+            { key: 'Mañana', icon: <Sun size={14} />,    accent: 'text-amber-400',  accentBg: 'bg-amber-400/10 border-amber-400/20' },
+            { key: 'Siesta', icon: <Coffee size={14} />, accent: 'text-orange-400', accentBg: 'bg-orange-400/10 border-orange-400/20' },
+            { key: 'Tarde',  icon: <Sunset size={14} />, accent: 'text-sky-400',    accentBg: 'bg-sky-400/10 border-sky-400/20' },
+            { key: 'Noche',  icon: <Moon size={14} />,   accent: 'text-violet-400', accentBg: 'bg-violet-400/10 border-violet-400/20' },
         ];
+        const bySlot: Record<string, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+        if (diaActivo) for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora)].push(a);
+
+        const deudoresHoy = diaActivo?.alumnos.filter(a => !a.pagado && pasoDiez).length ?? 0;
+
+        const listToShow: AlumnoAsistencia[] = activeSlot
+            ? (bySlot[activeSlot] ?? [])
+            : (diaActivo?.alumnos ?? []);
+
         return (
-            <div className="max-w-7xl mx-auto pt-4 px-4 lg:px-8 pb-6">
-                <div className="relative bg-[#111] rounded-2xl px-5 pt-4 pb-4 overflow-hidden mb-4">
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.04),transparent_60%)]" />
-                    <div className="relative flex items-center justify-between">
-                        <div><p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Recepción</p><p className="text-slate-400 text-xs mt-0.5">{fmtDate()}</p></div>
-                        <p className="text-4xl font-bold text-white tabular-nums tracking-tight leading-none">{horaArg || '--:--'}</p>
-                    </div>
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: 'none' }}>
-                    {loadingHoy && diasData.length === 0
-                        ? [1, 2, 3, 4, 5].map(i => <div key={i} className="flex-shrink-0 w-16 h-20 rounded-2xl bg-slate-200 animate-pulse" />)
-                        : diasData.map(dia => {
-                            const total = dia.alumnos.length + dia.depaso.length;
-                            const sel = diaExpandido === dia.key;
-                            const isToday = dia.key === todayKey;
-                            return (
-                                <button key={dia.key} onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
-                                    className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl transition-all active:scale-95 min-w-[64px] ${sel ? 'bg-[#111] shadow-lg' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{dia.labelDay}</span>
-                                    <span className={`text-3xl font-bold leading-none ${sel ? 'text-white' : 'text-slate-800'}`}>{dia.labelNum}</span>
-                                    {isToday && !sel ? <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> : <span className={`text-xs font-bold ${total > 0 ? (sel ? 'text-white/70' : 'text-slate-400') : (sel ? 'text-slate-600' : 'text-slate-300')}`}>{total > 0 ? total : '—'}</span>}
+            <div className="min-h-screen bg-[#0a0a0a]">
+                {/* Dot grid full page */}
+                <div className="fixed inset-0 pointer-events-none"
+                    style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+                <div className="relative max-w-[1400px] mx-auto px-6 py-5 flex flex-col gap-4 min-h-screen">
+
+                    {/* ── TOP BAR ────────────────────────────────────────── */}
+                    <BlurFade delay={0}>
+                        <div className="flex items-center justify-between gap-6">
+                            {/* Left: gym + label */}
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-50" />
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-lime-400" />
+                                    </span>
+                                    <span className="text-lime-400 text-[10px] font-bold uppercase tracking-[0.18em]">En línea</span>
+                                </div>
+                                <div className="w-px h-4 bg-white/10" />
+                                <span className="text-white/30 text-xs font-semibold uppercase tracking-widest">Recepción</span>
+                                {gimnasioNombre && (
+                                    <>
+                                        <div className="w-px h-4 bg-white/10" />
+                                        <span className="text-white/50 text-xs font-medium">{gimnasioNombre}</span>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Center: big clock */}
+                            <div className="flex-1 flex justify-center">
+                                <div className="text-center">
+                                    <p className="text-white font-black text-5xl tabular-nums tracking-tight leading-none"
+                                        style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                                        {horaArg || '--:--'}
+                                    </p>
+                                    <p className="text-white/30 text-xs mt-1.5 capitalize font-medium">{fmtDate()}</p>
+                                </div>
+                            </div>
+
+                            {/* Right: action button */}
+                            <div className="flex items-center gap-3">
+                                <button onClick={handleAlumnoDePasoGlobal}
+                                    className="flex items-center gap-2.5 px-5 py-3 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-sm rounded-2xl transition-all shadow-lg shadow-lime-400/20">
+                                    <UserPlus size={16} />
+                                    Alumno de paso
                                 </button>
-                            );
-                        })}
-                </div>
-                {diaActivo && (
-                    <div className="bg-white border border-black/[0.07] rounded-2xl shadow-sm overflow-hidden">
-                        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                            <span className="text-sm font-bold text-slate-800 capitalize">{diaActivo.fechaLarga}</span>
-                            <div className="flex items-center gap-2">
-                                {loadingHoy && <div className="w-3 h-3 rounded-full border-2 border-slate-200 border-t-slate-500 animate-spin" />}
-                                {totalActivo > 0 && <span className="text-xs text-slate-400 font-semibold">{totalActivo} {totalActivo === 1 ? 'asistente' : 'asistentes'}</span>}
                             </div>
                         </div>
-                        {(() => {
-                            const bySlot: Record<string, AlumnoAsistencia[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
-                            for (const a of diaActivo.alumnos) bySlot[slotOf(a.hora)].push(a);
-                            return (
-                                <>
-                                    <div className="grid grid-cols-4 gap-2 p-3">
-                                        {SLOTS.map(slot => {
-                                            const count = bySlot[slot.key].length;
-                                            const isActive = activeSlot === slot.key;
-                                            return (
-                                                <button key={slot.key} onClick={() => setActiveSlot(isActive ? null : slot.key)}
-                                                    className={`flex flex-col items-center gap-1 py-3 rounded-2xl transition-all active:scale-95 ${isActive ? 'bg-[#111] shadow-md' : count > 0 ? slot.bg : 'bg-slate-50'}`}>
-                                                    <span className={`text-2xl font-bold leading-none ${isActive ? 'text-white' : count > 0 ? slot.color : 'text-slate-300'}`}>{loadingHoy ? '·' : count}</span>
-                                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive ? 'text-slate-400' : count > 0 ? slot.color : 'text-slate-400'}`}>{slot.key}</span>
-                                                </button>
-                                            );
-                                        })}
+                    </BlurFade>
+
+                    {/* ── MAIN GRID ──────────────────────────────────────── */}
+                    <div className="flex gap-4 flex-1">
+
+                        {/* LEFT: day selector + slot stats */}
+                        <BlurFade delay={0.06} className="flex flex-col gap-3 w-64 shrink-0">
+                            {/* Day pills */}
+                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] p-2.5 flex flex-col gap-1.5">
+                                <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.16em] px-2 mb-1">Semana</p>
+                                {loadingHoy && diasData.length === 0
+                                    ? [1,2,3,4,5].map(i => <div key={i} className="h-14 rounded-2xl bg-white/[0.06] animate-pulse" />)
+                                    : diasData.map(dia => {
+                                        const total = dia.alumnos.length + dia.depaso.length;
+                                        const sel = diaExpandido === dia.key;
+                                        const isToday = dia.key === todayKey;
+                                        return (
+                                            <button key={dia.key}
+                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
+                                                className={cn(
+                                                    'flex items-center justify-between px-4 py-3 rounded-2xl transition-all text-left',
+                                                    sel
+                                                        ? 'bg-lime-400 shadow-lg shadow-lime-400/20'
+                                                        : 'hover:bg-white/[0.06]',
+                                                )}>
+                                                <div className="flex items-center gap-3">
+                                                    <span className={cn('text-[10px] font-black uppercase tracking-[0.14em] w-6', sel ? 'text-black/60' : 'text-white/30')}>{dia.labelDay}</span>
+                                                    <span className={cn('text-2xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/60')}>{dia.labelNum}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
+                                                    {total > 0 && (
+                                                        <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/70' : 'text-white/40')}>{total}</span>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                            </div>
+
+                            {/* Slot stat cards */}
+                            {diaActivo && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    {SLOTS.map(slot => {
+                                        const count = bySlot[slot.key].length;
+                                        const isActive = activeSlot === slot.key;
+                                        return (
+                                            <button key={slot.key}
+                                                onClick={() => setActiveSlot(isActive ? null : slot.key)}
+                                                className={cn(
+                                                    'flex flex-col gap-2 p-3.5 rounded-2xl border transition-all text-left',
+                                                    isActive
+                                                        ? 'bg-lime-400 border-lime-400 shadow-lg shadow-lime-400/20'
+                                                        : count > 0
+                                                        ? `bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.07]`
+                                                        : 'bg-white/[0.02] border-white/[0.04]',
+                                                )}>
+                                                <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center',
+                                                    isActive ? 'bg-black/20' : count > 0 ? slot.accentBg + ' border' : 'bg-white/[0.04]')}>
+                                                    <span className={isActive ? 'text-black' : count > 0 ? slot.accent : 'text-white/20'}>
+                                                        {slot.icon}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <p className={cn('text-2xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/20')}>
+                                                        {loadingHoy ? '·' : count}
+                                                    </p>
+                                                    <p className={cn('text-[9px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/60' : count > 0 ? slot.accent : 'text-white/20')}>
+                                                        {slot.key}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Summary badges */}
+                            {diaActivo && totalActivo > 0 && (
+                                <div className="flex flex-col gap-2">
+                                    <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl px-4 py-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <UserCheck size={14} className="text-lime-400" />
+                                            <span className="text-white/50 text-xs font-semibold">Total hoy</span>
+                                        </div>
+                                        <span className="text-white font-black text-lg tabular-nums">{totalActivo}</span>
                                     </div>
-                                    {activeSlot && (
-                                        <div className="border-t border-slate-100">
-                                            {bySlot[activeSlot].length === 0 ? <p className="text-slate-400 text-sm text-center py-8">Sin asistentes en este turno.</p> : (
-                                                <div className="divide-y divide-slate-50">
-                                                    {bySlot[activeSlot].map((a, i) => (
-                                                        <Link key={i} href={`/alumnos/${a.id}/historial`}
-                                                            className={`flex items-center gap-3 px-4 py-2.5 transition-all ${!a.pagado && pasoDiez ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-slate-50'}`}>
-                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${!a.pagado && pasoDiez ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>{a.nombre?.[0]}{a.apellido?.[0]}</div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className={`text-sm font-semibold truncate ${!a.pagado && pasoDiez ? 'text-red-700' : 'text-slate-700'}`}>{a.apellido}, {a.nombre}</p>
-                                                                <p className="text-[10px] text-slate-400">{a.actividad}</p>
+                                    {deudoresHoy > 0 && (
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <AlertTriangle size={14} className="text-red-400" />
+                                                <span className="text-red-400/80 text-xs font-semibold">Con deuda</span>
+                                            </div>
+                                            <span className="text-red-400 font-black text-lg tabular-nums">{deudoresHoy}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </BlurFade>
+
+                        {/* RIGHT: attendee list */}
+                        <BlurFade delay={0.1} className="flex-1 flex flex-col gap-0 min-w-0">
+                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex-1 flex flex-col">
+                                {/* List header */}
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+                                    <div className="flex items-center gap-3">
+                                        <Activity size={15} className="text-lime-400" />
+                                        <span className="text-white font-bold text-sm capitalize">
+                                            {diaActivo?.fechaLarga ?? 'Seleccioná un día'}
+                                        </span>
+                                        {activeSlot && (
+                                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/50">
+                                                {activeSlot}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {loadingHoy && (
+                                            <div className="w-4 h-4 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin" />
+                                        )}
+                                        {activeSlot && (
+                                            <button onClick={() => setActiveSlot(null)}
+                                                className="text-[10px] text-white/30 hover:text-white/60 font-semibold transition-colors">
+                                                Ver todos
+                                            </button>
+                                        )}
+                                        {listToShow.length > 0 && (
+                                            <span className="text-white/30 text-xs font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Attendee rows */}
+                                <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+                                    {!diaActivo ? (
+                                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                                                <Clock size={22} className="text-white/20" />
+                                            </div>
+                                            <p className="text-white/25 text-sm font-medium">Seleccioná un día para ver asistencias</p>
+                                        </div>
+                                    ) : listToShow.length === 0 && diaActivo.depaso.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                                                <Users size={22} className="text-white/20" />
+                                            </div>
+                                            <p className="text-white/25 text-sm font-medium">
+                                                {activeSlot ? `Sin asistentes en el turno ${activeSlot.toLowerCase()}` : 'Sin asistencias este día'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            {/* Alumnos */}
+                                            {listToShow.length > 0 && (
+                                                <div className="divide-y divide-white/[0.04]">
+                                                    {listToShow.map((a, i) => {
+                                                        const debe = !a.pagado && pasoDiez;
+                                                        const sinCuota = !a.pagado && !pasoDiez;
+                                                        return (
+                                                            <Link key={i} href={`/alumnos/${a.id}/historial`}
+                                                                className={cn(
+                                                                    'flex items-center gap-4 px-6 py-3.5 transition-all group',
+                                                                    debe ? 'hover:bg-red-500/10' : 'hover:bg-white/[0.04]',
+                                                                )}>
+                                                                {/* Avatar */}
+                                                                <div className={cn(
+                                                                    'w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold shrink-0',
+                                                                    debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/70',
+                                                                )}>
+                                                                    {a.nombre?.[0]}{a.apellido?.[0]}
+                                                                </div>
+                                                                {/* Name */}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/80')}>
+                                                                        {a.apellido}, {a.nombre}
+                                                                    </p>
+                                                                    <p className="text-[11px] text-white/30 mt-0.5">{a.actividad}</p>
+                                                                </div>
+                                                                {/* Badge */}
+                                                                {debe && (
+                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-500 text-white shrink-0">
+                                                                        <AlertTriangle size={9} /> Debe
+                                                                    </span>
+                                                                )}
+                                                                {sinCuota && (
+                                                                    <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.06] text-white/30 shrink-0">
+                                                                        Sin cuota
+                                                                    </span>
+                                                                )}
+                                                                {/* Time */}
+                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                    <span className="text-white/20 text-xs tabular-nums font-medium">{a.hora}</span>
+                                                                    <ChevronRight size={12} className="text-white/10 group-hover:text-white/30 transition-colors" />
+                                                                </div>
+                                                            </Link>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* De paso section */}
+                                            {diaActivo.depaso.length > 0 && (
+                                                <div className="border-t border-white/[0.06]">
+                                                    <div className="flex items-center gap-2.5 px-6 py-3 bg-teal-400/[0.06]">
+                                                        <span className="w-2 h-2 rounded-full bg-teal-400" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">De paso</span>
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400">{diaActivo.depaso.length}</span>
+                                                    </div>
+                                                    <div className="divide-y divide-white/[0.04]">
+                                                        {diaActivo.depaso.map((a, i) => (
+                                                            <div key={`dp-${i}`} className="flex items-center gap-4 px-6 py-3.5 hover:bg-teal-400/[0.04] transition-colors">
+                                                                <div className="w-10 h-10 rounded-2xl bg-teal-400/10 flex items-center justify-center text-sm font-bold text-teal-400 shrink-0">
+                                                                    {a.nombre?.[0]}{a.apellido?.[0]}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-semibold text-white/70 truncate">{a.apellido}, {a.nombre}</p>
+                                                                    <p className="text-[11px] text-teal-400/60 mt-0.5">{a.actividad}</p>
+                                                                </div>
+                                                                <span className="text-white/20 text-xs tabular-nums font-medium shrink-0">{a.hora}</span>
                                                             </div>
-                                                            {!a.pagado && (pasoDiez ? <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">Debe</span> : <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 shrink-0">Sin cuota</span>)}
-                                                            <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
-                                                        </Link>
-                                                    ))}
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
                                     )}
-                                    {diaActivo.depaso.length > 0 && (
-                                        <div className="border-t border-slate-100">
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-teal-50">
-                                                <span className="w-2 h-2 rounded-full bg-teal-400" />
-                                                <span className="text-xs font-bold uppercase tracking-wide text-teal-700">De paso</span>
-                                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/70 text-teal-700">{diaActivo.depaso.length}</span>
-                                            </div>
-                                            <div className="divide-y divide-slate-50">
-                                                {diaActivo.depaso.map((a, i) => (
-                                                    <div key={`dp-${i}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-teal-50/50">
-                                                        <div className="w-8 h-8 rounded-xl bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700 shrink-0">{a.nombre?.[0]}{a.apellido?.[0]}</div>
-                                                        <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-slate-700 truncate">{a.apellido}, {a.nombre}</p><p className="text-[10px] text-teal-600">{a.actividad}</p></div>
-                                                        <span className="text-xs text-slate-400 font-medium shrink-0 tabular-nums">{a.hora}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            );
-                        })()}
+                                </div>
+                            </div>
+                        </BlurFade>
                     </div>
-                )}
+                </div>
             </div>
         );
     }
