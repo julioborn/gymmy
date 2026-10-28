@@ -447,7 +447,7 @@ export default function MiCuentaPage() {
     return (
         <div className="min-h-screen bg-[#f2f2f7]">
             {/* Pad for bottom nav */}
-            <div className="pb-24">
+            <div style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 20px))' }}>
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
                 <div className="mx-4 mt-4 relative bg-[#0a0a0a] overflow-hidden rounded-[2rem]">
@@ -1136,13 +1136,14 @@ export default function MiCuentaPage() {
 
             {/* ── BOTTOM TAB BAR ──────────────────────────────────────────── */}
             <div className="fixed bottom-0 left-0 right-0 z-50">
-                <div className="bg-white/90 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+                <div className="bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/[0.06]">
                     <div className="max-w-lg mx-auto flex items-stretch">
                         {TABS.map(t => {
                             const isActive = tab === t.key;
                             return (
                                 <button key={t.key} onClick={()=>changeTab(t.key)}
-                                    className="relative flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-all active:scale-90">
+                                    className="relative flex-1 flex flex-col items-center justify-center gap-1 pt-3 pb-safe transition-all active:scale-90"
+                                    style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}>
                                     {isActive && (
                                         <motion.div
                                             className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-lime-400 rounded-full"
@@ -1150,10 +1151,10 @@ export default function MiCuentaPage() {
                                             transition={{ type:'spring', stiffness:400, damping:30 }}
                                         />
                                     )}
-                                    <div className={cn('transition-colors', isActive ? 'text-lime-600' : 'text-slate-400')}>
+                                    <div className={cn('transition-colors', isActive ? 'text-lime-400' : 'text-white/30')}>
                                         {t.icon}
                                     </div>
-                                    <span className={cn('text-[10px] font-bold transition-colors', isActive ? 'text-lime-600' : 'text-slate-400')}>
+                                    <span className={cn('text-[10px] font-bold transition-colors', isActive ? 'text-lime-400' : 'text-white/30')}>
                                         {t.label}
                                     </span>
                                 </button>
