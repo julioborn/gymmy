@@ -1,28 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
 import connectMongoDB from '@/lib/mongodb';
 import Gimnasio from '@/models/Gimnasio';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const fallback = `${req.nextUrl.origin}/icons/sporttime-icon.png`;
+    const id = req.nextUrl.searchParams.get('id');
+    if (!id) return NextResponse.redirect(new URL('/icons/icon-512x512.png', req.nextUrl.origin));
 
     try {
-        const session = await getServerSession(authOptions);
-        if (session?.user?.gimnasioId) {
-            await connectMongoDB();
-            const gym = await Gimnasio.findById(session.user.gimnasioId)
-                .select('logoUrl')
-                .lean() as any;
-            if (gym?.logoUrl) {
-                return NextResponse.redirect(gym.logoUrl);
-            }
+        await connectMongoDB();
+        const gym = await Gimnasio.findById(id).select('logoUrl').lean() as any;
+        if (!gym?.logoUrl) {
+            return NextResponse.redirect(new URL('/icons/icon-512x512.png', req.nextUrl.origin));
         }
-    } catch {
-        // fallback
-    }
 
-    return NextResponse.redirect(fallback);
+        const res = await fetch(gym.logoUrl);
+        if (!res.ok) {
+            return NextResponse.redirect(new URL('/icons/icon-512x512.png', req.nextUrl.origin));
+        }
+
+        const contentType = res.headers.get('content-type') || 'image/png';
+        const buf = await res.arrayBuffer();
+
+        return new NextResponse(buf, {
+            status: 200,
+            headers: {
+                'Content-Type': contentType,
+                'Cache-Control': 'public, max-age=86400',
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch {
+        return NextResponse.redirect(new URL('/icons/icon-512x512.png', req.nextUrl.origin));
+    }
 }

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   title: "SportTime",
   description: "Sistema de gestión de gimnasio",
   manifest: "/api/pwa/manifest",
-  themeColor: "#111827",
+  themeColor: "#111111",
   icons: {
     icon: '/icons/icon-512x512.png',
     apple: '/icons/icon-512x512.png',
