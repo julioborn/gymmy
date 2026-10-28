@@ -366,47 +366,54 @@ export default function HomePage() {
                 <div className="fixed inset-0 pointer-events-none"
                     style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-                <div className="relative max-w-[1400px] mx-auto px-6 py-5 flex flex-col gap-4 min-h-screen">
+                <div className="relative max-w-[1400px] mx-auto px-5 py-3 flex flex-col gap-3 min-h-screen">
 
                     {/* ── TOP BAR ────────────────────────────────────────── */}
                     <BlurFade delay={0}>
-                        <div className="flex items-center justify-between gap-6">
-                            {/* Left: gym + label */}
-                            <div className="flex items-center gap-4">
+                        <div className="relative flex items-center justify-between">
+                            {/* Left: status + gym */}
+                            <div className="flex items-center gap-3 w-[280px] shrink-0">
                                 <div className="flex items-center gap-2">
-                                    <span className="relative flex h-2.5 w-2.5">
+                                    <span className="relative flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-50" />
-                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-lime-400" />
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-400" />
                                     </span>
                                     <span className="text-lime-400 text-[10px] font-bold uppercase tracking-[0.18em]">En línea</span>
                                 </div>
-                                <div className="w-px h-4 bg-white/10" />
-                                <span className="text-white/30 text-xs font-semibold uppercase tracking-widest">Recepción</span>
+                                <div className="w-px h-3.5 bg-white/10" />
+                                <span className="text-white/25 text-[10px] font-bold uppercase tracking-widest">Recepción</span>
                                 {gimnasioNombre && (
                                     <>
-                                        <div className="w-px h-4 bg-white/10" />
-                                        <span className="text-white/50 text-xs font-medium">{gimnasioNombre}</span>
+                                        <div className="w-px h-3.5 bg-white/10" />
+                                        <span className="text-white/40 text-[11px] font-medium truncate max-w-[100px]">{gimnasioNombre}</span>
                                     </>
                                 )}
                             </div>
 
-                            {/* Center: big clock */}
-                            <div className="flex-1 flex justify-center">
-                                <div className="text-center">
-                                    <p className="text-white font-black text-5xl tabular-nums tracking-tight leading-none"
-                                        style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
-                                        {horaArg || '--:--'}
-                                    </p>
-                                    <p className="text-white/30 text-xs mt-1.5 capitalize font-medium">{fmtDate()}</p>
-                                </div>
+                            {/* Center: clock — truly centered via absolute */}
+                            <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
+                                <p className="text-white font-black text-4xl tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                                    {horaArg || '--:--'}
+                                </p>
+                                <p className="text-white/25 text-[10px] mt-1 capitalize font-medium">{fmtDate()}</p>
                             </div>
 
-                            {/* Right: action button */}
-                            <div className="flex items-center gap-3">
+                            {/* Right: action buttons */}
+                            <div className="flex items-center gap-2 w-[280px] shrink-0 justify-end">
+                                <Link href="/alumnos"
+                                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold">
+                                    <Users size={13} />
+                                    Alumnos
+                                </Link>
+                                <Link href="/alumnos/nuevo"
+                                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold">
+                                    <UserPlus size={13} />
+                                    Nuevo
+                                </Link>
                                 <button onClick={handleAlumnoDePasoGlobal}
-                                    className="flex items-center gap-2.5 px-5 py-3 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-sm rounded-2xl transition-all shadow-lg shadow-lime-400/20">
-                                    <UserPlus size={16} />
-                                    Alumno de paso
+                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20">
+                                    <UserPlus size={13} />
+                                    De paso
                                 </button>
                             </div>
                         </div>
@@ -416,12 +423,12 @@ export default function HomePage() {
                     <div className="flex gap-4 flex-1">
 
                         {/* LEFT: day selector + slot stats */}
-                        <BlurFade delay={0.06} className="flex flex-col gap-3 w-64 shrink-0">
+                        <BlurFade delay={0.06} className="flex flex-col gap-2.5 w-52 shrink-0">
                             {/* Day pills */}
-                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] p-2.5 flex flex-col gap-1.5">
-                                <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.16em] px-2 mb-1">Semana</p>
+                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col gap-1">
+                                <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
                                 {loadingHoy && diasData.length === 0
-                                    ? [1,2,3,4,5].map(i => <div key={i} className="h-14 rounded-2xl bg-white/[0.06] animate-pulse" />)
+                                    ? [1,2,3,4,5].map(i => <div key={i} className="h-10 rounded-xl bg-white/[0.06] animate-pulse" />)
                                     : diasData.map(dia => {
                                         const total = dia.alumnos.length + dia.depaso.length;
                                         const sel = diaExpandido === dia.key;
@@ -430,20 +437,16 @@ export default function HomePage() {
                                             <button key={dia.key}
                                                 onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
                                                 className={cn(
-                                                    'flex items-center justify-between px-4 py-3 rounded-2xl transition-all text-left',
-                                                    sel
-                                                        ? 'bg-lime-400 shadow-lg shadow-lime-400/20'
-                                                        : 'hover:bg-white/[0.06]',
+                                                    'flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left',
+                                                    sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
                                                 )}>
-                                                <div className="flex items-center gap-3">
-                                                    <span className={cn('text-[10px] font-black uppercase tracking-[0.14em] w-6', sel ? 'text-black/60' : 'text-white/30')}>{dia.labelDay}</span>
-                                                    <span className={cn('text-2xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/60')}>{dia.labelNum}</span>
+                                                <div className="flex items-center gap-2.5">
+                                                    <span className={cn('text-[9px] font-black uppercase tracking-[0.14em] w-5', sel ? 'text-black/50' : 'text-white/25')}>{dia.labelDay}</span>
+                                                    <span className={cn('text-xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/50')}>{dia.labelNum}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
-                                                    {total > 0 && (
-                                                        <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/70' : 'text-white/40')}>{total}</span>
-                                                    )}
+                                                    {total > 0 && <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/60' : 'text-white/35')}>{total}</span>}
                                                 </div>
                                             </button>
                                         );
@@ -452,7 +455,7 @@ export default function HomePage() {
 
                             {/* Slot stat cards */}
                             {diaActivo && (
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-1.5">
                                     {SLOTS.map(slot => {
                                         const count = bySlot[slot.key].length;
                                         const isActive = activeSlot === slot.key;
@@ -460,24 +463,20 @@ export default function HomePage() {
                                             <button key={slot.key}
                                                 onClick={() => setActiveSlot(isActive ? null : slot.key)}
                                                 className={cn(
-                                                    'flex flex-col gap-2 p-3.5 rounded-2xl border transition-all text-left',
+                                                    'flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-left',
                                                     isActive
-                                                        ? 'bg-lime-400 border-lime-400 shadow-lg shadow-lime-400/20'
-                                                        : count > 0
-                                                        ? `bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.07]`
+                                                        ? 'bg-lime-400 border-lime-400 shadow-md shadow-lime-400/20'
+                                                        : count > 0 ? 'bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]'
                                                         : 'bg-white/[0.02] border-white/[0.04]',
                                                 )}>
-                                                <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center',
-                                                    isActive ? 'bg-black/20' : count > 0 ? slot.accentBg + ' border' : 'bg-white/[0.04]')}>
-                                                    <span className={isActive ? 'text-black' : count > 0 ? slot.accent : 'text-white/20'}>
-                                                        {slot.icon}
-                                                    </span>
-                                                </div>
+                                                <span className={isActive ? 'text-black' : count > 0 ? slot.accent : 'text-white/15'}>
+                                                    {slot.icon}
+                                                </span>
                                                 <div>
-                                                    <p className={cn('text-2xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/20')}>
+                                                    <p className={cn('text-xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/15')}>
                                                         {loadingHoy ? '·' : count}
                                                     </p>
-                                                    <p className={cn('text-[9px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/60' : count > 0 ? slot.accent : 'text-white/20')}>
+                                                    <p className={cn('text-[8px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/50' : count > 0 ? slot.accent : 'text-white/15')}>
                                                         {slot.key}
                                                     </p>
                                                 </div>
@@ -489,21 +488,21 @@ export default function HomePage() {
 
                             {/* Summary badges */}
                             {diaActivo && totalActivo > 0 && (
-                                <div className="flex flex-col gap-2">
-                                    <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl px-4 py-3 flex items-center justify-between">
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2.5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <UserCheck size={14} className="text-lime-400" />
-                                            <span className="text-white/50 text-xs font-semibold">Total hoy</span>
+                                            <UserCheck size={12} className="text-lime-400" />
+                                            <span className="text-white/40 text-[11px] font-semibold">Total hoy</span>
                                         </div>
-                                        <span className="text-white font-black text-lg tabular-nums">{totalActivo}</span>
+                                        <span className="text-white font-black text-base tabular-nums">{totalActivo}</span>
                                     </div>
                                     {deudoresHoy > 0 && (
-                                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 flex items-center justify-between">
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <AlertTriangle size={14} className="text-red-400" />
-                                                <span className="text-red-400/80 text-xs font-semibold">Con deuda</span>
+                                                <AlertTriangle size={12} className="text-red-400" />
+                                                <span className="text-red-400/70 text-[11px] font-semibold">Con deuda</span>
                                             </div>
-                                            <span className="text-red-400 font-black text-lg tabular-nums">{deudoresHoy}</span>
+                                            <span className="text-red-400 font-black text-base tabular-nums">{deudoresHoy}</span>
                                         </div>
                                     )}
                                 </div>
@@ -514,7 +513,7 @@ export default function HomePage() {
                         <BlurFade delay={0.1} className="flex-1 flex flex-col gap-0 min-w-0">
                             <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex-1 flex flex-col">
                                 {/* List header */}
-                                <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+                                <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
                                     <div className="flex items-center gap-3">
                                         <Activity size={15} className="text-lime-400" />
                                         <span className="text-white font-bold text-sm capitalize">
@@ -571,38 +570,32 @@ export default function HomePage() {
                                                         return (
                                                             <Link key={i} href={`/alumnos/${a.id}/historial`}
                                                                 className={cn(
-                                                                    'flex items-center gap-4 px-6 py-3.5 transition-all group',
+                                                                    'flex items-center gap-3 px-5 py-2.5 transition-all group',
                                                                     debe ? 'hover:bg-red-500/10' : 'hover:bg-white/[0.04]',
                                                                 )}>
-                                                                {/* Avatar */}
                                                                 <div className={cn(
-                                                                    'w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold shrink-0',
-                                                                    debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/70',
+                                                                    'w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0',
+                                                                    debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/60',
                                                                 )}>
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
-                                                                {/* Name */}
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/80')}>
+                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/75')}>
                                                                         {a.apellido}, {a.nombre}
                                                                     </p>
-                                                                    <p className="text-[11px] text-white/30 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-[10px] text-white/25 mt-0.5">{a.actividad}</p>
                                                                 </div>
-                                                                {/* Badge */}
                                                                 {debe && (
-                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-500 text-white shrink-0">
-                                                                        <AlertTriangle size={9} /> Debe
+                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                                        <AlertTriangle size={8} /> Debe
                                                                     </span>
                                                                 )}
                                                                 {sinCuota && (
-                                                                    <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.06] text-white/30 shrink-0">
-                                                                        Sin cuota
-                                                                    </span>
+                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.05] text-white/25 shrink-0">Sin cuota</span>
                                                                 )}
-                                                                {/* Time */}
-                                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                                <div className="flex items-center gap-1 shrink-0">
                                                                     <span className="text-white/20 text-xs tabular-nums font-medium">{a.hora}</span>
-                                                                    <ChevronRight size={12} className="text-white/10 group-hover:text-white/30 transition-colors" />
+                                                                    <ChevronRight size={11} className="text-white/10 group-hover:text-white/30 transition-colors" />
                                                                 </div>
                                                             </Link>
                                                         );
@@ -613,20 +606,20 @@ export default function HomePage() {
                                             {/* De paso section */}
                                             {diaActivo.depaso.length > 0 && (
                                                 <div className="border-t border-white/[0.06]">
-                                                    <div className="flex items-center gap-2.5 px-6 py-3 bg-teal-400/[0.06]">
-                                                        <span className="w-2 h-2 rounded-full bg-teal-400" />
+                                                    <div className="flex items-center gap-2 px-5 py-2.5 bg-teal-400/[0.06]">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
                                                         <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">De paso</span>
                                                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400">{diaActivo.depaso.length}</span>
                                                     </div>
                                                     <div className="divide-y divide-white/[0.04]">
                                                         {diaActivo.depaso.map((a, i) => (
-                                                            <div key={`dp-${i}`} className="flex items-center gap-4 px-6 py-3.5 hover:bg-teal-400/[0.04] transition-colors">
-                                                                <div className="w-10 h-10 rounded-2xl bg-teal-400/10 flex items-center justify-center text-sm font-bold text-teal-400 shrink-0">
+                                                            <div key={`dp-${i}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-teal-400/[0.04] transition-colors">
+                                                                <div className="w-8 h-8 rounded-xl bg-teal-400/10 flex items-center justify-center text-xs font-bold text-teal-400 shrink-0">
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <p className="text-sm font-semibold text-white/70 truncate">{a.apellido}, {a.nombre}</p>
-                                                                    <p className="text-[11px] text-teal-400/60 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-[10px] text-teal-400/50 mt-0.5">{a.actividad}</p>
                                                                 </div>
                                                                 <span className="text-white/20 text-xs tabular-nums font-medium shrink-0">{a.hora}</span>
                                                             </div>

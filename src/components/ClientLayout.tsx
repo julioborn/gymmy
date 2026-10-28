@@ -510,43 +510,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                 </div>
             </header>
 
-            {/* ── RECEPCION SUBHEADER ── */}
-            {role === 'recepcion' && !isRegistroPage && !isLoginPage && !isStaticPage && (
-                <div
-                    className="fixed left-0 right-0 z-30 bg-[#111] py-2 px-3"
-                    style={{ top: 'calc(88px + env(safe-area-inset-top, 0px))' }}
-                >
-                    <div className="max-w-7xl mx-auto px-4 lg:px-8 flex gap-2">
-                        <Link
-                            href="/alumnos"
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
-                        >
-                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                            </svg>
-                            <span>Ver alumnos</span>
-                        </Link>
-                        <Link
-                            href="/alumnos/nuevo"
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
-                        >
-                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            <span>Nuevo alumno</span>
-                        </Link>
-                        <button
-                            onClick={handleAlumnoDePasoRecepcion}
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-slate-200 rounded-xl py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-[0.98] transition-all"
-                        >
-                            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                            </svg>
-                            <span>De paso</span>
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* RECEPCION SUBHEADER removed — integrated into reception page */}
 
             {/* ── PULL-TO-REFRESH INDICATOR ── */}
             {(pullY > 4 || isRefreshing) && (
@@ -611,9 +575,9 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
 
             {/* ── MAIN CONTENT ── */}
             <main
-                className={`flex-1 ${isStaticPage ? '' : `p-3 ${role === 'alumno' ? 'bg-gray-100' : 'bg-slate-50'}`} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
+                className={`flex-1 ${isStaticPage ? '' : role === 'recepcion' ? 'bg-[#0a0a0a]' : `p-3 ${role === 'alumno' ? 'bg-gray-100' : 'bg-slate-50'}`} ${showNav && !isRegistroPage && role !== 'recepcion' ? 'pb-[calc(5rem_+_env(safe-area-inset-bottom,_0px))] sm:pb-3' : ''}`}
                 style={{
-                    marginTop: (isRegistroPage || isStaticPage || isLoginPage) ? 0 : (role === 'recepcion' ? 'calc(136px + env(safe-area-inset-top, 0px))' : 'calc(88px + env(safe-area-inset-top, 0px))'),
+                    marginTop: (isRegistroPage || isStaticPage || isLoginPage) ? 0 : 'calc(88px + env(safe-area-inset-top, 0px))',
                     transform: swipeX > 0 ? `translateX(${swipeX * 0.12}px)` : undefined,
                     transition: swipeX === 0 ? 'transform 0.22s ease' : undefined,
                     willChange: swipeX > 0 ? 'transform' : undefined,
