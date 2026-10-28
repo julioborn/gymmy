@@ -19,21 +19,31 @@ async function sendReset(alumno: any, emailDest: string) {
     const baseUrl = process.env.NEXTAUTH_URL || 'https://sporttime.com.ar';
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
-    await transporter.sendMail({
-        from: `"SportTime" <${process.env.EMAIL_USER}>`,
-        to: emailDest,
-        subject: 'Recuperar contraseña — SportTime',
-        html: `
-            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-                <h2 style="color:#111;margin-bottom:8px">Recuperar contraseña</h2>
-                <p style="color:#555;margin-bottom:24px">Hacé clic en el botón para crear una nueva contraseña. El link expira en 1 hora.</p>
-                <a href="${resetUrl}" style="display:inline-block;background:#f97316;color:#fff;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;font-size:16px">
-                    Crear nueva contraseña
-                </a>
-                <p style="color:#aaa;font-size:12px;margin-top:32px">Si no solicitaste esto, ignorá este email.</p>
-            </div>
-        `,
-    });
+    console.log('[forgot-password] Enviando email a:', emailDest);
+    console.log('[forgot-password] EMAIL_USER:', process.env.EMAIL_USER);
+    console.log('[forgot-password] Reset URL:', resetUrl);
+
+    try {
+        await transporter.sendMail({
+            from: `"SportTime" <${process.env.EMAIL_USER}>`,
+            to: emailDest,
+            subject: 'Recuperar contraseña — SportTime',
+            html: `
+                <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+                    <h2 style="color:#111;margin-bottom:8px">Recuperar contraseña</h2>
+                    <p style="color:#555;margin-bottom:24px">Hacé clic en el botón para crear una nueva contraseña. El link expira en 1 hora.</p>
+                    <a href="${resetUrl}" style="display:inline-block;background:#f97316;color:#fff;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;font-size:16px">
+                        Crear nueva contraseña
+                    </a>
+                    <p style="color:#aaa;font-size:12px;margin-top:32px">Si no solicitaste esto, ignorá este email.</p>
+                </div>
+            `,
+        });
+        console.log('[forgot-password] Email enviado OK');
+    } catch (e) {
+        console.error('[forgot-password] Error enviando email:', e);
+        throw e;
+    }
 }
 
 // GET: busca el alumno por DNI + gimnasioId y devuelve su email enmascarado
