@@ -340,7 +340,8 @@ export default function LoginPage() {
                                 </button>
                                 <p className="text-center text-white/30 text-xs pt-1">
                                     ¿Olvidaste tu contraseña?{' '}
-                                    <a href="/forgot-password" className="text-orange-400 font-semibold hover:text-orange-300">
+                                    <a href={step.type === 'alumno-login' ? `/forgot-password?dni=${step.dni}&gimnasioId=${step.gimnasioId}` : '/forgot-password'}
+                                        className="text-orange-400 font-semibold hover:text-orange-300">
                                         Recuperar
                                     </a>
                                 </p>

@@ -1,25 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import transporter from '@/utils/email';
 
-export async function POST(req: NextRequest) {
-    const { email } = await req.json();
-    if (!email) return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+function maskEmail(email: string): string {
+    const [user, domain] = email.split('@');
+    return `${user[0]}***@${domain}`;
+}
 
-    await connectMongoDB();
-
-    const alumno = await Alumno.findOne({ email: email.toLowerCase().trim() });
-
-    // Siempre responder OK para no revelar si el email existe o no
-    if (!alumno) return NextResponse.json({ ok: true });
-
+async function sendReset(alumno: any, emailDest: string) {
     const token = crypto.randomBytes(32).toString('hex');
-    const expiry = new Date(Date.now() + 1000 * 60 * 60); // 1 hora
-
     alumno.resetPasswordToken = token;
-    alumno.resetPasswordExpiry = expiry;
+    alumno.resetPasswordExpiry = new Date(Date.now() + 1000 * 60 * 60);
     await alumno.save();
 
     const baseUrl = process.env.NEXTAUTH_URL || 'https://sporttime.com.ar';
@@ -27,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     await transporter.sendMail({
         from: `"SportTime" <${process.env.EMAIL_USER}>`,
-        to: email,
+        to: emailDest,
         subject: 'Recuperar contraseña — SportTime',
         html: `
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
@@ -40,6 +34,54 @@ export async function POST(req: NextRequest) {
             </div>
         `,
     });
+}
 
+// GET: busca el alumno por DNI + gimnasioId y devuelve su email enmascarado
+export async function GET(req: NextRequest) {
+    const { searchParams } = req.nextUrl;
+    const dni = searchParams.get('dni');
+    const gimnasioId = searchParams.get('gimnasioId');
+    if (!dni || !gimnasioId) return NextResponse.json({ email: null });
+
+    await connectMongoDB();
+    const alumno = await Alumno.findOne({ dni, gimnasioId: new mongoose.Types.ObjectId(gimnasioId) });
+    if (!alumno) return NextResponse.json({ email: null });
+
+    return NextResponse.json({
+        email: alumno.email ? maskEmail(alumno.email) : null,
+        hasEmail: !!alumno.email,
+    });
+}
+
+// POST: envía el link de reset (y guarda el email si es nuevo)
+export async function POST(req: NextRequest) {
+    const { email, dni, gimnasioId } = await req.json();
+
+    await connectMongoDB();
+
+    let alumno: any = null;
+    let emailDest = email?.toLowerCase().trim() || '';
+
+    if (dni && gimnasioId) {
+        // Buscar por DNI + gimnasio
+        alumno = await Alumno.findOne({ dni, gimnasioId: new mongoose.Types.ObjectId(gimnasioId) });
+        if (!alumno) return NextResponse.json({ ok: true });
+
+        if (emailDest) {
+            // Guardar nuevo email en el perfil
+            alumno.email = emailDest;
+        } else {
+            // Usar el email que ya tiene en DB
+            emailDest = alumno.email || '';
+        }
+    } else {
+        // Fallback: buscar por email directamente
+        if (!emailDest) return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+        alumno = await Alumno.findOne({ email: emailDest });
+    }
+
+    if (!alumno || !emailDest) return NextResponse.json({ ok: true });
+
+    await sendReset(alumno, emailDest);
     return NextResponse.json({ ok: true });
 }
