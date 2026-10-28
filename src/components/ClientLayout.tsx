@@ -497,7 +497,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         <img
                             src="https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png"
                             alt="SportTime"
-                            style={{ height: 64, width: 'auto', objectFit: 'contain' }}
+                            style={{ height: 76, width: 'auto', objectFit: 'contain', maxHeight: 76 }}
                         />
                     </Link>
 
