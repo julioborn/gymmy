@@ -133,14 +133,14 @@ function SkeletonCard() {
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
-        <div className={cn('bg-white/[0.06] border border-white/[0.09] rounded-2xl p-4', className)}>
+        <div className={cn('bg-white/[0.09] border border-white/[0.13] rounded-2xl p-4 flex flex-col min-h-[150px]', className)}>
             {children}
         </div>
     );
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
-    return <p className="text-[9px] font-bold text-white/45 uppercase tracking-[0.12em] mb-2">{children}</p>;
+    return <p className="text-[10px] font-bold text-white/55 uppercase tracking-[0.12em] mb-2">{children}</p>;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -673,37 +673,37 @@ export default function HomePage() {
                         <div className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl" style={{ background: 'rgba(163,230,53,0.06)' }} />
                         <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/[0.06] rounded-full blur-3xl" />
 
-                        <div className="relative px-5 pt-5 pb-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.14em]">{getGreeting()}</span>
-                                <span className="text-white/20 text-[10px]">·</span>
-                                <span className="text-[10px] text-white/35 capitalize">{fmtDate()}</span>
+                        <div className="relative px-5 pt-5 pb-5">
+                            <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                <span className="text-xs font-semibold text-white/60 uppercase tracking-[0.14em]">{getGreeting()}</span>
+                                <span className="text-white/30 text-xs">·</span>
+                                <span className="text-xs text-white/55 capitalize">{fmtDate()}</span>
                             </div>
 
-                            <h1 className="text-2xl font-bold text-white tracking-tight mb-2">{userName}</h1>
+                            <h1 className="text-3xl font-bold text-white tracking-tight mb-3">{userName}</h1>
 
                             <div className="flex items-center gap-2 flex-wrap mb-5">
-                                <span className="inline-flex items-center bg-white/[0.08] border border-white/[0.1] text-white/60 text-[10px] font-semibold px-3 py-1 rounded-full capitalize">
+                                <span className="inline-flex items-center bg-white/[0.1] border border-white/[0.13] text-white/75 text-xs font-semibold px-3 py-1.5 rounded-full capitalize">
                                     {session.user?.role}
                                 </span>
                                 {gimnasioNombre && (
-                                    <span className="text-white/35 text-[10px] truncate max-w-[200px]">{gimnasioNombre}</span>
+                                    <span className="text-white/55 text-xs font-medium">{gimnasioNombre}</span>
                                 )}
                             </div>
 
-                            {/* Nav pills — horizontal scroll en mobile */}
-                            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+                            {/* Nav pills — wrap en mobile, sin overflow oculto */}
+                            <div className="flex flex-wrap gap-2">
                                 {visibleCards.map((c) => (
                                     <Link key={c.href} href={c.href}
-                                        className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.07] border border-white/[0.09] hover:bg-white/[0.13] active:scale-95 transition-all text-white/70 hover:text-white text-xs font-semibold shrink-0">
-                                        <span className="opacity-80">{c.icon}</span>
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 transition-all text-white/80 hover:text-white text-sm font-semibold">
+                                        <span className="opacity-90">{c.icon}</span>
                                         {c.label}
                                     </Link>
                                 ))}
                                 {esProfesor && session.user?.id && (
                                     <Link href="/mi-perfil#plan"
-                                        className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.07] border border-white/[0.09] hover:bg-white/[0.13] active:scale-95 transition-all text-white/70 hover:text-white text-xs font-semibold shrink-0">
-                                        <FileText size={14} className="opacity-80" />
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 transition-all text-white/80 hover:text-white text-sm font-semibold">
+                                        <FileText size={15} className="opacity-90" />
                                         Mi plan
                                     </Link>
                                 )}
@@ -712,10 +712,8 @@ export default function HomePage() {
                     </div>
                 </BlurFade>
 
-                {/* ── STATS + CONFIG ──────────────────────────────────────── */}
-                <div className="lg:grid lg:grid-cols-[1fr_260px] lg:gap-4 lg:items-start">
-
-                    {/* Stats grid */}
+                {/* ── STATS ───────────────────────────────────────────────── */}
+                <div>
                     <div>
                         {loading ? (
                             <div className="grid grid-cols-2 gap-3">
@@ -735,21 +733,21 @@ export default function HomePage() {
                                                     {showBalance ? <Eye size={12} /> : <EyeOff size={12} />}
                                                 </button>
                                             </div>
-                                            <p className={cn('text-2xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                            <p className={cn('text-3xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-400' : 'text-red-400')}>
                                                 {showBalance
                                                     ? <>{data.balance < 0 ? '−' : ''}$<NumberTicker value={Math.abs(data.balance)} /></>
                                                     : '$ ••••'}
                                             </p>
                                             {showBalance && (
-                                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.06]">
+                                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
                                                     <div>
-                                                        <p className="text-[11px] font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
-                                                        <p className="text-[9px] text-white/35">ingresos</p>
+                                                        <p className="text-xs font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                                        <p className="text-[10px] text-white/50 mt-0.5">ingresos</p>
                                                     </div>
-                                                    <div className="w-px h-5 bg-white/[0.08] shrink-0" />
+                                                    <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                                     <div>
-                                                        <p className="text-[11px] font-bold text-red-400">−${fmt(data.gastosMes)}</p>
-                                                        <p className="text-[9px] text-white/35">egresos</p>
+                                                        <p className="text-xs font-bold text-red-400">−${fmt(data.gastosMes)}</p>
+                                                        <p className="text-[10px] text-white/50 mt-0.5">egresos</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -764,21 +762,21 @@ export default function HomePage() {
                                             <StatLabel>Cuotas · {mesLabel}</StatLabel>
                                             <div className="flex items-stretch gap-2 mb-3">
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-2xl font-bold text-emerald-400 leading-none tabular-nums">
+                                                    <p className="text-3xl font-bold text-emerald-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.pagados} />
                                                     </p>
-                                                    <p className="text-[9px] text-emerald-400/70 mt-1 font-semibold">Pagaron</p>
+                                                    <p className="text-xs text-emerald-400/80 mt-1.5 font-semibold">Pagaron</p>
                                                 </div>
-                                                <div className="w-px bg-white/[0.07] self-stretch" />
+                                                <div className="w-px bg-white/[0.1] self-stretch" />
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-2xl font-bold text-red-400 leading-none tabular-nums">
+                                                    <p className="text-3xl font-bold text-red-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.totalAlumnos - data.pagados} />
                                                     </p>
-                                                    <p className="text-[9px] text-red-400/70 mt-1 font-semibold">Deben</p>
+                                                    <p className="text-xs text-red-400/80 mt-1.5 font-semibold">Deben</p>
                                                 </div>
                                             </div>
                                             <AnimatedBar pct={data.porcentajePagados} color={pagoBarColor} />
-                                            <p className="text-[9px] text-white/35 mt-1.5 text-right font-medium">{data.porcentajePagados}% pagado</p>
+                                            <p className="text-xs text-white/55 mt-2 text-right font-medium">{data.porcentajePagados}% pagado</p>
                                         </StatCard>
                                     </BlurFade>
                                 )}
@@ -787,32 +785,32 @@ export default function HomePage() {
                                 <BlurFade delay={0.18}>
                                     <StatCard>
                                         <StatLabel>Asistencias · Hoy</StatLabel>
-                                        <p className="text-3xl font-bold text-white leading-none tabular-nums mb-2">
+                                        <p className="text-4xl font-bold text-white leading-none tabular-nums mb-3">
                                             <NumberTicker value={data.asistenciasHoy} />
                                         </p>
                                         {data.asistenciasHoy > 0 ? (
                                             <div className="flex gap-3 flex-wrap">
                                                 {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
-                                                        <p className="text-[9px] text-white/40">Mañana</p>
+                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.manana}</p>
+                                                        <p className="text-[10px] text-white/50 mt-0.5">Mañana</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
-                                                        <p className="text-[9px] text-white/40">Siesta</p>
+                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
+                                                        <p className="text-[10px] text-white/50 mt-0.5">Siesta</p>
                                                     </div>
                                                 )}
                                                 {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
                                                     <div>
-                                                        <p className="text-xs font-bold text-white/80 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
-                                                        <p className="text-[9px] text-white/40">Tarde</p>
+                                                        <p className="text-sm font-bold text-white/85 tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
+                                                        <p className="text-[10px] text-white/50 mt-0.5">Tarde</p>
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-[11px] text-white/35">Sin registros aún</p>
+                                            <p className="text-xs text-white/50 mt-1">Sin registros aún</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
@@ -821,7 +819,7 @@ export default function HomePage() {
                                 <BlurFade delay={0.22}>
                                     <StatCard>
                                         <StatLabel>Planes venciendo</StatLabel>
-                                        <p className={cn('text-3xl font-bold leading-none tabular-nums mb-2', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
+                                        <p className={cn('text-4xl font-bold leading-none tabular-nums mb-3', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
                                             <NumberTicker value={data.planesVenciendo.length} />
                                         </p>
                                         {data.planesVenciendo.length > 0 ? (
@@ -830,19 +828,19 @@ export default function HomePage() {
                                                     <Link key={a._id} href={`/alumnos/${a._id}/historial`}
                                                         className="flex items-center gap-2 group">
                                                         <span className={cn(
-                                                            'text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center text-white shrink-0 leading-none',
+                                                            'text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0 leading-none',
                                                             a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400',
                                                         )}>
                                                             {a.diasRestantes}
                                                         </span>
-                                                        <span className="text-[10px] text-white/60 truncate group-hover:text-white/90 transition-colors">
+                                                        <span className="text-xs text-white/70 truncate group-hover:text-white transition-colors">
                                                             {a.apellido}, {a.nombre}
                                                         </span>
                                                     </Link>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-[11px] text-white/35">Sin vencimientos</p>
+                                            <p className="text-xs text-white/50 mt-1">Sin vencimientos</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
@@ -852,35 +850,35 @@ export default function HomePage() {
 
                     {/* Config panel */}
                     {!esProfesor && !esRecepcion && (
-                        <BlurFade delay={0.26} className="mt-4 lg:mt-0">
-                            <p className="text-[9px] font-bold text-white/35 uppercase tracking-[0.12em] mb-3">Configuración</p>
-                            <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl overflow-hidden">
+                        <BlurFade delay={0.26} className="mt-4">
+                            <p className="text-xs font-bold text-white/50 uppercase tracking-[0.12em] mb-3">Configuración</p>
+                            <div className="bg-white/[0.07] border border-white/[0.1] rounded-2xl overflow-hidden">
                                 {configItems.map((item, idx, arr) => (
                                     <div key={item.label}>
                                         <button onClick={item.onClick}
-                                            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.09] transition-colors text-left">
-                                            <div className="w-8 h-8 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0">
+                                            className="w-full flex items-center gap-3.5 px-4 py-4 hover:bg-white/[0.06] active:bg-white/[0.1] transition-colors text-left">
+                                            <div className="w-9 h-9 rounded-xl bg-white/[0.1] flex items-center justify-center shrink-0">
                                                 {item.icon}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-[13px] text-white/90">{item.label}</p>
-                                                <p className="text-[10px] text-white/40 truncate">{item.sub}</p>
+                                                <p className="font-semibold text-sm text-white">{item.label}</p>
+                                                <p className="text-xs text-white/50 truncate mt-0.5">{item.sub}</p>
                                             </div>
-                                            <ChevronRight size={13} className="text-white/25 shrink-0" />
+                                            <ChevronRight size={15} className="text-white/30 shrink-0" />
                                         </button>
-                                        {idx < arr.length - 1 && <div className="border-t border-white/[0.05] mx-4" />}
+                                        {idx < arr.length - 1 && <div className="border-t border-white/[0.06] mx-4" />}
                                     </div>
                                 ))}
 
                                 {/* Actividades recepción */}
-                                <div className="border-t border-white/[0.05] px-4 py-3.5">
+                                <div className="border-t border-white/[0.06] px-4 py-4">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0">
-                                            <Users size={15} className="text-white" />
+                                        <div className="w-9 h-9 rounded-xl bg-white/[0.1] flex items-center justify-center shrink-0">
+                                            <Users size={16} className="text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-[13px] text-white/90">Recepción</p>
-                                            <p className="text-[10px] text-white/40">Actividades disponibles</p>
+                                            <p className="font-semibold text-sm text-white">Recepción</p>
+                                            <p className="text-xs text-white/50 mt-0.5">Actividades disponibles</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -891,15 +889,15 @@ export default function HomePage() {
                                                 <button key={act} onClick={() => handleToggleActividad(act)}
                                                     disabled={savingActividades || esUltima}
                                                     className={cn(
-                                                        'flex items-center justify-between px-3 py-2 rounded-xl transition-colors',
-                                                        activa ? 'bg-lime-400/[0.08]' : 'bg-white/[0.04]',
+                                                        'flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors',
+                                                        activa ? 'bg-lime-400/[0.1]' : 'bg-white/[0.04]',
                                                     )}>
-                                                    <span className={cn('text-[13px] font-medium', activa ? 'text-lime-400' : 'text-white/50')}>
+                                                    <span className={cn('text-sm font-medium', activa ? 'text-lime-400' : 'text-white/60')}>
                                                         {act}
                                                     </span>
-                                                    <div className={cn('w-9 h-5 rounded-full relative transition-colors', activa ? 'bg-lime-400' : 'bg-white/[0.15]')}>
+                                                    <div className={cn('w-10 h-5 rounded-full relative transition-colors', activa ? 'bg-lime-400' : 'bg-white/[0.15]')}>
                                                         <div className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all"
-                                                            style={{ left: activa ? '18px' : '2px' }} />
+                                                            style={{ left: activa ? '22px' : '2px' }} />
                                                     </div>
                                                 </button>
                                             );
