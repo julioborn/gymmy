@@ -375,52 +375,57 @@ export default function ListaAlumnosPage() {
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8">
 
-            {/* Banner */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden mb-5 lg:px-8 lg:py-7">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25" style={{ background: acento2 }} />
-                <div className="relative">
-                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Gestión de alumnos</p>
-                    <h1 className="text-xl font-bold text-white mt-0.5 lg:text-2xl">Alumnos</h1>
-                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+            {/* Hero */}
+            <div className="relative bg-[#111] rounded-[2rem] overflow-hidden mb-4">
+                {/* Dot grid */}
+                <div className="pointer-events-none absolute inset-0 opacity-[0.13]"
+                    style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                {/* Glows */}
+                <div className="pointer-events-none absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl" style={{ background: acento2, opacity: 0.15 }} />
+                <div className="pointer-events-none absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-3xl" style={{ background: acento, opacity: 0.1 }} />
+
+                <div className="relative px-5 pt-5 pb-5">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-white/55 uppercase tracking-[0.14em]">Gestión</span>
                         {!isLoading && (
-                            <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                            <span className="bg-white/[0.1] border border-white/[0.13] text-white/70 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                                 {alumnos.length} inscriptos
                             </span>
                         )}
+                    </div>
+                    <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Alumnos</h1>
+                    <div className="flex flex-wrap gap-2">
                         <button
-                            className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold rounded-full text-white transition-all active:scale-95"
-                            style={{ background: acento }}
                             onClick={() => router.push('/alumnos/nuevo')}
+                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
+                            style={{ background: acento }}
                         >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
                             Registrar
                         </button>
                         {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                             <>
-                                <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
-                                <button className="px-3 py-1 bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[11px] font-semibold rounded-full transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>
+                                <button className="px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
+                                <button className="px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>
                             </>
                         )}
                         {session?.user?.role === 'dueño' && (
                             <button
-                                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 active:scale-95 text-white px-3 py-1 rounded-full text-[11px] font-semibold transition-all"
                                 onClick={handleGenerateExcel}
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12" viewBox="0 0 48 48">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
                                     <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
                                     <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
-                                    <path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path>
+                                    <path fill="#0c8045" d="M14 15.003H29V24.005H14z"></path>
                                     <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
-                                    <g>
-                                        <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
-                                        <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
-                                        <path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path>
-                                        <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
-                                    </g>
-                                    <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
+                                    <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
+                                    <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
+                                    <path fill="#19ac65" d="M29 15.003H44V24.005H29z"></path>
+                                    <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
+                                    <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
                                     <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
                                 </svg>
                                 Balance
@@ -431,26 +436,26 @@ export default function ListaAlumnosPage() {
             </div>
 
             {/* Hoy en el gimnasio */}
-            <div className={`${card} mb-4`}>
+            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl mb-4 overflow-hidden">
                 <button
                     onClick={() => setHoyExpanded(v => !v)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 sm:px-5"
+                    className="w-full flex items-center justify-between px-4 py-3.5"
                 >
                     <div className="flex items-center gap-2.5">
                         <span className="text-sm font-bold text-white">Hoy en el gimnasio</span>
-                        {!isLoading && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-400/15 text-emerald-400">
-                                {totalHoy}
-                            </span>
-                        )}
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 ${hoyExpanded ? 'rotate-180' : ''}`}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                    </svg>
+                    <div className="flex items-center gap-2">
+                        {!isLoading && (
+                            <span className="text-2xl font-bold text-white tabular-nums leading-none">{totalHoy}</span>
+                        )}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${hoyExpanded ? 'rotate-180' : ''}`}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </div>
                 </button>
 
                 {hoyExpanded && (
-                    <div className="px-4 pb-4 sm:px-5">
+                    <div className="border-t border-white/[0.08] px-4 pb-4 pt-3">
                         {isLoading ? (
                             <div className="space-y-1.5">
                                 {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-white/[0.08] animate-pulse" />)}
@@ -468,19 +473,19 @@ export default function ListaAlumnosPage() {
                                         >
                                             <div className="flex items-center gap-1.5">
                                                 <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
-                                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
                                             </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/25 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {slotsExpanded[slot.key] && (
-                                            <div className="px-3 pb-2 space-y-1">
+                                            <div className="px-3 pb-2.5 pt-1 space-y-1">
                                                 {hoyPorTurno[slot.key].map((a, i) => (
                                                     <div
                                                         key={i}
                                                         onClick={() => router.push(`/alumnos/${a.id}/historial`)}
-                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all border border-white/[0.06]"
+                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all"
                                                     >
                                                         <div className="w-7 h-7 rounded-lg bg-white/[0.1] flex items-center justify-center text-xs font-bold text-white/70 shrink-0">
                                                             {a.nombre?.[0]}{a.apellido?.[0]}
@@ -491,9 +496,7 @@ export default function ListaAlumnosPage() {
                                                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
                                                             {a.actividad}
                                                         </span>
-                                                        <span className="text-xs text-white/40 font-medium shrink-0 tabular-nums">
-                                                            {a.hora}
-                                                        </span>
+                                                        <span className="text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                     </div>
                                                 ))}
                                             </div>
