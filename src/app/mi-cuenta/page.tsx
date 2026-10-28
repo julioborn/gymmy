@@ -296,9 +296,34 @@ export default function MiCuentaPage() {
     // ── Loading ───────────────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] gap-4">
-                <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin" />
-                <p className="text-white/30 text-xs font-medium">Cargando tu perfil...</p>
+            <div className="min-h-screen bg-[#f2f2f7] pb-24">
+                {/* Hero skeleton */}
+                <div className="mx-4 mt-4 bg-[#1a1a1a] rounded-[2rem] p-5 overflow-hidden relative">
+                    <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.03) 1px,transparent 1px)', backgroundSize:'20px 20px' }} />
+                    <div className="relative flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-white/[0.08] animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <div className="h-5 w-36 bg-white/[0.08] rounded-lg animate-pulse" />
+                            <div className="flex gap-2">
+                                <div className="h-4 w-24 bg-white/[0.06] rounded-full animate-pulse" />
+                                <div className="h-4 w-24 bg-white/[0.06] rounded-full animate-pulse" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
+                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
+                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
+                    </div>
+                </div>
+                {/* Cards skeleton */}
+                <div className="px-4 pt-5 space-y-3">
+                    <div className="bg-white rounded-2xl p-5 h-32 animate-pulse" />
+                    <div className="bg-white rounded-2xl p-5 h-28 animate-pulse" />
+                    <div className="bg-white rounded-2xl p-5 h-40 animate-pulse" />
+                </div>
+                {/* Bottom nav skeleton */}
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 h-16" />
             </div>
         );
     }
