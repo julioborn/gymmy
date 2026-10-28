@@ -2196,7 +2196,7 @@ export default function HistorialAlumnoPage() {
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
 
-                        <div className="order-2 bg-white/[0.04] rounded-xl border border-white/[0.1] p-3 sm:pt-5 sm:px-0 sm:pb-5">
+                        <div className="order-2 bg-white/[0.11] rounded-xl border border-white/[0.18] p-3 sm:pt-5 sm:px-0 sm:pb-5">
                                 {/* Nav */}
                                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                                     <button
@@ -2211,13 +2211,13 @@ export default function HistorialAlumnoPage() {
                                     >›</button>
                                 </div>
                                 {/* Day headers */}
-                                <div className="grid grid-cols-7 sm:border-t sm:border-l sm:border-white/[0.08]">
+                                <div className="grid grid-cols-7 sm:border-t sm:border-l sm:border-white/[0.18]">
                                     {DIAS_CAL.map(d => (
-                                        <div key={d} className="text-center text-white/40 text-xs font-semibold py-1.5 sm:py-2 sm:border-r sm:border-b sm:border-white/[0.08]">{d.toLowerCase()}</div>
+                                        <div key={d} className="text-center text-white/60 text-xs font-semibold py-1.5 sm:py-2 sm:border-r sm:border-b sm:border-white/[0.18]">{d.toLowerCase()}</div>
                                     ))}
                                 </div>
                                 {/* Grid */}
-                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-white/[0.08]">
+                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-white/[0.18]">
                                     {calDaysGrid(mobCalYear, mobCalMonth).map((calDay, i) => {
                                         const key = `${calDay.year}-${String(calDay.month + 1).padStart(2, '0')}-${String(calDay.day).padStart(2, '0')}`;
                                         const asists = asistenciasMapMob[key] || [];
@@ -2231,16 +2231,16 @@ export default function HistorialAlumnoPage() {
                                             <button
                                                 key={`${key}-${i}`}
                                                 onClick={() => openDayModal(key)}
-                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-white/[0.08] transition-colors overflow-hidden ${
+                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-white/[0.18] transition-colors overflow-hidden ${
                                                     isSelected
-                                                        ? 'bg-white/[0.12]'
+                                                        ? 'bg-white/[0.22]'
                                                         : planDaysMap[key] === 'active'
-                                                        ? 'bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2]'
+                                                        ? 'bg-emerald-500/[0.18] hover:bg-emerald-500/[0.28]'
                                                         : planDaysMap[key] === 'completed'
-                                                        ? 'bg-red-500/[0.08] hover:bg-red-500/[0.15]'
+                                                        ? 'bg-red-500/[0.14] hover:bg-red-500/[0.22]'
                                                         : isOverflow
-                                                        ? 'hover:bg-white/[0.04]'
-                                                        : 'hover:bg-white/[0.06]'
+                                                        ? 'hover:bg-white/[0.06]'
+                                                        : 'hover:bg-white/[0.1]'
                                                 }`}
                                             >
                                                 {/* Franja de plan (escritorio) */}
@@ -2257,10 +2257,10 @@ export default function HistorialAlumnoPage() {
                                                             : planBoundaryMap[key] === 'end'
                                                             ? 'bg-red-400 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-white/80 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
                                                             : isOverflow
-                                                            ? 'text-white/20'
+                                                            ? 'text-white/30'
                                                             : (hasData || planDaysMap[key])
-                                                            ? 'text-white/80 font-medium'
-                                                            : 'text-white/35'
+                                                            ? 'text-white font-medium'
+                                                            : 'text-white/55'
                                                     }`}>{calDay.day}</span>
                                                 </div>
                                                 {/* Mobile: dots */}
@@ -2301,10 +2301,10 @@ export default function HistorialAlumnoPage() {
                                                                     if (result.isConfirmed) handleEditAsistenciaMob(a);
                                                                     else if (result.isDenied) handleEliminarAsistencia(a._id);
                                                                 }}
-                                                                className="flex items-center gap-1 px-1.5 py-0.5 bg-white/[0.1] hover:bg-white/[0.17] rounded-[3px] mx-0.5 cursor-pointer"
+                                                                className="flex items-center gap-1 px-1.5 py-0.5 bg-white/[0.18] hover:bg-white/[0.28] rounded-[3px] mx-0.5 cursor-pointer"
                                                             >
                                                                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[a.actividad] || 'bg-slate-400'}`} />
-                                                                <span className="text-white/80 text-[10px] truncate flex-1 text-left">{a.actividad}</span>
+                                                                <span className="text-white text-[10px] truncate flex-1 text-left">{a.actividad}</span>
                                                                 <span className="text-red-400 text-[10px] flex-shrink-0 font-medium">{time}</span>
                                                             </div>
                                                         );
@@ -2336,13 +2336,13 @@ export default function HistorialAlumnoPage() {
                                     })}
                                 </div>
                                 {/* Legend */}
-                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08] flex-wrap">
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-white/50 text-xs">Musculación</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/50 text-xs">Intermitente</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/50 text-xs">Otro</span></div>
+                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.18] flex-wrap">
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-white/70 text-xs">Musculación</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/70 text-xs">Intermitente</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/70 text-xs">Otro</span></div>
                                     <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-600 rounded-[3px] text-white text-[10px] font-semibold">Pago</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-500 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/50 text-xs">Plan activo</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-red-400 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/50 text-xs">Plan completado</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-500 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/70 text-xs">Plan activo</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-red-400 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/70 text-xs">Plan completado</span></div>
                                 </div>
                             </div>
 
@@ -2350,27 +2350,27 @@ export default function HistorialAlumnoPage() {
                     </div>
 
                     {/* Resumen del mes — tarjeta separada */}
-                    <div className="mt-4 bg-white/[0.05] rounded-xl border border-white/[0.1] p-4">
-                        <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3 capitalize">
+                    <div className="mt-4 bg-white/[0.10] rounded-xl border border-white/[0.18] p-4">
+                        <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-3 capitalize">
                             Resumen — {new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
                         </p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white/[0.07] rounded-xl p-3 text-center border border-white/[0.08]">
+                            <div className="bg-white/[0.12] rounded-xl p-3 text-center border border-white/[0.18]">
                                 <div className="text-2xl font-bold text-white">
                                     {Object.entries(asistenciasMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
                                         .reduce((sum, [, a]) => sum + a.length, 0)}
                                 </div>
-                                <div className="text-white/40 text-xs mt-0.5">asistencias</div>
+                                <div className="text-white/60 text-xs mt-0.5">asistencias</div>
                             </div>
-                            <div className="bg-white/[0.07] rounded-xl p-3 text-center border border-white/[0.08]">
+                            <div className="bg-white/[0.12] rounded-xl p-3 text-center border border-white/[0.18]">
                                 <div className="text-2xl font-bold text-emerald-400">
                                     ${Object.entries(pagosMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
                                         .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + (p.totalPagado ?? p.tarifa ?? 0), 0), 0)
                                         .toLocaleString('es-AR')}
                                 </div>
-                                <div className="text-white/40 text-xs mt-0.5">pagado</div>
+                                <div className="text-white/60 text-xs mt-0.5">pagado</div>
                             </div>
                         </div>
                     </div>
