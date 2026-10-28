@@ -377,7 +377,7 @@ export default function HomePage() {
                         <div className="relative flex items-center justify-between" style={{ minHeight: 72 }}>
                             {/* Left: label */}
                             <div className="flex items-center w-[280px] shrink-0 self-center">
-                                <span className="text-white/30 text-[11px] font-bold uppercase tracking-[0.2em]">Recepción</span>
+                                <span className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em]">Recepción</span>
                             </div>
 
                             {/* Center: clock — truly centered via absolute */}
@@ -385,7 +385,7 @@ export default function HomePage() {
                                 <p className="text-white font-black text-5xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
                                     {horaArg || '--:--'}
                                 </p>
-                                <p className="text-white/25 text-[10px] mt-1.5 capitalize font-medium tracking-wide">{fmtDate()}</p>
+                                <p className="text-white/55 text-[10px] mt-1.5 capitalize font-medium tracking-wide">{fmtDate()}</p>
                             </div>
 
                             {/* Right: action buttons */}
@@ -416,7 +416,7 @@ export default function HomePage() {
                         <BlurFade delay={0.06} className="flex flex-col gap-2.5 w-52 shrink-0">
                             {/* Day pills */}
                             <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col gap-1">
-                                <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
+                                <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
                                 {loadingHoy && diasData.length === 0
                                     ? [1,2,3,4,5].map(i => <div key={i} className="h-10 rounded-xl bg-white/[0.06] animate-pulse" />)
                                     : diasData.map(dia => {
@@ -431,12 +431,12 @@ export default function HomePage() {
                                                     sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
                                                 )}>
                                                 <div className="flex items-center gap-2.5">
-                                                    <span className={cn('text-[9px] font-black uppercase tracking-[0.14em] w-5', sel ? 'text-black/50' : 'text-white/25')}>{dia.labelDay}</span>
-                                                    <span className={cn('text-xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/50')}>{dia.labelNum}</span>
+                                                    <span className={cn('text-[9px] font-black uppercase tracking-[0.14em] w-5', sel ? 'text-black/50' : 'text-white/60')}>{dia.labelDay}</span>
+                                                    <span className={cn('text-xl font-bold leading-none tabular-nums', sel ? 'text-black' : isToday ? 'text-white' : 'text-white/75')}>{dia.labelNum}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     {isToday && !sel && <span className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
-                                                    {total > 0 && <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/60' : 'text-white/35')}>{total}</span>}
+                                                    {total > 0 && <span className={cn('text-xs font-bold tabular-nums', sel ? 'text-black/60' : 'text-white/65')}>{total}</span>}
                                                 </div>
                                             </button>
                                         );
@@ -459,14 +459,14 @@ export default function HomePage() {
                                                         : count > 0 ? 'bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]'
                                                         : 'bg-white/[0.02] border-white/[0.04]',
                                                 )}>
-                                                <span className={isActive ? 'text-black' : count > 0 ? slot.accent : 'text-white/15'}>
+                                                <span className={isActive ? 'text-black' : count > 0 ? slot.accent : 'text-white/35'}>
                                                     {slot.icon}
                                                 </span>
                                                 <div>
-                                                    <p className={cn('text-xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/15')}>
+                                                    <p className={cn('text-xl font-black leading-none tabular-nums', isActive ? 'text-black' : count > 0 ? 'text-white' : 'text-white/35')}>
                                                         {loadingHoy ? '·' : count}
                                                     </p>
-                                                    <p className={cn('text-[8px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/50' : count > 0 ? slot.accent : 'text-white/15')}>
+                                                    <p className={cn('text-[8px] font-bold uppercase tracking-wide mt-0.5', isActive ? 'text-black/50' : count > 0 ? slot.accent : 'text-white/35')}>
                                                         {slot.key}
                                                     </p>
                                                 </div>
@@ -482,7 +482,7 @@ export default function HomePage() {
                                     <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2.5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <UserCheck size={12} className="text-lime-400" />
-                                            <span className="text-white/40 text-[11px] font-semibold">Total hoy</span>
+                                            <span className="text-white/70 text-[11px] font-semibold">Total hoy</span>
                                         </div>
                                         <span className="text-white font-black text-base tabular-nums">{totalActivo}</span>
                                     </div>
@@ -510,7 +510,7 @@ export default function HomePage() {
                                             {diaActivo?.fechaLarga ?? 'Seleccioná un día'}
                                         </span>
                                         {activeSlot && (
-                                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/50">
+                                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/75">
                                                 {activeSlot}
                                             </span>
                                         )}
@@ -521,12 +521,12 @@ export default function HomePage() {
                                         )}
                                         {activeSlot && (
                                             <button onClick={() => { setActiveSlot(null); setListPage(0); }}
-                                                className="text-[10px] text-white/30 hover:text-white/60 font-semibold transition-colors">
+                                                className="text-[10px] text-white/60 hover:text-white font-semibold transition-colors">
                                                 Ver todos
                                             </button>
                                         )}
                                         {listToShow.length > 0 && (
-                                            <span className="text-white/30 text-xs font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
+                                            <span className="text-white/60 text-xs font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
                                         )}
                                     </div>
                                 </div>
@@ -536,16 +536,16 @@ export default function HomePage() {
                                     {!diaActivo ? (
                                         <div className="flex flex-col items-center justify-center py-20 gap-3">
                                             <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                                                <Clock size={22} className="text-white/20" />
+                                                <Clock size={22} className="text-white/45" />
                                             </div>
-                                            <p className="text-white/25 text-sm font-medium">Seleccioná un día para ver asistencias</p>
+                                            <p className="text-white/55 text-sm font-medium">Seleccioná un día para ver asistencias</p>
                                         </div>
                                     ) : listToShow.length === 0 && diaActivo.depaso.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 gap-3">
                                             <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                                                <Users size={22} className="text-white/20" />
+                                                <Users size={22} className="text-white/45" />
                                             </div>
-                                            <p className="text-white/25 text-sm font-medium">
+                                            <p className="text-white/55 text-sm font-medium">
                                                 {activeSlot ? `Sin asistentes en el turno ${activeSlot.toLowerCase()}` : 'Sin asistencias este día'}
                                             </p>
                                         </div>
@@ -570,10 +570,10 @@ export default function HomePage() {
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/75')}>
+                                                                    <p className={cn('font-semibold text-sm truncate', debe ? 'text-red-300' : 'text-white/90')}>
                                                                         {a.apellido}, {a.nombre}
                                                                     </p>
-                                                                    <p className="text-[10px] text-white/25 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-[10px] text-white/55 mt-0.5">{a.actividad}</p>
                                                                 </div>
                                                                 {debe && (
                                                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
@@ -581,11 +581,11 @@ export default function HomePage() {
                                                                     </span>
                                                                 )}
                                                                 {sinCuota && (
-                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.05] text-white/25 shrink-0">Sin cuota</span>
+                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.07] text-white/55 shrink-0">Sin cuota</span>
                                                                 )}
                                                                 <div className="flex items-center gap-1 shrink-0">
-                                                                    <span className="text-white/20 text-xs tabular-nums font-medium">{a.hora}</span>
-                                                                    <ChevronRight size={11} className="text-white/10 group-hover:text-white/30 transition-colors" />
+                                                                    <span className="text-white/55 text-xs tabular-nums font-medium">{a.hora}</span>
+                                                                    <ChevronRight size={11} className="text-white/30 group-hover:text-white/60 transition-colors" />
                                                                 </div>
                                                             </Link>
                                                         );
@@ -607,7 +607,7 @@ export default function HomePage() {
                                                             <button key={i} onClick={() => setListPage(i)}
                                                                 className={cn(
                                                                     'w-7 h-7 rounded-lg text-xs font-bold transition-all',
-                                                                    i === listPage ? 'bg-lime-400 text-black' : 'text-white/30 hover:text-white hover:bg-white/[0.06]',
+                                                                    i === listPage ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.06]',
                                                                 )}>
                                                                 {i + 1}
                                                             </button>
@@ -637,10 +637,10 @@ export default function HomePage() {
                                                                     {a.nombre?.[0]}{a.apellido?.[0]}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className="text-sm font-semibold text-white/70 truncate">{a.apellido}, {a.nombre}</p>
-                                                                    <p className="text-[10px] text-teal-400/50 mt-0.5">{a.actividad}</p>
+                                                                    <p className="text-sm font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
+                                                                    <p className="text-[10px] text-teal-400/70 mt-0.5">{a.actividad}</p>
                                                                 </div>
-                                                                <span className="text-white/20 text-xs tabular-nums font-medium shrink-0">{a.hora}</span>
+                                                                <span className="text-white/55 text-xs tabular-nums font-medium shrink-0">{a.hora}</span>
                                                             </div>
                                                         ))}
                                                     </div>
