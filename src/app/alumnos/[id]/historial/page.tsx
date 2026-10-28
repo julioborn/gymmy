@@ -2982,36 +2982,13 @@ export default function HistorialAlumnoPage() {
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Horario</p>
-                                        <span className="text-sm font-bold text-blue-600 tabular-nums">{dayModalActHora} hs</span>
                                     </div>
-                                    {/* Hours grid */}
-                                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1.5">Hora</p>
-                                    <div className="grid grid-cols-6 gap-1.5 mb-3">
-                                        {Array.from({ length: 24 }, (_, i) => i).map(h => {
-                                            const hStr = String(h).padStart(2,'0');
-                                            const selected = dayModalActHora.split(':')[0] === hStr;
-                                            return (
-                                                <button key={h} onClick={() => setDayModalActHora(`${hStr}:${dayModalActHora.split(':')[1]}`)}
-                                                    className={`py-2 rounded-lg text-sm font-semibold transition ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 active:bg-slate-200'}`}>
-                                                    {hStr}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    {/* Minutes grid */}
-                                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1.5">Minutos</p>
-                                    <div className="grid grid-cols-6 gap-1.5">
-                                        {[0,5,10,15,20,25,30,35,40,45,50,55].map(m => {
-                                            const mStr = String(m).padStart(2,'0');
-                                            const selected = dayModalActHora.split(':')[1] === mStr;
-                                            return (
-                                                <button key={m} onClick={() => setDayModalActHora(`${dayModalActHora.split(':')[0]}:${mStr}`)}
-                                                    className={`py-2 rounded-lg text-sm font-semibold transition ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 active:bg-slate-200'}`}>
-                                                    {mStr}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <input
+                                        type="time"
+                                        value={dayModalActHora}
+                                        onChange={e => setDayModalActHora(e.target.value)}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-blue-600 text-center bg-slate-50 focus:outline-none focus:border-blue-400"
+                                    />
                                 </div>
                                 <button onClick={submitDayModalActividad} disabled={!dayModalActTipo || dayModalSaving}
                                     className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base transition disabled:opacity-40">
