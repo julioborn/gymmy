@@ -1932,6 +1932,7 @@ export default function HistorialAlumnoPage() {
         );
 
     const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300";
+    const darkInputCls = "w-full border border-white/[0.12] rounded-lg px-3 py-1.5 bg-white/[0.07] text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20";
 
     // Planes tab — computed before return to avoid IIFE inside JSX
     const planActivoEmb = alumno?.planEntrenamiento?.fechaInicio && !alumno?.planEntrenamiento?.terminado ? alumno.planEntrenamiento : null;
@@ -1988,31 +1989,31 @@ export default function HistorialAlumnoPage() {
         <>
         <div className="max-w-7xl mx-auto space-y-4">
             {/* Header + Info */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl overflow-hidden">
 
                 {/* Barra siempre visible */}
                 <div className="px-4 sm:px-5 py-4 flex items-start gap-3">
-                    <Link href="/alumnos" className="flex-shrink-0 mt-0.5 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition">
+                    <Link href="/alumnos" className="flex-shrink-0 mt-0.5 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/[0.1] text-white/40 hover:text-white transition">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                         </svg>
                     </Link>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-lg font-bold text-slate-800 leading-snug">{alumno.nombre} {alumno.apellido}</h1>
+                        <h1 className="text-lg font-bold text-white leading-snug">{alumno.nombre} {alumno.apellido}</h1>
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                                 {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
                             </span>
                             {diasRestantes != null && diasRestantes > 0 ? (
-                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-slate-100 text-slate-500' : diasRestantes > 5 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
+                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/[0.08] text-white/70' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
                                     {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}quedan {diasRestantes}{((alumno.planEntrenamiento?.duracion ?? null) || ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1)) || null) ? ` de ${alumno.planEntrenamiento?.duracion ?? ((planAlumnoActivo?.dias?.length || 0) * (planAlumnoActivo?.totalSemanas || 1))}` : ''} entrenos
                                 </span>
                             ) : diasRestantes === 0 ? (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">
                                     {planAlumnoActivo?.nombre ? `${planAlumnoActivo.nombre} · ` : ''}Plan completado
                                 </span>
                             ) : (
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400">Sin plan</span>
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/[0.07] text-white/30">Sin plan</span>
                             )}
                         </div>
                     </div>
@@ -2025,7 +2026,7 @@ export default function HistorialAlumnoPage() {
                     </Link>
                     <button
                         onClick={() => setInfoExpanded(v => !v)}
-                        className="shrink-0 mt-0.5 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+                        className="shrink-0 mt-0.5 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/[0.1] text-white/40 hover:text-white/60 transition"
                         title={infoExpanded ? 'Ocultar información' : 'Ver información'}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform duration-200 ${infoExpanded ? 'rotate-180' : ''}`}>
@@ -2037,56 +2038,56 @@ export default function HistorialAlumnoPage() {
                 {/* Expandable: datos + acciones */}
                 {infoExpanded && (
                     <>
-                    <div className="border-t border-slate-100" />
+                    <div className="border-t border-white/[0.08]" />
 
                     {/* Grid de datos */}
                     <div className="px-4 sm:px-5 pt-4 pb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                        <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">DNI</p>
-                            <p className="text-sm font-bold text-slate-700 tabular-nums">{alumno.dni}</p>
+                        <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">DNI</p>
+                            <p className="text-sm font-bold text-white/80 tabular-nums">{alumno.dni}</p>
                         </div>
                         {alumno.fechaNacimiento && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Nacimiento</p>
-                                <p className="text-sm font-bold text-slate-700">
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Nacimiento</p>
+                                <p className="text-sm font-bold text-white/80">
                                     {new Date(alumno.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </p>
                             </div>
                         )}
                         {alumno.telefono && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Teléfono</p>
-                                <p className="text-sm font-bold text-slate-700 tabular-nums">{alumno.telefono}</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Teléfono</p>
+                                <p className="text-sm font-bold text-white/80 tabular-nums">{alumno.telefono}</p>
                             </div>
                         )}
                         {alumno.email && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Email</p>
-                                <p className="text-sm font-bold text-slate-700 truncate">{alumno.email}</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Email</p>
+                                <p className="text-sm font-bold text-white/80 truncate">{alumno.email}</p>
                             </div>
                         )}
                         {alumno.area && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Área</p>
-                                <p className="text-sm font-bold text-slate-700">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Área</p>
+                                <p className="text-sm font-bold text-white/80">{AREA_LABEL[alumno.area] ?? alumno.area}</p>
                             </div>
                         )}
                         {alumno.nivelExperiencia && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Experiencia</p>
-                                <p className="text-sm font-bold text-slate-700">{NIVEL_LABEL[alumno.nivelExperiencia] ?? alumno.nivelExperiencia}</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Experiencia</p>
+                                <p className="text-sm font-bold text-white/80">{NIVEL_LABEL[alumno.nivelExperiencia] ?? alumno.nivelExperiencia}</p>
                             </div>
                         )}
                         {alumno.horarioEntrenamiento && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Horario</p>
-                                <p className="text-sm font-bold text-slate-700">{capitalizar(alumno.horarioEntrenamiento)}</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Horario</p>
+                                <p className="text-sm font-bold text-white/80">{capitalizar(alumno.horarioEntrenamiento)}</p>
                             </div>
                         )}
                         {alumno.diasEntrenaSemana && (
-                            <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Días/sem</p>
-                                <p className="text-sm font-bold text-slate-700">{alumno.diasEntrenaSemana} días</p>
+                            <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Días/sem</p>
+                                <p className="text-sm font-bold text-white/80">{alumno.diasEntrenaSemana} días</p>
                             </div>
                         )}
                     </div>
@@ -2095,33 +2096,33 @@ export default function HistorialAlumnoPage() {
                     {(alumno.patologias || alumno.objetivos || alumno.historialDeportivo || alumno.historialDeVida) && (
                         <div className="px-4 sm:px-5 pb-3 flex flex-col gap-2">
                             {alumno.patologias && (
-                                <div className="bg-red-50 border border-red-100 rounded-xl px-3.5 py-3">
+                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-3">
                                     <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1">Condición física / Patologías</p>
-                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.patologias}</p>
+                                    <p className="text-sm text-white/70 whitespace-pre-line">{alumno.patologias}</p>
                                 </div>
                             )}
                             {alumno.objetivos && (
-                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Objetivos</p>
-                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.objetivos}</p>
+                                <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Objetivos</p>
+                                    <p className="text-sm text-white/70 whitespace-pre-line">{alumno.objetivos}</p>
                                 </div>
                             )}
                             {alumno.historialDeportivo && (
-                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Historial deportivo</p>
-                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.historialDeportivo}</p>
+                                <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Historial deportivo</p>
+                                    <p className="text-sm text-white/70 whitespace-pre-line">{alumno.historialDeportivo}</p>
                                 </div>
                             )}
                             {alumno.historialDeVida && (
-                                <div className="bg-slate-50 rounded-xl px-3.5 py-3">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Historial de vida</p>
-                                    <p className="text-sm text-slate-700 whitespace-pre-line">{alumno.historialDeVida}</p>
+                                <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
+                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Historial de vida</p>
+                                    <p className="text-sm text-white/70 whitespace-pre-line">{alumno.historialDeVida}</p>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <div className="border-t border-slate-100 mx-4 sm:mx-5" />
+                    <div className="border-t border-white/[0.08] mx-4 sm:mx-5" />
 
                     {/* Acciones */}
                     <div className="px-4 sm:px-5 py-4 flex flex-wrap items-center gap-2">
@@ -2130,7 +2131,7 @@ export default function HistorialAlumnoPage() {
                             Marcar Pago
                         </button>
                         {hayPlanActivo ? (
-                            <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-400 text-sm font-semibold rounded-xl cursor-not-allowed opacity-60">
+                            <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.08] text-white/30 text-sm font-semibold rounded-xl cursor-not-allowed opacity-60">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
                                 Plan iniciado
                             </button>
@@ -2140,17 +2141,17 @@ export default function HistorialAlumnoPage() {
                                 Iniciar Plan
                             </button>
                         )}
-                        <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all active:scale-95">
+                        <button onClick={handleEditarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.14] text-white/70 text-sm font-semibold rounded-xl transition-all active:scale-95">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" /></svg>
                             Editar
                         </button>
                         {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
-                            <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-500 text-sm font-semibold rounded-xl transition-all active:scale-95">
+                            <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.14] text-white/50 text-sm font-semibold rounded-xl transition-all active:scale-95">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
                                 Resetear contraseña
                             </button>
                         )}
-                        <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto border border-red-100">
+                        <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto border border-red-500/20">
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                             Eliminar alumno
                         </button>
@@ -2159,23 +2160,23 @@ export default function HistorialAlumnoPage() {
                     {/* Archivos médicos */}
                     {alumno.archivosMedicos && alumno.archivosMedicos.length > 0 && (
                         <>
-                        <div className="border-t border-slate-100 mx-4 sm:mx-5" />
+                        <div className="border-t border-white/[0.08] mx-4 sm:mx-5" />
                         <div className="px-4 sm:px-5 py-4">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Archivos médicos</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Archivos médicos</p>
                             <div className="flex flex-col gap-2">
                                 {alumno.archivosMedicos.map((a, i) => (
                                     <a key={i} href={a.url} target="_blank" rel="noopener noreferrer"
-                                        className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 transition-all">
+                                        className="flex items-center gap-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-xl px-3 py-2.5 transition-all">
                                         <span className="text-xl">
                                             {a.tipo === 'application/pdf' ? '📄' : '🖼️'}
                                         </span>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-slate-700 truncate">{a.nombre}</p>
-                                            <p className="text-[11px] text-slate-400">
+                                            <p className="text-sm font-semibold text-white/80 truncate">{a.nombre}</p>
+                                            <p className="text-[11px] text-white/40">
                                                 {new Date(a.fechaSubida).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </p>
                                         </div>
-                                        <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                        <svg className="w-4 h-4 text-white/30 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                         </svg>
                                     </a>
@@ -2188,35 +2189,35 @@ export default function HistorialAlumnoPage() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl overflow-hidden">
                 {/* Calendario */}
-                <div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
+                <div className="px-4 sm:px-5 py-4 border-b border-white/[0.08] overflow-x-hidden">
 
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
 
-                        <div className="order-2 bg-white rounded-xl border border-slate-200 p-3 sm:pt-5 sm:px-0 sm:pb-5">
+                        <div className="order-2 bg-white/[0.04] rounded-xl border border-white/[0.1] p-3 sm:pt-5 sm:px-0 sm:pb-5">
                                 {/* Nav */}
                                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                                     <button
                                         onClick={() => { if (mobCalMonth === 0) { setMobCalMonth(11); setMobCalYear(y => y - 1); } else setMobCalMonth(m => m - 1); }}
-                                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition text-xl"
+                                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-white/[0.1] text-white/60 transition text-xl"
                                     >‹</button>
-                                    <span className="text-slate-700 font-semibold sm:text-lg capitalize">{new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}</span>
+                                    <span className="text-white font-semibold sm:text-lg capitalize">{new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}</span>
                                     <button
                                         onClick={() => { if (mobCalMonth === 11) { setMobCalMonth(0); setMobCalYear(y => y + 1); } else setMobCalMonth(m => m + 1); }}
                                         disabled={mobCalYear >= nowCalendar.getFullYear() && mobCalMonth >= nowCalendar.getMonth()}
-                                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition disabled:opacity-30 text-xl"
+                                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg hover:bg-white/[0.1] text-white/60 transition disabled:opacity-30 text-xl"
                                     >›</button>
                                 </div>
                                 {/* Day headers */}
-                                <div className="grid grid-cols-7 sm:border-t sm:border-l sm:border-slate-200">
+                                <div className="grid grid-cols-7 sm:border-t sm:border-l sm:border-white/[0.08]">
                                     {DIAS_CAL.map(d => (
-                                        <div key={d} className="text-center text-slate-500 text-xs font-semibold py-1.5 sm:py-2 sm:border-r sm:border-b sm:border-slate-200">{d.toLowerCase()}</div>
+                                        <div key={d} className="text-center text-white/40 text-xs font-semibold py-1.5 sm:py-2 sm:border-r sm:border-b sm:border-white/[0.08]">{d.toLowerCase()}</div>
                                     ))}
                                 </div>
                                 {/* Grid */}
-                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-slate-200">
+                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-white/[0.08]">
                                     {calDaysGrid(mobCalYear, mobCalMonth).map((calDay, i) => {
                                         const key = `${calDay.year}-${String(calDay.month + 1).padStart(2, '0')}-${String(calDay.day).padStart(2, '0')}`;
                                         const asists = asistenciasMapMob[key] || [];
@@ -2230,16 +2231,16 @@ export default function HistorialAlumnoPage() {
                                             <button
                                                 key={`${key}-${i}`}
                                                 onClick={() => openDayModal(key)}
-                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-slate-200 transition-colors overflow-hidden ${
+                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-white/[0.08] transition-colors overflow-hidden ${
                                                     isSelected
-                                                        ? 'bg-slate-100'
+                                                        ? 'bg-white/[0.12]'
                                                         : planDaysMap[key] === 'active'
-                                                        ? 'bg-emerald-50 hover:bg-emerald-100'
+                                                        ? 'bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2]'
                                                         : planDaysMap[key] === 'completed'
-                                                        ? 'bg-red-50 hover:bg-red-100'
+                                                        ? 'bg-red-500/[0.08] hover:bg-red-500/[0.15]'
                                                         : isOverflow
-                                                        ? 'bg-slate-50/70 hover:bg-slate-100'
-                                                        : 'hover:bg-slate-50'
+                                                        ? 'hover:bg-white/[0.04]'
+                                                        : 'hover:bg-white/[0.06]'
                                                 }`}
                                             >
                                                 {/* Franja de plan (escritorio) */}
@@ -2250,16 +2251,16 @@ export default function HistorialAlumnoPage() {
                                                 <div className="sm:w-full sm:flex sm:justify-end sm:pt-2 sm:pr-2">
                                                     <span className={`text-xs sm:text-[13px] leading-none mb-1 sm:mb-0 ${
                                                         isToday
-                                                            ? 'bg-slate-700 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center font-bold'
+                                                            ? 'bg-white text-[#111] w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center font-bold'
                                                             : planBoundaryMap[key] === 'start'
-                                                            ? 'bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-slate-700 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
+                                                            ? 'bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-white/80 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
                                                             : planBoundaryMap[key] === 'end'
-                                                            ? 'bg-red-400 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-slate-700 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
+                                                            ? 'bg-red-400 text-white w-5 h-5 rounded-full flex items-center justify-center font-bold sm:bg-transparent sm:text-white/80 sm:w-auto sm:h-auto sm:rounded-none sm:font-medium'
                                                             : isOverflow
-                                                            ? 'text-slate-300'
+                                                            ? 'text-white/20'
                                                             : (hasData || planDaysMap[key])
-                                                            ? 'text-slate-700 font-medium'
-                                                            : 'text-slate-400'
+                                                            ? 'text-white/80 font-medium'
+                                                            : 'text-white/35'
                                                     }`}>{calDay.day}</span>
                                                 </div>
                                                 {/* Mobile: dots */}
@@ -2300,11 +2301,11 @@ export default function HistorialAlumnoPage() {
                                                                     if (result.isConfirmed) handleEditAsistenciaMob(a);
                                                                     else if (result.isDenied) handleEliminarAsistencia(a._id);
                                                                 }}
-                                                                className="flex items-center gap-1 px-1.5 py-0.5 bg-white hover:bg-slate-50 rounded-[3px] mx-0.5 shadow-sm cursor-pointer"
+                                                                className="flex items-center gap-1 px-1.5 py-0.5 bg-white/[0.1] hover:bg-white/[0.17] rounded-[3px] mx-0.5 cursor-pointer"
                                                             >
                                                                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[a.actividad] || 'bg-slate-400'}`} />
-                                                                <span className="text-slate-700 text-[10px] truncate flex-1 text-left">{a.actividad}</span>
-                                                                <span className="text-red-500 text-[10px] flex-shrink-0 font-medium">{time}</span>
+                                                                <span className="text-white/80 text-[10px] truncate flex-1 text-left">{a.actividad}</span>
+                                                                <span className="text-red-400 text-[10px] flex-shrink-0 font-medium">{time}</span>
                                                             </div>
                                                         );
                                                     })}
@@ -2335,13 +2336,13 @@ export default function HistorialAlumnoPage() {
                                     })}
                                 </div>
                                 {/* Legend */}
-                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100 flex-wrap">
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /><span className="text-slate-500 text-xs">Musculación</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500" /><span className="text-slate-500 text-xs">Intermitente</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-slate-500 text-xs">Otro</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-700 rounded-[3px] text-white text-[10px] font-semibold">Pago</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-500 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-slate-500 text-xs">Plan activo</span></div>
-                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-red-400 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-slate-500 text-xs">Plan completado</span></div>
+                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08] flex-wrap">
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-white/50 text-xs">Musculación</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/50 text-xs">Intermitente</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /><span className="text-white/50 text-xs">Otro</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-600 rounded-[3px] text-white text-[10px] font-semibold">Pago</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-emerald-500 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/50 text-xs">Plan activo</span></div>
+                                    <div className="flex items-center gap-1.5"><span className="inline-flex items-center px-1.5 py-px bg-red-400 rounded-[3px] text-white text-[10px] font-semibold">●</span><span className="text-white/50 text-xs">Plan completado</span></div>
                                 </div>
                             </div>
 
@@ -2349,27 +2350,27 @@ export default function HistorialAlumnoPage() {
                     </div>
 
                     {/* Resumen del mes — tarjeta separada */}
-                    <div className="mt-4 bg-white rounded-xl border border-slate-200 p-4">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 capitalize">
+                    <div className="mt-4 bg-white/[0.05] rounded-xl border border-white/[0.1] p-4">
+                        <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3 capitalize">
                             Resumen — {new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
                         </p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-                                <div className="text-2xl font-bold text-slate-800">
+                            <div className="bg-white/[0.07] rounded-xl p-3 text-center border border-white/[0.08]">
+                                <div className="text-2xl font-bold text-white">
                                     {Object.entries(asistenciasMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
                                         .reduce((sum, [, a]) => sum + a.length, 0)}
                                 </div>
-                                <div className="text-slate-400 text-xs mt-0.5">asistencias</div>
+                                <div className="text-white/40 text-xs mt-0.5">asistencias</div>
                             </div>
-                            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-                                <div className="text-2xl font-bold text-emerald-600">
+                            <div className="bg-white/[0.07] rounded-xl p-3 text-center border border-white/[0.08]">
+                                <div className="text-2xl font-bold text-emerald-400">
                                     ${Object.entries(pagosMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
                                         .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + (p.totalPagado ?? p.tarifa ?? 0), 0), 0)
                                         .toLocaleString('es-AR')}
                                 </div>
-                                <div className="text-slate-400 text-xs mt-0.5">pagado</div>
+                                <div className="text-white/40 text-xs mt-0.5">pagado</div>
                             </div>
                         </div>
                     </div>
@@ -2499,7 +2500,7 @@ export default function HistorialAlumnoPage() {
                 </div>
 
                 {/* Tab nav */}
-                <div className="px-4 sm:px-5 flex border-b border-slate-100">
+                <div className="px-4 sm:px-5 pt-4 pb-3 flex gap-2 border-b border-white/[0.08]">
                     {([
                         { key: 'asistencias' as const, label: 'Asistencias' },
                         { key: 'planes' as const,      label: 'Planes' },
@@ -2508,11 +2509,10 @@ export default function HistorialAlumnoPage() {
                         <button
                             key={key}
                             onClick={() => handleTabClick(key)}
-                            style={activeTab === key ? { borderBottomColor: acento, color: acento } : {}}
-                            className={`py-3.5 px-4 text-sm font-semibold border-b-2 transition-all -mb-px whitespace-nowrap ${
+                            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
                                 activeTab === key
-                                    ? 'border-current'
-                                    : 'border-transparent text-slate-400 hover:text-slate-600 hover:border-slate-200'
+                                    ? 'bg-white text-black'
+                                    : 'bg-white/[0.08] border border-white/[0.12] text-white/60 hover:bg-white/[0.14]'
                             }`}
                         >
                             {label}
@@ -2528,18 +2528,18 @@ export default function HistorialAlumnoPage() {
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold text-slate-700">Asistencias</h3>
-                                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">{asistenciasFiltradas.length}</span>
+                                        <h3 className="text-sm font-bold text-white">Asistencias</h3>
+                                        <span className="px-2 py-0.5 rounded-full bg-white/[0.1] text-white/60 text-xs font-semibold">{asistenciasFiltradas.length}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'actividad')}
                                             style={{ color: acento }}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.08] hover:bg-white/[0.14] transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('asistencias')}
-                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['asistencias'] ? 'bg-slate-200 text-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['asistencias'] ? 'bg-white/[0.14] text-white' : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'}`}
                                             title="Filtros"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
@@ -2547,18 +2547,18 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 {filtrosAbiertos['asistencias'] && (
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
-                                        <input type="date" className={inputCls} value={fechaDesdeAsist} onChange={(e) => setFechaDesdeAsist(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={darkInputCls} value={fechaDesdeAsist} onChange={(e) => setFechaDesdeAsist(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
-                                        <input type="date" className={inputCls} value={fechaHastaAsist} onChange={(e) => setFechaHastaAsist(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={darkInputCls} value={fechaHastaAsist} onChange={(e) => setFechaHastaAsist(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Actividad</label>
-                                        <select className={inputCls} value={filtroActividad} onChange={(e) => setFiltroActividad(e.target.value)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Actividad</label>
+                                        <select className={darkInputCls} value={filtroActividad} onChange={(e) => setFiltroActividad(e.target.value)}>
                                             <option value="Todas">Todas</option>
                                             <option value="Musculación">Musculación</option>
                                             <option value="Intermitente">Intermitente</option>
@@ -2566,33 +2566,33 @@ export default function HistorialAlumnoPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
-                                        <select className={inputCls} value={ordenAsist} onChange={(e) => setOrdenAsist(e.target.value as any)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Orden</label>
+                                        <select className={darkInputCls} value={ordenAsist} onChange={(e) => setOrdenAsist(e.target.value as any)}>
                                             <option value="recientes">Más recientes</option>
                                             <option value="antiguos">Más antiguas</option>
                                         </select>
                                     </div>
                                     <div className="col-span-2 sm:col-span-4 flex justify-end">
-                                        <button onClick={() => { setFechaDesdeAsist(''); setFechaHastaAsist(''); setFiltroActividad('Todas'); setOrdenAsist('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                        <button onClick={() => { setFechaDesdeAsist(''); setFechaHastaAsist(''); setFiltroActividad('Todas'); setOrdenAsist('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.1] hover:bg-white/[0.18] text-white/60 transition">
                                             Limpiar filtros
                                         </button>
                                     </div>
                                 </div>
                                 )}
                                 {asistenciasFiltradas.length > 0 ? (
-                                    <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[32rem] overflow-y-auto">
+                                    <div className="rounded-xl border border-white/[0.08] overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {asistenciasFiltradas.map((a: Asistencia) => {
                                             const f = new Date(a.fecha);
-                                            const colorMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
-                                            const badgeCls = colorMap[a.actividad] || 'bg-slate-100 text-slate-700';
+                                            const colorMap: Record<string, string> = { Musculación: 'bg-blue-400/20 text-blue-400', Intermitente: 'bg-orange-400/20 text-orange-400', Otro: 'bg-yellow-400/20 text-yellow-400' };
+                                            const badgeCls = colorMap[a.actividad] || 'bg-white/[0.1] text-white/70';
                                             return (
-                                                <div key={a._id} className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition group">
+                                                <div key={a._id} className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.05] transition group">
                                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                                         <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeCls}`}>{a.actividad}</span>
-                                                        <span className="text-sm text-slate-700 capitalize">{f.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-                                                        <span className="text-xs text-slate-400 shrink-0">{f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
+                                                        <span className="text-sm text-white/80 capitalize">{f.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+                                                        <span className="text-xs text-white/40 shrink-0">{f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
                                                     </div>
-                                                    <button onClick={() => handleEliminarAsistencia(a._id)} className="shrink-0 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100" title="Eliminar">
+                                                    <button onClick={() => handleEliminarAsistencia(a._id)} className="shrink-0 p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100" title="Eliminar">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
                                                     </button>
                                                 </div>
@@ -2600,7 +2600,7 @@ export default function HistorialAlumnoPage() {
                                         })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-400 text-sm text-center py-10">No hay asistencias para los filtros aplicados.</p>
+                                    <p className="text-white/40 text-sm text-center py-10">No hay asistencias para los filtros aplicados.</p>
                                 )}
                             </div>
                         )}
@@ -2610,22 +2610,22 @@ export default function HistorialAlumnoPage() {
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold text-slate-700">Planes</h3>
-                                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">{totalPlanesCount}</span>
+                                        <h3 className="text-sm font-bold text-white">Planes</h3>
+                                        <span className="px-2 py-0.5 rounded-full bg-white/[0.1] text-white/60 text-xs font-semibold">{totalPlanesCount}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={handleAgregarPlanHistorial}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.08] hover:bg-white/[0.14] text-white/60 transition"
                                         >+ Historial</button>
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'plan')}
                                             style={{ color: acento }}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.08] hover:bg-white/[0.14] transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('planes')}
-                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['planes'] ? 'bg-slate-200 text-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['planes'] ? 'bg-white/[0.14] text-white' : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'}`}
                                             title="Filtros"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
@@ -2633,24 +2633,24 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 {filtrosAbiertos['planes'] && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
-                                        <input type="date" className={inputCls} value={fechaDesdePlanes} onChange={(e) => setFechaDesdePlanes(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={darkInputCls} value={fechaDesdePlanes} onChange={(e) => setFechaDesdePlanes(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
-                                        <input type="date" className={inputCls} value={fechaHastaPlanes} onChange={(e) => setFechaHastaPlanes(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={darkInputCls} value={fechaHastaPlanes} onChange={(e) => setFechaHastaPlanes(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
-                                        <select className={inputCls} value={ordenPlanes} onChange={(e) => setOrdenPlanes(e.target.value as any)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Orden</label>
+                                        <select className={darkInputCls} value={ordenPlanes} onChange={(e) => setOrdenPlanes(e.target.value as any)}>
                                             <option value="recientes">Más recientes</option>
                                             <option value="antiguos">Más antiguos</option>
                                         </select>
                                     </div>
                                     <div className="col-span-2 sm:col-span-3 flex justify-end">
-                                        <button onClick={() => { setFechaDesdePlanes(''); setFechaHastaPlanes(''); setOrdenPlanes('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                        <button onClick={() => { setFechaDesdePlanes(''); setFechaHastaPlanes(''); setOrdenPlanes('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.1] hover:bg-white/[0.18] text-white/60 transition">
                                             Limpiar filtros
                                         </button>
                                     </div>
@@ -2658,17 +2658,17 @@ export default function HistorialAlumnoPage() {
                                 )}
                                 {/* Plan activo */}
                                 {hayPlanActivo && (
-                                    <div className="mb-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                    <div className="mb-3 p-4 bg-emerald-500/[0.1] rounded-xl border border-emerald-500/25">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Plan activo</span>
+                                                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Plan activo</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-semibold text-slate-600">Inicio: {planActivoFiLabel}</span>
+                                                <span className="text-sm font-semibold text-white/70">Inicio: {planActivoFiLabel}</span>
                                                 <button
                                                     onClick={handleEditarPlanActivo}
-                                                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition"
+                                                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition"
                                                 >
                                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
                                                     Editar
@@ -2676,23 +2676,23 @@ export default function HistorialAlumnoPage() {
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Total</p>
-                                                <p className="font-bold text-slate-800">{planActivoTotal}</p>
+                                            <div className="text-center bg-white/[0.08] rounded-lg p-2 border border-emerald-500/20">
+                                                <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Total</p>
+                                                <p className="font-bold text-white">{planActivoTotal}</p>
                                             </div>
-                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Hechas</p>
-                                                <p className="font-bold text-slate-800">{planActivoHechas}</p>
+                                            <div className="text-center bg-white/[0.08] rounded-lg p-2 border border-emerald-500/20">
+                                                <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Hechas</p>
+                                                <p className="font-bold text-white">{planActivoHechas}</p>
                                             </div>
-                                            <div className="text-center bg-white rounded-lg p-2 border border-emerald-100">
-                                                <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Restan</p>
-                                                <p className="font-bold text-emerald-600">{diasRestantes ?? 0}</p>
+                                            <div className="text-center bg-white/[0.08] rounded-lg p-2 border border-emerald-500/20">
+                                                <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Restan</p>
+                                                <p className="font-bold text-emerald-400">{diasRestantes ?? 0}</p>
                                             </div>
                                         </div>
-                                        <div className="w-full bg-emerald-100 rounded-full h-1.5">
+                                        <div className="w-full bg-emerald-500/20 rounded-full h-1.5">
                                             <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${planActivoPct}%` }} />
                                         </div>
-                                        <p className="text-right text-xs text-emerald-600 mt-1">{planActivoPct}%</p>
+                                        <p className="text-right text-xs text-emerald-400 mt-1">{planActivoPct}%</p>
                                     </div>
                                 )}
                                 {historialPlanesFiltrado.length > 0 ? (
@@ -2700,20 +2700,20 @@ export default function HistorialAlumnoPage() {
                                         {historialPlanesFiltrado.map((plan: any, idx: number) => {
                                             const pct = plan.duracion > 0 ? Math.min(100, Math.round((plan.asistenciasContadas / plan.duracion) * 100)) : 0;
                                             return (
-                                                <div key={plan._id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition group">
+                                                <div key={plan._id || idx} className="p-4 bg-white/[0.05] rounded-xl border border-white/[0.08] hover:bg-white/[0.09] transition group">
                                                     <div className="flex items-start justify-between gap-2 mb-3">
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            <span className="text-sm font-semibold text-slate-800">
+                                                            <span className="text-sm font-semibold text-white">
                                                                 {parseLocalDate(convertirAFechaLocal(plan.fechaInicio)).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </span>
-                                                            <span className="text-slate-400 text-xs">→</span>
-                                                            <span className="text-sm font-semibold text-slate-800">
+                                                            <span className="text-white/30 text-xs">→</span>
+                                                            <span className="text-sm font-semibold text-white">
                                                                 {parseLocalDate(convertirAFechaLocal(plan.fechaFin)).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </span>
                                                         </div>
                                                         <button
                                                             onClick={() => handleEliminarPlanHistorial(plan._id)}
-                                                            className="shrink-0 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100"
+                                                            className="shrink-0 p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100"
                                                             title="Eliminar plan"
                                                         >
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -2723,25 +2723,25 @@ export default function HistorialAlumnoPage() {
                                                         </button>
                                                     </div>
                                                     <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
-                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Días</p>
-                                                            <p className="font-bold text-slate-800">{plan.duracion}</p>
+                                                        <div className="text-center bg-white/[0.07] rounded-lg p-2 border border-white/[0.08]">
+                                                            <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Días</p>
+                                                            <p className="font-bold text-white">{plan.duracion}</p>
                                                         </div>
-                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
-                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Asistencias</p>
-                                                            <p className="font-bold text-slate-800">{plan.asistenciasContadas}</p>
+                                                        <div className="text-center bg-white/[0.07] rounded-lg p-2 border border-white/[0.08]">
+                                                            <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Asistencias</p>
+                                                            <p className="font-bold text-white">{plan.asistenciasContadas}</p>
                                                         </div>
-                                                        <div className="text-center bg-white rounded-lg p-2 border border-slate-100">
-                                                            <p className="text-xs text-slate-400 font-semibold uppercase mb-0.5">Horario</p>
-                                                            <p className="font-bold text-slate-800">{plan.horarioMasFrecuente || '—'}</p>
+                                                        <div className="text-center bg-white/[0.07] rounded-lg p-2 border border-white/[0.08]">
+                                                            <p className="text-xs text-white/40 font-semibold uppercase mb-0.5">Horario</p>
+                                                            <p className="font-bold text-white">{plan.horarioMasFrecuente || '—'}</p>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div className="flex justify-between text-xs text-slate-500 mb-1">
+                                                        <div className="flex justify-between text-xs text-white/40 mb-1">
                                                             <span>Completado</span>
                                                             <span>{pct}%</span>
                                                         </div>
-                                                        <div className="w-full bg-slate-200 rounded-full h-1.5">
+                                                        <div className="w-full bg-white/[0.12] rounded-full h-1.5">
                                                             <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: acento }} />
                                                         </div>
                                                     </div>
@@ -2750,7 +2750,7 @@ export default function HistorialAlumnoPage() {
                                         })}
                                     </div>
                                 ) : (
-                                    !hayPlanActivo && <p className="text-slate-400 text-sm text-center py-10">No hay planes registrados.</p>
+                                    !hayPlanActivo && <p className="text-white/40 text-sm text-center py-10">No hay planes registrados.</p>
                                 )}
                             </div>
                         )}
@@ -2760,8 +2760,8 @@ export default function HistorialAlumnoPage() {
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-sm font-bold text-slate-700">Pagos</h3>
-                                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                                        <h3 className="text-sm font-bold text-white">Pagos</h3>
+                                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
                                             ${pagosPanelFiltrados.reduce((s: number, p: Pago) => s + (p.totalPagado ?? p.tarifa ?? 0), 0).toLocaleString('es-AR')}
                                         </span>
                                     </div>
@@ -2769,11 +2769,11 @@ export default function HistorialAlumnoPage() {
                                         <button
                                             onClick={() => handleDateSelect({ startStr: getTodayStr(), allDay: true } as DateSelectArg, 'pago')}
                                             style={{ color: acento }}
-                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 transition"
+                                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.08] hover:bg-white/[0.14] transition"
                                         >+ Registrar</button>
                                         <button
                                             onClick={() => toggleFiltros('pagos')}
-                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['pagos'] ? 'bg-slate-200 text-slate-700' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                                            className={`p-1.5 rounded-lg transition ${filtrosAbiertos['pagos'] ? 'bg-white/[0.14] text-white' : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'}`}
                                             title="Filtros"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
@@ -2781,65 +2781,65 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 {filtrosAbiertos['pagos'] && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Desde</label>
-                                        <input type="date" className={inputCls} value={fechaDesdePagos} onChange={(e) => setFechaDesdePagos(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Desde</label>
+                                        <input type="date" className={darkInputCls} value={fechaDesdePagos} onChange={(e) => setFechaDesdePagos(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Hasta</label>
-                                        <input type="date" className={inputCls} value={fechaHastaPagos} onChange={(e) => setFechaHastaPagos(e.target.value)} />
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Hasta</label>
+                                        <input type="date" className={darkInputCls} value={fechaHastaPagos} onChange={(e) => setFechaHastaPagos(e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Año</label>
-                                        <select className={inputCls} value={filtroAnio} onChange={(e) => setFiltroAnio(e.target.value)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Año</label>
+                                        <select className={darkInputCls} value={filtroAnio} onChange={(e) => setFiltroAnio(e.target.value)}>
                                             <option value="Todos">Todos</option>
                                             {aniosDisponibles.map((a) => <option key={a as number} value={a as number}>{a as number}</option>)}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Método</label>
-                                        <select className={inputCls} value={filtroMetodo} onChange={(e) => setFiltroMetodo(e.target.value)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Método</label>
+                                        <select className={darkInputCls} value={filtroMetodo} onChange={(e) => setFiltroMetodo(e.target.value)}>
                                             <option value="Todos">Todos</option>
                                             <option value="efectivo">Efectivo</option>
                                             <option value="transferencia">Transferencia</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-500 font-semibold mb-1">Orden</label>
-                                        <select className={inputCls} value={ordenPagos} onChange={(e) => setOrdenPagos(e.target.value as any)}>
+                                        <label className="block text-xs text-white/50 font-semibold mb-1">Orden</label>
+                                        <select className={darkInputCls} value={ordenPagos} onChange={(e) => setOrdenPagos(e.target.value as any)}>
                                             <option value="recientes">Más recientes</option>
                                             <option value="antiguos">Más antiguos</option>
                                         </select>
                                     </div>
                                     <div className="col-span-2 sm:col-span-3 flex justify-end">
-                                        <button onClick={() => { setFechaDesdePagos(''); setFechaHastaPagos(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrdenPagos('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 transition">
+                                        <button onClick={() => { setFechaDesdePagos(''); setFechaHastaPagos(''); setFiltroAnio('Todos'); setFiltroMetodo('Todos'); setOrdenPagos('recientes'); }} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.1] hover:bg-white/[0.18] text-white/60 transition">
                                             Limpiar filtros
                                         </button>
                                     </div>
                                 </div>
                                 )}
                                 {pagosPanelFiltrados.length > 0 ? (
-                                    <div className="rounded-xl border border-slate-100 overflow-hidden max-h-[32rem] overflow-y-auto">
+                                    <div className="rounded-xl border border-white/[0.08] overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {pagosPanelFiltrados.map((p: Pago, idx: number) => {
-                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-100 text-emerald-700' : p.metodoPago === 'transferencia' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-500';
+                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-500/20 text-emerald-400' : p.metodoPago === 'transferencia' ? 'bg-white/[0.1] text-white/70' : 'bg-white/[0.08] text-white/50';
                                             return (
-                                                <div key={p._id || idx} className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition group">
+                                                <div key={p._id || idx} className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.05] transition group">
                                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                                         <div className="flex flex-col min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-sm font-semibold text-slate-800 capitalize">{p.mes}</span>
+                                                                <span className="text-sm font-semibold text-white capitalize">{p.mes}</span>
                                                                 {p.metodoPago && <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${metodoCls} capitalize`}>{p.metodoPago}</span>}
                                                             </div>
-                                                            <span className="text-xs text-slate-400 mt-0.5">{new Date(p.fechaPago).toLocaleDateString('es-AR')}{p.diasMusculacion ? ` · ${p.diasMusculacion}d/sem` : ''}</span>
+                                                            <span className="text-xs text-white/40 mt-0.5">{new Date(p.fechaPago).toLocaleDateString('es-AR')}{p.diasMusculacion ? ` · ${p.diasMusculacion}d/sem` : ''}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
                                                         <div className="text-right">
-                                                            <p className="font-bold text-emerald-600">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</p>
-                                                            {p.recargo ? <p className="text-xs text-slate-400">incl. ${p.recargo} recargo</p> : null}
+                                                            <p className="font-bold text-emerald-400">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</p>
+                                                            {p.recargo ? <p className="text-xs text-white/40">incl. ${p.recargo} recargo</p> : null}
                                                         </div>
-                                                        <button onClick={() => handleEliminarPago(p._id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100" title="Eliminar">
+                                                        <button onClick={() => handleEliminarPago(p._id)} className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition sm:opacity-0 sm:group-hover:opacity-100" title="Eliminar">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
                                                         </button>
                                                     </div>
@@ -2848,7 +2848,7 @@ export default function HistorialAlumnoPage() {
                                         })}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-400 text-sm text-center py-10">No hay pagos para los filtros aplicados.</p>
+                                    <p className="text-white/40 text-sm text-center py-10">No hay pagos para los filtros aplicados.</p>
                                 )}
                             </div>
                         )}
@@ -2859,11 +2859,11 @@ export default function HistorialAlumnoPage() {
         {/* Day action bottom sheet */}
         {dayModal && (
             <div className="fixed inset-0 z-[100] flex items-end">
-                <div className="absolute inset-0 bg-black/40" onClick={closeDayModal} />
-                <div className="relative w-full bg-white rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
+                <div className="absolute inset-0 bg-black/60" onClick={closeDayModal} />
+                <div className="relative w-full bg-[#111] rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl border-t border-white/[0.12]">
                     {/* Grip handle */}
                     <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                        <div className="w-10 h-1 rounded-full bg-slate-300" />
+                        <div className="w-10 h-1 rounded-full bg-white/20" />
                     </div>
 
                     {/* ── MENU ── */}
@@ -2871,32 +2871,32 @@ export default function HistorialAlumnoPage() {
                         <>
                             <div className="px-5 pt-2 pb-3 flex items-center justify-between flex-shrink-0">
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide capitalize">
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide capitalize">
                                         {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long' })}
                                     </p>
-                                    <h3 className="text-lg font-bold text-slate-800 capitalize">
+                                    <h3 className="text-lg font-bold text-white capitalize">
                                         {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}
                                     </h3>
                                 </div>
-                                <button onClick={closeDayModal} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl font-medium">×</button>
+                                <button onClick={closeDayModal} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.08] text-white/60 text-xl font-medium hover:bg-white/[0.14] transition">×</button>
                             </div>
                             <div className="overflow-y-auto flex-1 px-5 pb-8">
                                 {/* Existing records */}
                                 {(asistenciasMapMob[dayModal] || []).length > 0 || (pagosMapMob[dayModal] || []).length > 0 ? (
                                     <div className="mb-4 space-y-2">
                                         {(asistenciasMapMob[dayModal] || []).map((a: Asistencia) => {
-                                            const badgeMap: Record<string, string> = { Musculación: 'bg-blue-50 text-blue-700', Intermitente: 'bg-orange-100 text-orange-700', Otro: 'bg-yellow-100 text-yellow-700' };
+                                            const badgeMap: Record<string, string> = { Musculación: 'bg-blue-400/20 text-blue-400', Intermitente: 'bg-orange-400/20 text-orange-400', Otro: 'bg-yellow-400/20 text-yellow-400' };
                                             return (
-                                                <div key={a._id} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2.5">
+                                                <div key={a._id} className="flex items-center justify-between bg-white/[0.05] rounded-xl px-3 py-2.5 border border-white/[0.08]">
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeMap[a.actividad] || 'bg-slate-100 text-slate-700'}`}>{a.actividad}</span>
-                                                        <span className="text-slate-400 text-xs">{new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeMap[a.actividad] || 'bg-white/[0.08] text-white/70'}`}>{a.actividad}</span>
+                                                        <span className="text-white/40 text-xs">{new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })} hs</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <button onClick={() => { closeDayModal(); handleEditAsistenciaMob(a); }} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition">
+                                                        <button onClick={() => { closeDayModal(); handleEditAsistenciaMob(a); }} className="p-1.5 text-white/30 hover:text-white/70 hover:bg-white/[0.08] rounded-lg transition">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
                                                         </button>
-                                                        <button onClick={() => { closeDayModal(); handleEliminarAsistencia(a._id); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                                                        <button onClick={() => { closeDayModal(); handleEliminarAsistencia(a._id); }} className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
                                                         </button>
                                                     </div>
@@ -2904,23 +2904,23 @@ export default function HistorialAlumnoPage() {
                                             );
                                         })}
                                         {(pagosMapMob[dayModal] || []).map((p: Pago) => (
-                                            <div key={p._id} className="flex items-center justify-between bg-emerald-50 rounded-xl px-3 py-2.5 border border-emerald-100">
+                                            <div key={p._id} className="flex items-center justify-between bg-emerald-500/[0.08] rounded-xl px-3 py-2.5 border border-emerald-500/20">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                                                    <span className="text-emerald-700 text-sm font-medium capitalize">Pago — {p.mes}</span>
-                                                    <span className="text-emerald-600 font-bold text-sm">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                                                    <span className="text-emerald-400 text-sm font-medium capitalize">Pago — {p.mes}</span>
+                                                    <span className="text-emerald-400 font-bold text-sm">${(p.totalPagado ?? p.tarifa ?? 0).toLocaleString('es-AR')}</span>
                                                 </div>
-                                                <button onClick={() => { closeDayModal(); handleEliminarPago(p._id); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                                                <button onClick={() => { closeDayModal(); handleEliminarPago(p._id); }} className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-slate-400 text-sm text-center py-2 mb-4">Sin registros para este día.</p>
+                                    <p className="text-white/40 text-sm text-center py-2 mb-4">Sin registros para este día.</p>
                                 )}
                                 {/* Action buttons */}
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Agregar</p>
+                                <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Agregar</p>
                                 <div className="grid grid-cols-3 gap-3">
                                     <button
                                         onClick={() => setDayModalStep('actividad')}
@@ -2954,23 +2954,23 @@ export default function HistorialAlumnoPage() {
                     {/* ── ACTIVIDAD ── */}
                     {dayModalStep === 'actividad' && (
                         <>
-                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
-                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-white/[0.08]">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.08] text-white/60 text-xl hover:bg-white/[0.14] transition">‹</button>
                                 <div>
-                                    <p className="text-xs text-slate-400 capitalize">
+                                    <p className="text-xs text-white/40 capitalize">
                                         {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                     </p>
-                                    <h3 className="font-bold text-slate-800">Ingresar actividad</h3>
+                                    <h3 className="font-bold text-white">Ingresar actividad</h3>
                                 </div>
                             </div>
                             <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tipo de actividad</p>
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Tipo de actividad</p>
                                     <div className="grid grid-cols-3 gap-2">
                                         {[
-                                            { label: 'Musculación', active: 'bg-blue-600 text-white', idle: 'bg-blue-50 text-blue-700 border border-blue-100' },
-                                            { label: 'Intermitente', active: 'bg-orange-500 text-white', idle: 'bg-orange-50 text-orange-700 border border-orange-100' },
-                                            { label: 'Otro', active: 'bg-yellow-400 text-slate-800', idle: 'bg-yellow-50 text-yellow-700 border border-yellow-100' },
+                                            { label: 'Musculación', active: 'bg-blue-600 text-white', idle: 'bg-blue-400/10 text-blue-400 border border-blue-400/20' },
+                                            { label: 'Intermitente', active: 'bg-orange-500 text-white', idle: 'bg-orange-400/10 text-orange-400 border border-orange-400/20' },
+                                            { label: 'Otro', active: 'bg-yellow-400 text-slate-900', idle: 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/20' },
                                         ].map(({ label, active, idle }) => (
                                             <button key={label} onClick={() => setDayModalActTipo(label)}
                                                 className={`py-3.5 rounded-xl font-semibold text-sm transition ${dayModalActTipo === label ? active : idle}`}>
@@ -2981,13 +2981,13 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Horario</p>
+                                        <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Horario</p>
                                     </div>
                                     <input
                                         type="time"
                                         value={dayModalActHora}
                                         onChange={e => setDayModalActHora(e.target.value)}
-                                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-blue-600 text-center bg-slate-50 focus:outline-none focus:border-blue-400"
+                                        className="w-full border border-white/[0.12] rounded-xl px-4 py-3 text-2xl font-bold text-blue-400 text-center bg-white/[0.07] focus:outline-none focus:border-blue-400/40 focus:ring-2 focus:ring-blue-400/10"
                                     />
                                 </div>
                                 <button onClick={submitDayModalActividad} disabled={!dayModalActTipo || dayModalSaving}
@@ -3001,23 +3001,23 @@ export default function HistorialAlumnoPage() {
                     {/* ── PLAN ── */}
                     {dayModalStep === 'plan' && (
                         <>
-                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
-                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-white/[0.08]">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.08] text-white/60 text-xl hover:bg-white/[0.14] transition">‹</button>
                                 <div>
-                                    <p className="text-xs text-slate-400 capitalize">
+                                    <p className="text-xs text-white/40 capitalize">
                                         Inicio: {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                     </p>
-                                    <h3 className="font-bold text-slate-800">Iniciar plan</h3>
+                                    <h3 className="font-bold text-white">Iniciar plan</h3>
                                 </div>
                             </div>
                             <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Duración del plan</p>
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Duración del plan</p>
                                     <div className="flex items-center gap-3">
                                         <input type="number" min="1" max="365" value={dayModalPlanDur} onChange={e => setDayModalPlanDur(e.target.value)}
                                             placeholder="ej: 20"
-                                            className="flex-1 px-4 py-3.5 rounded-xl border border-slate-200 text-slate-800 text-lg font-medium focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 bg-slate-50" />
-                                        <span className="text-slate-500 font-medium">clases</span>
+                                            className="flex-1 px-4 py-3.5 rounded-xl border border-white/[0.12] text-white text-lg font-medium focus:outline-none focus:border-violet-400/40 focus:ring-2 focus:ring-violet-400/10 bg-white/[0.07]" />
+                                        <span className="text-white/50 font-medium">clases</span>
                                     </div>
                                 </div>
                                 <button onClick={submitDayModalPlan} disabled={!dayModalPlanDur || dayModalSaving}
@@ -3031,28 +3031,28 @@ export default function HistorialAlumnoPage() {
                     {/* ── PAGO ── */}
                     {dayModalStep === 'pago' && (
                         <>
-                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-slate-100">
-                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 text-xl">‹</button>
+                            <div className="px-5 pt-2 pb-3 flex items-center gap-3 flex-shrink-0 border-b border-white/[0.08]">
+                                <button onClick={() => setDayModalStep('menu')} className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.08] text-white/60 text-xl hover:bg-white/[0.14] transition">‹</button>
                                 <div>
-                                    <p className="text-xs text-slate-400 capitalize">
+                                    <p className="text-xs text-white/40 capitalize">
                                         {new Date(dayModal + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                     </p>
-                                    <h3 className="font-bold text-slate-800">Marcar pago</h3>
+                                    <h3 className="font-bold text-white">Marcar pago</h3>
                                 </div>
                             </div>
                             <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Tarifa</p>
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Tarifa</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {tarifas.map(t => (
                                             <button key={t.dias} onClick={() => { setDayModalPagoDias(t.dias); setDayModalEspecial(null); }}
-                                                className={`flex flex-col items-start px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === t.dias ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-700'}`}>
+                                                className={`flex flex-col items-start px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === t.dias ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-emerald-500/[0.08] border-emerald-500/20 text-emerald-400'}`}>
                                                 <span className="font-bold text-lg">${t.valor.toLocaleString('es-AR')}</span>
                                                 <span className="text-xs opacity-80">{t.dias} días/sem</span>
                                             </button>
                                         ))}
                                         <button onClick={handleEspecialCard}
-                                            className={`col-span-2 flex items-center justify-between px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === 0 ? 'bg-violet-600 border-violet-600 text-white' : 'bg-violet-50 border-violet-100 text-violet-700'}`}>
+                                            className={`col-span-2 flex items-center justify-between px-4 py-3.5 rounded-xl border transition ${dayModalPagoDias === 0 ? 'bg-violet-600 border-violet-600 text-white' : 'bg-violet-500/[0.08] border-violet-500/20 text-violet-400'}`}>
                                             <div className="flex flex-col items-start">
                                                 <span className="font-bold text-base">★ Pago especial</span>
                                                 {dayModalPagoDias === 0 && dayModalEspecial ? (
@@ -3066,11 +3066,11 @@ export default function HistorialAlumnoPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Método de pago</p>
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Método de pago</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[{ value: 'efectivo', label: 'Efectivo' }, { value: 'transferencia', label: 'Transferencia' }].map(m => (
                                             <button key={m.value} onClick={() => setDayModalPagoMetodo(m.value)}
-                                                className={`py-3.5 rounded-xl border font-semibold text-sm transition ${dayModalPagoMetodo === m.value ? 'bg-slate-800 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                                                className={`py-3.5 rounded-xl border font-semibold text-sm transition ${dayModalPagoMetodo === m.value ? 'bg-white text-black border-white' : 'bg-white/[0.08] border-white/[0.12] text-white/60 hover:bg-white/[0.14]'}`}>
                                                 {m.label}
                                             </button>
                                         ))}
@@ -3083,20 +3083,20 @@ export default function HistorialAlumnoPage() {
                                     if (recargoAplicable <= 0) return null;
                                     return (
                                         <button onClick={() => setDayModalPagoRecargo(!dayModalPagoRecargo)}
-                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition ${dayModalPagoRecargo ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition ${dayModalPagoRecargo ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-white/[0.05] border-white/[0.1] text-white/50'}`}>
                                             <span className="text-sm font-medium">
                                                 {esMesPasado ? 'Recargo mes vencido' : 'Recargo por día 10'} (+${recargoAplicable.toLocaleString('es-AR')})
                                             </span>
-                                            <span className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold ${dayModalPagoRecargo ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                            <span className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold ${dayModalPagoRecargo ? 'bg-amber-500 text-white' : 'bg-white/[0.1] text-white/30'}`}>
                                                 {dayModalPagoRecargo ? '✓' : ''}
                                             </span>
                                         </button>
                                     );
                                 })()}
                                 {dayModalPagoDias !== null && (
-                                    <div className="bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                                        <span className="text-slate-500 text-sm">Total a cobrar</span>
-                                        <span className="text-slate-800 font-bold text-xl">
+                                    <div className="bg-white/[0.05] rounded-xl px-4 py-3 flex items-center justify-between border border-white/[0.08]">
+                                        <span className="text-white/50 text-sm">Total a cobrar</span>
+                                        <span className="text-white font-bold text-xl">
                                             ${dayModalPagoDias === 0 && dayModalEspecial
                                                 ? dayModalEspecial.monto.toLocaleString('es-AR')
                                                 : (() => {
