@@ -602,11 +602,15 @@ export default function MiCuentaPage() {
                                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Plan activo</p>
                                             <p className="text-slate-900 font-bold text-sm leading-snug truncate">{planEj.nombre}</p>
                                             <p className="text-slate-400 text-[10px] mt-0.5 mb-3 truncate">{planEj.categoria}</p>
-                                            <div className="flex items-end justify-between mb-3">
+                                            <div className="flex items-end gap-1.5 mb-3">
                                                 <p className="font-black text-3xl leading-none tabular-nums" style={{ color: acento }}>
                                                     <NumberTicker value={planEjDone} />
                                                 </p>
-                                                <p className="text-slate-400 text-[10px] text-right">de {planEjTotal}<br/>sesiones</p>
+                                                <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
+                                                <div className="flex flex-col items-start">
+                                                    <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{planEjTotal}</p>
+                                                    <p className="text-slate-400 text-[10px] font-semibold mt-0.5">sesiones</p>
+                                                </div>
                                             </div>
                                             <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-slate-100" />
                                             <button onClick={()=>changeTab('plan')}
@@ -622,11 +626,15 @@ export default function MiCuentaPage() {
                                     <BlurFade delay={0.05}>
                                         <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg h-full flex flex-col">
                                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Plan activo</p>
-                                            <div className="flex items-end justify-between mb-3">
+                                            <div className="flex items-end gap-1.5 mb-3">
                                                 <p className="text-lime-500 font-black text-3xl leading-none tabular-nums">
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
-                                                <p className="text-slate-400 text-[10px] text-right">de {plan.duracion}<br/>sesiones</p>
+                                                <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
+                                                <div className="flex flex-col items-start">
+                                                    <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{plan.duracion}</p>
+                                                    <p className="text-slate-400 text-[10px] font-semibold mt-0.5">sesiones</p>
+                                                </div>
                                             </div>
                                             <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-slate-100" />
                                             <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold text-lime-500">
@@ -640,7 +648,7 @@ export default function MiCuentaPage() {
                                 <BlurFade delay={0.15}>
                                     <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg h-full flex flex-col">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Asistencias</p>
-                                        <p className="text-[9px] font-semibold text-slate-300 capitalize mb-2">{mesActual}</p>
+                                        <p className="text-xs font-semibold text-slate-400 capitalize mb-2">{mesActual}</p>
                                         <p className="text-slate-900 font-black text-3xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
                                         </p>
