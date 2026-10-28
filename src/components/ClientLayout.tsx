@@ -501,12 +501,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         />
                     </Link>
 
-                    {/* Online dot — right side */}
-                    <div className="w-2.5 h-2.5 rounded-full transition-all duration-300"
-                        style={isOnline
-                            ? { background: acento2 ?? acento, boxShadow: `0 0 8px ${acento2 ?? acento}` }
-                            : { background: '#f87171', boxShadow: '0 0 8px #ef4444' }
-                        } />
+                    <div className="w-8" />
                 </div>
             </header>
 
