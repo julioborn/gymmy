@@ -131,37 +131,41 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   SweetAlert2 – Gymmy theme
+   SweetAlert2 – Gymmy theme (negro / naranja / verde)
 ═══════════════════════════════════════════ */
 .swal-gymmy {
-  border-radius: 1rem !important;
+  border-radius: 1.25rem !important;
   padding: 0 !important;
   overflow: hidden !important;
   font-family: 'Trebuchet MS', Arial, sans-serif !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  background: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Título con header oscuro (modales de formulario) */
+/* Título (modales de formulario) */
 .swal-gymmy .swal2-title {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
-  color: #f8fafc !important;
-  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  padding: 1.25rem 1.5rem 1rem !important;
   margin: 0 !important;
-  font-size: 1rem !important;
+  font-size: 1.05rem !important;
   font-weight: 700 !important;
   text-align: left !important;
   letter-spacing: 0.01em !important;
   width: 100% !important;
   box-sizing: border-box !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Modales de notificación (con ícono) */
 .swal-gymmy-notify .swal2-title {
   background: transparent !important;
-  color: #1e293b !important;
+  color: #ffffff !important;
   padding: 1.25rem 1.5rem 0.25rem !important;
   text-align: center !important;
   font-size: 1.1rem !important;
+  border-bottom: none !important;
 }
 
 .swal-gymmy .swal2-icon {
@@ -173,7 +177,7 @@ body {
   padding: 0.75rem 1.5rem 0 !important;
   margin: 0 !important;
   font-size: 0.9rem !important;
-  color: #475569 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
   text-align: left !important;
 }
 
@@ -181,11 +185,48 @@ body {
   text-align: center !important;
 }
 
+/* Íconos – paleta de marca */
+.swal-gymmy .swal2-icon.swal2-question,
+.swal-gymmy .swal2-icon.swal2-warning,
+.swal-dni-alert .swal2-icon.swal2-question,
+.swal-dni-alert .swal2-icon.swal2-warning {
+  border-color: #f97316 !important;
+  color: #f97316 !important;
+}
+
+.swal-gymmy .swal2-icon.swal2-error,
+.swal-dni-alert .swal2-icon.swal2-error {
+  border-color: #ef4444 !important;
+}
+.swal-gymmy .swal2-icon.swal2-error [class^='swal2-x-mark-line'],
+.swal-dni-alert .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: #ef4444 !important;
+}
+
+.swal-gymmy .swal2-icon.swal2-success,
+.swal-dni-success .swal2-icon.swal2-success {
+  border-color: #a3e635 !important;
+}
+.swal-gymmy .swal2-icon.swal2-success [class^='swal2-success-line'],
+.swal-dni-success .swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #a3e635 !important;
+}
+.swal-gymmy .swal2-success-ring,
+.swal-dni-success .swal2-success-ring {
+  border-color: rgba(163, 230, 53, 0.3) !important;
+}
+
+.swal-gymmy .swal2-icon.swal2-info,
+.swal-dni-alert .swal2-icon.swal2-info {
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+}
+
 /* Label del input nativo (inputLabel) */
 .swal-gymmy .swal2-input-label {
   font-size: 0.78rem !important;
   font-weight: 600 !important;
-  color: #64748b !important;
+  color: rgba(255, 255, 255, 0.45) !important;
   text-align: left !important;
   margin: 0.875rem 1.5rem 0.2rem !important;
   text-transform: uppercase !important;
@@ -196,26 +237,36 @@ body {
 .swal-gymmy .swal2-input,
 .swal-gymmy .swal2-textarea,
 .swal-gymmy .swal2-select {
-  border: 1.5px solid #e2e8f0 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 0.6rem !important;
   padding: 0.6rem 0.875rem !important;
   font-size: 0.875rem !important;
   width: calc(100% - 3rem) !important;
   margin: 0.4rem 1.5rem !important;
   box-shadow: none !important;
-  color: #1e293b !important;
-  background: #f8fafc !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   box-sizing: border-box !important;
   transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.swal-gymmy .swal2-input::placeholder,
+.swal-gymmy .swal2-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .swal-gymmy .swal2-input:focus,
 .swal-gymmy .swal2-textarea:focus,
 .swal-gymmy .swal2-select:focus {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+  border-color: #a3e635 !important;
+  box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.15) !important;
   outline: none !important;
-  background: #fff !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+.swal-gymmy .swal2-select option {
+  background: #111111 !important;
+  color: #ffffff !important;
 }
 
 .swal-gymmy .swal2-textarea {
@@ -237,10 +288,14 @@ body {
   padding: 0.5rem 0.875rem !important;
   border-radius: 0.5rem !important;
   font-size: 0.8rem !important;
-  background: #fef2f2 !important;
-  color: #dc2626 !important;
-  border: 1px solid #fecaca !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
   justify-content: flex-start !important;
+}
+.swal-gymmy .swal2-validation-message::before {
+  background-color: #ef4444 !important;
+  color: #111111 !important;
 }
 
 /* Radio buttons */
@@ -253,7 +308,7 @@ body {
 
 .swal-gymmy .swal2-radio label {
   font-size: 0.9rem !important;
-  color: #334155 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -265,7 +320,7 @@ body {
 }
 
 .swal-gymmy .swal2-radio label:hover {
-  background: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Fila de botones */
@@ -286,7 +341,7 @@ body {
   padding: 0.55rem 1.5rem !important;
   border-radius: 0.6rem !important;
   font-size: 0.875rem !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   border: none !important;
   cursor: pointer !important;
   white-space: nowrap !important;
@@ -294,14 +349,14 @@ body {
   line-height: 1.5 !important;
 }
 
-.sg-btn-confirm { background: #059669 !important; color: #fff !important; }
-.sg-btn-confirm:hover { background: #047857 !important; }
+.sg-btn-confirm { background: #a3e635 !important; color: #111111 !important; }
+.sg-btn-confirm:hover { background: #bef264 !important; }
 
-.sg-btn-cancel { background: #f1f5f9 !important; color: #475569 !important; }
-.sg-btn-cancel:hover { background: #e2e8f0 !important; }
+.sg-btn-cancel { background: rgba(255, 255, 255, 0.08) !important; color: rgba(255, 255, 255, 0.7) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+.sg-btn-cancel:hover { background: rgba(255, 255, 255, 0.14) !important; }
 
-.sg-btn-danger { background: #dc2626 !important; color: #fff !important; }
-.sg-btn-danger:hover { background: #b91c1c !important; }
+.sg-btn-danger { background: #ef4444 !important; color: #fff !important; }
+.sg-btn-danger:hover { background: #dc2626 !important; }
 
 /* ── Helpers para HTML custom ── */
 .swal-form-body { padding: 0 0.25rem; }
@@ -310,7 +365,7 @@ body {
   display: block !important;
   font-size: 0.72rem !important;
   font-weight: 600 !important;
-  color: #64748b !important;
+  color: rgba(255, 255, 255, 0.45) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.04em !important;
   margin: 0.75rem 0 0.2rem !important;
@@ -338,16 +393,16 @@ body {
 .swal2-container.swal2-backdrop-hide { animation-duration: 0.08s !important; }
 
 /* ═══════════════════════════════════════════
-   SweetAlert2 – DNI page alerts (unified)
+   SweetAlert2 – DNI page alerts (negro / naranja / verde)
 ═══════════════════════════════════════════ */
 .swal-dni-success,
 .swal-dni-alert {
-  background: #ffffff !important;
-  border: 1.5px solid rgba(0,0,0,0.08) !important;
+  background: #111111 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 1.75rem !important;
   padding: 0 !important;
   overflow: hidden !important;
-  box-shadow: 0 8px 40px -4px rgba(0,0,0,0.22), 0 2px 10px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 8px 40px -4px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(0, 0, 0, 0.3) !important;
   min-width: 320px !important;
   max-width: 420px !important;
 }
@@ -355,7 +410,7 @@ body {
 .swal-dni-success .swal2-title,
 .swal-dni-alert .swal2-title {
   background: transparent !important;
-  color: #111111 !important;
+  color: #ffffff !important;
   font-size: 1.75rem !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;
@@ -372,7 +427,7 @@ body {
 
 .swal-dni-success .swal2-html-container,
 .swal-dni-alert .swal2-html-container {
-  color: rgba(0,0,0,0.5) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
   padding: 0.25rem 1.75rem 0.5rem !important;
   margin: 0 !important;
   text-align: center !important;
@@ -392,7 +447,7 @@ body {
 
 .swal-dni-success .swal2-timer-progress-bar,
 .swal-dni-alert .swal2-timer-progress-bar {
-  background: rgba(0,0,0,0.10) !important;
+  background: rgba(163, 230, 53, 0.35) !important;
   height: 3px !important;
 }
 
@@ -411,28 +466,28 @@ body {
 
 /* Input de contraseña en el logout */
 .swal-dni-alert .swal2-input {
-  border: 1.5px solid #e2e8f0 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 0.75rem !important;
   padding: 0.75rem 1rem !important;
   font-size: 1.1rem !important;
   width: calc(100% - 3rem) !important;
   margin: 0.5rem 1.5rem !important;
   box-shadow: none !important;
-  color: #111 !important;
-  background: #f8fafc !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   box-sizing: border-box !important;
 }
 
 .swal-dni-alert .swal2-input:focus {
-  border-color: #334155 !important;
+  border-color: #a3e635 !important;
   outline: none !important;
-  background: #fff !important;
+  background: rgba(255, 255, 255, 0.09) !important;
 }
 
 .swal-dni-alert .swal2-input-label {
   font-size: 0.85rem !important;
   font-weight: 600 !important;
-  color: #64748b !important;
+  color: rgba(255, 255, 255, 0.45) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.04em !important;
   margin: 1rem 1.5rem 0.25rem !important;
@@ -442,6 +497,8 @@ body {
   margin: 0.25rem 1.5rem 0 !important;
   border-radius: 0.5rem !important;
   font-size: 0.9rem !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #f87171 !important;
 }
 
 /* Mobile */
