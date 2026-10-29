@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { Types } from 'mongoose';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import AlumnoDePaso from '@/models/AlumnoDePaso';
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
     if (!token?.gimnasioId) return new Response('Unauthorized', { status: 401 });
 
     const gimnasioId = String(token.gimnasioId);
+    const gimnasioObjectId = new Types.ObjectId(gimnasioId);
     const encoder = new TextEncoder();
     let lastCheck = new Date(Date.now() - 10000);
 
@@ -39,7 +41,7 @@ export async function GET(req: NextRequest) {
 
                     const [nuevosAlumnos, nuevosDepaso] = await Promise.all([
                         Alumno.aggregate([
-                            { $match: { gimnasioId, 'asistencia.fecha': { $gt: since } } },
+                            { $match: { gimnasioId: gimnasioObjectId, 'asistencia.fecha': { $gt: since } } },
                             { $unwind: '$asistencia' },
                             { $match: { 'asistencia.fecha': { $gt: since }, 'asistencia.presente': true } },
                             { $project: { _id: 1, nombre: 1, apellido: 1, actividad: '$asistencia.actividad', fecha: '$asistencia.fecha' } },
