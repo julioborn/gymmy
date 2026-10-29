@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "createdAt": "2026-10-29T17:38:05.533Z",
+        "reason": "print-only @media print reset in globals.css:102 - prioritizes universal print-dialog compatibility over brand typography, not a UI design choice"
+      }
+    ]
+  }
+}
