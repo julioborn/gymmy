@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import Gimnasio from '@/models/Gimnasio';
+import { estaAlDia } from '@/lib/pagos';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
         if (!alumno) return NextResponse.json({ ok: true });
 
         const mesActual = MESES[new Date().getMonth()];
-        const yaPago = alumno.pagos.some((p: { mes: string }) => p.mes.toLowerCase() === mesActual);
+        const yaPago = estaAlDia(alumno, mesActual);
         if (yaPago) return NextResponse.json({ ok: true });
 
         await Alumno.findByIdAndUpdate(alumnoId, {

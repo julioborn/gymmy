@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { useAttendanceEvents } from '@/hooks/useAttendanceEvents';
+import { estaAlDia, getMesActual } from '@/lib/pagos';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -250,7 +251,7 @@ export default function HomePage() {
         if (!session || session.user?.role !== 'recepcion') return;
         setLoadingHoy(true);
         const ARG = -3 * 60 * 60 * 1000;
-        const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+        const mesActual = getMesActual();
         Promise.all([
             fetch('/api/alumnos').then(r => r.json()),
             fetch('/api/alumnos-de-paso').then(r => r.json()),
@@ -269,7 +270,7 @@ export default function HomePage() {
                 dias.push({ key, labelDay: WEEK_LABELS[i], labelNum: d.getUTCDate(), fechaLarga, alumnos: [], depaso: [] });
             }
             for (const al of (alumnosData || [])) {
-                const pagado = (al.pagos || []).some((p: any) => p.mes?.toLowerCase() === mesActual);
+                const pagado = estaAlDia({ pagos: al.pagos, exentoCuota: al.exentoCuota }, mesActual);
                 for (const a of (al.asistencia || [])) {
                     if (!a.presente) continue;
                     const dArg = new Date(new Date(a.fecha).getTime() + ARG);

@@ -10,6 +10,7 @@ import {
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown,
 } from 'lucide-react';
+import { pagoVigente } from '@/lib/pagos';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
@@ -66,6 +67,7 @@ interface Alumno {
     asistencia: Asistencia[]; pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento; planEntrenamientoHistorial: PlanHistorial[];
     gimnasioId: { nombre: string; logoUrl?: string };
+    exentoCuota?: boolean;
 }
 interface EjercicioAsignado {
     nombre: string; notas: string;
@@ -402,7 +404,8 @@ export default function MiCuentaPage() {
         const f = new Date(a.fecha);
         return a.presente && f.getMonth()===now.getMonth() && f.getFullYear()===anioActual;
     });
-    const pagoEsteMes = alumno.pagos.find(p => p.mes.toLowerCase() === mesActual);
+    const pagoEsteMes = pagoVigente(alumno.pagos, mesActual);
+    const exenta = !!alumno.exentoCuota;
     const plan = alumno.planEntrenamiento;
     const tienePlan = plan?.fechaInicio && !plan?.terminado;
     let asistenciasEnPlan = 0;
@@ -471,9 +474,9 @@ export default function MiCuentaPage() {
                                     {/* Status dot */}
                                     <span className={cn(
                                         'absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#0a0a0a] flex items-center justify-center',
-                                        pagoEsteMes ? 'bg-lime-400' : 'bg-red-500',
+                                        (pagoEsteMes || exenta) ? 'bg-lime-400' : 'bg-red-500',
                                     )}>
-                                        {pagoEsteMes
+                                        {(pagoEsteMes || exenta)
                                             ? <Check size={10} className="text-black font-bold" />
                                             : <span className="text-white text-[8px] font-black">!</span>
                                         }
@@ -492,11 +495,13 @@ export default function MiCuentaPage() {
                                     </span>
                                     <span className={cn(
                                         'text-[10px] font-semibold px-2.5 py-0.5 rounded-full',
-                                        pagoEsteMes
-                                            ? 'bg-lime-400/15 text-lime-400 border border-lime-400/20'
-                                            : 'bg-red-500/15 text-red-400 border border-red-500/20',
+                                        exenta
+                                            ? 'bg-white/[0.08] text-slate-300 border border-white/[0.12]'
+                                            : pagoEsteMes
+                                                ? 'bg-lime-400/15 text-lime-400 border border-lime-400/20'
+                                                : 'bg-red-500/15 text-red-400 border border-red-500/20',
                                     )}>
-                                        {pagoEsteMes ? '✓ Cuota al día' : '✗ Cuota pendiente'}
+                                        {exenta ? 'Sin cuota' : pagoEsteMes ? '✓ Cuota al día' : '✗ Cuota pendiente'}
                                     </span>
                                 </div>
                             </BlurFade>
@@ -523,11 +528,11 @@ export default function MiCuentaPage() {
                                     </div>
                                 )}
                                 <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
-                                    <p className={cn('font-bold text-xl leading-none', pagoEsteMes ? 'text-lime-400' : 'text-red-400')}>
-                                        {pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '—'}
+                                    <p className={cn('font-bold text-xl leading-none', exenta ? 'text-slate-300' : pagoEsteMes ? 'text-lime-400' : 'text-red-400')}>
+                                        {exenta ? '—' : pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '—'}
                                     </p>
                                     <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">
-                                        {pagoEsteMes ? 'Cuota pagada' : 'Sin cuota'}
+                                        {exenta ? 'Sin cuota' : pagoEsteMes ? 'Cuota pagada' : 'Sin cuota'}
                                     </p>
                                 </div>
                             </div>
@@ -678,7 +683,7 @@ export default function MiCuentaPage() {
                             )}
 
                             {/* Cuota pendiente + pago */}
-                            {!pagoEsteMes && aliasGimnasio && (
+                            {!pagoEsteMes && !exenta && aliasGimnasio && (
                                 <BlurFade delay={0.1}>
                                     <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
                                         <div className="px-4 py-4">

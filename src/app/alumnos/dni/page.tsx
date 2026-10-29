@@ -6,6 +6,7 @@ import 'react-simple-keyboard/build/css/index.css';
 import './keyboardStyles.css';
 import { addIngreso, getIngresosPendientes, deleteIngreso } from '@/utils/indexedDB';
 import { signOut } from 'next-auth/react';
+import { estaAlDia, getMesActual } from '@/lib/pagos';
 
 const swalDni = {
     customClass: {
@@ -213,10 +214,8 @@ export default function RegistrarAsistenciaPorDNIPage() {
             });
             if (!asistenciaResponse.ok) throw new Error(await asistenciaResponse.text());
 
-            // Detectar si tiene la cuota del mes pagada
-            const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-            const mesActual = meses[new Date().getMonth()];
-            const cuotaPaga = alumno.pagos?.some((p: any) => p.mes?.toLowerCase() === mesActual) ?? false;
+            // Detectar si tiene la cuota del mes pagada (o está exento, o tiene un pago especial vigente)
+            const cuotaPaga = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, getMesActual());
 
             if (cuotaPaga) playSuccess(); else playDebt();
             showFeedback(cuotaPaga ? 'paid' : 'debt', actividad, alumno.nombre);

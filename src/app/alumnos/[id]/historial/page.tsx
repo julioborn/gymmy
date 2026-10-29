@@ -12,6 +12,7 @@ import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
 import esLocale from '@fullcalendar/core/locales/es';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { estaAlDia, getMesActual } from '@/lib/pagos';
 
 const Loader = () => (
     <div className="flex justify-center items-center h-16">
@@ -71,11 +72,11 @@ type Alumno = {
     historialDeVida?: string;
     objetivos?: string;
     fechaNacimiento?: string;
+    exentoCuota?: boolean;
 };
 
-function verificarPagoMesActual(pagos: Pago[]): boolean {
-    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
-    return pagos.some(p => p.mes?.toLowerCase() === mesActual);
+function verificarPagoMesActual(pagos: Pago[], exentoCuota?: boolean): boolean {
+    return estaAlDia({ pagos, exentoCuota }, getMesActual());
 }
 
 function capitalizar(texto: string) {
@@ -954,6 +955,12 @@ export default function HistorialAlumnoPage() {
                             <option value="tarde-noche" ${alumno.horarioEntrenamiento === 'tarde-noche' ? 'selected' : ''}>Tarde-Noche (18 a 21hs)</option>
                         </select>
                     </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input id="swal-exento" type="checkbox" ${alumno.exentoCuota ? 'checked' : ''} style="width:16px;height:16px;">
+                            <span class="swal-form-label" style="margin:0;">Exento de cuota (no genera alertas de pago — ej. profes que solo registran asistencia)</span>
+                        </label>
+                    </div>
                 </div>
             `,
             focusConfirm: false,
@@ -972,6 +979,7 @@ export default function HistorialAlumnoPage() {
                 nivelExperiencia: (document.getElementById('swal-nivel') as HTMLSelectElement).value || null,
                 diasEntrenaSemana: Number((document.getElementById('swal-dias') as HTMLSelectElement).value) || null,
                 horarioEntrenamiento: (document.getElementById('swal-horario') as HTMLSelectElement).value || null,
+                exentoCuota: (document.getElementById('swal-exento') as HTMLInputElement).checked,
                 horaExactaEntrenamiento: alumno.horaExactaEntrenamiento || '',
                 patologias: alumno.patologias || '',
                 objetivos: alumno.objetivos || '',
@@ -2001,8 +2009,8 @@ export default function HistorialAlumnoPage() {
                     <div className="flex-1 min-w-0">
                         <h1 className="text-lg font-bold text-white leading-snug">{alumno.nombre} {alumno.apellido}</h1>
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${verificarPagoMesActual(alumno.pagos) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                                {verificarPagoMesActual(alumno.pagos) ? '✓ Al día' : '✗ Debe'}
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${alumno.exentoCuota ? 'bg-white/[0.08] text-white/60' : verificarPagoMesActual(alumno.pagos, alumno.exentoCuota) ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                {alumno.exentoCuota ? 'Sin cuota' : verificarPagoMesActual(alumno.pagos, alumno.exentoCuota) ? '✓ Al día' : '✗ Debe'}
                             </span>
                             {diasRestantes != null && diasRestantes > 0 ? (
                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${diasRestantes > 10 ? 'bg-white/[0.08] text-white/70' : diasRestantes > 5 ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>

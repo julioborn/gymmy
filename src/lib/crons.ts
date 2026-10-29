@@ -2,6 +2,7 @@ import connectMongoDB from './mongodb';
 import Alumno from '@/models/Alumno';
 import { sendGymNotif, notifyOwners } from './notifications';
 import mongoose from 'mongoose';
+import { estaAlDia } from './pagos';
 
 // Notifica alumnos que no pagaron el mes actual y estamos en los últimos días del mes
 export async function cronVencimientoCuotas() {
@@ -17,9 +18,7 @@ export async function cronVencimientoCuotas() {
 
     for (const alumno of alumnos) {
         if (!alumno.fcmTokens?.length) continue;
-        const pagoCorriente = alumno.pagos.some(
-            (p: any) => p.mes.toLowerCase() === mesActual
-        );
+        const pagoCorriente = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, mesActual);
         if (!pagoCorriente) {
             await sendGymNotif(alumno.gimnasioId?.toString() ?? '', alumno.fcmTokens, {
                 title: '⚠️ Cuota pendiente',
@@ -31,9 +30,7 @@ export async function cronVencimientoCuotas() {
     // Notificar a dueños por gimnasio con el conteo de morosos
     const morososPorGimnasio: Record<string, number> = {};
     for (const alumno of alumnos) {
-        const pagoCorriente = alumno.pagos.some(
-            (p: any) => p.mes.toLowerCase() === mesActual
-        );
+        const pagoCorriente = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, mesActual);
         if (!pagoCorriente) {
             const gid = alumno.gimnasioId?.toString();
             if (gid) morososPorGimnasio[gid] = (morososPorGimnasio[gid] ?? 0) + 1;

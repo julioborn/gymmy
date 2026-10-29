@@ -3,6 +3,7 @@ import { requireAlumnoAuth } from '@/lib/requireAuth';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import Gimnasio from '@/models/Gimnasio';
+import { estaAlDia } from '@/lib/pagos';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
     if (payment.external_reference !== String(alumno._id)) return NextResponse.json({ ok: false, error: 'Pago no corresponde' }, { status: 403 });
 
     const mesActual = MESES[new Date().getMonth()];
-    const yaPago = alumno.pagos.some((p: { mes: string }) => p.mes.toLowerCase() === mesActual);
+    const yaPago = estaAlDia(alumno, mesActual);
     if (yaPago) return NextResponse.json({ ok: true, alreadyRegistered: true });
 
     await Alumno.findByIdAndUpdate(alumno._id, {

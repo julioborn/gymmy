@@ -44,6 +44,7 @@ export interface IAlumno extends Document {
     area?: 'salud' | 'fitness' | 'rendimiento' | 'formacion' | 'fuerza' | 'masa_muscular' | 'composicion' | 'retomar';
     nivelExperiencia?: 'nunca' | 'alguna_vez' | 'hace_tiempo';
     gimnasioId: mongoose.Types.ObjectId;
+    exentoCuota?: boolean;
     password?: string;
     fcmTokens?: string[];
     resetPasswordToken?: string;
@@ -138,6 +139,7 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
     },
     area: { type: String, required: false, default: null },
     nivelExperiencia: { type: String, required: false, enum: ['nunca', 'alguna_vez', 'hace_tiempo'], default: null },
+    exentoCuota: { type: Boolean, required: false, default: false },
     password: { type: String, select: false },
     fcmTokens: { type: [String], default: [], select: false },
     resetPasswordToken: { type: String, select: false },

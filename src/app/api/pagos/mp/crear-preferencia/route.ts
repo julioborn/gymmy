@@ -5,6 +5,7 @@ import Gimnasio from '@/models/Gimnasio';
 import Tarifa from '@/models/Tarifa';
 import { requireAlumnoAuth } from '@/lib/requireAuth';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { estaAlDia } from '@/lib/pagos';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,7 @@ export async function POST() {
     if (!alumno) return NextResponse.json({ error: 'Alumno no encontrado' }, { status: 404 });
 
     const mesActual = MESES[new Date().getMonth()];
-    const yaPago = alumno.pagos.some((p: { mes: string }) => p.mes.toLowerCase() === mesActual);
+    const yaPago = estaAlDia(alumno, mesActual);
     if (yaPago) return NextResponse.json({ error: 'Ya pagaste este mes' }, { status: 400 });
 
     const gym = await Gimnasio.findById(alumno.gimnasioId);

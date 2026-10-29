@@ -4,6 +4,7 @@ import Gasto from '@/models/Gasto';
 import Ingreso from '@/models/Ingreso';
 import { NextResponse } from 'next/server';
 import { requireGymAuth } from '@/lib/requireAuth';
+import { estaAlDia, pagoVigente } from '@/lib/pagos';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ export async function GET() {
     const totalAlumnos = alumnos.length;
 
     const pagados = alumnos.filter(a =>
-        (a.pagos as any[]).some(p => p.mes.toLowerCase() === mesActual)
+        estaAlDia({ pagos: a.pagos as any[], exentoCuota: a.exentoCuota as boolean | undefined }, mesActual)
     ).length;
 
     const planesVenciendo = alumnos
@@ -88,11 +89,13 @@ export async function GET() {
         }
     }
 
+    // Se filtra por fechaPago (no por el string "mes") para contar correctamente
+    // los pagos especiales, cuyo campo mes no es un nombre de mes simple.
     const ingresosCuotas = alumnos.reduce((sum, a) => {
         return sum + (a.pagos as any[])
             .filter(p => {
                 const f = new Date(p.fechaPago);
-                return p.mes.toLowerCase() === mesActual && f.getFullYear() === anioActual;
+                return f.getMonth() === mesIdx && f.getFullYear() === anioActual;
             })
             .reduce((s: number, p: any) => s + (p.totalPagado ?? p.tarifa ?? 0), 0);
     }, 0);

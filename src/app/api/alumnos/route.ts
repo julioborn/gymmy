@@ -93,6 +93,7 @@ export async function POST(request: Request) {
         patologias,
         area,
         nivelExperiencia,
+        exentoCuota,
     } = await request.json();
 
     try {
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
             patologias: patologias || "",
             area: area || null,
             nivelExperiencia: nivelExperiencia || null,
+            exentoCuota: exentoCuota ?? false,
             asistencia: [],
             pagos: [],
             planEntrenamiento: {
@@ -164,6 +166,7 @@ export async function PUT(request: Request) {
             historialDeVida,
             objetivos,
             patologias,
+            exentoCuota,
         } = await request.json();
 
         const alumnoActualizado = await Alumno.findOneAndUpdate(
@@ -185,6 +188,7 @@ export async function PUT(request: Request) {
                 historialDeVida: historialDeVida || '',
                 objetivos: objetivos || '',
                 patologias: patologias || '',
+                exentoCuota: exentoCuota ?? false,
             },
             { new: true }
         );

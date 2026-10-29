@@ -7,6 +7,7 @@ import { Pagination } from '@mui/material';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
+import { estaAlDia, pagoVigente, getMesActual } from '@/lib/pagos';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -48,9 +49,8 @@ function calcularDiasRestantes(plan: any, asistencias: any[], planAlumnoActivo?:
     return diasRestantes > 0 ? diasRestantes : 0;
 }
 
-function verificarPagoMesActual(pagos: any[]): boolean {
-    const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
-    return pagos.some(pago => pago.mes.toLowerCase() === mesActual);
+function verificarPagoMesActual(pagos: any[], exentoCuota?: boolean): boolean {
+    return estaAlDia({ pagos, exentoCuota }, getMesActual());
 }
 
 export default function ListaAlumnosPage() {
@@ -198,8 +198,8 @@ export default function ListaAlumnosPage() {
             const coincidePago = filtroPago === ''
                 ? true
                 : filtroPago === 'pagado'
-                    ? verificarPagoMesActual(alumno.pagos)
-                    : !verificarPagoMesActual(alumno.pagos);
+                    ? verificarPagoMesActual(alumno.pagos, alumno.exentoCuota)
+                    : !verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
             const coincideArea = filtroArea ? alumno.area === filtroArea : true;
             return coincideBusqueda && coincideLetraApellido && coincidePago && coincideDiasEntrena && coincideArea;
         })
@@ -292,15 +292,13 @@ export default function ListaAlumnosPage() {
     };
 
     const handleGenerateExcel = () => {
-        const mesActual = new Date().toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+        const mesActual = getMesActual();
         const mesLabel = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
         const formattedData = [...alumnos]
             .sort((a, b) => (a.apellido || '').localeCompare(b.apellido || '', 'es'))
             .map((alumno) => {
-                const pagoMes = alumno.pagos.find(
-                    (p: { mes: string }) => p.mes.toLowerCase() === mesActual
-                );
+                const pagoMes = pagoVigente(alumno.pagos, mesActual);
                 return {
                     'Apellido y Nombre': `${alumno.apellido || ''} ${alumno.nombre || ''}`.trim(),
                     'Fecha de pago': pagoMes
@@ -308,7 +306,7 @@ export default function ListaAlumnosPage() {
                         : '-',
                     'Días/semana': alumno.diasEntrenaSemana || '-',
                     'Precio cuota': pagoMes ? `$${pagoMes.tarifa}` : '-',
-                    'Estado': pagoMes ? 'Pagó' : 'No pagó',
+                    'Estado': alumno.exentoCuota ? 'Exento' : pagoMes ? 'Pagó' : 'No pagó',
                 };
             });
 
@@ -551,7 +549,7 @@ export default function ListaAlumnosPage() {
                     <>
                         <div className="space-y-2">
                             {paginatedAlumnos.map((alumno) => {
-                                const pagado = verificarPagoMesActual(alumno.pagos);
+                                const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
                                 const dr = alumno.diasRestantes;
                                 const planText = dr != null
                                     ? `${dr} día${dr !== 1 ? 's' : ''} de plan`
