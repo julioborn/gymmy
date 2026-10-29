@@ -989,36 +989,26 @@ export default function HomePage() {
                                 {/* Asistencias hoy */}
                                 <BlurFade delay={0.18}>
                                     <StatCard>
-                                        <div className="flex items-start justify-between mb-3">
-                                            <StatLabel>Asistencias · Hoy</StatLabel>
-                                            <p className="text-3xl font-bold text-white leading-none tabular-nums -mt-0.5">
-                                                <NumberTicker value={data.asistenciasHoy} />
-                                            </p>
-                                        </div>
-                                        {data.asistenciasHoy > 0 ? (
-                                            <div className="flex gap-4 flex-wrap">
-                                                {(data.asistenciasHoyFranja?.manana ?? 0) > 0 && (
-                                                    <div>
-                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.manana}</p>
-                                                        <p className="text-[10px] text-white/50 mt-0.5">Mañana</p>
-                                                    </div>
-                                                )}
-                                                {(data.asistenciasHoyFranja?.siesta ?? 0) > 0 && (
-                                                    <div>
-                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.siesta}</p>
-                                                        <p className="text-[10px] text-white/50 mt-0.5">Siesta</p>
-                                                    </div>
-                                                )}
-                                                {(data.asistenciasHoyFranja?.tarde ?? 0) > 0 && (
-                                                    <div>
-                                                        <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja.tarde}</p>
-                                                        <p className="text-[10px] text-white/50 mt-0.5">Tarde</p>
-                                                    </div>
-                                                )}
+                                        <StatLabel>Asistencias · Hoy</StatLabel>
+                                        <p className="text-3xl font-bold text-white leading-none tabular-nums">
+                                            <NumberTicker value={data.asistenciasHoy} />
+                                        </p>
+                                        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
+                                            <div>
+                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.manana ?? 0}</p>
+                                                <p className="text-[10px] text-white/50 mt-0.5">mañana</p>
                                             </div>
-                                        ) : (
-                                            <p className="text-xs text-white/50">Sin registros aún</p>
-                                        )}
+                                            <div className="w-px h-5 bg-white/[0.1] shrink-0" />
+                                            <div>
+                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.siesta ?? 0}</p>
+                                                <p className="text-[10px] text-white/50 mt-0.5">siesta</p>
+                                            </div>
+                                            <div className="w-px h-5 bg-white/[0.1] shrink-0" />
+                                            <div>
+                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.tarde ?? 0}</p>
+                                                <p className="text-[10px] text-white/50 mt-0.5">tarde</p>
+                                            </div>
+                                        </div>
                                     </StatCard>
                                 </BlurFade>
 
