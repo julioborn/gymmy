@@ -791,46 +791,48 @@ export default function HomePage() {
 
                 {/* ── HERO ────────────────────────────────────────────────── */}
                 <BlurFade delay={0}>
-                    <div className="relative bg-[#111] rounded-[2rem] overflow-hidden mb-4">
-                        <div className="absolute inset-0"
-                            style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                        <div className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl" style={{ background: 'rgba(163,230,53,0.06)' }} />
-                        <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/[0.06] rounded-full blur-3xl" />
+                    <div className="rounded-[2rem] p-[1.5px] mb-4" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)' }}>
+                        <div className="relative bg-[#111] overflow-hidden rounded-[30px]">
+                            <div className="absolute inset-0"
+                                style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                            <div className="absolute top-0 right-0 w-56 h-56 rounded-full blur-3xl opacity-25" style={{ background: '#10b981' }} />
+                            <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full blur-3xl opacity-20" style={{ background: '#f97316' }} />
 
-                        <div className="relative px-5 pt-5 pb-5">
-                            <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                <span className="text-xs font-semibold text-white/60 uppercase tracking-[0.14em]">{getGreeting()}</span>
-                                <span className="text-white/30 text-xs">·</span>
-                                <span className="text-xs text-white/55 capitalize">{fmtDate()}</span>
-                            </div>
+                            <div className="relative px-5 pt-5 pb-5">
+                                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                    <span className="text-xs font-semibold text-white/60 uppercase tracking-[0.14em]">{getGreeting()}</span>
+                                    <span className="text-white/30 text-xs">·</span>
+                                    <span className="text-xs text-white/55 capitalize">{fmtDate()}</span>
+                                </div>
 
-                            <h1 className="text-3xl font-bold text-white tracking-tight mb-3">{userName}</h1>
+                                <h1 className="text-3xl font-bold text-white tracking-tight mb-3">{userName}</h1>
 
-                            <div className="flex items-center gap-2 flex-wrap mb-5">
-                                <span className="inline-flex items-center bg-white/[0.1] border border-white/[0.13] text-white/75 text-xs font-semibold px-3 py-1.5 rounded-full capitalize">
-                                    {session.user?.role}
-                                </span>
-                                {gimnasioNombre && (
-                                    <span className="text-white/55 text-xs font-medium">{gimnasioNombre}</span>
-                                )}
-                            </div>
+                                <div className="flex items-center gap-2 flex-wrap mb-5">
+                                    <span className="inline-flex items-center bg-white/[0.1] border border-white/[0.13] text-white/75 text-xs font-semibold px-3 py-1.5 rounded-full capitalize">
+                                        {session.user?.role}
+                                    </span>
+                                    {gimnasioNombre && (
+                                        <span className="text-white/55 text-xs font-medium">{gimnasioNombre}</span>
+                                    )}
+                                </div>
 
-                            {/* Nav pills — wrap en mobile, sin overflow oculto */}
-                            <div className="flex flex-wrap gap-2">
-                                {visibleCards.map((c) => (
-                                    <Link key={c.href} href={c.href}
-                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 transition-all text-white/80 hover:text-white text-sm font-semibold">
-                                        <span className="opacity-90">{c.icon}</span>
-                                        {c.label}
-                                    </Link>
-                                ))}
-                                {esProfesor && session.user?.id && (
-                                    <Link href="/mi-perfil#plan"
-                                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 transition-all text-white/80 hover:text-white text-sm font-semibold">
-                                        <FileText size={15} className="opacity-90" />
-                                        Mi plan
-                                    </Link>
-                                )}
+                                {/* Nav tiles — cuadraditos en fila, icono + label */}
+                                <div className="flex gap-2">
+                                    {visibleCards.map((c) => (
+                                        <Link key={c.href} href={c.href}
+                                            className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
+                                            <span className="opacity-90">{c.icon}</span>
+                                            <span className="text-[9px] font-semibold uppercase tracking-wide text-center leading-tight">{c.label}</span>
+                                        </Link>
+                                    ))}
+                                    {esProfesor && session.user?.id && (
+                                        <Link href="/mi-perfil#plan"
+                                            className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
+                                            <FileText size={18} className="opacity-90" />
+                                            <span className="text-[9px] font-semibold uppercase tracking-wide text-center leading-tight">Mi plan</span>
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
