@@ -1,10 +1,10 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
-import { useAttendanceEvents, type AttendanceArrival } from '@/hooks/useAttendanceEvents';
+import { useAttendanceEvents } from '@/hooks/useAttendanceEvents';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -236,6 +236,10 @@ export default function HomePage() {
     useEffect(() => { fetchDashboard(); }, [session]);
     usePaymentEvents(fetchDashboard);
 
+    const [arrivalToasts, setArrivalToasts] = useState<ArrivalToast[]>([]);
+    const [justArrived, setJustArrived] = useState<Set<string>>(new Set());
+    const prevTodayRef = useRef<Map<string, { nombre: string; apellido: string; actividad: string; tipo: 'alumno' | 'depaso' }> | null>(null);
+
     const fetchAsistencias = () => {
         if (!session || session.user?.role !== 'recepcion') return;
         setLoadingHoy(true);
@@ -280,6 +284,38 @@ export default function HomePage() {
                 dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: String(dp._id) });
             }
             dias.forEach(d => d.depaso.sort((a, b) => b.hora.localeCompare(a.hora)));
+
+            // Diff local contra el snapshot anterior de "hoy" para detectar llegadas reales,
+            // sin depender de ventanas de tiempo del servidor (que se resetean en cada reconexión SSE).
+            const diaHoyNuevo = dias.find(d => d.key === todayKey);
+            const snapshotNuevo = new Map<string, { nombre: string; apellido: string; actividad: string; tipo: 'alumno' | 'depaso' }>();
+            if (diaHoyNuevo) {
+                for (const a of diaHoyNuevo.alumnos) snapshotNuevo.set(`a-${a.id}`, { nombre: a.nombre, apellido: a.apellido, actividad: a.actividad, tipo: 'alumno' });
+                for (const d of diaHoyNuevo.depaso) snapshotNuevo.set(`d-${d.id}`, { nombre: d.nombre, apellido: d.apellido, actividad: d.actividad, tipo: 'depaso' });
+            }
+            if (prevTodayRef.current) {
+                const nuevos: { key: string; nombre: string; apellido: string; actividad: string; tipo: 'alumno' | 'depaso' }[] = [];
+                snapshotNuevo.forEach((info, key) => {
+                    if (!prevTodayRef.current!.has(key)) nuevos.push({ key, ...info });
+                });
+                if (nuevos.length > 0) {
+                    const toasts: ArrivalToast[] = nuevos.map(n => ({ key: `${n.key}-${Date.now()}`, nombre: n.nombre, apellido: n.apellido, actividad: n.actividad, tipo: n.tipo }));
+                    setArrivalToasts(prev => [...prev, ...toasts]);
+                    setJustArrived(prev => {
+                        const next = new Set(prev);
+                        nuevos.forEach(n => next.add(n.key));
+                        return next;
+                    });
+                    toasts.forEach(t => {
+                        setTimeout(() => setArrivalToasts(prev => prev.filter(x => x.key !== t.key)), 5000);
+                    });
+                    nuevos.forEach(n => {
+                        setTimeout(() => setJustArrived(prev => { const next = new Set(prev); next.delete(n.key); return next; }), 6000);
+                    });
+                }
+            }
+            prevTodayRef.current = snapshotNuevo;
+
             setDiasData(dias);
             setDiaExpandido(todayKey);
         })
@@ -295,31 +331,7 @@ export default function HomePage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const [arrivalToasts, setArrivalToasts] = useState<ArrivalToast[]>([]);
-    const [justArrived, setJustArrived] = useState<Set<string>>(new Set());
-
-    const handleArrivals = (items: AttendanceArrival[]) => {
-        if (session?.user?.role !== 'recepcion') return;
-        const toasts: ArrivalToast[] = items.map(it => ({
-            key: `${it.tipo}-${it.id}-${it.fecha}`, nombre: it.nombre, apellido: it.apellido, actividad: it.actividad, tipo: it.tipo,
-        }));
-        setArrivalToasts(prev => [...prev, ...toasts]);
-        setJustArrived(prev => {
-            const next = new Set(prev);
-            items.forEach(it => next.add(it.tipo === 'alumno' ? `a-${it.id}` : `d-${it.id}`));
-            return next;
-        });
-        toasts.forEach(t => {
-            setTimeout(() => setArrivalToasts(prev => prev.filter(x => x.key !== t.key)), 5000);
-        });
-        items.forEach(it => {
-            const hk = it.tipo === 'alumno' ? `a-${it.id}` : `d-${it.id}`;
-            setTimeout(() => setJustArrived(prev => { const next = new Set(prev); next.delete(hk); return next; }), 6000);
-        });
-        fetchAsistencias();
-    };
-
-    useAttendanceEvents(handleArrivals, fetchAsistencias);
+    useAttendanceEvents(fetchAsistencias);
 
     useEffect(() => {
         if (session?.user?.role !== 'recepcion') return;
