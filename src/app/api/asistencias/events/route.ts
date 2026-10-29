@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const gimnasioObjectId = new Types.ObjectId(gimnasioId);
     const encoder = new TextEncoder();
     let lastCheck = new Date(Date.now() - 10000);
+    let lastCount: number | null = null;
 
     const stream = new ReadableStream({
         async start(controller) {
@@ -67,6 +68,36 @@ export async function GET(req: NextRequest) {
                         const maxFecha = items.reduce((m, it) => Math.max(m, new Date(it.fecha).getTime()), 0);
                         lastCheck = new Date(maxFecha);
                         send(`event: asistencia\ndata: ${JSON.stringify(items)}\n\n`);
+                    }
+
+                    // Detecta bajas/ediciones (ej. asistencia eliminada) comparando el total
+                    // de asistencias de la semana visible; si cambió sin que haya "nuevos", refresca.
+                    const ARG = -3 * 60 * 60 * 1000;
+                    const nowArg = new Date(Date.now() + ARG);
+                    const dow = nowArg.getUTCDay();
+                    const daysToMon = dow === 0 ? 6 : dow - 1;
+                    const monday = new Date(Date.UTC(nowArg.getUTCFullYear(), nowArg.getUTCMonth(), nowArg.getUTCDate() - daysToMon));
+                    const saturday = new Date(monday.getTime() + 5 * 86400000);
+
+                    const [countAlumnosAgg, countDepaso] = await Promise.all([
+                        Alumno.aggregate([
+                            { $match: { gimnasioId: gimnasioObjectId } },
+                            { $project: { count: { $size: { $filter: { input: '$asistencia', as: 'a', cond: { $and: [
+                                { $eq: ['$$a.presente', true] },
+                                { $gte: ['$$a.fecha', monday] },
+                                { $lt: ['$$a.fecha', saturday] },
+                            ] } } } } } },
+                            { $group: { _id: null, total: { $sum: '$count' } } },
+                        ]),
+                        AlumnoDePaso.countDocuments({ gimnasioId: gimnasioObjectId, fecha: { $gte: monday, $lt: saturday } }),
+                    ]);
+                    const totalCount = (countAlumnosAgg[0]?.total ?? 0) + countDepaso;
+
+                    if (lastCount === null) {
+                        lastCount = totalCount;
+                    } else if (totalCount !== lastCount) {
+                        lastCount = totalCount;
+                        if (items.length === 0) send('event: refresh\ndata: {}\n\n');
                     }
                 } catch { /* ignore DB errors during polling */ }
             };

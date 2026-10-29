@@ -9,9 +9,11 @@ export type AttendanceArrival = {
     fecha: string;
 };
 
-export function useAttendanceEvents(onArrivals: (items: AttendanceArrival[]) => void) {
+export function useAttendanceEvents(onArrivals: (items: AttendanceArrival[]) => void, onRefresh?: () => void) {
     const cbRef = useRef(onArrivals);
     cbRef.current = onArrivals;
+    const refreshRef = useRef(onRefresh);
+    refreshRef.current = onRefresh;
 
     useEffect(() => {
         let es: EventSource;
@@ -23,6 +25,9 @@ export function useAttendanceEvents(onArrivals: (items: AttendanceArrival[]) => 
                     const items = JSON.parse((e as MessageEvent).data) as AttendanceArrival[];
                     cbRef.current(items);
                 } catch { /* ignore malformed payload */ }
+            });
+            es.addEventListener('refresh', () => {
+                refreshRef.current?.();
             });
             es.onerror = () => {
                 es.close();

@@ -319,7 +319,7 @@ export default function HomePage() {
         fetchAsistencias();
     };
 
-    useAttendanceEvents(handleArrivals);
+    useAttendanceEvents(handleArrivals, fetchAsistencias);
 
     useEffect(() => {
         if (session?.user?.role !== 'recepcion') return;
@@ -634,6 +634,7 @@ export default function HomePage() {
                                                                 layout
                                                                 initial={isNew ? { opacity: 0, y: -12, scale: 0.97 } : false}
                                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.92, x: -24, transition: { duration: 0.3, ease: 'easeIn' } }}
                                                                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                                                                 className={cn(
                                                                     'border-b border-white/[0.04] last:border-b-0 transition-all duration-700',
@@ -727,6 +728,7 @@ export default function HomePage() {
                                                                     layout
                                                                     initial={isNew ? { opacity: 0, y: -12, scale: 0.97 } : false}
                                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                    exit={{ opacity: 0, scale: 0.92, x: -24, transition: { duration: 0.3, ease: 'easeIn' } }}
                                                                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                                                                     className={cn(
                                                                         'flex items-center gap-3 px-5 py-2.5 border-b border-white/[0.04] last:border-b-0 hover:bg-teal-400/[0.04] transition-all duration-700',
