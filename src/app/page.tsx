@@ -4,10 +4,11 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
+import { useAttendanceEvents, type AttendanceArrival } from '@/hooks/useAttendanceEvents';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
-import { motion, animate } from 'framer-motion';
+import { motion, animate, AnimatePresence } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
 import {
@@ -15,7 +16,7 @@ import {
     Eye, EyeOff, ChevronRight, ChevronLeft, UserPlus,
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
-    Activity, UserCheck, Clock,
+    Activity, UserCheck, Clock, CheckCircle2,
 } from 'lucide-react';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
@@ -63,6 +64,52 @@ function AnimatedBar({ pct, color }: { pct: number; color: string }) {
     );
 }
 
+// ─── Magic UI: ArrivalToastStack ───────────────────────────────────────────────
+type ArrivalToast = { key: string; nombre: string; apellido: string; actividad: string; tipo: 'alumno' | 'depaso' };
+
+function ArrivalToastStack({ toasts }: { toasts: ArrivalToast[] }) {
+    return (
+        <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 w-[320px] pointer-events-none">
+            <AnimatePresence initial={false}>
+                {toasts.map(t => (
+                    <motion.div
+                        key={t.key}
+                        layout
+                        initial={{ opacity: 0, x: 80, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 80, scale: 0.92, transition: { duration: 0.25 } }}
+                        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                        className={cn(
+                            'relative overflow-hidden flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl shadow-2xl',
+                            t.tipo === 'depaso' ? 'bg-teal-400/10 border-teal-400/25 shadow-teal-400/10' : 'bg-lime-400/10 border-lime-400/25 shadow-lime-400/10',
+                        )}
+                    >
+                        <motion.div
+                            className={cn('absolute inset-0', t.tipo === 'depaso' ? 'bg-teal-400/15' : 'bg-lime-400/15')}
+                            initial={{ opacity: 0.9 }}
+                            animate={{ opacity: 0 }}
+                            transition={{ duration: 0.9, ease: 'easeOut' }}
+                        />
+                        <div className={cn(
+                            'relative w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0',
+                            t.tipo === 'depaso' ? 'bg-teal-400/20 text-teal-300' : 'bg-lime-400/20 text-lime-300',
+                        )}>
+                            {t.nombre?.[0]}{t.apellido?.[0]}
+                        </div>
+                        <div className="relative flex-1 min-w-0">
+                            <p className="text-white font-semibold text-sm truncate">{t.nombre} {t.apellido}</p>
+                            <p className={cn('text-[11px] font-medium', t.tipo === 'depaso' ? 'text-teal-300/80' : 'text-lime-300/80')}>
+                                Llegó · {t.actividad}
+                            </p>
+                        </div>
+                        <CheckCircle2 size={18} className={cn('relative shrink-0', t.tipo === 'depaso' ? 'text-teal-400' : 'text-lime-400')} />
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getGreeting(): string {
     const h = new Date().getHours();
@@ -81,7 +128,7 @@ function fmtDate(): string {
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Tarifa = { dias: number; valor: number };
 type AlumnoAsistencia = { nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean };
-type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string };
+type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string };
 type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
 
 type DashboardData = {
@@ -230,7 +277,7 @@ export default function HomePage() {
                 const dia = dias.find(d => d.key === k);
                 if (!dia) continue;
                 const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}` });
+                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: String(dp._id) });
             }
             dias.forEach(d => d.depaso.sort((a, b) => b.hora.localeCompare(a.hora)));
             setDiasData(dias);
@@ -247,6 +294,32 @@ export default function HomePage() {
         return () => window.removeEventListener('alumno-de-paso-registrado', handler);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const [arrivalToasts, setArrivalToasts] = useState<ArrivalToast[]>([]);
+    const [justArrived, setJustArrived] = useState<Set<string>>(new Set());
+
+    const handleArrivals = (items: AttendanceArrival[]) => {
+        if (session?.user?.role !== 'recepcion') return;
+        const toasts: ArrivalToast[] = items.map(it => ({
+            key: `${it.tipo}-${it.id}-${it.fecha}`, nombre: it.nombre, apellido: it.apellido, actividad: it.actividad, tipo: it.tipo,
+        }));
+        setArrivalToasts(prev => [...prev, ...toasts]);
+        setJustArrived(prev => {
+            const next = new Set(prev);
+            items.forEach(it => next.add(it.tipo === 'alumno' ? `a-${it.id}` : `d-${it.id}`));
+            return next;
+        });
+        toasts.forEach(t => {
+            setTimeout(() => setArrivalToasts(prev => prev.filter(x => x.key !== t.key)), 5000);
+        });
+        items.forEach(it => {
+            const hk = it.tipo === 'alumno' ? `a-${it.id}` : `d-${it.id}`;
+            setTimeout(() => setJustArrived(prev => { const next = new Set(prev); next.delete(hk); return next; }), 6000);
+        });
+        fetchAsistencias();
+    };
+
+    useAttendanceEvents(handleArrivals);
 
     useEffect(() => {
         if (session?.user?.role !== 'recepcion') return;
@@ -365,6 +438,8 @@ export default function HomePage() {
                 {/* Dot grid full page */}
                 <div className="fixed inset-0 pointer-events-none"
                     style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+                <ArrivalToastStack toasts={arrivalToasts} />
 
                 <div className="relative max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3">
 
@@ -548,44 +623,62 @@ export default function HomePage() {
                                         <div>
                                             {/* Alumnos */}
                                             {listToShow.length > 0 && (
-                                                <div className="divide-y divide-white/[0.04]">
-                                                    {listToShow.map((a, i) => {
+                                                <AnimatePresence initial={false}>
+                                                    {listToShow.map((a) => {
                                                         const debe = !a.pagado && pasoDiez;
                                                         const sinCuota = !a.pagado && !pasoDiez;
+                                                        const isNew = justArrived.has(`a-${a.id}`);
                                                         return (
-                                                            <Link key={i} href={`/alumnos/${a.id}/historial`}
+                                                            <motion.div
+                                                                key={`${a.id}-${a.hora}`}
+                                                                layout
+                                                                initial={isNew ? { opacity: 0, y: -12, scale: 0.97 } : false}
+                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                                                                 className={cn(
-                                                                    'flex items-center gap-3 px-5 py-2.5 transition-all group',
-                                                                    debe ? 'hover:bg-red-500/10' : 'hover:bg-white/[0.04]',
-                                                                )}>
-                                                                <div className={cn(
-                                                                    'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0',
-                                                                    debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/60',
-                                                                )}>
-                                                                    {a.nombre?.[0]}{a.apellido?.[0]}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className={cn('font-semibold text-base truncate', debe ? 'text-red-300' : 'text-white/90')}>
-                                                                        {a.apellido}, {a.nombre}
-                                                                    </p>
-                                                                    <p className="text-xs text-white/55 mt-0.5">{a.actividad}</p>
-                                                                </div>
-                                                                {debe && (
-                                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                                        <AlertTriangle size={8} /> Debe
-                                                                    </span>
+                                                                    'border-b border-white/[0.04] last:border-b-0 transition-all duration-700',
+                                                                    isNew && 'ring-1 ring-inset ring-lime-400/50 bg-lime-400/[0.05]',
                                                                 )}
-                                                                {sinCuota && (
-                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.07] text-white/55 shrink-0">Sin cuota</span>
-                                                                )}
-                                                                <div className="flex items-center gap-1 shrink-0">
-                                                                    <span className="text-white/55 text-sm tabular-nums font-medium">{a.hora}</span>
-                                                                    <ChevronRight size={11} className="text-white/30 group-hover:text-white/60 transition-colors" />
-                                                                </div>
-                                                            </Link>
+                                                            >
+                                                                <Link href={`/alumnos/${a.id}/historial`}
+                                                                    className={cn(
+                                                                        'flex items-center gap-3 px-5 py-2.5 transition-all group',
+                                                                        debe ? 'hover:bg-red-500/10' : 'hover:bg-white/[0.04]',
+                                                                    )}>
+                                                                    <div className={cn(
+                                                                        'w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0',
+                                                                        debe ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.08] text-white/60',
+                                                                    )}>
+                                                                        {a.nombre?.[0]}{a.apellido?.[0]}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className={cn('font-semibold text-base truncate', debe ? 'text-red-300' : 'text-white/90')}>
+                                                                            {a.apellido}, {a.nombre}
+                                                                        </p>
+                                                                        <p className="text-xs text-white/55 mt-0.5">{a.actividad}</p>
+                                                                    </div>
+                                                                    {isNew && (
+                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
+                                                                            <CheckCircle2 size={8} /> Nuevo
+                                                                        </span>
+                                                                    )}
+                                                                    {debe && (
+                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                                            <AlertTriangle size={8} /> Debe
+                                                                        </span>
+                                                                    )}
+                                                                    {sinCuota && (
+                                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.07] text-white/55 shrink-0">Sin cuota</span>
+                                                                    )}
+                                                                    <div className="flex items-center gap-1 shrink-0">
+                                                                        <span className="text-white/55 text-sm tabular-nums font-medium">{a.hora}</span>
+                                                                        <ChevronRight size={11} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                                                                    </div>
+                                                                </Link>
+                                                            </motion.div>
                                                         );
                                                     })}
-                                                </div>
+                                                </AnimatePresence>
                                             )}
 
                                             {/* Pagination */}
@@ -625,20 +718,37 @@ export default function HomePage() {
                                                         <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">De paso</span>
                                                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400">{diaActivo.depaso.length}</span>
                                                     </div>
-                                                    <div className="divide-y divide-white/[0.04]">
-                                                        {diaActivo.depaso.map((a, i) => (
-                                                            <div key={`dp-${i}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-teal-400/[0.04] transition-colors">
-                                                                <div className="w-10 h-10 rounded-xl bg-teal-400/10 flex items-center justify-center text-sm font-bold text-teal-400 shrink-0">
-                                                                    {a.nombre?.[0]}{a.apellido?.[0]}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="text-base font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
-                                                                    <p className="text-xs text-teal-400/70 mt-0.5">{a.actividad}</p>
-                                                                </div>
-                                                                <span className="text-white/55 text-sm tabular-nums font-medium shrink-0">{a.hora}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                    <AnimatePresence initial={false}>
+                                                        {diaActivo.depaso.map((a) => {
+                                                            const isNew = justArrived.has(`d-${a.id}`);
+                                                            return (
+                                                                <motion.div
+                                                                    key={`dp-${a.id}-${a.hora}`}
+                                                                    layout
+                                                                    initial={isNew ? { opacity: 0, y: -12, scale: 0.97 } : false}
+                                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                                                                    className={cn(
+                                                                        'flex items-center gap-3 px-5 py-2.5 border-b border-white/[0.04] last:border-b-0 hover:bg-teal-400/[0.04] transition-all duration-700',
+                                                                        isNew && 'ring-1 ring-inset ring-teal-400/50 bg-teal-400/[0.06]',
+                                                                    )}>
+                                                                    <div className="w-10 h-10 rounded-xl bg-teal-400/10 flex items-center justify-center text-sm font-bold text-teal-400 shrink-0">
+                                                                        {a.nombre?.[0]}{a.apellido?.[0]}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-base font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
+                                                                        <p className="text-xs text-teal-400/70 mt-0.5">{a.actividad}</p>
+                                                                    </div>
+                                                                    {isNew && (
+                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
+                                                                            <CheckCircle2 size={8} /> Nuevo
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="text-white/55 text-sm tabular-nums font-medium shrink-0">{a.hora}</span>
+                                                                </motion.div>
+                                                            );
+                                                        })}
+                                                    </AnimatePresence>
                                                 </div>
                                             )}
                                         </div>
