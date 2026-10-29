@@ -17,10 +17,12 @@ import {
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
     Activity, UserCheck, Clock, CheckCircle2,
+    Search, ChevronDown, ArrowUpDown, Dumbbell,
 } from 'lucide-react';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+function normalize(s: string): string { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
 
 // ─── Magic UI: NumberTicker ────────────────────────────────────────────────────
 function NumberTicker({ value, prefix = '' }: { value: number; prefix?: string }) {
@@ -127,7 +129,7 @@ function fmtDate(): string {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Tarifa = { dias: number; valor: number };
-type AlumnoAsistencia = { nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean };
+type AlumnoAsistencia = { nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean; dni: string };
 type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string };
 type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
 
@@ -206,6 +208,10 @@ export default function HomePage() {
     const [diaExpandido, setDiaExpandido] = useState<string | null>(null);
     const [activeSlot, setActiveSlot] = useState<string | null>(null);
     const [listPage, setListPage] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterActividad, setFilterActividad] = useState('Todos');
+    const [sortBy, setSortBy] = useState<'nombre' | 'hora'>('hora');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
     const [loadingHoy, setLoadingHoy] = useState(false);
     const [horaArg, setHoraArg] = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
@@ -271,7 +277,7 @@ export default function HomePage() {
                     const dia = dias.find(d => d.key === k);
                     if (!dia) continue;
                     const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                    dia.alumnos.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado });
+                    dia.alumnos.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado, dni: al.dni ?? '' });
                 }
             }
             dias.forEach(d => d.alumnos.sort((a, b) => b.hora.localeCompare(a.hora)));
@@ -438,12 +444,30 @@ export default function HomePage() {
 
         const deudoresHoy = diaActivo?.alumnos.filter(a => !a.pagado && pasoDiez).length ?? 0;
 
+        const q = normalize(searchQuery.trim());
+        const matchesSearch = (nombre: string, apellido: string, dni?: string) =>
+            !q || normalize(`${nombre} ${apellido}`).includes(q) || (dni ?? '').includes(q);
+        const matchesActividad = (actividad: string) => filterActividad === 'Todos' || actividad === filterActividad;
+
+        const toggleSort = (col: 'nombre' | 'hora') => {
+            if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+            else { setSortBy(col); setSortDir(col === 'hora' ? 'desc' : 'asc'); }
+            setListPage(0);
+        };
+
         const PAGE_SIZE = 8;
-        const allList: AlumnoAsistencia[] = activeSlot
-            ? (bySlot[activeSlot] ?? [])
-            : (diaActivo?.alumnos ?? []);
-        const totalPages = Math.ceil(allList.length / PAGE_SIZE);
-        const listToShow = allList.slice(listPage * PAGE_SIZE, (listPage + 1) * PAGE_SIZE);
+        const baseList: AlumnoAsistencia[] = activeSlot ? (bySlot[activeSlot] ?? []) : (diaActivo?.alumnos ?? []);
+        const filteredAlumnos = baseList
+            .filter(a => matchesSearch(a.nombre, a.apellido, a.dni) && matchesActividad(a.actividad))
+            .sort((a, b) => {
+                const cmp = sortBy === 'nombre'
+                    ? `${a.apellido}, ${a.nombre}`.localeCompare(`${b.apellido}, ${b.nombre}`)
+                    : a.hora.localeCompare(b.hora);
+                return sortDir === 'asc' ? cmp : -cmp;
+            });
+        const filteredDepaso = (diaActivo?.depaso ?? []).filter(a => matchesSearch(a.nombre, a.apellido) && matchesActividad(a.actividad));
+        const totalPages = Math.ceil(filteredAlumnos.length / PAGE_SIZE);
+        const listToShow = filteredAlumnos.slice(listPage * PAGE_SIZE, (listPage + 1) * PAGE_SIZE);
 
         return (
             <div className="min-h-screen bg-[#0a0a0a]">
@@ -581,37 +605,73 @@ export default function HomePage() {
                             )}
                         </BlurFade>
 
-                        {/* RIGHT: attendee list */}
+                        {/* RIGHT: attendee table */}
                         <BlurFade delay={0.1} className="flex-1 flex flex-col gap-0 min-w-0">
                             <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex flex-col">
-                                {/* List header */}
-                                <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
-                                    <div className="flex items-center gap-3">
-                                        <Activity size={15} className="text-lime-400" />
-                                        <span className="text-white font-bold text-base capitalize">
-                                            {diaActivo?.fechaLarga ?? 'Seleccioná un día'}
-                                        </span>
-                                        {activeSlot && (
-                                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white/[0.08] text-white/75">
-                                                {activeSlot}
-                                            </span>
-                                        )}
+                                {/* Table header: title + search + filter */}
+                                <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/[0.06] flex-wrap">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-9 h-9 rounded-xl bg-lime-400/10 flex items-center justify-center shrink-0">
+                                            <Activity size={16} className="text-lime-400" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-white font-bold text-base leading-tight truncate">
+                                                {activeSlot ? `Asistencias · ${activeSlot}` : 'Asistencias del día'}
+                                            </p>
+                                            <p className="text-white/45 text-xs capitalize truncate">{diaActivo?.fechaLarga ?? 'Seleccioná un día'}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                                         {loadingHoy && (
                                             <div className="w-4 h-4 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin" />
                                         )}
+                                        <span className="text-white/60 text-sm font-semibold whitespace-nowrap">
+                                            {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
+                                        </span>
+                                        <div className="relative">
+                                            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none" />
+                                            <input
+                                                value={searchQuery}
+                                                onChange={(e) => { setSearchQuery(e.target.value); setListPage(0); }}
+                                                placeholder="Buscar alumno..."
+                                                className="w-36 sm:w-48 bg-white/[0.06] border border-white/[0.1] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/35 focus:outline-none focus:border-lime-400/40 focus:bg-white/[0.08] transition-all"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <select
+                                                value={filterActividad}
+                                                onChange={(e) => { setFilterActividad(e.target.value); setListPage(0); }}
+                                                className="appearance-none bg-white/[0.06] border border-white/[0.1] rounded-xl pl-3 pr-7 py-1.5 text-xs font-semibold text-white/80 focus:outline-none focus:border-lime-400/40 cursor-pointer"
+                                            >
+                                                <option value="Todos">Todos</option>
+                                                {TODAS_ACTIVIDADES.map(act => <option key={act} value={act}>{act}</option>)}
+                                            </select>
+                                            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                                        </div>
                                         {activeSlot && (
                                             <button onClick={() => { setActiveSlot(null); setListPage(0); }}
-                                                className="text-xs text-white/60 hover:text-white font-semibold transition-colors">
+                                                className="text-xs text-white/60 hover:text-white font-semibold transition-colors whitespace-nowrap">
                                                 Ver todos
                                             </button>
                                         )}
-                                        {listToShow.length > 0 && (
-                                            <span className="text-white/60 text-sm font-semibold">{listToShow.length} {listToShow.length === 1 ? 'asistente' : 'asistentes'}</span>
-                                        )}
                                     </div>
                                 </div>
+
+                                {/* Column headers */}
+                                {diaActivo && (filteredAlumnos.length > 0 || filteredDepaso.length > 0) && (
+                                    <div className="hidden sm:flex items-center gap-3 px-5 py-2 border-b border-white/[0.06] bg-white/[0.02]">
+                                        <button onClick={() => toggleSort('nombre')} className="flex items-center gap-1 flex-1 min-w-0 text-left group">
+                                            <span className={cn('text-[10px] font-bold uppercase tracking-[0.12em] transition-colors', sortBy === 'nombre' ? 'text-lime-400' : 'text-white/40 group-hover:text-white/60')}>Alumno</span>
+                                            <ArrowUpDown size={10} className={cn('transition-colors', sortBy === 'nombre' ? 'text-lime-400' : 'text-white/25')} />
+                                        </button>
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 w-32 shrink-0">Actividad</span>
+                                        <button onClick={() => toggleSort('hora')} className="flex items-center gap-1 w-16 shrink-0 text-left group">
+                                            <span className={cn('text-[10px] font-bold uppercase tracking-[0.12em] transition-colors', sortBy === 'hora' ? 'text-lime-400' : 'text-white/40 group-hover:text-white/60')}>Hora</span>
+                                            <ArrowUpDown size={10} className={cn('transition-colors', sortBy === 'hora' ? 'text-lime-400' : 'text-white/25')} />
+                                        </button>
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 w-28 shrink-0 text-right">Estado</span>
+                                    </div>
+                                )}
 
                                 {/* Attendee rows */}
                                 <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
@@ -622,13 +682,14 @@ export default function HomePage() {
                                             </div>
                                             <p className="text-white/55 text-sm font-medium">Seleccioná un día para ver asistencias</p>
                                         </div>
-                                    ) : listToShow.length === 0 && diaActivo.depaso.length === 0 ? (
+                                    ) : filteredAlumnos.length === 0 && filteredDepaso.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 gap-3">
                                             <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center">
                                                 <Users size={22} className="text-white/45" />
                                             </div>
                                             <p className="text-white/55 text-sm font-medium">
-                                                {activeSlot ? `Sin asistentes en el turno ${activeSlot.toLowerCase()}` : 'Sin asistencias este día'}
+                                                {searchQuery || filterActividad !== 'Todos' ? 'Sin resultados para ese filtro'
+                                                    : activeSlot ? `Sin asistentes en el turno ${activeSlot.toLowerCase()}` : 'Sin asistencias este día'}
                                             </p>
                                         </div>
                                     ) : (
@@ -668,24 +729,33 @@ export default function HomePage() {
                                                                         <p className={cn('font-semibold text-base truncate', debe ? 'text-red-300' : 'text-white/90')}>
                                                                             {a.apellido}, {a.nombre}
                                                                         </p>
-                                                                        <p className="text-xs text-white/55 mt-0.5">{a.actividad}</p>
+                                                                        {a.dni && <p className="text-[11px] text-white/40 mt-0.5 tabular-nums">DNI {a.dni}</p>}
                                                                     </div>
-                                                                    {isNew && (
-                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
-                                                                            <CheckCircle2 size={8} /> Nuevo
-                                                                        </span>
-                                                                    )}
-                                                                    {debe && (
-                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                                            <AlertTriangle size={8} /> Debe
-                                                                        </span>
-                                                                    )}
-                                                                    {sinCuota && (
-                                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.07] text-white/55 shrink-0">Sin cuota</span>
-                                                                    )}
-                                                                    <div className="flex items-center gap-1 shrink-0">
-                                                                        <span className="text-white/55 text-sm tabular-nums font-medium">{a.hora}</span>
-                                                                        <ChevronRight size={11} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                                                                    <div className="hidden sm:flex items-center gap-1.5 w-32 shrink-0 text-white/60">
+                                                                        <Dumbbell size={12} className="text-white/35 shrink-0" />
+                                                                        <span className="text-xs font-medium truncate">{a.actividad}</span>
+                                                                    </div>
+                                                                    <span className="hidden sm:block text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
+                                                                    <div className="flex items-center justify-end gap-1 flex-wrap w-auto sm:w-28 shrink-0">
+                                                                        {isNew && (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
+                                                                                <CheckCircle2 size={8} /> Nuevo
+                                                                            </span>
+                                                                        )}
+                                                                        {debe && (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                                                                <AlertTriangle size={8} /> Debe
+                                                                            </span>
+                                                                        )}
+                                                                        {!isNew && !debe && (
+                                                                            <span className={cn(
+                                                                                'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0',
+                                                                                sinCuota ? 'bg-white/[0.08] text-white/55' : 'bg-lime-400/15 text-lime-400',
+                                                                            )}>
+                                                                                <CheckCircle2 size={8} /> Asistió
+                                                                            </span>
+                                                                        )}
+                                                                        <ChevronRight size={11} className="hidden sm:block text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
                                                                     </div>
                                                                 </Link>
                                                             </motion.div>
@@ -695,44 +765,43 @@ export default function HomePage() {
                                             )}
 
                                             {/* Pagination */}
-                                            {totalPages > 1 && (
+                                            {filteredAlumnos.length > 0 && (
                                                 <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
-                                                    <button
-                                                        onClick={() => setListPage(p => Math.max(0, p - 1))}
-                                                        disabled={listPage === 0}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
-                                                        <ChevronLeft size={14} /> Anterior
-                                                    </button>
-                                                    <div className="flex items-center gap-1.5">
-                                                        {Array.from({ length: totalPages }, (_, i) => (
-                                                            <button key={i} onClick={() => setListPage(i)}
-                                                                className={cn(
-                                                                    'w-7 h-7 rounded-lg text-xs font-bold transition-all',
-                                                                    i === listPage ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.06]',
-                                                                )}>
-                                                                {i + 1}
+                                                    <span className="text-white/40 text-xs font-medium whitespace-nowrap">
+                                                        Mostrando {listToShow.length} de {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
+                                                    </span>
+                                                    {totalPages > 1 && (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <button
+                                                                onClick={() => setListPage(p => Math.max(0, p - 1))}
+                                                                disabled={listPage === 0}
+                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                                <ChevronLeft size={14} />
                                                             </button>
-                                                        ))}
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setListPage(p => Math.min(totalPages - 1, p + 1))}
-                                                        disabled={listPage === totalPages - 1}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
-                                                        Siguiente <ChevronRight size={14} />
-                                                    </button>
+                                                            <span className="min-w-[1.75rem] h-7 px-2 rounded-lg bg-lime-400 text-black text-xs font-bold flex items-center justify-center tabular-nums">
+                                                                {listPage + 1}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => setListPage(p => Math.min(totalPages - 1, p + 1))}
+                                                                disabled={listPage === totalPages - 1}
+                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                                <ChevronRight size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
                                             {/* De paso section */}
-                                            {diaActivo.depaso.length > 0 && (
+                                            {filteredDepaso.length > 0 && (
                                                 <div className="border-t border-white/[0.06]">
                                                     <div className="flex items-center gap-2 px-5 py-2.5 bg-teal-400/[0.06]">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
                                                         <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">De paso</span>
-                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400">{diaActivo.depaso.length}</span>
+                                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400">{filteredDepaso.length}</span>
                                                     </div>
                                                     <AnimatePresence initial={false}>
-                                                        {diaActivo.depaso.map((a) => {
+                                                        {filteredDepaso.map((a) => {
                                                             const isNew = justArrived.has(`d-${a.id}`);
                                                             return (
                                                                 <motion.div
@@ -751,14 +820,23 @@ export default function HomePage() {
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <p className="text-base font-semibold text-white/85 truncate">{a.apellido}, {a.nombre}</p>
-                                                                        <p className="text-xs text-teal-400/70 mt-0.5">{a.actividad}</p>
                                                                     </div>
-                                                                    {isNew && (
-                                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
-                                                                            <CheckCircle2 size={8} /> Nuevo
-                                                                        </span>
-                                                                    )}
-                                                                    <span className="text-white/55 text-sm tabular-nums font-medium shrink-0">{a.hora}</span>
+                                                                    <div className="hidden sm:flex items-center gap-1.5 w-32 shrink-0 text-teal-400/70">
+                                                                        <Dumbbell size={12} className="shrink-0" />
+                                                                        <span className="text-xs font-medium truncate">{a.actividad}</span>
+                                                                    </div>
+                                                                    <span className="hidden sm:block text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
+                                                                    <div className="flex items-center justify-end gap-1 w-auto sm:w-28 shrink-0">
+                                                                        {isNew ? (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
+                                                                                <CheckCircle2 size={8} /> Nuevo
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400 shrink-0">
+                                                                                <CheckCircle2 size={8} /> Asistió
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
                                                                 </motion.div>
                                                             );
                                                         })}
