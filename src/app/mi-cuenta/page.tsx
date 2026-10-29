@@ -607,10 +607,7 @@ export default function MiCuentaPage() {
                                                     <NumberTicker value={planEjDone} />
                                                 </p>
                                                 <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
-                                                <div className="flex flex-col items-start">
-                                                    <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{planEjTotal}</p>
-                                                    <p className="text-slate-400 text-[10px] font-semibold mt-0.5">sesiones</p>
-                                                </div>
+                                                <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{planEjTotal}</p>
                                             </div>
                                             <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-slate-100" />
                                             <button onClick={()=>changeTab('plan')}
@@ -631,10 +628,7 @@ export default function MiCuentaPage() {
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
                                                 <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
-                                                <div className="flex flex-col items-start">
-                                                    <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{plan.duracion}</p>
-                                                    <p className="text-slate-400 text-[10px] font-semibold mt-0.5">sesiones</p>
-                                                </div>
+                                                <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{plan.duracion}</p>
                                             </div>
                                             <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-slate-100" />
                                             <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold text-lime-500">
