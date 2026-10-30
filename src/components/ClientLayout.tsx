@@ -56,6 +56,19 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
     const [swipeX, setSwipeX] = useState(0);
     const [isSwipingBack, setIsSwipingBack] = useState(false);
 
+    // ── Reloj del header (solo recepción) ──
+    const [horaHeader, setHoraHeader] = useState('');
+    useEffect(() => {
+        if (session?.user?.role !== 'recepcion') return;
+        const tick = () => {
+            const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+            setHoraHeader(`${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`);
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [session?.user?.role]);
+
     // ── Gesture ref (shared mutable state for event closures) ──
     const g = useRef({
         startX: 0, startY: 0,
@@ -501,7 +514,13 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         />
                     </Link>
 
-                    <div className="w-8" />
+                    {role === 'recepcion' ? (
+                        <p className="hidden sm:block text-white font-black text-2xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
+                            {horaHeader || '--:--'}
+                        </p>
+                    ) : (
+                        <div className="w-8" />
+                    )}
                 </div>
             </header>
 

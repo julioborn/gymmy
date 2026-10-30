@@ -214,7 +214,6 @@ export default function HomePage() {
     const [sortBy, setSortBy] = useState<'nombre' | 'hora'>('hora');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
     const [loadingHoy, setLoadingHoy] = useState(false);
-    const [horaArg, setHoraArg] = useState('');
     const [savingActividades, setSavingActividades] = useState(false);
     const [showBalance, setShowBalance] = useState(() => {
         if (typeof window === 'undefined') return true;
@@ -339,17 +338,6 @@ export default function HomePage() {
     }, []);
 
     useAttendanceEvents(fetchAsistencias);
-
-    useEffect(() => {
-        if (session?.user?.role !== 'recepcion') return;
-        const tick = () => {
-            const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
-            setHoraArg(`${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`);
-        };
-        tick();
-        const id = setInterval(tick, 1000);
-        return () => clearInterval(id);
-    }, [session?.user?.role]);
 
     useEffect(() => {
         if (!session || session.user?.role === 'alumno') return;
@@ -479,42 +467,6 @@ export default function HomePage() {
                 <ArrivalToastStack toasts={arrivalToasts} />
 
                 <div className="relative max-w-[1400px] mx-auto px-5 py-4 flex flex-col gap-3">
-
-                    {/* ── TOP BAR ────────────────────────────────────────── */}
-                    <BlurFade delay={0}>
-                        <div className="relative flex items-center justify-between" style={{ minHeight: 72 }}>
-                            {/* Left: label */}
-                            <div className="flex items-center w-[280px] shrink-0 self-center">
-                                <span className="text-white/60 text-[11px] font-bold uppercase tracking-[0.2em]">Recepción</span>
-                            </div>
-
-                            {/* Center: clock — truly centered via absolute */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <p className="text-white font-black text-5xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
-                                    {horaArg || '--:--'}
-                                </p>
-                            </div>
-
-                            {/* Right: action buttons */}
-                            <div className="flex items-center gap-2 w-[280px] shrink-0 justify-end self-center">
-                                <Link href="/alumnos"
-                                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold">
-                                    <Users size={13} />
-                                    Alumnos
-                                </Link>
-                                <Link href="/alumnos/nuevo"
-                                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold">
-                                    <UserPlus size={13} />
-                                    Nuevo
-                                </Link>
-                                <button onClick={handleAlumnoDePasoGlobal}
-                                    className="flex items-center gap-1.5 px-3.5 py-2 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20 whitespace-nowrap">
-                                    <UserPlus size={13} />
-                                    De paso
-                                </button>
-                            </div>
-                        </div>
-                    </BlurFade>
 
                     {/* ── MAIN GRID ──────────────────────────────────────── */}
                     <div className="flex gap-4">
@@ -655,6 +607,22 @@ export default function HomePage() {
                                                 Ver todos
                                             </button>
                                         )}
+                                        <div className="w-px h-6 bg-white/[0.08] mx-0.5 shrink-0" />
+                                        <Link href="/alumnos"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
+                                            <Users size={13} />
+                                            Alumnos
+                                        </Link>
+                                        <Link href="/alumnos/nuevo"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
+                                            <UserPlus size={13} />
+                                            Nuevo
+                                        </Link>
+                                        <button onClick={handleAlumnoDePasoGlobal}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20 whitespace-nowrap">
+                                            <UserPlus size={13} />
+                                            De paso
+                                        </button>
                                     </div>
                                 </div>
 
