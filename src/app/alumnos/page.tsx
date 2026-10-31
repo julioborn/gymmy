@@ -50,7 +50,7 @@ function calcularDiasRestantes(plan: any, asistencias: any[], planAlumnoActivo?:
 }
 
 function verificarPagoMesActual(pagos: any[], exentoCuota?: boolean): boolean {
-    return estaAlDia({ pagos, exentoCuota }, getMesActual());
+    return estaAlDia({ pagos, exentoCuota }, getMesActual(new Date()));
 }
 
 export default function ListaAlumnosPage() {
@@ -292,7 +292,7 @@ export default function ListaAlumnosPage() {
     };
 
     const handleGenerateExcel = () => {
-        const mesActual = getMesActual();
+        const mesActual = getMesActual(new Date());
         const mesLabel = new Date().toLocaleString('es-ES', { month: 'long', year: 'numeric' });
 
         const formattedData = [...alumnos]

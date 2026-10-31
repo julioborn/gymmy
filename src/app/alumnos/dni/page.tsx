@@ -215,7 +215,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             if (!asistenciaResponse.ok) throw new Error(await asistenciaResponse.text());
 
             // Detectar si tiene la cuota del mes pagada (o está exento, o tiene un pago especial vigente)
-            const cuotaPaga = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, getMesActual());
+            const cuotaPaga = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, getMesActual(new Date()));
 
             if (cuotaPaga) playSuccess(); else playDebt();
             showFeedback(cuotaPaga ? 'paid' : 'debt', actividad, alumno.nombre);

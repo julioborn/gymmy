@@ -250,7 +250,7 @@ export default function HomePage() {
         if (!session || session.user?.role !== 'recepcion') return;
         setLoadingHoy(true);
         const ARG = -3 * 60 * 60 * 1000;
-        const mesActual = getMesActual();
+        const mesActual = getMesActual(new Date());
         Promise.all([
             fetch('/api/alumnos').then(r => r.json()),
             fetch('/api/alumnos-de-paso').then(r => r.json()),

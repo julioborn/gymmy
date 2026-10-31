@@ -6,7 +6,13 @@ export type PagoLike = {
     [key: string]: any;
 };
 
-export function getMesActual(fecha: Date = new Date()): string {
+/**
+ * Nombre del mes en español para la fecha dada. OJO con la zona horaria del caller:
+ * en el cliente (navegador, ya en hora Argentina) pasar `new Date()` tal cual; en
+ * el server (Vercel corre en UTC) pasar una fecha ya desplazada -3h, ej.
+ * `new Date(Date.now() - 3 * 60 * 60 * 1000)`.
+ */
+export function getMesActual(fecha: Date): string {
     return fecha.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
 }
 

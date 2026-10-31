@@ -4,7 +4,7 @@ import Gasto from '@/models/Gasto';
 import Ingreso from '@/models/Ingreso';
 import { NextResponse } from 'next/server';
 import { requireGymAuth } from '@/lib/requireAuth';
-import { estaAlDia, pagoVigente } from '@/lib/pagos';
+import { estaAlDia, getMesActual } from '@/lib/pagos';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,15 +15,17 @@ export async function GET() {
 
     await connectMongoDB();
 
-    const now = new Date();
-    const mesActual = now.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
-    const anioActual = now.getFullYear();
-    const mesIdx = now.getMonth();
+    // El server corre en UTC (Vercel); todo "hoy"/"este mes" se calcula en hora
+    // Argentina desplazando cada instante -3h antes de leer sus campos de fecha.
+    const ARG = -3 * 60 * 60 * 1000;
+    const nowArg = new Date(Date.now() + ARG);
+    const mesActual = getMesActual(nowArg);
+    const anioActual = nowArg.getUTCFullYear();
+    const mesIdx = nowArg.getUTCMonth();
+    const hoyDia = nowArg.getUTCDate();
 
-    const inicioMes = new Date(anioActual, mesIdx, 1);
-    const finMes = new Date(anioActual, mesIdx + 1, 0, 23, 59, 59);
-    const inicioHoy = new Date(now); inicioHoy.setHours(0, 0, 0, 0);
-    const finHoy = new Date(now); finHoy.setHours(23, 59, 59, 999);
+    const inicioMes = new Date(Date.UTC(anioActual, mesIdx, 1) - ARG);
+    const finMes = new Date(Date.UTC(anioActual, mesIdx + 1, 0, 23, 59, 59) - ARG);
 
     const [alumnos, gastosData, ingresosData] = await Promise.all([
         Alumno.find({ gimnasioId }).lean(),
@@ -59,9 +61,9 @@ export async function GET() {
     for (const a of alumnos) {
         for (const s of a.asistencia as any[]) {
             if (!s.presente) continue;
-            const f = new Date(s.fecha);
-            if (f.getFullYear() === anioActual && f.getMonth() === mesIdx) {
-                horasEsteMes.push(f.getHours());
+            const fArg = new Date(new Date(s.fecha).getTime() + ARG);
+            if (fArg.getUTCFullYear() === anioActual && fArg.getUTCMonth() === mesIdx) {
+                horasEsteMes.push(fArg.getUTCHours());
             }
         }
     }
@@ -76,15 +78,19 @@ export async function GET() {
     let asistenciasHoy = 0;
     const asistenciasHoyFranja = { manana: 0, siesta: 0, tarde: 0 };
     for (const a of alumnos) {
-        const asistHoy = (a.asistencia as any[]).find(s => {
-            const f = new Date(s.fecha);
-            return s.presente && f >= inicioHoy && f <= finHoy;
-        });
-        if (asistHoy) {
+        let horaHoy: number | null = null;
+        for (const s of a.asistencia as any[]) {
+            if (!s.presente) continue;
+            const fArg = new Date(new Date(s.fecha).getTime() + ARG);
+            if (fArg.getUTCFullYear() === anioActual && fArg.getUTCMonth() === mesIdx && fArg.getUTCDate() === hoyDia) {
+                horaHoy = fArg.getUTCHours();
+                break;
+            }
+        }
+        if (horaHoy !== null) {
             asistenciasHoy++;
-            const h = new Date(asistHoy.fecha).getHours();
-            if (h < 12) asistenciasHoyFranja.manana++;
-            else if (h < 16) asistenciasHoyFranja.siesta++;
+            if (horaHoy < 12) asistenciasHoyFranja.manana++;
+            else if (horaHoy < 16) asistenciasHoyFranja.siesta++;
             else asistenciasHoyFranja.tarde++;
         }
     }
@@ -94,8 +100,8 @@ export async function GET() {
     const ingresosCuotas = alumnos.reduce((sum, a) => {
         return sum + (a.pagos as any[])
             .filter(p => {
-                const f = new Date(p.fechaPago);
-                return f.getMonth() === mesIdx && f.getFullYear() === anioActual;
+                const fArg = new Date(new Date(p.fechaPago).getTime() + ARG);
+                return fArg.getUTCMonth() === mesIdx && fArg.getUTCFullYear() === anioActual;
             })
             .reduce((s: number, p: any) => s + (p.totalPagado ?? p.tarifa ?? 0), 0);
     }, 0);

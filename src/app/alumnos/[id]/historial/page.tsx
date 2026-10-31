@@ -76,7 +76,7 @@ type Alumno = {
 };
 
 function verificarPagoMesActual(pagos: Pago[], exentoCuota?: boolean): boolean {
-    return estaAlDia({ pagos, exentoCuota }, getMesActual());
+    return estaAlDia({ pagos, exentoCuota }, getMesActual(new Date()));
 }
 
 function capitalizar(texto: string) {
