@@ -1026,6 +1026,43 @@ export default function HistorialAlumnoPage() {
         } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' }); }
     };
 
+    const handleVaciarHistorial = async () => {
+        if (!alumno) return;
+        const nombreCompleto = `${alumno.nombre} ${alumno.apellido}`;
+        const { value: confirmText } = await Swal.fire({
+            ...swalDanger,
+            title: 'Vaciar historial',
+            html: `
+                <div class="swal-form-body">
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin:0 0 1rem;">
+                        Esto borra <strong>todas las asistencias y todos los pagos</strong> de <strong>${nombreCompleto}</strong>, de todos los meses. No se puede deshacer.
+                    </p>
+                    <label class="swal-form-label">Escribí "${nombreCompleto}" para confirmar</label>
+                    <input id="swal-confirm-nombre" class="swal2-input" placeholder="${nombreCompleto}">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Vaciar historial',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => (document.getElementById('swal-confirm-nombre') as HTMLInputElement).value,
+        });
+        if (confirmText !== nombreCompleto) {
+            if (confirmText !== undefined) Swal.fire({ ...swalNotify, icon: 'error', title: 'El nombre no coincide, no se hizo ningún cambio' });
+            return;
+        }
+        try {
+            const res = await fetch(`/api/alumnos/${id}/reset-historial`, { method: 'POST' });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Historial vaciado correctamente' });
+                fetchAlumno();
+            } else {
+                const d = await res.json().catch(() => ({}));
+                Swal.fire({ ...swalNotify, icon: 'error', title: d.error || 'Error al vaciar el historial' });
+            }
+        } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' }); }
+    };
+
     const eliminarAlumno = async () => {
         const result = await Swal.fire({
             ...swalDanger,
@@ -2157,6 +2194,12 @@ export default function HistorialAlumnoPage() {
                             <button onClick={handleResetPassword} className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.14] text-white/50 text-sm font-semibold rounded-xl transition-all active:scale-95">
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" /></svg>
                                 Resetear contraseña
+                            </button>
+                        )}
+                        {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                            <button onClick={handleVaciarHistorial} className="flex items-center gap-2 px-4 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 text-sm font-semibold rounded-xl transition-all active:scale-95 border border-orange-500/20">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                Vaciar historial
                             </button>
                         )}
                         <button onClick={eliminarAlumno} className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-all active:scale-95 ml-auto border border-red-500/20">
