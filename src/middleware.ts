@@ -10,7 +10,8 @@ export async function middleware(req: NextRequest) {
     const isPublic = publicPaths.includes(pathname) ||
         pathname.startsWith('/icons') ||
         pathname.startsWith('/login/') ||
-        pathname.startsWith('/registro/');
+        pathname.startsWith('/registro/') ||
+        /\.[a-zA-Z0-9]+$/.test(pathname); // archivos estáticos sueltos en /public (imágenes, etc.)
 
     if (isPublic) return NextResponse.next();
 
