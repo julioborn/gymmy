@@ -17,7 +17,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
     try {
         const alumno = await Alumno.findOneAndUpdate(
             { _id: id, gimnasioId },
-            { $set: { asistencia: [], pagos: [] } },
+            {
+                $set: {
+                    asistencia: [],
+                    pagos: [],
+                    planEntrenamientoHistorial: [],
+                    planEntrenamiento: { fechaInicio: null, duracion: null, diasRestantes: null, terminado: false },
+                },
+            },
             { new: true },
         );
 

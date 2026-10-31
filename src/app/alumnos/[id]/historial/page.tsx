@@ -1035,7 +1035,7 @@ export default function HistorialAlumnoPage() {
             html: `
                 <div class="swal-form-body">
                     <p style="color:rgba(255,255,255,0.6);font-size:0.875rem;margin:0 0 1rem;">
-                        Esto borra <strong>todas las asistencias y todos los pagos</strong> de <strong>${nombreCompleto}</strong>, de todos los meses. No se puede deshacer.
+                        Esto borra <strong>todas las asistencias, todos los pagos y el historial de planes de entrenamiento</strong> de <strong>${nombreCompleto}</strong>, de todos los meses. No se puede deshacer.
                     </p>
                     <label class="swal-form-label">Escribí "${nombreCompleto}" para confirmar</label>
                     <input id="swal-confirm-nombre" class="swal2-input" placeholder="${nombreCompleto}">
