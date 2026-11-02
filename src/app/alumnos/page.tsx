@@ -561,6 +561,9 @@ export default function ListaAlumnosPage() {
                         <div className="space-y-2">
                             {paginatedAlumnos.map((alumno) => {
                                 const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
+                                const pagoInfo = alumno.exentoCuota ? null : pagoVigente(alumno.pagos, getMesActual(new Date()));
+                                const metodoLabel = pagoInfo?.metodoPago === 'mixto' ? 'Mixto' : pagoInfo?.metodoPago === 'mercadopago' ? 'MercadoPago' : pagoInfo?.metodoPago;
+                                const metodoCls = pagoInfo?.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : pagoInfo?.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
                                 const dr = alumno.diasRestantes;
                                 const planText = dr != null
                                     ? `${dr} día${dr !== 1 ? 's' : ''} de plan`
@@ -598,7 +601,19 @@ export default function ListaAlumnosPage() {
                                             )}
                                         </div>
                                         <div className="shrink-0 flex items-center gap-2">
-                                            {pagado ? (
+                                            {alumno.exentoCuota ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/[0.08] text-white/50 whitespace-nowrap">
+                                                    Exenta
+                                                </span>
+                                            ) : pagado && pagoInfo ? (
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${metodoCls}`}>
+                                                    <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <span className="capitalize">{metodoLabel}</span>
+                                                    <span className="tabular-nums">${(pagoInfo.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                </span>
+                                            ) : pagado ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
