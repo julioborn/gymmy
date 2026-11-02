@@ -160,7 +160,8 @@ export default function MiCuentaPage() {
     const [vigLoading, setVigLoading] = useState(false);
     const [vigSearch, setVigSearch] = useState('');
     const [vigToggling, setVigToggling] = useState<string | null>(null);
-    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const avatarTapCount = useRef(0);
+    const avatarTapResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isWatcher = alumno?.dni === '43844409';
 
     useEffect(() => {
@@ -470,12 +471,16 @@ export default function MiCuentaPage() {
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
     ];
 
-    const startAvatarPress = () => {
+    const handleAvatarTap = () => {
         if (!isWatcher) return;
-        longPressTimer.current = setTimeout(() => { changeTab('avisos'); }, 5000);
-    };
-    const cancelAvatarPress = () => {
-        if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+        avatarTapCount.current += 1;
+        if (avatarTapResetTimer.current) clearTimeout(avatarTapResetTimer.current);
+        if (avatarTapCount.current >= 5) {
+            avatarTapCount.current = 0;
+            changeTab('avisos');
+            return;
+        }
+        avatarTapResetTimer.current = setTimeout(() => { avatarTapCount.current = 0; }, 1500);
     };
 
     const toggleVigilancia = async (targetId: string) => {
@@ -518,12 +523,8 @@ export default function MiCuentaPage() {
                             <BlurFade delay={0}>
                                 <div className="relative shrink-0">
                                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl select-none"
-                                        style={{ background: 'linear-gradient(135deg, #f97316, #fb923c)', WebkitTouchCallout: 'none' }}
-                                        onPointerDown={startAvatarPress}
-                                        onPointerUp={cancelAvatarPress}
-                                        onPointerLeave={cancelAvatarPress}
-                                        onPointerCancel={cancelAvatarPress}
-                                        onContextMenu={(e) => e.preventDefault()}>
+                                        style={{ background: 'linear-gradient(135deg, #f97316, #fb923c)' }}
+                                        onClick={handleAvatarTap}>
                                         <span className="text-white font-bold text-2xl tracking-wide">{initials}</span>
                                     </div>
                                     {/* Status dot */}
