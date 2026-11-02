@@ -132,7 +132,7 @@ function fmtDate(): string {
 type Tarifa = { dias: number; valor: number };
 type AlumnoAsistencia = {
     nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean; dni: string;
-    exentoCuota?: boolean; metodoPago?: string; montoPagado?: number;
+    exentoCuota?: boolean; metodoPago?: string; montoPagado?: number; fechaPago?: string;
 };
 type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string; metodoPago?: string; monto?: number };
 type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
@@ -285,6 +285,7 @@ export default function HomePage() {
                         nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '',
                         hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado, dni: al.dni ?? '',
                         exentoCuota: !!al.exentoCuota, metodoPago: pagoInfo?.metodoPago, montoPagado: pagoInfo?.tarifa,
+                        fechaPago: pagoInfo?.fechaPago,
                     });
                 }
             }
@@ -734,6 +735,7 @@ export default function HomePage() {
                                                                             )}>
                                                                                 <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
                                                                                 {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
+                                                                                {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && !a.pagado && (

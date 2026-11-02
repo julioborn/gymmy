@@ -351,11 +351,14 @@ export default function ListaAlumnosPage() {
     const slotOf = (hour: number): TurnSlot =>
         hour < 12 ? 'mañana' : hour < 15 ? 'siesta' : hour < 20 ? 'tarde' : 'noche';
 
-    const hoyPorTurno: Record<TurnSlot, { nombre: string; apellido: string; actividad: string; hora: string; id: string }[]> = {
+    const hoyPorTurno: Record<TurnSlot, { nombre: string; apellido: string; actividad: string; hora: string; id: string; exentoCuota?: boolean; pagado?: boolean; metodoPago?: string; monto?: number; fechaPago?: string }[]> = {
         mañana: [], siesta: [], tarde: [], noche: [],
     };
     if (!isLoading) {
+        const mesActualHoy = getMesActual(new Date());
         for (const alumno of alumnos) {
+            const pagadoHoy = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
+            const pagoInfoHoy = alumno.exentoCuota ? null : pagoVigente(alumno.pagos, mesActualHoy);
             for (const a of (alumno.asistencia || [])) {
                 if (!a.presente) continue;
                 const { key, hour, hora } = getArgInfo(a.fecha);
@@ -363,6 +366,8 @@ export default function ListaAlumnosPage() {
                 hoyPorTurno[slotOf(hour)].push({
                     nombre: alumno.nombre, apellido: alumno.apellido,
                     actividad: a.actividad, hora, id: alumno._id,
+                    exentoCuota: !!alumno.exentoCuota, pagado: pagadoHoy,
+                    metodoPago: pagoInfoHoy?.metodoPago, monto: pagoInfoHoy?.tarifa, fechaPago: pagoInfoHoy?.fechaPago,
                 });
             }
         }
@@ -518,6 +523,21 @@ export default function ListaAlumnosPage() {
                                                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
                                                             {a.actividad}
                                                         </span>
+                                                        {a.exentoCuota ? (
+                                                            <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50 shrink-0">
+                                                                Exenta
+                                                            </span>
+                                                        ) : a.pagado && a.metodoPago ? (
+                                                            <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 ${a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
+                                                                {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
+                                                                {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
+                                                            </span>
+                                                        ) : !a.pagado ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                                                                Debe
+                                                            </span>
+                                                        ) : null}
                                                         <span className="text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                     </div>
                                                 ))}
@@ -619,12 +639,12 @@ export default function ListaAlumnosPage() {
                                                     Exenta
                                                 </span>
                                             ) : pagado && pagoInfo ? (
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${metodoCls}`}>
-                                                    <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                                                    </svg>
+                                                <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap ${metodoCls}`}>
                                                     <span className="capitalize">{metodoLabel}</span>
                                                     <span className="tabular-nums">${(pagoInfo.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                    {pagoInfo.fechaPago && (
+                                                        <span className="tabular-nums opacity-70">{new Date(pagoInfo.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
+                                                    )}
                                                 </span>
                                             ) : pagado ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
