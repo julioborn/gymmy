@@ -440,6 +440,17 @@ export default function ListaAlumnosPage() {
                                 Balance
                             </button>
                         )}
+                        {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                            <button
+                                onClick={() => router.push('/alumnos/revision-nombres')}
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                                Revisar nombres
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
