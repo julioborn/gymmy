@@ -580,21 +580,20 @@ export default function MiCuentaPage() {
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Plan activo</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Plan activo</p>
                                             </div>
-                                            <p className="text-slate-900 font-bold text-sm leading-snug truncate">{planEj.nombre}</p>
-                                            <p className="text-slate-400 text-[10px] mt-0.5 mb-3 truncate">{planEj.categoria}</p>
-                                            <div className="flex items-end gap-1.5 mb-3">
-                                                <p className="font-black text-3xl leading-none tabular-nums text-emerald-600">
+                                            <p className="text-slate-900 font-bold text-base leading-snug truncate">{planEj.nombre}</p>
+                                            <div className="flex items-end gap-1.5 mb-3 mt-2">
+                                                <p className="font-black text-4xl leading-none tabular-nums text-emerald-600">
                                                     <NumberTicker value={planEjDone} />
                                                 </p>
-                                                <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
-                                                <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{planEjTotal}</p>
+                                                <span className="text-slate-300 font-bold text-3xl leading-none pb-px">/</span>
+                                                <p className="text-slate-500 font-black text-4xl leading-none tabular-nums">{planEjTotal}</p>
                                             </div>
                                             <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-slate-100" />
                                             <button onClick={()=>changeTab('plan')}
-                                                className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                                                Ver plan <ChevronRight size={12} />
+                                                className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-600">
+                                                Ver plan <ChevronRight size={14} />
                                             </button>
                                         </div>
                                     </BlurFade>
@@ -607,18 +606,18 @@ export default function MiCuentaPage() {
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Plan activo</p>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Plan activo</p>
                                             </div>
                                             <div className="flex items-end gap-1.5 mb-3">
-                                                <p className="text-emerald-600 font-black text-3xl leading-none tabular-nums">
+                                                <p className="text-emerald-600 font-black text-4xl leading-none tabular-nums">
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
-                                                <span className="text-slate-300 font-bold text-2xl leading-none pb-px">/</span>
-                                                <p className="text-slate-500 font-black text-3xl leading-none tabular-nums">{plan.duracion}</p>
+                                                <span className="text-slate-300 font-bold text-3xl leading-none pb-px">/</span>
+                                                <p className="text-slate-500 font-black text-4xl leading-none tabular-nums">{plan.duracion}</p>
                                             </div>
                                             <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-slate-100" />
-                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-                                                Ver historial <ChevronRight size={12} />
+                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-600">
+                                                Ver historial <ChevronRight size={14} />
                                             </button>
                                         </div>
                                     </BlurFade>
@@ -631,10 +630,9 @@ export default function MiCuentaPage() {
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
                                             </div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Asistencias</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Asistencias</p>
                                         </div>
-                                        <p className="text-xs font-semibold text-slate-400 capitalize mb-2">{mesActual}</p>
-                                        <p className="text-slate-900 font-black text-3xl leading-none tabular-nums mb-auto">
+                                        <p className="text-slate-900 font-black text-4xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
                                         </p>
                                         {/* Mini bar chart */}
@@ -676,20 +674,17 @@ export default function MiCuentaPage() {
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
                                                 <Banknote size={16} className="text-white" />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Precios</p>
-                                                <p className="text-slate-900 font-bold text-sm">Cuotas por días/semana</p>
-                                            </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-300 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
+                                            <p className="flex-1 min-w-0 text-slate-900 font-bold text-base">Precios</p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-300 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {preciosExpanded && (
                                             <div className="border-t border-slate-100 divide-y divide-slate-100">
                                                 {tarifas.map(t => (
-                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3">
-                                                        <span className="text-slate-600 text-sm">{t.dias} día{t.dias !== 1 ? 's' : ''} por semana</span>
-                                                        <span className="text-amber-600 font-bold text-sm tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
+                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3.5">
+                                                        <span className="text-slate-700 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
+                                                        <span className="text-amber-600 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -703,19 +698,19 @@ export default function MiCuentaPage() {
                                 <BlurFade delay={0.1}>
                                     <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
                                         <div className="px-4 py-4">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Transferí tu cuota</p>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Transferí tu cuota</p>
                                             <div className="flex items-center justify-between gap-3">
-                                                <span className="text-slate-900 font-bold text-base truncate">{aliasGimnasio}</span>
+                                                <span className="text-slate-900 font-bold text-lg truncate">{aliasGimnasio}</span>
                                                 <button onClick={()=>{ navigator.clipboard.writeText(aliasGimnasio); setAliasCopied(true); setTimeout(()=>setAliasCopied(false),2000); }}
-                                                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 text-xs font-semibold">
-                                                    {aliasCopied ? <><Check size={13} className="text-lime-600" /><span className="text-lime-600">Copiado</span></> : <><Copy size={13} />Copiar</>}
+                                                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 text-sm font-semibold">
+                                                    {aliasCopied ? <><Check size={15} className="text-lime-600" /><span className="text-lime-600">Copiado</span></> : <><Copy size={15} />Copiar</>}
                                                 </button>
                                             </div>
                                         </div>
                                         <a href="https://www.mercadopago.com.ar" target="_blank" rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 py-3.5 bg-[#009EE3] hover:bg-[#0088CC] transition-colors">
-                                            <span className="text-white font-semibold text-sm">Abrir Mercado Pago</span>
-                                            <ExternalLink size={15} className="text-white" />
+                                            <span className="text-white font-bold text-base">Abrir Mercado Pago</span>
+                                            <ExternalLink size={17} className="text-white" />
                                         </a>
                                     </div>
                                 </BlurFade>
@@ -734,10 +729,10 @@ export default function MiCuentaPage() {
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
                                                         <Clock3 size={14} className="text-white" />
                                                     </div>
-                                                    <p className="font-bold text-sm text-slate-900">Últimas asistencias</p>
+                                                    <p className="font-bold text-base text-slate-900">Últimas asistencias</p>
                                                 </div>
-                                                <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-xs font-semibold text-sky-600">
-                                                    Ver todas <ChevronRight size={13} />
+                                                <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-600">
+                                                    Ver todas <ChevronRight size={15} />
                                                 </button>
                                             </div>
                                             <div className="divide-y divide-slate-100">
@@ -745,16 +740,16 @@ export default function MiCuentaPage() {
                                                     const d = new Date(a.fecha);
                                                     const color = ACTIVIDAD_COLOR[a.actividad] || '#6b7280';
                                                     return (
-                                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3">
-                                                            <div className="w-10 shrink-0">
-                                                                <p className="text-slate-900 font-bold text-base leading-none">{d.getDate()}</p>
-                                                                <p className="text-slate-400 text-[10px] font-semibold uppercase leading-none mt-0.5">{MESES_CORTO[d.getMonth()]}</p>
+                                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3.5">
+                                                            <div className="w-11 shrink-0">
+                                                                <p className="text-slate-900 font-bold text-lg leading-none">{d.getDate()}</p>
+                                                                <p className="text-slate-400 text-xs font-semibold uppercase leading-none mt-1">{MESES_CORTO[d.getMonth()]}</p>
                                                             </div>
                                                             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${color}20` }}>
                                                                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:color }} />
                                                             </div>
-                                                            <p className="flex-1 text-slate-700 font-semibold text-sm truncate">{a.actividad}</p>
-                                                            <span className="text-slate-400 text-xs font-medium tabular-nums">
+                                                            <p className="flex-1 text-slate-700 font-semibold text-base truncate">{a.actividad}</p>
+                                                            <span className="text-slate-400 text-sm font-medium tabular-nums">
                                                                 {d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}
                                                             </span>
                                                         </div>
