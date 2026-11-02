@@ -33,8 +33,9 @@ function inicioDeHoyArg(): Date {
 
 /**
  * Desde cuándo arranca el próximo turno: el fin del último cierre; si no hubo
- * ninguno hoy, el momento del primer pago (cuota o de paso) registrado hoy
- * -- no medianoche, el turno arranca con el primer movimiento real del día.
+ * ninguno hoy, el momento más temprano entre la primera asistencia marcada hoy
+ * y el primer pago (cuota o de paso) del día -- no medianoche, el turno
+ * arranca con el primer movimiento real del día, sea asistencia o pago.
  * Si todavía no se registró nada hoy, devuelve "ahora" (período vacío).
  */
 export async function obtenerFechaDesde(gimnasioId: string): Promise<Date> {
@@ -45,10 +46,14 @@ export async function obtenerFechaDesde(gimnasioId: string): Promise<Date> {
     const inicioHoy = inicioDeHoyArg();
     const ahora = new Date();
 
-    const [alumnosConPagoHoy, primerDepaso] = await Promise.all([
+    const [alumnosConPagoHoy, alumnosConAsistenciaHoy, primerDepaso] = await Promise.all([
         Alumno.find(
             { gimnasioId, 'pagos.fechaPago': { $gte: inicioHoy, $lte: ahora } },
             { pagos: 1 },
+        ).lean(),
+        Alumno.find(
+            { gimnasioId, 'asistencia.fecha': { $gte: inicioHoy, $lte: ahora } },
+            { asistencia: 1 },
         ).lean(),
         AlumnoDePaso.findOne({ gimnasioId, fecha: { $gte: inicioHoy, $lte: ahora } }).sort({ fecha: 1 }).lean(),
     ]);
@@ -63,8 +68,19 @@ export async function obtenerFechaDesde(gimnasioId: string): Promise<Date> {
         }
     }
 
+    let primerAsistenciaHoy: Date | null = null;
+    for (const a of alumnosConAsistenciaHoy as any[]) {
+        for (const s of a.asistencia || []) {
+            if (!s.presente) continue;
+            const f = new Date(s.fecha);
+            if (f >= inicioHoy && f <= ahora && (!primerAsistenciaHoy || f < primerAsistenciaHoy)) {
+                primerAsistenciaHoy = f;
+            }
+        }
+    }
+
     const primerDepasoFecha = primerDepaso ? new Date((primerDepaso as any).fecha) : null;
-    const candidatos = [primerPagoHoy, primerDepasoFecha].filter(Boolean) as Date[];
+    const candidatos = [primerPagoHoy, primerAsistenciaHoy, primerDepasoFecha].filter(Boolean) as Date[];
     if (candidatos.length === 0) return ahora;
 
     return candidatos.reduce((min, d) => (d < min ? d : min));
