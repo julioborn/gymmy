@@ -18,6 +18,8 @@ type Tarifa = {
     valor: number;
 };
 
+function normalize(s: string): string { return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+
 function calcularEdad(fechaNacimiento: string): number {
     const hoy = new Date();
     const nacimiento = new Date(fechaNacimiento);
@@ -204,8 +206,8 @@ export default function ListaAlumnosPage() {
 
     const alumnosFiltrados = alumnos
         .filter((alumno) => {
-            const q = busqueda.toLowerCase();
-            const coincideBusqueda = alumno.nombre.toLowerCase().includes(q) || alumno.apellido.toLowerCase().includes(q) || alumno.dni.includes(busqueda);
+            const q = normalize(busqueda);
+            const coincideBusqueda = normalize(alumno.nombre).includes(q) || normalize(alumno.apellido).includes(q) || alumno.dni.includes(busqueda);
             const coincideLetraApellido = filtroLetraApellido ? alumno.apellido.startsWith(filtroLetraApellido) : true;
             const coincideDiasEntrena = filtroDiasEntrena
                 ? alumno.diasEntrenaSemana === parseInt(filtroDiasEntrena)
