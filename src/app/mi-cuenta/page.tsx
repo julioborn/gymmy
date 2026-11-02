@@ -497,70 +497,39 @@ export default function MiCuentaPage() {
                                         DNI {alumno.dni}
                                     </span>
                                     <span className={cn(
-                                        'text-[10px] font-semibold px-2.5 py-0.5 rounded-full',
+                                        'text-[10px] font-semibold px-2.5 py-0.5 rounded-full tabular-nums',
                                         exenta
                                             ? 'bg-white/[0.08] text-slate-300 border border-white/[0.12]'
                                             : pagoEsteMes
                                                 ? 'bg-lime-400/15 text-lime-400 border border-lime-400/20'
                                                 : 'bg-red-500/15 text-red-400 border border-red-500/20',
                                     )}>
-                                        {exenta ? 'Sin cuota' : pagoEsteMes ? '✓ Cuota al día' : '✗ Cuota pendiente'}
+                                        {exenta ? 'Sin cuota' : pagoEsteMes ? `✓ Pagó $${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '✗ Debe la cuota'}
                                     </span>
                                 </div>
                             </BlurFade>
                         </div>
 
-                        {/* Quick stats row */}
+                        {/* ── TAB SELECTOR ── */}
                         <BlurFade delay={0.16}>
-                            <div className="flex gap-2 mt-4">
-                                <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
-                                    <p className="text-white font-bold text-xl leading-none tabular-nums">
-                                        <NumberTicker value={asistenciasEsteMes.length} />
-                                    </p>
-                                    <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">Asist. mes</p>
-                                </div>
-                                {(tienePlan || planEj) && (
-                                    <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
-                                        <p className="text-white font-bold text-xl leading-none tabular-nums">
-                                            {planEj
-                                                ? <NumberTicker value={planEjDone} />
-                                                : <NumberTicker value={asistenciasEnPlan} />
-                                            }
-                                        </p>
-                                        <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">Sesiones plan</p>
-                                    </div>
-                                )}
-                                <div className="flex-1 bg-white/[0.10] border border-white/[0.18] rounded-2xl px-3 py-3 text-center">
-                                    <p className={cn('font-bold text-xl leading-none', exenta ? 'text-slate-300' : pagoEsteMes ? 'text-lime-400' : 'text-red-400')}>
-                                        {exenta ? '—' : pagoEsteMes ? `$${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '—'}
-                                    </p>
-                                    <p className="text-slate-500 text-[9px] font-semibold uppercase tracking-wide mt-1">
-                                        {exenta ? 'Sin cuota' : pagoEsteMes ? 'Cuota pagada' : 'Sin cuota'}
-                                    </p>
-                                </div>
+                            <div className="mt-4 pt-4 border-t border-white/[0.08] flex gap-1">
+                                {TABS.map(t => {
+                                    const isActive = tab === t.key;
+                                    return (
+                                        <button key={t.key} onClick={() => changeTab(t.key)}
+                                            className={cn(
+                                                'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                                isActive ? 'bg-white/[0.12] text-white' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.05]',
+                                            )}>
+                                            <span className={isActive ? 'text-lime-400' : ''}>{t.icon}</span>
+                                            {t.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </BlurFade>
                     </div>
                 </div>
-                </div>
-
-                {/* ── TAB SELECTOR ── */}
-                <div className="sticky top-[calc(88px+env(safe-area-inset-top,0px))] z-20 bg-[#0a0a0a]/90 backdrop-blur-lg px-4 pb-3 pt-4">
-                    <div className="bg-white/[0.08] rounded-2xl p-1 flex">
-                        {TABS.map(t => {
-                            const isActive = tab === t.key;
-                            return (
-                                <button key={t.key} onClick={() => changeTab(t.key)}
-                                    className={cn(
-                                        'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all',
-                                        isActive ? 'bg-white/[0.12] text-white' : 'text-white/40 hover:text-white/60',
-                                    )}>
-                                    <span className={isActive ? 'text-lime-400' : ''}>{t.icon}</span>
-                                    {t.label}
-                                </button>
-                            );
-                        })}
-                    </div>
                 </div>
 
                 {/* Content area */}
