@@ -41,6 +41,8 @@ type Pago = {
     metodoPago?: string;
     recargo?: number;
     totalPagado?: number;
+    montoEfectivo?: number;
+    montoTransferencia?: number;
 };
 
 type PlanEntrenamiento = {
@@ -213,6 +215,8 @@ export default function HistorialAlumnoPage() {
     const [dayModalPlanDur, setDayModalPlanDur] = useState('');
     const [dayModalPagoDias, setDayModalPagoDias] = useState<number | null>(null);
     const [dayModalPagoMetodo, setDayModalPagoMetodo] = useState('');
+    const [dayModalMontoEfectivo, setDayModalMontoEfectivo] = useState('');
+    const [dayModalMontoTransferencia, setDayModalMontoTransferencia] = useState('');
     const [dayModalPagoRecargo, setDayModalPagoRecargo] = useState(true);
     const [dayModalEspecial, setDayModalEspecial] = useState<{monto:number;dias:number;desde:string;hasta:string}|null>(null);
     const [dayModalSaving, setDayModalSaving] = useState(false);
@@ -725,6 +729,38 @@ export default function HistorialAlumnoPage() {
 
     // ── Action handlers ─────────────────────────────────────────────────────
 
+    const pedirSplitMixto = async (total: number): Promise<{ efectivo: number; transferencia: number } | null> => {
+        const { value } = await Swal.fire({
+            ...swalBase,
+            title: 'Dividir el pago',
+            html: `
+                <div class="swal-form-body">
+                    <p style="text-align:center;color:rgba(255,255,255,0.6);font-size:0.875rem;margin:0 0 1rem;">
+                        Total a cobrar: <strong style="color:#fff;">$${total.toLocaleString('es-AR')}</strong>
+                    </p>
+                    <label class="swal-form-label">Efectivo ($)</label>
+                    <input id="split-efectivo" type="text" inputmode="numeric" class="swal2-input" placeholder="0">
+                    <label class="swal-form-label">Transferencia ($)</label>
+                    <input id="split-transferencia" type="text" inputmode="numeric" class="swal2-input" placeholder="0">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const efectivo = Number((document.getElementById('split-efectivo') as HTMLInputElement).value.replace(/\D/g, '')) || 0;
+                const transferencia = Number((document.getElementById('split-transferencia') as HTMLInputElement).value.replace(/\D/g, '')) || 0;
+                if (efectivo + transferencia !== total) {
+                    Swal.showValidationMessage(`La suma debe dar $${total.toLocaleString('es-AR')} (ingresaste $${(efectivo + transferencia).toLocaleString('es-AR')})`);
+                    return;
+                }
+                return { efectivo, transferencia };
+            },
+        });
+        return value ?? null;
+    };
+
     const marcarPagoMes = async () => {
         const opcionesTarifas = tarifas.reduce((options, tarifa) => {
             options[tarifa.dias] = `
@@ -758,12 +794,14 @@ export default function HistorialAlumnoPage() {
             ...swalBase,
             title: 'Método de pago',
             input: 'radio',
-            inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
+            inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia', mixto: 'Mixto (efectivo + transferencia)' },
             inputValidator: (value) => { if (!value) return 'Debes seleccionar un método de pago'; return null; },
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
         });
         if (!metodoPago) return;
+
+        const metodoLabel = metodoPago === 'efectivo' ? 'Efectivo' : metodoPago === 'transferencia' ? 'Transferencia' : 'Mixto';
 
         const hoy = new Date();
         const esDespuesDel10 = hoy.getDate() > 10;
@@ -777,7 +815,7 @@ export default function HistorialAlumnoPage() {
                 <div class="swal-form-body">
                     <p style="text-align:center;color:#475569;font-size:0.875rem;margin:0 0 0.75rem;">
                         Días de musculación: <strong>${diasMusculacion}</strong><br>
-                        Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
+                        Método: <strong>${metodoLabel}</strong><br>
                         Precio: <strong>$${tarifaSeleccionada.valor}</strong>
                     </p>
                     ${montoRecargoDisponible > 0 ? `
@@ -804,6 +842,12 @@ export default function HistorialAlumnoPage() {
             const montoRecargo = aplicarRecargo ? montoRecargoDisponible : 0;
             const total = tarifaSeleccionada.valor + montoRecargo;
 
+            let split: { efectivo: number; transferencia: number } | null = null;
+            if (metodoPago === 'mixto') {
+                split = await pedirSplitMixto(total);
+                if (!split) return;
+            }
+
             const res = await fetch('/api/alumnos/pagos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -817,6 +861,7 @@ export default function HistorialAlumnoPage() {
                         metodoPago,
                         recargo: montoRecargo,
                         totalPagado: total,
+                        ...(split ? { montoEfectivo: split.efectivo, montoTransferencia: split.transferencia } : {}),
                     },
                 }),
             });
@@ -1308,6 +1353,8 @@ export default function HistorialAlumnoPage() {
         setDayModalPlanDur('');
         setDayModalPagoDias(null);
         setDayModalPagoMetodo('');
+        setDayModalMontoEfectivo('');
+        setDayModalMontoTransferencia('');
         setDayModalPagoRecargo(true);
         setDayModalEspecial(null);
     };
@@ -1385,9 +1432,22 @@ export default function HistorialAlumnoPage() {
 
     const submitDayModalPago = async () => {
         if (dayModalPagoDias === null || !dayModalPagoMetodo || !dayModal || dayModalSaving) return;
+        const splitMixto = () => {
+            const efectivo = Number(dayModalMontoEfectivo.replace(/\D/g, '')) || 0;
+            const transferencia = Number(dayModalMontoTransferencia.replace(/\D/g, '')) || 0;
+            return { efectivo, transferencia };
+        };
         setDayModalSaving(true);
         try {
             if (dayModalPagoDias === 0 && dayModalEspecial) {
+                if (dayModalPagoMetodo === 'mixto') {
+                    const { efectivo, transferencia } = splitMixto();
+                    if (efectivo + transferencia !== dayModalEspecial.monto) {
+                        Swal.fire({ ...swalNotify, icon: 'error', title: `La suma debe dar $${dayModalEspecial.monto.toLocaleString('es-AR')}` });
+                        setDayModalSaving(false);
+                        return;
+                    }
+                }
                 const mesDesde = new Date(dayModalEspecial.desde + 'T12:00:00').toLocaleString('es-ES', { month: 'long' }).toLowerCase();
                 const res = await fetch('/api/alumnos/pagos', {
                     method: 'POST',
@@ -1404,6 +1464,7 @@ export default function HistorialAlumnoPage() {
                             esEspecial: true,
                             fechaDesde: new Date(dayModalEspecial.desde + 'T12:00:00').toISOString(),
                             fechaHasta: new Date(dayModalEspecial.hasta + 'T12:00:00').toISOString(),
+                            ...(dayModalPagoMetodo === 'mixto' ? { montoEfectivo: splitMixto().efectivo, montoTransferencia: splitMixto().transferencia } : {}),
                         },
                     }),
                 });
@@ -1417,6 +1478,15 @@ export default function HistorialAlumnoPage() {
             const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
             const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
             const montoRecargo = dayModalPagoRecargo ? recargoAplicable : 0;
+            const totalDia = tarifaSel.valor + montoRecargo;
+            if (dayModalPagoMetodo === 'mixto') {
+                const { efectivo, transferencia } = splitMixto();
+                if (efectivo + transferencia !== totalDia) {
+                    Swal.fire({ ...swalNotify, icon: 'error', title: `La suma debe dar $${totalDia.toLocaleString('es-AR')}` });
+                    setDayModalSaving(false);
+                    return;
+                }
+            }
             const mesNombre = selDate.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
             const res = await fetch('/api/alumnos/pagos', {
                 method: 'POST',
@@ -1430,7 +1500,8 @@ export default function HistorialAlumnoPage() {
                         tarifa: tarifaSel.valor,
                         metodoPago: dayModalPagoMetodo,
                         recargo: montoRecargo,
-                        totalPagado: tarifaSel.valor + montoRecargo,
+                        totalPagado: totalDia,
+                        ...(dayModalPagoMetodo === 'mixto' ? { montoEfectivo: splitMixto().efectivo, montoTransferencia: splitMixto().transferencia } : {}),
                     },
                 }),
             });
@@ -1602,7 +1673,7 @@ export default function HistorialAlumnoPage() {
                     ...swalBase,
                     title: 'Método de pago',
                     input: 'select',
-                    inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia' },
+                    inputOptions: { efectivo: 'Efectivo', transferencia: 'Transferencia', mixto: 'Mixto (efectivo + transferencia)' },
                     inputPlaceholder: 'Selecciona un método',
                     showCancelButton: true,
                     confirmButtonText: 'Aceptar',
@@ -1610,6 +1681,7 @@ export default function HistorialAlumnoPage() {
                 });
 
                 if (!metodoPago) return;
+                const metodoLabel = metodoPago === 'efectivo' ? 'Efectivo' : metodoPago === 'transferencia' ? 'Transferencia' : 'Mixto';
 
                 // Determinar qué recargo aplica según la fecha seleccionada
                 const [_yr, _mo, _dy] = selectInfo.startStr.split('-');
@@ -1627,7 +1699,7 @@ export default function HistorialAlumnoPage() {
                         <div class="swal-form-body">
                             <p style="text-align:center;color:#475569;font-size:0.875rem;margin:0 0 0.75rem;">
                                 Días de musculación: <strong>${diasMusculacion}</strong><br>
-                                Método: <strong>${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</strong><br>
+                                Método: <strong>${metodoLabel}</strong><br>
                                 Precio: <strong>$${tarifaSeleccionada.valor}</strong>
                             </p>
                             ${recargoAplicable > 0 ? `
@@ -1654,6 +1726,14 @@ export default function HistorialAlumnoPage() {
                         const _now = new Date();
                         const fechaPago = new Date(Number(year), Number(month) - 1, Number(day), _now.getHours(), _now.getMinutes(), _now.getSeconds());
                         const mesActual = fechaPago.toLocaleDateString('es-ES', { month: 'long' }).toLowerCase();
+                        const montoRecargo = incluirRecargo ? recargoAplicable : 0;
+                        const totalCalendario = tarifaSeleccionada.valor + montoRecargo;
+
+                        let splitCal: { efectivo: number; transferencia: number } | null = null;
+                        if (metodoPago === 'mixto') {
+                            splitCal = await pedirSplitMixto(totalCalendario);
+                            if (!splitCal) return;
+                        }
 
                         const nuevoPago = {
                             mes: mesActual,
@@ -1661,7 +1741,8 @@ export default function HistorialAlumnoPage() {
                             diasMusculacion: Number(diasMusculacion),
                             tarifa: tarifaSeleccionada.valor,
                             metodoPago,
-                            recargo: incluirRecargo ? recargoAplicable : 0,
+                            recargo: montoRecargo,
+                            ...(splitCal ? { montoEfectivo: splitCal.efectivo, montoTransferencia: splitCal.transferencia } : {}),
                         };
 
                         const response = await fetch('/api/alumnos/pagos', {
@@ -2854,6 +2935,7 @@ export default function HistorialAlumnoPage() {
                                             <option value="Todos">Todos</option>
                                             <option value="efectivo">Efectivo</option>
                                             <option value="transferencia">Transferencia</option>
+                                            <option value="mixto">Mixto</option>
                                         </select>
                                     </div>
                                     <div>
@@ -2873,7 +2955,7 @@ export default function HistorialAlumnoPage() {
                                 {pagosPanelFiltrados.length > 0 ? (
                                     <div className="rounded-xl border border-white/[0.08] overflow-hidden max-h-[32rem] overflow-y-auto">
                                         {pagosPanelFiltrados.map((p: Pago, idx: number) => {
-                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-500/20 text-emerald-400' : p.metodoPago === 'transferencia' ? 'bg-white/[0.1] text-white/70' : 'bg-white/[0.08] text-white/50';
+                                            const metodoCls = p.metodoPago === 'efectivo' ? 'bg-emerald-500/20 text-emerald-400' : p.metodoPago === 'transferencia' ? 'bg-white/[0.1] text-white/70' : p.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-white/[0.08] text-white/50';
                                             return (
                                                 <div key={p._id || idx} className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.05] transition group">
                                                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -2883,6 +2965,11 @@ export default function HistorialAlumnoPage() {
                                                                 {p.metodoPago && <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${metodoCls} capitalize`}>{p.metodoPago}</span>}
                                                             </div>
                                                             <span className="text-xs text-white/40 mt-0.5">{new Date(p.fechaPago).toLocaleDateString('es-AR')}{p.diasMusculacion ? ` · ${p.diasMusculacion}d/sem` : ''}</span>
+                                                            {p.metodoPago === 'mixto' && (
+                                                                <span className="text-[11px] text-amber-400/70 mt-0.5">
+                                                                    Efectivo ${(p.montoEfectivo ?? 0).toLocaleString('es-AR')} + Transf. ${(p.montoTransferencia ?? 0).toLocaleString('es-AR')}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
@@ -3118,14 +3205,32 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Método de pago</p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {[{ value: 'efectivo', label: 'Efectivo' }, { value: 'transferencia', label: 'Transferencia' }].map(m => (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[{ value: 'efectivo', label: 'Efectivo' }, { value: 'transferencia', label: 'Transferencia' }, { value: 'mixto', label: 'Mixto' }].map(m => (
                                             <button key={m.value} onClick={() => setDayModalPagoMetodo(m.value)}
                                                 className={`py-3.5 rounded-xl border font-semibold text-sm transition ${dayModalPagoMetodo === m.value ? 'bg-white text-black border-white' : 'bg-white/[0.08] border-white/[0.12] text-white/60 hover:bg-white/[0.14]'}`}>
                                                 {m.label}
                                             </button>
                                         ))}
                                     </div>
+                                    {dayModalPagoMetodo === 'mixto' && (
+                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                            <div>
+                                                <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Efectivo ($)</label>
+                                                <input type="text" inputMode="numeric" value={dayModalMontoEfectivo}
+                                                    onChange={e => setDayModalMontoEfectivo(e.target.value.replace(/\D/g, ''))}
+                                                    placeholder="0"
+                                                    className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Transferencia ($)</label>
+                                                <input type="text" inputMode="numeric" value={dayModalMontoTransferencia}
+                                                    onChange={e => setDayModalMontoTransferencia(e.target.value.replace(/\D/g, ''))}
+                                                    placeholder="0"
+                                                    className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 {dayModalPagoDias !== 0 && (() => {
                                     const selDate = new Date(dayModal + 'T12:00:00');

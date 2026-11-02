@@ -6,11 +6,13 @@ interface IPago {
     fechaPago: Date;
     tarifa: number;
     diasMusculacion: number;
-    metodoPago: 'efectivo' | 'transferencia' | 'mercadopago';
+    metodoPago: 'efectivo' | 'transferencia' | 'mercadopago' | 'mixto';
     recargo?: number;
     esEspecial?: boolean;
     fechaDesde?: Date | null;
     fechaHasta?: Date | null;
+    montoEfectivo?: number;
+    montoTransferencia?: number;
 }
 
 // Interfaz para la asistencia
@@ -105,11 +107,13 @@ const AlumnoSchema = new mongoose.Schema<IAlumno>({
             fechaPago: { type: Date, required: true },
             tarifa: { type: Number, required: true },
             diasMusculacion: { type: Number, required: true },
-            metodoPago: { type: String, required: true, enum: ['efectivo', 'transferencia', 'mercadopago'] },
+            metodoPago: { type: String, required: true, enum: ['efectivo', 'transferencia', 'mercadopago', 'mixto'] },
             recargo: { type: Number, required: false, default: 0 },
             esEspecial: { type: Boolean, required: false, default: false },
             fechaDesde: { type: Date, required: false, default: null },
             fechaHasta: { type: Date, required: false, default: null },
+            montoEfectivo: { type: Number, required: false },
+            montoTransferencia: { type: Number, required: false },
         },
     ],
     planEntrenamiento: {
