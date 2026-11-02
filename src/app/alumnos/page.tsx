@@ -3,7 +3,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
-import { Pagination } from '@mui/material';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -285,10 +285,6 @@ export default function ListaAlumnosPage() {
                 Swal.fire({ ...swalNotify, icon: 'error', title: 'Ocurrió un problema al actualizar los recargos' });
             }
         }
-    };
-
-    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-        setPage(value);
     };
 
     const handleGenerateExcel = () => {
@@ -610,14 +606,33 @@ export default function ListaAlumnosPage() {
                                 );
                             })}
                         </div>
-                        <div className="flex justify-center pt-2">
-                            <Pagination
-                                count={Math.ceil(alumnosFiltrados.length / itemsPerPage)}
-                                page={page}
-                                onChange={handlePageChange}
-                                color="primary"
-                            />
-                        </div>
+                        {Math.ceil(alumnosFiltrados.length / itemsPerPage) > 1 && (
+                            <div className="flex justify-center items-center gap-1.5 flex-wrap pt-2">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-white hover:bg-white/[0.08]"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                {Array.from({ length: Math.ceil(alumnosFiltrados.length / itemsPerPage) }, (_, i) => i + 1).map(n => (
+                                    <button
+                                        key={n}
+                                        onClick={() => setPage(n)}
+                                        className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${n === page ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.08]'}`}
+                                    >
+                                        {n}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setPage(p => Math.min(Math.ceil(alumnosFiltrados.length / itemsPerPage), p + 1))}
+                                    disabled={page === Math.ceil(alumnosFiltrados.length / itemsPerPage)}
+                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-white hover:bg-white/[0.08]"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
 
