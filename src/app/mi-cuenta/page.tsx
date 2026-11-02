@@ -492,12 +492,9 @@ export default function MiCuentaPage() {
                                 <h1 className="text-white font-bold text-xl leading-tight truncate">
                                     {alumno.nombre} {alumno.apellido}
                                 </h1>
-                                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                    <span className="bg-white/[0.07] border border-white/[0.08] text-slate-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-                                        DNI {alumno.dni}
-                                    </span>
+                                <div className="flex items-center gap-2 mt-2 flex-wrap">
                                     <span className={cn(
-                                        'text-[10px] font-semibold px-2.5 py-0.5 rounded-full tabular-nums',
+                                        'text-sm font-bold px-3 py-1 rounded-full tabular-nums',
                                         exenta
                                             ? 'bg-white/[0.08] text-slate-300 border border-white/[0.12]'
                                             : pagoEsteMes
@@ -518,10 +515,12 @@ export default function MiCuentaPage() {
                                     return (
                                         <button key={t.key} onClick={() => changeTab(t.key)}
                                             className={cn(
-                                                'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all',
-                                                isActive ? 'bg-white/[0.12] text-white' : 'text-white/40 hover:text-white/60 hover:bg-white/[0.05]',
+                                                'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all border',
+                                                isActive
+                                                    ? 'bg-white text-black border-white shadow-md'
+                                                    : 'bg-white/[0.07] text-white/70 border-white/[0.12] hover:bg-white/[0.12] hover:text-white',
                                             )}>
-                                            <span className={isActive ? 'text-lime-400' : ''}>{t.icon}</span>
+                                            <span className={isActive ? 'text-emerald-600' : ''}>{t.icon}</span>
                                             {t.label}
                                         </button>
                                     );
