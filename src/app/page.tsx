@@ -642,11 +642,11 @@ export default function HomePage() {
                                             <ArrowUpDown size={10} className={cn('transition-colors', sortBy === 'nombre' ? 'text-lime-400' : 'text-white/25')} />
                                         </button>
                                         <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 w-32 shrink-0">Actividad</span>
-                                        <button onClick={() => toggleSort('hora')} className="flex items-center gap-1 w-16 shrink-0 text-left group">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 w-24 shrink-0 text-center">Estado</span>
+                                        <button onClick={() => toggleSort('hora')} className="flex items-center justify-end gap-1 w-16 shrink-0 text-right group">
                                             <span className={cn('text-[10px] font-bold uppercase tracking-[0.12em] transition-colors', sortBy === 'hora' ? 'text-lime-400' : 'text-white/40 group-hover:text-white/60')}>Hora</span>
                                             <ArrowUpDown size={10} className={cn('transition-colors', sortBy === 'hora' ? 'text-lime-400' : 'text-white/25')} />
                                         </button>
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 w-28 shrink-0 text-right">Estado</span>
                                     </div>
                                 )}
 
@@ -711,8 +711,7 @@ export default function HomePage() {
                                                                         <Dumbbell size={12} className="text-white/35 shrink-0" />
                                                                         <span className="text-xs font-medium truncate">{a.actividad}</span>
                                                                     </div>
-                                                                    <span className="hidden sm:block text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
-                                                                    <div className="flex items-center justify-end gap-1 flex-wrap w-auto sm:w-28 shrink-0">
+                                                                    <div className="flex items-center justify-end w-auto sm:w-24 shrink-0">
                                                                         {isNew && (
                                                                             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
                                                                                 <CheckCircle2 size={8} /> Nuevo
@@ -724,7 +723,7 @@ export default function HomePage() {
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && a.pagado && (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap bg-emerald-500/15 text-emerald-400">
+                                                                            <span className="inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0 bg-emerald-500/15 text-emerald-400">
                                                                                 <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
                                                                                 {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
                                                                             </span>
@@ -734,8 +733,8 @@ export default function HomePage() {
                                                                                 <AlertTriangle size={8} /> Debe
                                                                             </span>
                                                                         )}
-                                                                        <ChevronRight size={11} className="hidden sm:block text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
                                                                     </div>
+                                                                    <span className="hidden sm:block text-right text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
                                                                 </Link>
                                                             </motion.div>
                                                         );
@@ -804,19 +803,19 @@ export default function HomePage() {
                                                                         <Dumbbell size={12} className="shrink-0" />
                                                                         <span className="text-xs font-medium truncate">{a.actividad}</span>
                                                                     </div>
-                                                                    <span className="hidden sm:block text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
-                                                                    <div className="flex items-center justify-end gap-1 w-auto sm:w-28 shrink-0">
+                                                                    <div className="flex items-center justify-end w-auto sm:w-24 shrink-0">
                                                                         {isNew ? (
                                                                             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400 shrink-0 whitespace-nowrap">
+                                                                            <span className="inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0 bg-teal-400/15 text-teal-400">
                                                                                 <span className="capitalize">{a.metodoPago || 'Asistió'}</span>
                                                                                 {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
                                                                             </span>
                                                                         )}
                                                                     </div>
+                                                                    <span className="hidden sm:block text-right text-white/55 text-sm tabular-nums font-medium w-16 shrink-0">{a.hora}</span>
                                                                 </motion.div>
                                                             );
                                                         })}
