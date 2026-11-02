@@ -633,7 +633,7 @@ export default function HomePage() {
                                             De paso
                                         </button>
                                         <Link href="/caja"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 transition-all text-white font-bold text-xs whitespace-nowrap shadow-md shadow-orange-500/20">
                                             <Wallet size={13} />
                                             Cierre de caja
                                         </Link>
