@@ -3203,34 +3203,56 @@ export default function HistorialAlumnoPage() {
                                         </button>
                                     </div>
                                 </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">Método de pago</p>
+                                <div className={dayModalPagoDias === null ? 'opacity-40 pointer-events-none' : ''}>
+                                    <p className="text-xs font-semibold text-white/40 uppercase tracking-wide mb-3">
+                                        Método de pago
+                                        {dayModalPagoDias === null && <span className="normal-case font-normal text-white/30"> · elegí primero la cuota</span>}
+                                    </p>
                                     <div className="grid grid-cols-3 gap-2">
                                         {[{ value: 'efectivo', label: 'Efectivo' }, { value: 'transferencia', label: 'Transferencia' }, { value: 'mixto', label: 'Mixto' }].map(m => (
-                                            <button key={m.value} onClick={() => setDayModalPagoMetodo(m.value)}
+                                            <button key={m.value} disabled={dayModalPagoDias === null} onClick={() => setDayModalPagoMetodo(m.value)}
                                                 className={`py-3.5 rounded-xl border font-semibold text-sm transition ${dayModalPagoMetodo === m.value ? 'bg-white text-black border-white' : 'bg-white/[0.08] border-white/[0.12] text-white/60 hover:bg-white/[0.14]'}`}>
                                                 {m.label}
                                             </button>
                                         ))}
                                     </div>
-                                    {dayModalPagoMetodo === 'mixto' && (
-                                        <div className="grid grid-cols-2 gap-2 mt-2">
-                                            <div>
-                                                <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Efectivo ($)</label>
-                                                <input type="text" inputMode="numeric" value={dayModalMontoEfectivo}
-                                                    onChange={e => setDayModalMontoEfectivo(e.target.value.replace(/\D/g, ''))}
-                                                    placeholder="0"
-                                                    className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
+                                    {dayModalPagoMetodo === 'mixto' && (() => {
+                                        const totalMixto = dayModalPagoDias === 0 && dayModalEspecial
+                                            ? dayModalEspecial.monto
+                                            : (() => {
+                                                const t = tarifas.find(t => t.dias === dayModalPagoDias);
+                                                if (!t) return 0;
+                                                const selDate = new Date(dayModal + 'T12:00:00');
+                                                const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                                                const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+                                                return t.valor + (dayModalPagoRecargo ? recargoAplicable : 0);
+                                            })();
+                                        const ingresado = (Number(dayModalMontoEfectivo) || 0) + (Number(dayModalMontoTransferencia) || 0);
+                                        const coincide = ingresado === totalMixto;
+                                        return (
+                                            <div className="mt-2 space-y-2">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div>
+                                                        <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Efectivo ($)</label>
+                                                        <input type="text" inputMode="numeric" value={dayModalMontoEfectivo}
+                                                            onChange={e => setDayModalMontoEfectivo(e.target.value.replace(/\D/g, ''))}
+                                                            placeholder="0"
+                                                            className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Transferencia ($)</label>
+                                                        <input type="text" inputMode="numeric" value={dayModalMontoTransferencia}
+                                                            onChange={e => setDayModalMontoTransferencia(e.target.value.replace(/\D/g, ''))}
+                                                            placeholder="0"
+                                                            className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
+                                                    </div>
+                                                </div>
+                                                <p className={`text-xs font-medium text-right ${coincide ? 'text-lime-400' : 'text-amber-400'}`}>
+                                                    Ingresado ${ingresado.toLocaleString('es-AR')} de ${totalMixto.toLocaleString('es-AR')}
+                                                </p>
                                             </div>
-                                            <div>
-                                                <label className="text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1 block">Transferencia ($)</label>
-                                                <input type="text" inputMode="numeric" value={dayModalMontoTransferencia}
-                                                    onChange={e => setDayModalMontoTransferencia(e.target.value.replace(/\D/g, ''))}
-                                                    placeholder="0"
-                                                    className="w-full bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-lime-400/40" />
-                                            </div>
-                                        </div>
-                                    )}
+                                        );
+                                    })()}
                                 </div>
                                 {dayModalPagoDias !== 0 && (() => {
                                     const selDate = new Date(dayModal + 'T12:00:00');
@@ -3267,7 +3289,20 @@ export default function HistorialAlumnoPage() {
                                         </span>
                                     </div>
                                 )}
-                                <button onClick={submitDayModalPago} disabled={dayModalPagoDias === null || !dayModalPagoMetodo || dayModalSaving}
+                                <button onClick={submitDayModalPago} disabled={dayModalPagoDias === null || !dayModalPagoMetodo || dayModalSaving || (dayModalPagoMetodo === 'mixto' && (() => {
+                                    const totalMixto = dayModalPagoDias === 0 && dayModalEspecial
+                                        ? dayModalEspecial.monto
+                                        : (() => {
+                                            const t = tarifas.find(t => t.dias === dayModalPagoDias);
+                                            if (!t) return 0;
+                                            const selDate = new Date(dayModal + 'T12:00:00');
+                                            const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                                            const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
+                                            return t.valor + (dayModalPagoRecargo ? recargoAplicable : 0);
+                                        })();
+                                    const ingresado = (Number(dayModalMontoEfectivo) || 0) + (Number(dayModalMontoTransferencia) || 0);
+                                    return ingresado !== totalMixto;
+                                })())}
                                     className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base transition disabled:opacity-40">
                                     {dayModalSaving ? 'Guardando...' : 'Confirmar cobro'}
                                 </button>
