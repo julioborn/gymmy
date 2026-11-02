@@ -2,14 +2,18 @@ import connectMongoDB from '@/lib/mongodb';
 import Recargo from '@/models/Recargo';
 import Tarifa from '@/models/Tarifa';
 import { NextResponse } from 'next/server';
-import { requireGymAuth } from '@/lib/requireAuth';
+import { requireAuth, requireGymAuth } from '@/lib/requireAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    const auth = await requireGymAuth();
+    // Accesible tanto para staff del gym como para alumnos (quieren ver los precios).
+    const auth = await requireAuth();
     if (!auth.ok) return auth.error;
     const { gimnasioId } = auth.session.user;
+    if (!gimnasioId) {
+        return NextResponse.json({ ok: false, message: 'Sin gimnasio asociado' }, { status: 403 });
+    }
 
     await connectMongoDB();
     try {

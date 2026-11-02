@@ -141,6 +141,7 @@ export default function MiCuentaPage() {
     const [loadingPago, setLoadingPago] = useState(false);
     const [pagoResult, setPagoResult] = useState<'ok'|'error'|'pendiente'|null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState('');
+    const [tarifas, setTarifas] = useState<{ dias: number; valor: number }[]>([]);
     const [aliasCopied, setAliasCopied] = useState(false);
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
@@ -281,6 +282,7 @@ export default function MiCuentaPage() {
         }
         fetchAlumno().then(data => { if (data?._id) fetchPlan(data._id, data); }).catch(()=>{}).finally(()=>setLoading(false));
         fetch('/api/gimnasio/alias').then(r=>r.json()).then(d=>setAliasGimnasio(d.alias??'')).catch(()=>{});
+        fetch('/api/tarifas').then(r=>r.json()).then(d=>{ if (d.ok) setTarifas((d.tarifas||[]).slice().sort((a:any,b:any)=>a.dias-b.dias)); }).catch(()=>{});
         fetch('/api/gimnasio/tema').then(r=>r.json()).then(d=>{ if (d.temaAcento) setAcento(d.temaAcento); }).catch(()=>{});
         const onVisible = () => { if (document.visibilityState==='visible') fetchAlumno().catch(()=>{}); };
         const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) fetchAlumno().catch(()=>{}); };
@@ -677,6 +679,25 @@ export default function MiCuentaPage() {
                                         <div>
                                             <p className="text-lime-800 font-bold text-sm">¡Plan completado!</p>
                                             <p className="text-lime-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                        </div>
+                                    </div>
+                                </BlurFade>
+                            )}
+
+                            {/* Precios de cuotas */}
+                            {tarifas.length > 0 && (
+                                <BlurFade delay={0.08}>
+                                    <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
+                                        <div className="px-4 py-3.5 border-b border-slate-50">
+                                            <p className="font-bold text-sm text-slate-900">Precios de cuotas</p>
+                                        </div>
+                                        <div className="divide-y divide-slate-50">
+                                            {tarifas.map(t => (
+                                                <div key={t.dias} className="flex items-center justify-between px-4 py-3">
+                                                    <span className="text-slate-600 text-sm">{t.dias} día{t.dias !== 1 ? 's' : ''} por semana</span>
+                                                    <span className="text-slate-900 font-bold text-sm tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </BlurFade>
