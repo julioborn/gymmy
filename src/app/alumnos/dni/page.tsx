@@ -31,7 +31,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [gymNombre, setGymNombre] = useState<string>('');
     const [actividadesDisponibles, setActividadesDisponibles] = useState<string[]>(['Musculación']);
-    const [feedback, setFeedback] = useState<{ type: 'paid' | 'debt' | 'not_found' | 'already'; nombre?: string; actividad: string } | null>(null);
+    const [feedback, setFeedback] = useState<{ type: 'paid' | 'debt' | 'debt_warning' | 'not_found' | 'already'; nombre?: string; actividad: string } | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const formatDNIWithDots = (input: string): string => {
@@ -140,6 +140,26 @@ export default function RegistrarAsistenciaPorDNIPage() {
         } catch {}
     };
 
+    const playWarning = () => {
+        try { (navigator as any).vibrate?.([100, 60, 100]); } catch {}
+        try {
+            const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+            const ctx = new Ctx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(450, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.16, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.4);
+            osc.onended = () => ctx.close();
+        } catch {}
+    };
+
     const playError = () => {
         try { (navigator as any).vibrate?.([60, 30, 60]); } catch {}
         try {
@@ -163,7 +183,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
         } catch {}
     };
 
-    const showFeedback = (type: 'paid' | 'debt' | 'not_found' | 'already', act: string, nombre?: string) => {
+    const showFeedback = (type: 'paid' | 'debt' | 'debt_warning' | 'not_found' | 'already', act: string, nombre?: string) => {
         if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
         setFeedback({ type, nombre, actividad: act });
         feedbackTimer.current = setTimeout(() => setFeedback(null), 4000);
@@ -216,9 +236,15 @@ export default function RegistrarAsistenciaPorDNIPage() {
 
             // Detectar si tiene la cuota del mes pagada (o está exento, o tiene un pago especial vigente)
             const cuotaPaga = estaAlDia({ pagos: alumno.pagos, exentoCuota: alumno.exentoCuota }, getMesActual(new Date()));
+            // Del 1 al 10 del mes la cuota pendiente es solo advertencia (amarillo);
+            // del 11 en adelante es alerta (rojo, con el sonido de alarma).
+            const pasoDiez = new Date().getDate() > 10;
+            const feedbackType = cuotaPaga ? 'paid' : pasoDiez ? 'debt' : 'debt_warning';
 
-            if (cuotaPaga) playSuccess(); else playDebt();
-            showFeedback(cuotaPaga ? 'paid' : 'debt', actividad, alumno.nombre);
+            if (feedbackType === 'paid') playSuccess();
+            else if (feedbackType === 'debt') playDebt();
+            else playWarning();
+            showFeedback(feedbackType, actividad, alumno.nombre);
             clearDNI();
             cancelInactivityTimer();
         } catch (error: any) {
@@ -362,7 +388,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
             {feedback && (
                 <div
                     className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 px-8"
-                    style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'already' ? '#b45309' : '#1d4ed8' }}
+                    style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'debt_warning' ? '#ca8a04' : feedback.type === 'already' ? '#b45309' : '#1d4ed8' }}
                     onClick={() => { if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); }}
                 >
                     {/* Ícono */}
@@ -374,6 +400,11 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         ) : feedback.type === 'debt' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                                 <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="6" strokeLinecap="round"/>
+                            </svg>
+                        ) : feedback.type === 'debt_warning' ? (
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <circle cx="32" cy="20" r="5" fill="white"/>
+                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
                             </svg>
                         ) : feedback.type === 'already' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -438,7 +469,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         ) : (
                             <>
                                 <span className="text-white font-black" style={{ fontSize: 32 }}>
-                                    {feedback.type === 'paid' ? '✓ Cuota al día' : '✗ Cuota pendiente'}
+                                    {feedback.type === 'paid' ? '✓ Cuota al día' : feedback.type === 'debt' ? '✗ Cuota pendiente' : '! Cuota pendiente'}
                                 </span>
                                 <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
                                     Asistencia registrada
