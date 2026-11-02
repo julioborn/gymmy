@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import Alumno from '@/models/Alumno';
 import { requireAlumnoAuth } from '@/lib/requireAuth';
-import { sendGymNotif } from '@/lib/notifications';
+import { sendGymNotif, notifyVigilantes } from '@/lib/notifications';
 
 // Devuelve "YYYY-MM-DD" en zona horaria Argentina (UTC-3)
 function toArgDate(d: Date): string {
@@ -51,6 +51,12 @@ export async function POST() {
             url: '/mi-cuenta',
         }).catch(() => {});
     }
+
+    await notifyVigilantes(alumno._id.toString(), alumno.gimnasioId?.toString() ?? '', {
+        title: '🔔 Llegó al gimnasio',
+        body: `${alumno.nombre} ${alumno.apellido} acaba de marcar asistencia.`,
+        url: '/mi-cuenta',
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true });
 }

@@ -126,7 +126,7 @@ export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const validTabs = ['resumen', 'historial', 'plan'] as const;
+    const validTabs = ['resumen', 'historial', 'plan', 'avisos'] as const;
     type Tab = typeof validTabs[number];
     const getInitialTab = (): Tab => {
         if (typeof window !== 'undefined') {
@@ -154,6 +154,12 @@ export default function MiCuentaPage() {
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkInResult, setCheckInResult] = useState<'ok'|'duplicate'|'error'|null>(null);
     const [acento, setAcento] = useState('#a3e635');
+
+    const [vigAlumnos, setVigAlumnos] = useState<{ _id: string; nombre: string; apellido: string; dni: string }[]>([]);
+    const [vigWatching, setVigWatching] = useState<Set<string>>(new Set());
+    const [vigLoading, setVigLoading] = useState(false);
+    const [vigSearch, setVigSearch] = useState('');
+    const [vigToggling, setVigToggling] = useState<string | null>(null);
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -445,11 +451,44 @@ export default function MiCuentaPage() {
     function nextMonth() { setSelectedDay(null); if (calMonth===11) { setCalMonth(0); setCalYear(y=>y+1); } else setCalMonth(m=>m+1); }
 
     // Bottom nav tabs config
+    const isWatcher = alumno?.dni === '43844409';
     const TABS = [
         { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={20} /> },
         { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={20} /> },
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
+        ...(isWatcher ? [{ key: 'avisos' as Tab, label: 'Avisos', icon: <Eye size={20} /> }] : []),
     ];
+
+    useEffect(() => {
+        if (tab !== 'avisos' || !isWatcher || vigAlumnos.length > 0) return;
+        setVigLoading(true);
+        fetch('/api/alumno/vigilancia').then(r => r.json()).then(d => {
+            if (d.ok) {
+                setVigAlumnos(d.alumnos || []);
+                setVigWatching(new Set(d.watching || []));
+            }
+        }).catch(() => {}).finally(() => setVigLoading(false));
+    }, [tab, isWatcher]);
+
+    const toggleVigilancia = async (targetId: string) => {
+        setVigToggling(targetId);
+        try {
+            const res = await fetch('/api/alumno/vigilancia', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alumnoId: targetId }),
+            });
+            const d = await res.json();
+            if (d.ok) {
+                setVigWatching(prev => {
+                    const next = new Set(prev);
+                    if (d.watching) next.add(targetId); else next.delete(targetId);
+                    return next;
+                });
+            }
+        } catch {}
+        setVigToggling(null);
+    };
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
@@ -1154,6 +1193,72 @@ export default function MiCuentaPage() {
                                     </>
                                 );
                             })()}
+                        </div>
+                    )}
+
+                    {/* ── AVISOS (oculto) ─────────────────────────────────── */}
+                    {tab === 'avisos' && isWatcher && (
+                        <div className="space-y-3">
+                            <BlurFade delay={0.05}>
+                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03]">
+                                    <p className="text-slate-900 font-bold text-base mb-1">Avisos personalizados</p>
+                                    <p className="text-slate-400 text-sm">Elegí a quién querés que te avise cuando marque su asistencia.</p>
+                                </div>
+                            </BlurFade>
+
+                            <BlurFade delay={0.08}>
+                                <input
+                                    type="text"
+                                    value={vigSearch}
+                                    onChange={e => setVigSearch(e.target.value)}
+                                    placeholder="Buscar por nombre, apellido o DNI..."
+                                    className="w-full bg-white border border-slate-100 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300"
+                                />
+                            </BlurFade>
+
+                            {vigLoading ? (
+                                <div className="flex justify-center py-16">
+                                    <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
+                                </div>
+                            ) : (
+                                <BlurFade delay={0.1}>
+                                    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
+                                        {vigAlumnos
+                                            .filter(a => {
+                                                const q = vigSearch.trim().toLowerCase();
+                                                if (!q) return true;
+                                                return `${a.nombre} ${a.apellido}`.toLowerCase().includes(q) || a.dni.includes(q);
+                                            })
+                                            .map(a => {
+                                                const on = vigWatching.has(a._id);
+                                                return (
+                                                    <button key={a._id} onClick={() => toggleVigilancia(a._id)} disabled={vigToggling === a._id}
+                                                        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors disabled:opacity-60">
+                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500 shrink-0">
+                                                            {getInitials(a.nombre, a.apellido)}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-slate-900 font-semibold text-base truncate">{a.apellido}, {a.nombre}</p>
+                                                            <p className="text-slate-400 text-sm">DNI {a.dni}</p>
+                                                        </div>
+                                                        <span className={cn(
+                                                            'w-11 h-6 rounded-full shrink-0 relative transition-colors',
+                                                            on ? 'bg-emerald-500' : 'bg-slate-200',
+                                                        )}>
+                                                            <span className={cn(
+                                                                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all',
+                                                                on ? 'left-[22px]' : 'left-0.5',
+                                                            )} />
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        {vigAlumnos.length === 0 && (
+                                            <p className="text-slate-400 text-sm text-center py-10">No hay alumnos.</p>
+                                        )}
+                                    </div>
+                                </BlurFade>
+                            )}
                         </div>
                     )}
                 </div>

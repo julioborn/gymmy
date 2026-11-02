@@ -99,3 +99,20 @@ export async function notifyOwners(gimnasioId: string, payload: NotifPayload) {
     if (!tokens.length) return;
     return sendGymNotif(gimnasioId, tokens, payload);
 }
+
+export async function notifyVigilantes(alumnoId: string, gimnasioId: string, payload: NotifPayload) {
+    const { default: connectMongoDB } = await import('./mongodb');
+    const { default: Vigilancia } = await import('@/models/Vigilancia');
+    const { default: Alumno } = await import('@/models/Alumno');
+    await connectMongoDB();
+
+    const vigilancias = await Vigilancia.find({ alumnoId }).select('watcherAlumnoId').lean();
+    if (!vigilancias.length) return;
+
+    const watcherIds = (vigilancias as any[]).map(v => v.watcherAlumnoId);
+    const watchers = await Alumno.find({ _id: { $in: watcherIds } }).select('+fcmTokens').lean();
+    const tokens = (watchers as any[]).flatMap(w => w.fcmTokens ?? []);
+    if (!tokens.length) return;
+
+    return sendGymNotif(gimnasioId, tokens, payload);
+}
