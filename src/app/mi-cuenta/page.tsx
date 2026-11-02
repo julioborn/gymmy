@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, animate } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
 import {
-    ChartBar, Clock3, Dumbbell, Eye, EyeOff,
+    ChartBar, Clock3, Dumbbell, EyeOff,
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
@@ -467,8 +467,16 @@ export default function MiCuentaPage() {
         { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={20} /> },
         { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={20} /> },
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
-        ...(isWatcher ? [{ key: 'avisos' as Tab, label: 'Avisos', icon: <Eye size={20} /> }] : []),
     ];
+
+    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const startAvatarPress = () => {
+        if (!isWatcher) return;
+        longPressTimer.current = setTimeout(() => { changeTab('avisos'); }, 5000);
+    };
+    const cancelAvatarPress = () => {
+        if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+    };
 
     const toggleVigilancia = async (targetId: string) => {
         setVigToggling(targetId);
@@ -509,8 +517,13 @@ export default function MiCuentaPage() {
                             {/* Avatar */}
                             <BlurFade delay={0}>
                                 <div className="relative shrink-0">
-                                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl"
-                                        style={{ background: 'linear-gradient(135deg, #f97316, #fb923c)' }}>
+                                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl select-none"
+                                        style={{ background: 'linear-gradient(135deg, #f97316, #fb923c)', WebkitTouchCallout: 'none' }}
+                                        onPointerDown={startAvatarPress}
+                                        onPointerUp={cancelAvatarPress}
+                                        onPointerLeave={cancelAvatarPress}
+                                        onPointerCancel={cancelAvatarPress}
+                                        onContextMenu={(e) => e.preventDefault()}>
                                         <span className="text-white font-bold text-2xl tracking-wide">{initials}</span>
                                     </div>
                                     {/* Status dot */}
