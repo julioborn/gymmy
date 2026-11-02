@@ -16,6 +16,9 @@ type Pago = {
     fechaPago: string;
     tarifa: number;
     diasMusculacion: number;
+    metodoPago?: string;
+    montoEfectivo?: number;
+    montoTransferencia?: number;
 };
 
 type Asistencia = {
@@ -59,6 +62,8 @@ const ControlFinanciero = () => {
     const [alumnos, setAlumnos] = useState<Alumno[]>([]);
     const [ingresosPorMes, setIngresosPorMes] = useState<number[]>([]);
     const [, setTotalIngresos] = useState<number>(0);
+    const [efectivoPorMes, setEfectivoPorMes] = useState<number[]>(new Array(12).fill(0));
+    const [transferenciaPorMes, setTransferenciaPorMes] = useState<number[]>(new Array(12).fill(0));
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [availableYears, setAvailableYears] = useState<number[]>([]);
     const [gastos, setGastos] = useState<Gasto[]>([]);
@@ -93,7 +98,7 @@ const ControlFinanciero = () => {
             .then((data) => {
                 setAlumnos(data);
                 calcularAñosDisponibles(data);
-                calcularIngresosPorMes(alumnos, selectedYear, selectedMonth);
+                calcularIngresosPorMes(data, selectedYear, selectedMonth);
             })
             .catch(() => { /* silenced */ });
     }, []);
@@ -115,6 +120,8 @@ const ControlFinanciero = () => {
 
     const calcularIngresosPorMes = (alumnos: Alumno[], year: number, month: number) => {
         let ingresosMensuales = new Array(12).fill(0);
+        let efectivoMensual = new Array(12).fill(0);
+        let transferenciaMensual = new Array(12).fill(0);
 
         alumnos.forEach(alumno => {
             alumno.pagos.forEach(pago => {
@@ -124,11 +131,19 @@ const ControlFinanciero = () => {
 
                 if (pagoYear === year) {
                     ingresosMensuales[pagoMonth] += pago.tarifa;
+                    if (pago.metodoPago === 'efectivo') efectivoMensual[pagoMonth] += pago.tarifa;
+                    else if (pago.metodoPago === 'transferencia') transferenciaMensual[pagoMonth] += pago.tarifa;
+                    else if (pago.metodoPago === 'mixto') {
+                        efectivoMensual[pagoMonth] += pago.montoEfectivo ?? 0;
+                        transferenciaMensual[pagoMonth] += pago.montoTransferencia ?? 0;
+                    }
                 }
             });
         });
 
         setIngresosPorMes(ingresosMensuales);
+        setEfectivoPorMes(efectivoMensual);
+        setTransferenciaPorMes(transferenciaMensual);
 
         if (month === -1) {
             // Si se selecciona "Todos", mostrar el total anual
@@ -483,6 +498,13 @@ const ControlFinanciero = () => {
             ? ingresosMensualesCombinados.reduce((acc, val) => acc + val, 0)
             : ingresosMensualesCombinados[selectedMonth] || 0;
 
+    const totalEfectivo = selectedMonth === -1
+        ? efectivoPorMes.reduce((acc, val) => acc + val, 0)
+        : efectivoPorMes[selectedMonth] || 0;
+    const totalTransferencia = selectedMonth === -1
+        ? transferenciaPorMes.reduce((acc, val) => acc + val, 0)
+        : transferenciaPorMes[selectedMonth] || 0;
+
     const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const resultado = totalIngresosCombinados - totalGastos;
 
@@ -551,6 +573,18 @@ const ControlFinanciero = () => {
                 <div className={`${card} p-3 lg:p-5`}>
                     <p className={`${lbl} mb-1.5`}>Resultado</p>
                     <p className={`text-base lg:text-2xl font-bold leading-tight break-all ${resultado >= 0 ? 'text-slate-800' : 'text-red-500'}`}>${resultado.toLocaleString('es-ES')}</p>
+                </div>
+            </div>
+
+            {/* Cuotas por método de pago */}
+            <div className="grid grid-cols-2 gap-2 lg:gap-4">
+                <div className={`${card} p-3 lg:p-5`}>
+                    <p className={`${lbl} mb-1.5`}>Cuotas en efectivo</p>
+                    <p className="text-base lg:text-2xl font-bold leading-tight text-emerald-600 break-all">${totalEfectivo.toLocaleString('es-ES')}</p>
+                </div>
+                <div className={`${card} p-3 lg:p-5`}>
+                    <p className={`${lbl} mb-1.5`}>Cuotas por transferencia</p>
+                    <p className="text-base lg:text-2xl font-bold leading-tight text-sky-600 break-all">${totalTransferencia.toLocaleString('es-ES')}</p>
                 </div>
             </div>
 
@@ -647,7 +681,7 @@ const ControlFinanciero = () => {
                             datasets: [
                                 {
                                     label: `Ingresos (${selectedYear})`,
-                                    data: ingresosMensualesCombinados.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
+                                    data: ingresosMensualesCombinados,
                                     backgroundColor: 'rgba(34,197,94,0.55)',
                                     borderColor: 'rgba(34,197,94,1)',
                                     borderWidth: 1,
@@ -655,7 +689,7 @@ const ControlFinanciero = () => {
                                 },
                                 {
                                     label: `Gastos (${selectedYear})`,
-                                    data: gastosMensuales.map((valor, i) => (selectedMonth === -1 || selectedMonth === i ? valor : 0)),
+                                    data: gastosMensuales,
                                     backgroundColor: 'rgba(239,68,68,0.55)',
                                     borderColor: 'rgba(239,68,68,1)',
                                     borderWidth: 1,
