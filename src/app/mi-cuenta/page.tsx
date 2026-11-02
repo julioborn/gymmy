@@ -160,6 +160,7 @@ export default function MiCuentaPage() {
     const [vigLoading, setVigLoading] = useState(false);
     const [vigSearch, setVigSearch] = useState('');
     const [vigToggling, setVigToggling] = useState<string | null>(null);
+    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isWatcher = alumno?.dni === '43844409';
 
     useEffect(() => {
@@ -469,7 +470,6 @@ export default function MiCuentaPage() {
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
     ];
 
-    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const startAvatarPress = () => {
         if (!isWatcher) return;
         longPressTimer.current = setTimeout(() => { changeTab('avisos'); }, 5000);
