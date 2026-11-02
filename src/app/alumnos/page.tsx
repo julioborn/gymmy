@@ -53,6 +53,21 @@ function verificarPagoMesActual(pagos: any[], exentoCuota?: boolean): boolean {
     return estaAlDia({ pagos, exentoCuota }, getMesActual(new Date()));
 }
 
+// Ventana de paginación: siempre primera/última página + vecinos de la actual,
+// con "..." en los huecos, para que no crezca sin límite con muchos alumnos.
+function getPageList(current: number, total: number): (number | '...')[] {
+    const delta = 1;
+    const range: (number | '...')[] = [];
+    const start = Math.max(2, current - delta);
+    const end = Math.min(total - 1, current + delta);
+    range.push(1);
+    if (start > 2) range.push('...');
+    for (let i = start; i <= end; i++) range.push(i);
+    if (end < total - 1) range.push('...');
+    if (total > 1) range.push(total);
+    return range;
+}
+
 export default function ListaAlumnosPage() {
     const { data: session } = useSession();
     const [alumnos, setAlumnos] = useState<any[]>([]);
@@ -615,15 +630,21 @@ export default function ListaAlumnosPage() {
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
-                                {Array.from({ length: Math.ceil(alumnosFiltrados.length / itemsPerPage) }, (_, i) => i + 1).map(n => (
-                                    <button
-                                        key={n}
-                                        onClick={() => setPage(n)}
-                                        className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${n === page ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.08]'}`}
-                                    >
-                                        {n}
-                                    </button>
-                                ))}
+                                {getPageList(page, Math.ceil(alumnosFiltrados.length / itemsPerPage)).map((n, i) =>
+                                    n === '...' ? (
+                                        <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-white/30 text-sm select-none">
+                                            ···
+                                        </span>
+                                    ) : (
+                                        <button
+                                            key={n}
+                                            onClick={() => setPage(n)}
+                                            className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${n === page ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.08]'}`}
+                                        >
+                                            {n}
+                                        </button>
+                                    )
+                                )}
                                 <button
                                     onClick={() => setPage(p => Math.min(Math.ceil(alumnosFiltrados.length / itemsPerPage), p + 1))}
                                     disabled={page === Math.ceil(alumnosFiltrados.length / itemsPerPage)}
