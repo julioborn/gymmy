@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { useAttendanceEvents } from '@/hooks/useAttendanceEvents';
-import { estaAlDia, getMesActual } from '@/lib/pagos';
+import { estaAlDia, pagoVigente, getMesActual } from '@/lib/pagos';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -130,8 +130,11 @@ function fmtDate(): string {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Tarifa = { dias: number; valor: number };
-type AlumnoAsistencia = { nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean; dni: string };
-type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string };
+type AlumnoAsistencia = {
+    nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean; dni: string;
+    exentoCuota?: boolean; metodoPago?: string; montoPagado?: number;
+};
+type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string; metodoPago?: string; monto?: number };
 type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
 
 type DashboardData = {
@@ -270,6 +273,7 @@ export default function HomePage() {
             }
             for (const al of (alumnosData || [])) {
                 const pagado = estaAlDia({ pagos: al.pagos, exentoCuota: al.exentoCuota }, mesActual);
+                const pagoInfo = al.exentoCuota ? null : pagoVigente(al.pagos, mesActual);
                 for (const a of (al.asistencia || [])) {
                     if (!a.presente) continue;
                     const dArg = new Date(new Date(a.fecha).getTime() + ARG);
@@ -277,7 +281,11 @@ export default function HomePage() {
                     const dia = dias.find(d => d.key === k);
                     if (!dia) continue;
                     const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                    dia.alumnos.push({ nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '', hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado, dni: al.dni ?? '' });
+                    dia.alumnos.push({
+                        nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '',
+                        hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado, dni: al.dni ?? '',
+                        exentoCuota: !!al.exentoCuota, metodoPago: pagoInfo?.metodoPago, montoPagado: pagoInfo?.tarifa,
+                    });
                 }
             }
             dias.forEach(d => d.alumnos.sort((a, b) => b.hora.localeCompare(a.hora)));
@@ -287,7 +295,7 @@ export default function HomePage() {
                 const dia = dias.find(d => d.key === k);
                 if (!dia) continue;
                 const hh = dArg.getUTCHours(), mm = dArg.getUTCMinutes();
-                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: String(dp._id) });
+                dia.depaso.push({ nombre: dp.nombre, apellido: dp.apellido, actividad: dp.actividad, hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: String(dp._id), metodoPago: dp.metodoPago, monto: dp.monto });
             }
             dias.forEach(d => d.depaso.sort((a, b) => b.hora.localeCompare(a.hora)));
 
@@ -716,12 +724,18 @@ export default function HomePage() {
                                                                                 <AlertTriangle size={8} /> Debe
                                                                             </span>
                                                                         )}
-                                                                        {!isNew && !debe && (
+                                                                        {!isNew && !debe && (a.exentoCuota || sinCuota) && (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/55 shrink-0">
+                                                                                {a.exentoCuota ? 'Exenta' : <><CheckCircle2 size={8} /> Asistió</>}
+                                                                            </span>
+                                                                        )}
+                                                                        {!isNew && !debe && !a.exentoCuota && !sinCuota && (
                                                                             <span className={cn(
-                                                                                'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0',
-                                                                                sinCuota ? 'bg-white/[0.08] text-white/55' : 'bg-lime-400/15 text-lime-400',
+                                                                                'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap',
+                                                                                a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-lime-400/15 text-lime-400',
                                                                             )}>
-                                                                                <CheckCircle2 size={8} /> Asistió
+                                                                                <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
+                                                                                {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
                                                                             </span>
                                                                         )}
                                                                         <ChevronRight size={11} className="hidden sm:block text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
@@ -801,8 +815,9 @@ export default function HomePage() {
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400 shrink-0">
-                                                                                <CheckCircle2 size={8} /> Asistió
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-400 shrink-0 whitespace-nowrap">
+                                                                                <span className="capitalize">{a.metodoPago || 'Asistió'}</span>
+                                                                                {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
                                                                             </span>
                                                                         )}
                                                                     </div>
