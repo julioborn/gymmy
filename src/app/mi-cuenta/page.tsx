@@ -119,7 +119,7 @@ function getCalendarDays(year: number, month: number): (number | null)[] {
     for (let d = 1; d <= daysInMonth; d++) days.push(d);
     return days;
 }
-function getInitials(nombre: string, apellido: string) { return `${nombre[0]??''}${apellido[0]??''}`.toUpperCase(); }
+function getInitials(nombre?: string, apellido?: string) { return `${nombre?.[0]??''}${apellido?.[0]??''}`.toUpperCase(); }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function MiCuentaPage() {
@@ -160,6 +160,18 @@ export default function MiCuentaPage() {
     const [vigLoading, setVigLoading] = useState(false);
     const [vigSearch, setVigSearch] = useState('');
     const [vigToggling, setVigToggling] = useState<string | null>(null);
+    const isWatcher = alumno?.dni === '43844409';
+
+    useEffect(() => {
+        if (tab !== 'avisos' || !isWatcher || vigAlumnos.length > 0) return;
+        setVigLoading(true);
+        fetch('/api/alumno/vigilancia').then(r => r.json()).then(d => {
+            if (d.ok) {
+                setVigAlumnos(d.alumnos || []);
+                setVigWatching(new Set(d.watching || []));
+            }
+        }).catch(() => {}).finally(() => setVigLoading(false));
+    }, [tab, isWatcher]);
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -451,24 +463,12 @@ export default function MiCuentaPage() {
     function nextMonth() { setSelectedDay(null); if (calMonth===11) { setCalMonth(0); setCalYear(y=>y+1); } else setCalMonth(m=>m+1); }
 
     // Bottom nav tabs config
-    const isWatcher = alumno?.dni === '43844409';
     const TABS = [
         { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={20} /> },
         { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={20} /> },
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
         ...(isWatcher ? [{ key: 'avisos' as Tab, label: 'Avisos', icon: <Eye size={20} /> }] : []),
     ];
-
-    useEffect(() => {
-        if (tab !== 'avisos' || !isWatcher || vigAlumnos.length > 0) return;
-        setVigLoading(true);
-        fetch('/api/alumno/vigilancia').then(r => r.json()).then(d => {
-            if (d.ok) {
-                setVigAlumnos(d.alumnos || []);
-                setVigWatching(new Set(d.watching || []));
-            }
-        }).catch(() => {}).finally(() => setVigLoading(false));
-    }, [tab, isWatcher]);
 
     const toggleVigilancia = async (targetId: string) => {
         setVigToggling(targetId);
