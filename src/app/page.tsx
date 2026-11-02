@@ -676,7 +676,6 @@ export default function HomePage() {
                                                 <AnimatePresence initial={false}>
                                                     {listToShow.map((a) => {
                                                         const debe = !a.pagado && pasoDiez;
-                                                        const sinCuota = !a.pagado && !pasoDiez;
                                                         const isNew = justArrived.has(`a-${a.id}`);
                                                         return (
                                                             <motion.div
@@ -719,23 +718,20 @@ export default function HomePage() {
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         )}
-                                                                        {debe && (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white shrink-0">
-                                                                                <AlertTriangle size={8} /> Debe
-                                                                            </span>
-                                                                        )}
-                                                                        {!isNew && !debe && (a.exentoCuota || sinCuota) && (
+                                                                        {!isNew && a.exentoCuota && (
                                                                             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/55 shrink-0">
-                                                                                {a.exentoCuota ? 'Exenta' : <><CheckCircle2 size={8} /> Asistió</>}
+                                                                                Exenta
                                                                             </span>
                                                                         )}
-                                                                        {!isNew && !debe && !a.exentoCuota && !sinCuota && (
-                                                                            <span className={cn(
-                                                                                'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap',
-                                                                                a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-lime-400/15 text-lime-400',
-                                                                            )}>
+                                                                        {!isNew && !a.exentoCuota && a.pagado && (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap bg-emerald-500/15 text-emerald-400">
                                                                                 <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
                                                                                 {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
+                                                                            </span>
+                                                                        )}
+                                                                        {!isNew && !a.exentoCuota && !a.pagado && (
+                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                                                                                <AlertTriangle size={8} /> Debe
                                                                             </span>
                                                                         )}
                                                                         <ChevronRight size={11} className="hidden sm:block text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
