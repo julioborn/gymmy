@@ -18,7 +18,7 @@ import {
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
     Activity, UserCheck, Clock, CheckCircle2,
-    Search, ChevronDown, ArrowUpDown, Dumbbell,
+    Search, ChevronDown, ArrowUpDown, Dumbbell, Wallet,
 } from 'lucide-react';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
@@ -631,6 +631,11 @@ export default function HomePage() {
                                             <UserPlus size={13} />
                                             De paso
                                         </button>
+                                        <Link href="/caja"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
+                                            <Wallet size={13} />
+                                            Cierre de caja
+                                        </Link>
                                     </div>
                                 </div>
 
