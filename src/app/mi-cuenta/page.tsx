@@ -142,6 +142,7 @@ export default function MiCuentaPage() {
     const [pagoResult, setPagoResult] = useState<'ok'|'error'|'pendiente'|null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState('');
     const [tarifas, setTarifas] = useState<{ dias: number; valor: number }[]>([]);
+    const [preciosExpanded, setPreciosExpanded] = useState(false);
     const [aliasCopied, setAliasCopied] = useState(false);
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
@@ -688,17 +689,25 @@ export default function MiCuentaPage() {
                             {tarifas.length > 0 && (
                                 <BlurFade delay={0.08}>
                                     <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
-                                        <div className="px-4 py-3.5 border-b border-slate-50">
+                                        <button
+                                            onClick={() => setPreciosExpanded(v => !v)}
+                                            className="w-full flex items-center justify-between px-4 py-3.5"
+                                        >
                                             <p className="font-bold text-sm text-slate-900">Precios de cuotas</p>
-                                        </div>
-                                        <div className="divide-y divide-slate-50">
-                                            {tarifas.map(t => (
-                                                <div key={t.dias} className="flex items-center justify-between px-4 py-3">
-                                                    <span className="text-slate-600 text-sm">{t.dias} día{t.dias !== 1 ? 's' : ''} por semana</span>
-                                                    <span className="text-slate-900 font-bold text-sm tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-300 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </button>
+                                        {preciosExpanded && (
+                                            <div className="border-t border-slate-50 divide-y divide-slate-50">
+                                                {tarifas.map(t => (
+                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3">
+                                                        <span className="text-slate-600 text-sm">{t.dias} día{t.dias !== 1 ? 's' : ''} por semana</span>
+                                                        <span className="text-slate-900 font-bold text-sm tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </BlurFade>
                             )}
