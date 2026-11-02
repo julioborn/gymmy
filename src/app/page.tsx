@@ -723,7 +723,10 @@ export default function HomePage() {
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && a.pagado && (
-                                                                            <span className="inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0 bg-emerald-500/15 text-emerald-400">
+                                                                            <span className={cn(
+                                                                                'inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0',
+                                                                                a.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
+                                                                            )}>
                                                                                 <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
                                                                                 {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
                                                                             </span>
@@ -809,7 +812,10 @@ export default function HomePage() {
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0 bg-teal-400/15 text-teal-400">
+                                                                            <span className={cn(
+                                                                                'inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0',
+                                                                                a.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : a.metodoPago === 'efectivo' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-teal-400/15 text-teal-400',
+                                                                            )}>
                                                                                 <span className="capitalize">{a.metodoPago || 'Asistió'}</span>
                                                                                 {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
                                                                             </span>
