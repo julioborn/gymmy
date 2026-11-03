@@ -432,12 +432,12 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             >
                 <div className="relative h-[88px] flex items-center justify-between px-4">
                   <div className="flex items-center gap-1">
-                    {/* Back — desktop only (apps instaladas no tienen flecha del navegador) */}
+                    {/* Back — siempre en recepción (apps instaladas no tienen flecha del navegador); desktop para el resto */}
                     {pathname !== '/' && (
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="hidden sm:flex w-8 h-8 items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
+                            className={`${role === 'recepcion' ? 'flex' : 'hidden sm:flex'} w-8 h-8 items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90`}
                             aria-label="Volver"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
