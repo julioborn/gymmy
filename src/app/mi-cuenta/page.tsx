@@ -9,8 +9,11 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
+    Users, UserPlus, Search,
 } from 'lucide-react';
-import { pagoVigente } from '@/lib/pagos';
+import { pagoVigente, estaAlDia } from '@/lib/pagos';
+import { esStaffAlumno } from '@/lib/staffAlumnos';
+import AlumnoRegistroForm from '@/components/AlumnoRegistroForm';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
@@ -126,7 +129,7 @@ export default function MiCuentaPage() {
     const [alumno, setAlumno] = useState<Alumno | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const validTabs = ['resumen', 'historial', 'plan', 'avisos'] as const;
+    const validTabs = ['resumen', 'historial', 'plan', 'avisos', 'staff'] as const;
     type Tab = typeof validTabs[number];
     const getInitialTab = (): Tab => {
         if (typeof window !== 'undefined') {
@@ -174,6 +177,21 @@ export default function MiCuentaPage() {
             }
         }).catch(() => {}).finally(() => setVigLoading(false));
     }, [tab, isWatcher]);
+
+    type StaffAlumno = { _id: string; nombre: string; apellido: string; dni: string; telefono?: string; exentoCuota?: boolean; asistencia: { fecha: string; presente: boolean; actividad: string }[]; pagos: { mes: string; esEspecial?: boolean; fechaDesde?: string|null; fechaHasta?: string|null }[] };
+    const [staffAlumnos, setStaffAlumnos] = useState<StaffAlumno[]>([]);
+    const [staffLoading, setStaffLoading] = useState(false);
+    const [staffSearch, setStaffSearch] = useState('');
+    const [staffSubTab, setStaffSubTab] = useState<'lista' | 'hoy' | 'nuevo'>('lista');
+    const isStaffAlumno = esStaffAlumno(alumno?.dni);
+
+    useEffect(() => {
+        if (tab !== 'staff' || !isStaffAlumno || staffAlumnos.length > 0) return;
+        setStaffLoading(true);
+        fetch('/api/alumno/staff/alumnos').then(r => r.json()).then(d => {
+            if (d.ok) setStaffAlumnos(d.alumnos || []);
+        }).catch(() => {}).finally(() => setStaffLoading(false));
+    }, [tab, isStaffAlumno]);
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -469,6 +487,7 @@ export default function MiCuentaPage() {
         { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={20} /> },
         { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={20} /> },
         { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
+        ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={20} /> }] : []),
     ];
 
     const handleAvatarTap = () => {
@@ -1275,6 +1294,147 @@ export default function MiCuentaPage() {
                             )}
                         </div>
                     )}
+
+                    {/* ── ALUMNOS (staff) ─────────────────────────────────── */}
+                    {tab === 'staff' && isStaffAlumno && (() => {
+                        const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+                        const mesActualStaff = MESES[now.getMonth()];
+                        const q = normalize(staffSearch.trim());
+                        const filtrados = staffAlumnos.filter(a => {
+                            if (!q) return true;
+                            return normalize(`${a.nombre} ${a.apellido}`).includes(q) || a.dni.includes(q);
+                        });
+
+                        const ARG = 3 * 60 * 60 * 1000;
+                        const todayArg = (() => {
+                            const arg = new Date(Date.now() - ARG);
+                            return `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+                        })();
+                        const slotOf = (h: number) => h < 12 ? 'Mañana' : h < 15 ? 'Siesta' : h < 20 ? 'Tarde' : 'Noche';
+                        const SLOTS = ['Mañana', 'Siesta', 'Tarde', 'Noche'];
+                        const hoyPorTurno: Record<string, { nombre: string; apellido: string; actividad: string; hora: string }[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+                        for (const a of staffAlumnos) {
+                            for (const asis of (a.asistencia || [])) {
+                                if (!asis.presente) continue;
+                                const d = new Date(asis.fecha);
+                                const arg = new Date(d.getTime() - ARG);
+                                const key = `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+                                if (key !== todayArg) continue;
+                                const hh = arg.getUTCHours();
+                                hoyPorTurno[slotOf(hh)].push({ nombre: a.nombre, apellido: a.apellido, actividad: asis.actividad, hora: `${String(hh).padStart(2,'0')}:${String(arg.getUTCMinutes()).padStart(2,'0')}` });
+                            }
+                        }
+                        for (const s of SLOTS) hoyPorTurno[s].sort((a,b) => a.hora.localeCompare(b.hora));
+                        const totalHoy = SLOTS.reduce((acc, s) => acc + hoyPorTurno[s].length, 0);
+
+                        const refetchStaff = () => {
+                            setStaffLoading(true);
+                            fetch('/api/alumno/staff/alumnos').then(r => r.json()).then(d => {
+                                if (d.ok) setStaffAlumnos(d.alumnos || []);
+                            }).catch(() => {}).finally(() => setStaffLoading(false));
+                        };
+
+                        return (
+                            <div className="space-y-3">
+                                <BlurFade delay={0.05}>
+                                    <div className="bg-white/[0.08] rounded-2xl p-1 flex gap-1">
+                                        {([
+                                            { key: 'lista' as const, label: 'Lista', icon: <Users size={15} /> },
+                                            { key: 'hoy' as const, label: 'Hoy', icon: <Clock3 size={15} /> },
+                                            { key: 'nuevo' as const, label: 'Nuevo', icon: <UserPlus size={15} /> },
+                                        ]).map(s => (
+                                            <button key={s.key} onClick={() => setStaffSubTab(s.key)}
+                                                className={cn(
+                                                    'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                                    staffSubTab === s.key ? 'bg-white text-black' : 'text-white/60',
+                                                )}>
+                                                {s.icon}{s.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </BlurFade>
+
+                                {staffLoading ? (
+                                    <div className="flex justify-center py-16">
+                                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
+                                    </div>
+                                ) : staffSubTab === 'lista' ? (
+                                    <>
+                                        <BlurFade delay={0.08}>
+                                            <div className="relative">
+                                                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                                <input type="text" value={staffSearch} onChange={e => setStaffSearch(e.target.value)}
+                                                    placeholder="Buscar por nombre o DNI..."
+                                                    className="w-full bg-white border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300" />
+                                            </div>
+                                        </BlurFade>
+                                        <BlurFade delay={0.1}>
+                                            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
+                                                {filtrados.map(a => {
+                                                    const pagado = estaAlDia({ pagos: a.pagos as any, exentoCuota: a.exentoCuota }, mesActualStaff);
+                                                    return (
+                                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3.5">
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500 shrink-0">
+                                                                {getInitials(a.nombre, a.apellido)}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-slate-900 font-semibold text-base truncate">{a.apellido}, {a.nombre}</p>
+                                                                <p className="text-slate-400 text-sm">DNI {a.dni}</p>
+                                                            </div>
+                                                            <span className={cn(
+                                                                'text-xs font-bold px-2.5 py-1 rounded-full shrink-0',
+                                                                a.exentoCuota ? 'bg-slate-100 text-slate-500' : pagado ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600',
+                                                            )}>
+                                                                {a.exentoCuota ? 'Exenta' : pagado ? 'Pagó' : 'Debe'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {filtrados.length === 0 && (
+                                                    <p className="text-slate-400 text-sm text-center py-10">Sin resultados.</p>
+                                                )}
+                                            </div>
+                                        </BlurFade>
+                                    </>
+                                ) : staffSubTab === 'hoy' ? (
+                                    <BlurFade delay={0.08}>
+                                        <div className="space-y-3">
+                                            <p className="text-white/50 text-sm font-semibold">{totalHoy} {totalHoy === 1 ? 'persona vino' : 'personas vinieron'} hoy</p>
+                                            {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => (
+                                                <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                    <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
+                                                        <p className="font-bold text-slate-900 text-base">{slot}</p>
+                                                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{hoyPorTurno[slot].length}</span>
+                                                    </div>
+                                                    <div className="divide-y divide-slate-100">
+                                                        {hoyPorTurno[slot].map((a, i) => (
+                                                            <div key={i} className="flex items-center gap-3 px-4 py-3">
+                                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
+                                                                    {getInitials(a.nombre, a.apellido)}
+                                                                </div>
+                                                                <p className="flex-1 text-slate-800 font-semibold text-sm truncate">{a.apellido}, {a.nombre}</p>
+                                                                <span className="text-slate-400 text-xs font-medium truncate max-w-[30%]">{a.actividad}</span>
+                                                                <span className="text-slate-900 text-sm font-bold tabular-nums">{a.hora}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {totalHoy === 0 && (
+                                                <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                                    <p className="text-slate-400 text-sm">Todavía no vino nadie hoy.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </BlurFade>
+                                ) : (
+                                    <BlurFade delay={0.08}>
+                                        <AlumnoRegistroForm endpoint="/api/alumno/staff/alumnos" onSuccess={refetchStaff} />
+                                    </BlurFade>
+                                )}
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
 
