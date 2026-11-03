@@ -21,7 +21,7 @@ export async function GET() {
 
     const [alumnos, vigilancias] = await Promise.all([
         Alumno.find({ gimnasioId: yo.gimnasioId, _id: { $ne: alumnoId } })
-            .select('nombre apellido dni')
+            .select('nombre apellido dni asistencia')
             .sort({ apellido: 1 })
             .lean(),
         Vigilancia.find({ watcherAlumnoId: alumnoId }).select('alumnoId').lean(),
@@ -29,7 +29,10 @@ export async function GET() {
 
     return NextResponse.json({
         ok: true,
-        alumnos: (alumnos as any[]).map(a => ({ _id: String(a._id), nombre: a.nombre, apellido: a.apellido, dni: a.dni })),
+        alumnos: (alumnos as any[]).map(a => ({
+            _id: String(a._id), nombre: a.nombre, apellido: a.apellido, dni: a.dni,
+            asistencia: (a.asistencia || []).map((s: any) => ({ fecha: s.fecha, presente: s.presente, actividad: s.actividad })),
+        })),
         watching: (vigilancias as any[]).map(v => String(v.alumnoId)),
     });
 }

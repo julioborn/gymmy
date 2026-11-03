@@ -160,11 +160,13 @@ export default function MiCuentaPage() {
     const [checkInResult, setCheckInResult] = useState<'ok'|'duplicate'|'error'|null>(null);
     const [acento, setAcento] = useState('#a3e635');
 
-    const [vigAlumnos, setVigAlumnos] = useState<{ _id: string; nombre: string; apellido: string; dni: string }[]>([]);
+    const [vigAlumnos, setVigAlumnos] = useState<{ _id: string; nombre: string; apellido: string; dni: string; asistencia: { fecha: string; presente: boolean; actividad: string }[] }[]>([]);
     const [vigWatching, setVigWatching] = useState<Set<string>>(new Set());
     const [vigLoading, setVigLoading] = useState(false);
     const [vigSearch, setVigSearch] = useState('');
     const [vigToggling, setVigToggling] = useState<string | null>(null);
+    const [vigSubTab, setVigSubTab] = useState<'avisos' | 'hoy'>('avisos');
+    const [vigSlotsExpanded, setVigSlotsExpanded] = useState<Record<string, boolean>>({ Mañana: false, Siesta: false, Tarde: false, Noche: false });
     const avatarTapCount = useRef(0);
     const avatarTapResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isWatcher = alumno?.dni === '43844409';
@@ -1302,70 +1304,143 @@ export default function MiCuentaPage() {
                     )}
 
                     {/* ── AVISOS (oculto) ─────────────────────────────────── */}
-                    {tab === 'avisos' && isWatcher && (
+                    {tab === 'avisos' && isWatcher && (() => {
+                        const ARG = 3 * 60 * 60 * 1000;
+                        const todayArg = (() => {
+                            const arg = new Date(Date.now() - ARG);
+                            return `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+                        })();
+                        const slotOf = (h: number) => h < 12 ? 'Mañana' : h < 15 ? 'Siesta' : h < 20 ? 'Tarde' : 'Noche';
+                        const SLOTS = ['Mañana', 'Siesta', 'Tarde', 'Noche'];
+                        const hoyPorTurno: Record<string, { nombre: string; apellido: string; actividad: string; hora: string }[]> = { Mañana: [], Siesta: [], Tarde: [], Noche: [] };
+                        for (const a of vigAlumnos) {
+                            for (const asis of (a.asistencia || [])) {
+                                if (!asis.presente) continue;
+                                const d = new Date(asis.fecha);
+                                const arg = new Date(d.getTime() - ARG);
+                                const key = `${arg.getUTCFullYear()}-${String(arg.getUTCMonth()+1).padStart(2,'0')}-${String(arg.getUTCDate()).padStart(2,'0')}`;
+                                if (key !== todayArg) continue;
+                                const hh = arg.getUTCHours();
+                                hoyPorTurno[slotOf(hh)].push({ nombre: a.nombre, apellido: a.apellido, actividad: asis.actividad, hora: `${String(hh).padStart(2,'0')}:${String(arg.getUTCMinutes()).padStart(2,'0')}` });
+                            }
+                        }
+                        for (const s of SLOTS) hoyPorTurno[s].sort((a,b) => a.hora.localeCompare(b.hora));
+                        const totalHoyVig = SLOTS.reduce((acc, s) => acc + hoyPorTurno[s].length, 0);
+
+                        return (
                         <div className="space-y-3">
                             <BlurFade delay={0.05}>
-                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03]">
-                                    <p className="text-slate-900 font-bold text-base mb-1">Avisos personalizados</p>
-                                    <p className="text-slate-400 text-sm">Elegí a quién querés que te avise cuando marque su asistencia.</p>
+                                <div className="bg-white/[0.08] rounded-2xl p-1 flex gap-1">
+                                    {([
+                                        { key: 'avisos' as const, label: 'Avisos' },
+                                        { key: 'hoy' as const, label: 'Hoy en el gimnasio' },
+                                    ]).map(s => (
+                                        <button key={s.key} onClick={() => setVigSubTab(s.key)}
+                                            className={cn(
+                                                'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                                vigSubTab === s.key ? 'bg-white text-black' : 'text-white/60',
+                                            )}>
+                                            {s.label}
+                                        </button>
+                                    ))}
                                 </div>
-                            </BlurFade>
-
-                            <BlurFade delay={0.08}>
-                                <input
-                                    type="text"
-                                    value={vigSearch}
-                                    onChange={e => setVigSearch(e.target.value)}
-                                    placeholder="Buscar por nombre, apellido o DNI..."
-                                    className="w-full bg-white border border-slate-100 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300"
-                                />
                             </BlurFade>
 
                             {vigLoading ? (
                                 <div className="flex justify-center py-16">
                                     <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
                                 </div>
-                            ) : (
-                                <BlurFade delay={0.1}>
-                                    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
-                                        {vigAlumnos
-                                            .filter(a => {
-                                                const q = vigSearch.trim().toLowerCase();
-                                                if (!q) return true;
-                                                return `${a.nombre} ${a.apellido}`.toLowerCase().includes(q) || a.dni.includes(q);
-                                            })
-                                            .map(a => {
-                                                const on = vigWatching.has(a._id);
-                                                return (
-                                                    <button key={a._id} onClick={() => toggleVigilancia(a._id)} disabled={vigToggling === a._id}
-                                                        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors disabled:opacity-60">
-                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500 shrink-0">
-                                                            {getInitials(a.nombre, a.apellido)}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-slate-900 font-semibold text-base truncate">{a.apellido}, {a.nombre}</p>
-                                                            <p className="text-slate-400 text-sm">DNI {a.dni}</p>
-                                                        </div>
-                                                        <span className={cn(
-                                                            'w-11 h-6 rounded-full shrink-0 relative transition-colors',
-                                                            on ? 'bg-emerald-500' : 'bg-slate-200',
-                                                        )}>
+                            ) : vigSubTab === 'avisos' ? (
+                                <>
+                                    <BlurFade delay={0.08}>
+                                        <input
+                                            type="text"
+                                            value={vigSearch}
+                                            onChange={e => setVigSearch(e.target.value)}
+                                            placeholder="Buscar por nombre, apellido o DNI..."
+                                            className="w-full bg-white border border-slate-100 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300"
+                                        />
+                                    </BlurFade>
+                                    <BlurFade delay={0.1}>
+                                        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
+                                            {vigAlumnos
+                                                .filter(a => {
+                                                    const q = vigSearch.trim().toLowerCase();
+                                                    if (!q) return true;
+                                                    return `${a.nombre} ${a.apellido}`.toLowerCase().includes(q) || a.dni.includes(q);
+                                                })
+                                                .map(a => {
+                                                    const on = vigWatching.has(a._id);
+                                                    return (
+                                                        <button key={a._id} onClick={() => toggleVigilancia(a._id)} disabled={vigToggling === a._id}
+                                                            className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors disabled:opacity-60">
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500 shrink-0">
+                                                                {getInitials(a.nombre, a.apellido)}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-slate-900 font-semibold text-base truncate">{a.apellido}, {a.nombre}</p>
+                                                                <p className="text-slate-400 text-sm">DNI {a.dni}</p>
+                                                            </div>
                                                             <span className={cn(
-                                                                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all',
-                                                                on ? 'left-[22px]' : 'left-0.5',
-                                                            )} />
-                                                        </span>
+                                                                'w-11 h-6 rounded-full shrink-0 relative transition-colors',
+                                                                on ? 'bg-emerald-500' : 'bg-slate-200',
+                                                            )}>
+                                                                <span className={cn(
+                                                                    'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all',
+                                                                    on ? 'left-[22px]' : 'left-0.5',
+                                                                )} />
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            {vigAlumnos.length === 0 && (
+                                                <p className="text-slate-400 text-sm text-center py-10">No hay alumnos.</p>
+                                            )}
+                                        </div>
+                                    </BlurFade>
+                                </>
+                            ) : (
+                                <BlurFade delay={0.08}>
+                                    <div className="space-y-3">
+                                        <p className="text-white/50 text-sm font-semibold">{totalHoyVig} {totalHoyVig === 1 ? 'persona vino' : 'personas vinieron'} hoy</p>
+                                        {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => {
+                                            const open = !!vigSlotsExpanded[slot];
+                                            return (
+                                                <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                    <button onClick={() => setVigSlotsExpanded(prev => ({ ...prev, [slot]: !prev[slot] }))}
+                                                        className="w-full flex items-center gap-2 px-4 py-3 border-b border-slate-100">
+                                                        <p className="font-bold text-slate-900 text-base">{slot}</p>
+                                                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{hoyPorTurno[slot].length}</span>
+                                                        <ChevronDown size={16} className={cn('ml-auto text-slate-300 transition-transform duration-200', open && 'rotate-180')} />
                                                     </button>
-                                                );
-                                            })}
-                                        {vigAlumnos.length === 0 && (
-                                            <p className="text-slate-400 text-sm text-center py-10">No hay alumnos.</p>
+                                                    {open && (
+                                                        <div className="divide-y divide-slate-100">
+                                                            {hoyPorTurno[slot].map((a, i) => (
+                                                                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                                                                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
+                                                                        {getInitials(a.nombre, a.apellido)}
+                                                                    </div>
+                                                                    <p className="flex-1 text-slate-800 font-semibold text-sm truncate">{a.apellido}, {a.nombre}</p>
+                                                                    <span className="text-slate-400 text-xs font-medium truncate max-w-[30%]">{a.actividad}</span>
+                                                                    <span className="text-slate-900 text-sm font-bold tabular-nums">{a.hora}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                        {totalHoyVig === 0 && (
+                                            <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                                <p className="text-slate-400 text-sm">Todavía no vino nadie hoy.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </BlurFade>
                             )}
                         </div>
-                    )}
+                        );
+                    })()}
 
                     {/* ── ALUMNOS (staff) ─────────────────────────────────── */}
                     {tab === 'staff' && isStaffAlumno && (() => {
