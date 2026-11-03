@@ -183,6 +183,7 @@ export default function MiCuentaPage() {
     const [staffLoading, setStaffLoading] = useState(false);
     const [staffSearch, setStaffSearch] = useState('');
     const [staffSubTab, setStaffSubTab] = useState<'lista' | 'hoy' | 'nuevo'>('lista');
+    const [staffSlotsExpanded, setStaffSlotsExpanded] = useState<Record<string, boolean>>({ Mañana: false, Siesta: false, Tarde: false, Noche: false });
     const isStaffAlumno = esStaffAlumno(alumno?.dni);
 
     useEffect(() => {
@@ -1403,26 +1404,33 @@ export default function MiCuentaPage() {
                                     <BlurFade delay={0.08}>
                                         <div className="space-y-3">
                                             <p className="text-white/50 text-sm font-semibold">{totalHoy} {totalHoy === 1 ? 'persona vino' : 'personas vinieron'} hoy</p>
-                                            {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => (
-                                                <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
-                                                    <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-                                                        <p className="font-bold text-slate-900 text-base">{slot}</p>
-                                                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{hoyPorTurno[slot].length}</span>
-                                                    </div>
-                                                    <div className="divide-y divide-slate-100">
-                                                        {hoyPorTurno[slot].map((a, i) => (
-                                                            <div key={i} className="flex items-center gap-3 px-4 py-3">
-                                                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
-                                                                    {getInitials(a.nombre, a.apellido)}
-                                                                </div>
-                                                                <p className="flex-1 text-slate-800 font-semibold text-sm truncate">{a.apellido}, {a.nombre}</p>
-                                                                <span className="text-slate-400 text-xs font-medium truncate max-w-[30%]">{a.actividad}</span>
-                                                                <span className="text-slate-900 text-sm font-bold tabular-nums">{a.hora}</span>
+                                            {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => {
+                                                const open = !!staffSlotsExpanded[slot];
+                                                return (
+                                                    <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                        <button onClick={() => setStaffSlotsExpanded(prev => ({ ...prev, [slot]: !prev[slot] }))}
+                                                            className="w-full flex items-center gap-2 px-4 py-3 border-b border-slate-100">
+                                                            <p className="font-bold text-slate-900 text-base">{slot}</p>
+                                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{hoyPorTurno[slot].length}</span>
+                                                            <ChevronDown size={16} className={cn('ml-auto text-slate-300 transition-transform duration-200', open && 'rotate-180')} />
+                                                        </button>
+                                                        {open && (
+                                                            <div className="divide-y divide-slate-100">
+                                                                {hoyPorTurno[slot].map((a, i) => (
+                                                                    <div key={i} className="flex items-center gap-3 px-4 py-3">
+                                                                        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
+                                                                            {getInitials(a.nombre, a.apellido)}
+                                                                        </div>
+                                                                        <p className="flex-1 text-slate-800 font-semibold text-sm truncate">{a.apellido}, {a.nombre}</p>
+                                                                        <span className="text-slate-400 text-xs font-medium truncate max-w-[30%]">{a.actividad}</span>
+                                                                        <span className="text-slate-900 text-sm font-bold tabular-nums">{a.hora}</span>
+                                                                    </div>
+                                                                ))}
                                                             </div>
-                                                        ))}
+                                                        )}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                             {totalHoy === 0 && (
                                                 <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
                                                     <p className="text-slate-400 text-sm">Todavía no vino nadie hoy.</p>
