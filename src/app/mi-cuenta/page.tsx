@@ -592,7 +592,7 @@ export default function MiCuentaPage() {
             <div className="pb-10">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
-                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)', boxShadow: '0 0 36px -8px rgba(16,185,129,0.4), 0 0 50px -14px rgba(249,115,22,0.3)' }}>
+                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)', boxShadow: '0 0 24px -10px rgba(16,185,129,0.22), 0 0 32px -16px rgba(249,115,22,0.16)' }}>
                 <div className="relative bg-[#111] overflow-hidden rounded-[30px]">
                     {/* Dot grid */}
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'20px 20px' }} />
@@ -719,7 +719,7 @@ export default function MiCuentaPage() {
                                 {(planEj && !planEjComplete) && (
                                     <BlurFade delay={0.05}>
                                         <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
-                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.35)', boxShadow: '0 0 0 1px rgba(16,185,129,0.06) inset, 0 10px 32px -10px rgba(16,185,129,0.45)' }}>
+                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.25)', boxShadow: '0 0 0 1px rgba(16,185,129,0.04) inset, 0 8px 20px -10px rgba(16,185,129,0.25)' }}>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
@@ -746,7 +746,7 @@ export default function MiCuentaPage() {
                                 {(!planEj && tienePlan) && (
                                     <BlurFade delay={0.05}>
                                         <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
-                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.35)', boxShadow: '0 0 0 1px rgba(16,185,129,0.06) inset, 0 10px 32px -10px rgba(16,185,129,0.45)' }}>
+                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.25)', boxShadow: '0 0 0 1px rgba(16,185,129,0.04) inset, 0 8px 20px -10px rgba(16,185,129,0.25)' }}>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
@@ -771,7 +771,7 @@ export default function MiCuentaPage() {
                                 {/* Asistencias este mes */}
                                 <BlurFade delay={0.15}>
                                     <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
-                                        style={{ background: `linear-gradient(165deg, ${acento}1A, rgba(17,17,17,0.9))`, border: `1px solid ${acento}59`, boxShadow: `0 0 0 1px ${acento}0F inset, 0 10px 32px -10px ${acento}73` }}>
+                                        style={{ background: `linear-gradient(165deg, ${acento}12, rgba(17,17,17,0.9))`, border: `1px solid ${acento}40`, boxShadow: `0 0 0 1px ${acento}0A inset, 0 8px 20px -10px ${acento}40` }}>
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
@@ -801,7 +801,7 @@ export default function MiCuentaPage() {
                             {(planEjComplete || (!planEj && plan?.terminado)) && (
                                 <BlurFade delay={0.05}>
                                     <div className="rounded-2xl p-4 flex items-center gap-4"
-                                        style={{ background: 'linear-gradient(165deg, rgba(163,230,53,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(163,230,53,0.35)', boxShadow: '0 10px 32px -10px rgba(163,230,53,0.4)' }}>
+                                        style={{ background: 'linear-gradient(165deg, rgba(163,230,53,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(163,230,53,0.25)', boxShadow: '0 8px 20px -10px rgba(163,230,53,0.22)' }}>
                                         <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                             <Trophy size={22} className="text-white" />
                                         </div>
@@ -873,7 +873,7 @@ export default function MiCuentaPage() {
                                 return (
                                     <BlurFade delay={0.2}>
                                         <div className="relative rounded-2xl overflow-hidden"
-                                            style={{ background: 'linear-gradient(165deg, rgba(14,165,233,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(14,165,233,0.35)', boxShadow: '0 0 0 1px rgba(14,165,233,0.06) inset, 0 10px 32px -10px rgba(14,165,233,0.4)' }}>
+                                            style={{ background: 'linear-gradient(165deg, rgba(14,165,233,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(14,165,233,0.25)', boxShadow: '0 0 0 1px rgba(14,165,233,0.04) inset, 0 8px 20px -10px rgba(14,165,233,0.22)' }}>
                                             <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
