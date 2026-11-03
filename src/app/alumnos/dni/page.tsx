@@ -418,7 +418,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     {/* Logo animado con ondas + badge de estado */}
                     <motion.div
                         className="relative flex items-center justify-center"
-                        style={{ width: 148, height: 148 }}
+                        style={{ width: 200, height: 200 }}
                         initial={{ scale: 0.3, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 16 }}
@@ -432,34 +432,34 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.5, ease: 'easeOut' }}
                             />
                         ))}
-                        <div className="relative rounded-full bg-white flex items-center justify-center shadow-2xl" style={{ width: 120, height: 120 }}>
+                        <div className="relative rounded-full flex items-center justify-center shadow-2xl" style={{ width: 168, height: 168, background: '#000' }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={logoUrl || DEFAULT_LOGO_URL} alt="" draggable={false}
-                                style={{ width: 86, height: 86, objectFit: 'contain', pointerEvents: 'none' }} />
+                                style={{ width: 122, height: 122, objectFit: 'contain', pointerEvents: 'none' }} />
                         </div>
                         {/* Badge de estado */}
                         <motion.div
                             className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center shadow-lg"
                             style={{
-                                width: 44, height: 44,
+                                width: 56, height: 56,
                                 background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'debt_warning' ? '#ca8a04' : feedback.type === 'already' ? '#b45309' : '#1d4ed8',
-                                border: '3px solid white',
+                                border: '4px solid white',
                             }}
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.25, type: 'spring', stiffness: 300, damping: 14 }}
                         >
                             {feedback.type === 'debt' ? (
-                                <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+                                <svg width="26" height="26" viewBox="0 0 64 64" fill="none">
                                     <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="7" strokeLinecap="round"/>
                                 </svg>
                             ) : feedback.type === 'not_found' || feedback.type === 'already' ? (
-                                <svg width="18" height="18" viewBox="0 0 64 64" fill="none">
+                                <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
                                     <circle cx="32" cy="20" r="5" fill="white"/>
                                     <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
                                 </svg>
                             ) : (
-                                <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+                                <svg width="26" height="26" viewBox="0 0 64 64" fill="none">
                                     <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             )}
