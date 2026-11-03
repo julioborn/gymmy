@@ -10,8 +10,7 @@ function ForgotPasswordForm() {
 
     const [maskedEmail, setMaskedEmail] = useState<string | null>(null);
     const [hasEmail, setHasEmail] = useState(false);
-    const [editing, setEditing] = useState(false);
-    const [newEmail, setNewEmail] = useState('');
+    const [emailInput, setEmailInput] = useState('');
     const [fetching, setFetching] = useState(false);
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -25,15 +24,14 @@ function ForgotPasswordForm() {
             .then(data => {
                 setMaskedEmail(data.email);
                 setHasEmail(data.hasEmail);
-                if (!data.hasEmail) setEditing(true);
             })
             .finally(() => setFetching(false));
     }, [dni, gimnasioId]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        // Si está editando o no tiene email, necesita el nuevo email
-        if (editing && !newEmail) { setError('Ingresá un email'); return; }
+        // Sin contexto de DNI, el único camino es el email de una cuenta existente.
+        if (!dni && !gimnasioId && !emailInput) { setError('Ingresá tu email'); return; }
 
         setLoading(true);
         setError('');
@@ -41,8 +39,7 @@ function ForgotPasswordForm() {
             const body: Record<string, string> = {};
             if (dni) body.dni = dni;
             if (gimnasioId) body.gimnasioId = gimnasioId;
-            // Si está cambiando el email, lo manda; si usa el registrado, no manda email (el server lo saca de DB)
-            if (editing && newEmail) body.email = newEmail;
+            if (!dni && !gimnasioId) body.email = emailInput;
 
             await fetch('/api/auth/forgot-password', {
                 method: 'POST',
@@ -78,57 +75,29 @@ function ForgotPasswordForm() {
                 <div className="flex justify-center py-8">
                     <span className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
                 </div>
+            ) : dni && gimnasioId && !hasEmail ? (
+                <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-5 text-center">
+                    <p className="text-white/70 text-sm mb-1">Todavía no tenés un email cargado en tu cuenta.</p>
+                    <p className="text-white/40 text-xs">Iniciá sesión y agregalo desde "Ajustes de perfil" para poder recuperar tu contraseña la próxima vez.</p>
+                </div>
             ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-                    {/* Tiene email registrado y NO está editando */}
-                    {hasEmail && !editing && (
+                    {/* Con DNI: siempre manda al email ya registrado, no se puede cambiar acá */}
+                    {hasEmail && (
                         <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-4">
-                            <p className="text-white/40 text-xs mb-1">Email registrado</p>
-                            <div className="flex items-center justify-between gap-2">
-                                <p className="text-white font-semibold text-sm truncate">{maskedEmail}</p>
-                                <button type="button" onClick={() => setEditing(true)}
-                                    className="text-orange-400 text-xs font-semibold hover:text-orange-300 shrink-0">
-                                    Cambiar
-                                </button>
-                            </div>
+                            <p className="text-white/40 text-xs mb-1">Vamos a enviar el link a</p>
+                            <p className="text-white font-semibold text-sm truncate">{maskedEmail}</p>
                         </div>
                     )}
 
-                    {/* Editando o sin email: mostrar input */}
-                    {editing && (
-                        <div>
-                            {hasEmail && (
-                                <button type="button" onClick={() => { setEditing(false); setNewEmail(''); }}
-                                    className="flex items-center gap-1 text-white/40 text-xs mb-3 hover:text-white/60">
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                                    </svg>
-                                    Usar el email registrado
-                                </button>
-                            )}
-                            <input
-                                type="email"
-                                placeholder={hasEmail ? 'Nuevo email' : 'Ingresá tu email'}
-                                value={newEmail}
-                                onChange={e => setNewEmail(e.target.value)}
-                                required
-                                autoFocus
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-white/30 text-sm"
-                            />
-                            {!hasEmail && (
-                                <p className="text-white/30 text-xs mt-2">Este email se va a guardar en tu perfil.</p>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Sin contexto de DNI: input libre */}
+                    {/* Sin contexto de DNI: input libre (tiene que coincidir con el email de una cuenta existente) */}
                     {!dni && !gimnasioId && (
                         <input
                             type="email"
                             placeholder="tu@email.com"
-                            value={newEmail}
-                            onChange={e => setNewEmail(e.target.value)}
+                            value={emailInput}
+                            onChange={e => setEmailInput(e.target.value)}
                             required
                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-white/30 text-sm"
                         />

@@ -9,11 +9,13 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
-    Users, UserPlus, Search, Wallet, Landmark,
+    Users, UserPlus, Search, Wallet, Landmark, Settings,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
 import { esStaffAlumno } from '@/lib/staffAlumnos';
 import AlumnoRegistroForm from '@/components/AlumnoRegistroForm';
+import Swal from 'sweetalert2';
+import { swalBase, swalNotify } from '@/utils/swalConfig';
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
@@ -66,7 +68,7 @@ interface Pago { _id: string; mes: string; fechaPago: string; tarifa: number; di
 interface PlanEntrenamiento { fechaInicio: string | null; duracion: number | null; diasRestantes: number | null; terminado: boolean; }
 interface PlanHistorial { _id?: string; fechaInicio: string; fechaFin: string; duracion: number; asistenciasContadas: number; }
 interface Alumno {
-    _id: string; nombre: string; apellido: string; dni: string;
+    _id: string; nombre: string; apellido: string; dni: string; email?: string;
     asistencia: Asistencia[]; pagos: Pago[];
     planEntrenamiento: PlanEntrenamiento; planEntrenamientoHistorial: PlanHistorial[];
     gimnasioId: { nombre: string; logoUrl?: string };
@@ -519,6 +521,39 @@ export default function MiCuentaPage() {
         ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={16} /> }] : []),
     ];
 
+    const handleAjustesPerfil = async () => {
+        const { value: nuevoEmail } = await Swal.fire({
+            ...swalBase,
+            title: 'Ajustes de perfil',
+            html: `<p style="text-align:center;color:rgba(255,255,255,0.6);font-size:0.85rem;margin:0 0 1rem;">Este email se usa para recuperar tu contraseña si la olvidás.</p>`,
+            input: 'email',
+            inputLabel: 'Email',
+            inputValue: alumno.email || '',
+            inputPlaceholder: 'tu@email.com',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (v) => !v?.trim() ? 'Ingresá un email' : null,
+        });
+        if (!nuevoEmail) return;
+        try {
+            const res = await fetch('/api/alumno/perfil', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: nuevoEmail.trim() }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setAlumno(prev => prev ? { ...prev, email: data.email } : prev);
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Email actualizado' });
+            } else {
+                Swal.fire({ ...swalNotify, icon: 'error', title: data.error || 'No se pudo guardar el email' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' });
+        }
+    };
+
     const handleAvatarTap = () => {
         if (!isWatcher) return;
         avatarTapCount.current += 1;
@@ -606,6 +641,11 @@ export default function MiCuentaPage() {
                                     </span>
                                 </div>
                             </BlurFade>
+
+                            <button onClick={handleAjustesPerfil} aria-label="Ajustes de perfil"
+                                className="self-start w-9 h-9 shrink-0 rounded-xl bg-white/[0.07] border border-white/[0.1] flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.12] transition-all">
+                                <Settings size={16} />
+                            </button>
                         </div>
 
                         {/* ── TAB SELECTOR ── */}

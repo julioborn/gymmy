@@ -65,34 +65,29 @@ export async function GET(req: NextRequest) {
     });
 }
 
-// POST: envía el link de reset (y guarda el email si es nuevo)
+// POST: envía el link de reset al email YA registrado (nunca a uno que mande el request,
+// para que no se pueda secuestrar una cuenta ajena solo sabiendo su DNI).
 export async function POST(req: NextRequest) {
     const { email, dni, gimnasioId } = await req.json();
 
     await connectMongoDB();
 
     let alumno: any = null;
-    let emailDest = email?.toLowerCase().trim() || '';
+    let emailDest = '';
 
     if (dni && gimnasioId) {
-        // Buscar por DNI + gimnasio
+        // Buscar por DNI + gimnasio: el destino SIEMPRE es el email ya guardado en la cuenta.
         alumno = await Alumno.findOne({ dni, gimnasioId: new mongoose.Types.ObjectId(gimnasioId) });
-        if (!alumno) return NextResponse.json({ ok: true });
-
-        if (emailDest) {
-            // Guardar nuevo email en el perfil
-            alumno.email = emailDest;
-        } else {
-            // Usar el email que ya tiene en DB
-            emailDest = alumno.email || '';
-        }
+        if (!alumno || !alumno.email) return NextResponse.json({ ok: true });
+        emailDest = alumno.email;
     } else {
-        // Fallback: buscar por email directamente
-        if (!emailDest) return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
-        alumno = await Alumno.findOne({ email: emailDest });
+        // Fallback (sin contexto de DNI): el email tiene que coincidir con el de una cuenta existente.
+        const emailInput = email?.toLowerCase().trim() || '';
+        if (!emailInput) return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+        alumno = await Alumno.findOne({ email: emailInput });
+        if (!alumno) return NextResponse.json({ ok: true });
+        emailDest = alumno.email;
     }
-
-    if (!alumno || !emailDest) return NextResponse.json({ ok: true });
 
     await sendReset(alumno, emailDest);
     return NextResponse.json({ ok: true });
