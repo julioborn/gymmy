@@ -484,10 +484,10 @@ export default function MiCuentaPage() {
 
     // Bottom nav tabs config
     const TABS = [
-        { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={20} /> },
-        { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={20} /> },
-        { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={20} /> },
-        ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={20} /> }] : []),
+        { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={16} /> },
+        { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={16} /> },
+        { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={16} /> },
+        ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={16} /> }] : []),
     ];
 
     const handleAvatarTap = () => {
@@ -581,13 +581,16 @@ export default function MiCuentaPage() {
 
                         {/* ── TAB SELECTOR ── */}
                         <BlurFade delay={0.16}>
-                            <div className="mt-4 pt-4 border-t border-white/[0.08] flex gap-1">
+                            <div className={cn(
+                                'mt-4 pt-4 border-t border-white/[0.08] gap-1.5',
+                                TABS.length > 3 ? 'grid grid-cols-2' : 'flex',
+                            )}>
                                 {TABS.map(t => {
                                     const isActive = tab === t.key;
                                     return (
                                         <button key={t.key} onClick={() => changeTab(t.key)}
                                             className={cn(
-                                                'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all border',
+                                                'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap',
                                                 isActive
                                                     ? 'bg-white text-black border-white shadow-md'
                                                     : 'bg-white/[0.07] text-white/70 border-white/[0.12] hover:bg-white/[0.12] hover:text-white',
