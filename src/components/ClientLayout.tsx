@@ -432,17 +432,6 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             >
                 <div className="relative h-[88px] flex items-center justify-between px-4">
                   <div className="flex items-center gap-1">
-                    {/* Back — siempre en recepción (apps instaladas no tienen flecha del navegador); desktop para el resto */}
-                    <button
-                        type="button"
-                        onClick={() => router.back()}
-                        className={`${role === 'recepcion' ? 'flex' : 'hidden sm:flex'} w-8 h-8 items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90`}
-                        aria-label="Volver"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                        </svg>
-                    </button>
                     {/* Hamburger — left side, all screen sizes when menu is shown */}
                     {showMenu ? (
                         <div className="relative" ref={desktopMenuRef}>
@@ -516,6 +505,17 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     ) : (
                         <div className="w-8" />
                     )}
+                    {/* Back — siempre en recepción (apps instaladas no tienen flecha del navegador); desktop para el resto */}
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        className={`${role === 'recepcion' ? 'flex' : 'hidden sm:flex'} w-8 h-8 items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90`}
+                        aria-label="Volver"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                    </button>
                   </div>
 
                     <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
