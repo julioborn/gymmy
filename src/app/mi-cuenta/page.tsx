@@ -9,7 +9,7 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
-    Users, UserPlus, Search,
+    Users, UserPlus, Search, Wallet, Landmark,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
 import { esStaffAlumno } from '@/lib/staffAlumnos';
@@ -182,7 +182,7 @@ export default function MiCuentaPage() {
     const [staffAlumnos, setStaffAlumnos] = useState<StaffAlumno[]>([]);
     const [staffLoading, setStaffLoading] = useState(false);
     const [staffSearch, setStaffSearch] = useState('');
-    const [staffSubTab, setStaffSubTab] = useState<'lista' | 'hoy' | 'nuevo'>('lista');
+    const [staffSubTab, setStaffSubTab] = useState<'lista' | 'hoy' | 'caja' | 'nuevo'>('lista');
     const [staffSlotsExpanded, setStaffSlotsExpanded] = useState<Record<string, boolean>>({ Mañana: false, Siesta: false, Tarde: false, Noche: false });
     const isStaffAlumno = esStaffAlumno(alumno?.dni);
 
@@ -193,6 +193,34 @@ export default function MiCuentaPage() {
             if (d.ok) setStaffAlumnos(d.alumnos || []);
         }).catch(() => {}).finally(() => setStaffLoading(false));
     }, [tab, isStaffAlumno]);
+
+    type DetallePagoCaja = { tipo: 'cuota' | 'depaso'; nombre: string; apellido: string; metodoPago: string; monto: number; fecha: string };
+    type CajaPreview = { fechaDesde: string; fechaHasta: string; totalEfectivo: number; totalTransferencia: number; totalOtros: number; totalGeneral: number; cantidadPagos: number; detalle: DetallePagoCaja[] };
+    type CierreCajaRow = { _id: string; fechaDesde: string; fechaHasta: string; totalEfectivo: number; totalTransferencia: number; totalOtros: number; totalGeneral: number; cantidadPagos: number; registradoPorNombre: string };
+    const [cajaPreview, setCajaPreview] = useState<CajaPreview | null>(null);
+    const [cajaCierres, setCajaCierres] = useState<CierreCajaRow[]>([]);
+    const [cajaLoading, setCajaLoading] = useState(false);
+    const [cajaAbierto, setCajaAbierto] = useState<string | null>(null);
+    const [cajaDetalles, setCajaDetalles] = useState<Record<string, DetallePagoCaja[]>>({});
+    const [cajaDetalleLoading, setCajaDetalleLoading] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (tab !== 'staff' || staffSubTab !== 'caja' || !isStaffAlumno || cajaPreview) return;
+        setCajaLoading(true);
+        fetch('/api/alumno/staff/caja').then(r => r.json()).then(d => {
+            if (d.ok) { setCajaPreview(d.preview); setCajaCierres(d.cierres || []); }
+        }).catch(() => {}).finally(() => setCajaLoading(false));
+    }, [tab, staffSubTab, isStaffAlumno, cajaPreview]);
+
+    const toggleCajaCierre = (id: string) => {
+        if (cajaAbierto === id) { setCajaAbierto(null); return; }
+        setCajaAbierto(id);
+        if (cajaDetalles[id]) return;
+        setCajaDetalleLoading(id);
+        fetch(`/api/alumno/staff/caja/${id}`).then(r => r.json()).then(d => {
+            if (d.ok) setCajaDetalles(prev => ({ ...prev, [id]: d.detalle }));
+        }).catch(() => {}).finally(() => setCajaDetalleLoading(null));
+    };
 
     const now = new Date();
     const [asistWeekOffset, setAsistWeekOffset] = useState(0);
@@ -1345,11 +1373,12 @@ export default function MiCuentaPage() {
                                         {([
                                             { key: 'lista' as const, label: 'Lista', icon: <Users size={15} /> },
                                             { key: 'hoy' as const, label: 'Hoy', icon: <Clock3 size={15} /> },
+                                            { key: 'caja' as const, label: 'Caja', icon: <Wallet size={15} /> },
                                             { key: 'nuevo' as const, label: 'Nuevo', icon: <UserPlus size={15} /> },
                                         ]).map(s => (
                                             <button key={s.key} onClick={() => setStaffSubTab(s.key)}
                                                 className={cn(
-                                                    'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                                    'flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap',
                                                     staffSubTab === s.key ? 'bg-white text-black' : 'text-white/60',
                                                 )}>
                                                 {s.icon}{s.label}
@@ -1438,6 +1467,93 @@ export default function MiCuentaPage() {
                                             )}
                                         </div>
                                     </BlurFade>
+                                ) : staffSubTab === 'caja' ? (
+                                    cajaLoading ? (
+                                        <div className="flex justify-center py-16">
+                                            <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
+                                        </div>
+                                    ) : !cajaPreview ? (
+                                        <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                            <p className="text-slate-400 text-sm">No se pudo cargar la caja.</p>
+                                        </div>
+                                    ) : (
+                                        <BlurFade delay={0.08}>
+                                            <div className="space-y-3">
+                                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03]">
+                                                    <p className="text-slate-400 text-xs font-semibold mb-3">
+                                                        Desde {new Date(cajaPreview.fechaDesde).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} hasta {new Date(cajaPreview.fechaHasta).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-2.5 mb-3">
+                                                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5">
+                                                            <Banknote size={15} className="text-emerald-600 mb-1.5" />
+                                                            <p className="text-slate-900 font-black text-lg tabular-nums leading-none">${cajaPreview.totalEfectivo.toLocaleString('es-AR')}</p>
+                                                            <p className="text-emerald-700/70 text-[10px] font-bold uppercase tracking-wide mt-1">Efectivo</p>
+                                                        </div>
+                                                        <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3.5">
+                                                            <Landmark size={15} className="text-sky-600 mb-1.5" />
+                                                            <p className="text-slate-900 font-black text-lg tabular-nums leading-none">${cajaPreview.totalTransferencia.toLocaleString('es-AR')}</p>
+                                                            <p className="text-sky-700/70 text-[10px] font-bold uppercase tracking-wide mt-1">Transferencia</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                                                        <span className="text-slate-500 text-sm">Total del turno</span>
+                                                        <span className="text-slate-900 font-black text-base tabular-nums">${cajaPreview.totalGeneral.toLocaleString('es-AR')}</span>
+                                                    </div>
+                                                    <p className="text-slate-400 text-xs mt-1">{cajaPreview.cantidadPagos} {cajaPreview.cantidadPagos === 1 ? 'pago' : 'pagos'} registrados</p>
+                                                </div>
+
+                                                <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2">Historial de cierres</p>
+                                                    {cajaCierres.length === 0 ? (
+                                                        <p className="text-slate-400 text-sm text-center py-8">Todavía no se registró ningún cierre.</p>
+                                                    ) : (
+                                                        <div className="divide-y divide-slate-100">
+                                                            {cajaCierres.map(c => {
+                                                                const abierto = cajaAbierto === c._id;
+                                                                const detalle = cajaDetalles[c._id];
+                                                                return (
+                                                                    <div key={c._id}>
+                                                                        <button onClick={() => toggleCajaCierre(c._id)} className="w-full text-left px-4 py-3">
+                                                                            <div className="flex items-center justify-between gap-3">
+                                                                                <p className="text-slate-800 text-sm font-semibold">
+                                                                                    {new Date(c.fechaDesde).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} → {new Date(c.fechaHasta).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                                </p>
+                                                                                <div className="flex items-center gap-2 shrink-0">
+                                                                                    <span className="text-slate-900 font-bold text-sm tabular-nums">${c.totalGeneral.toLocaleString('es-AR')}</span>
+                                                                                    <ChevronDown size={14} className={cn('text-slate-300 transition-transform duration-200', abierto && 'rotate-180')} />
+                                                                                </div>
+                                                                            </div>
+                                                                            <p className="text-slate-400 text-xs mt-1">{c.registradoPorNombre}</p>
+                                                                        </button>
+                                                                        {abierto && (
+                                                                            <div className="px-4 pb-3">
+                                                                                {cajaDetalleLoading === c._id ? (
+                                                                                    <div className="flex justify-center py-4">
+                                                                                        <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
+                                                                                    </div>
+                                                                                ) : !detalle || detalle.length === 0 ? (
+                                                                                    <p className="text-slate-400 text-xs text-center py-3">Sin pagos en este cierre.</p>
+                                                                                ) : (
+                                                                                    <div className="bg-slate-50 border border-slate-100 rounded-xl divide-y divide-slate-100">
+                                                                                        {detalle.map((p, i) => (
+                                                                                            <div key={i} className="flex items-center justify-between gap-3 px-3 py-2">
+                                                                                                <p className="text-slate-700 text-sm truncate">{p.apellido}, {p.nombre}</p>
+                                                                                                <span className="text-slate-500 text-xs tabular-nums shrink-0 capitalize">{p.metodoPago} · ${p.monto.toLocaleString('es-AR')}</span>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </BlurFade>
+                                    )
                                 ) : (
                                     <BlurFade delay={0.08}>
                                         <AlumnoRegistroForm endpoint="/api/alumno/staff/alumnos" onSuccess={refetchStaff} />
