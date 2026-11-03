@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -12,6 +13,8 @@ import { estaAlDia, getMesActual } from '@/lib/pagos';
 // el feedback correspondiente (pagó / aviso amarillo / debe) con datos ficticios, sin
 // pegarle a la API ni tocar asistencias reales. Para activar/desactivar, cambiar este flag.
 const DEBUG_SCREENS = true;
+
+const DEFAULT_LOGO_URL = 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png';
 
 const swalDni = {
     customClass: {
@@ -401,41 +404,71 @@ export default function RegistrarAsistenciaPorDNIPage() {
             )}
 
             {/* Feedback pantalla completa */}
+            <AnimatePresence>
             {feedback && (
-                <div
+                <motion.div
                     className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 px-8"
                     style={{ background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'debt_warning' ? '#ca8a04' : feedback.type === 'already' ? '#b45309' : '#1d4ed8' }}
                     onClick={() => { if (feedbackTimer.current) clearTimeout(feedbackTimer.current); setFeedback(null); }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                 >
-                    {/* Ícono */}
-                    <div className="flex items-center justify-center rounded-full bg-white/20" style={{ width: 120, height: 120 }}>
-                        {feedback.type === 'paid' ? (
-                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        ) : feedback.type === 'debt' ? (
-                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="6" strokeLinecap="round"/>
-                            </svg>
-                        ) : feedback.type === 'debt_warning' ? (
-                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        ) : feedback.type === 'already' ? (
-                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <circle cx="32" cy="20" r="5" fill="white"/>
-                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
-                            </svg>
-                        ) : (
-                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <circle cx="32" cy="20" r="5" fill="white"/>
-                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
-                            </svg>
-                        )}
-                    </div>
+                    {/* Logo animado con ondas + badge de estado */}
+                    <motion.div
+                        className="relative flex items-center justify-center"
+                        style={{ width: 148, height: 148 }}
+                        initial={{ scale: 0.3, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+                    >
+                        {[0, 1, 2].map(i => (
+                            <motion.span
+                                key={i}
+                                className="absolute inset-0 rounded-full border-2 border-white/50"
+                                initial={{ scale: 0.6, opacity: 0.6 }}
+                                animate={{ scale: 1.9, opacity: 0 }}
+                                transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.5, ease: 'easeOut' }}
+                            />
+                        ))}
+                        <div className="relative rounded-full bg-white flex items-center justify-center shadow-2xl" style={{ width: 120, height: 120 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={logoUrl || DEFAULT_LOGO_URL} alt="" draggable={false}
+                                style={{ width: 86, height: 86, objectFit: 'contain', pointerEvents: 'none' }} />
+                        </div>
+                        {/* Badge de estado */}
+                        <motion.div
+                            className="absolute -bottom-1 -right-1 rounded-full flex items-center justify-center shadow-lg"
+                            style={{
+                                width: 44, height: 44,
+                                background: feedback.type === 'paid' ? '#15803d' : feedback.type === 'debt' ? '#b91c1c' : feedback.type === 'debt_warning' ? '#ca8a04' : feedback.type === 'already' ? '#b45309' : '#1d4ed8',
+                                border: '3px solid white',
+                            }}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.25, type: 'spring', stiffness: 300, damping: 14 }}
+                        >
+                            {feedback.type === 'debt' ? (
+                                <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+                                    <path d="M16 16L48 48M48 16L16 48" stroke="white" strokeWidth="7" strokeLinecap="round"/>
+                                </svg>
+                            ) : feedback.type === 'not_found' || feedback.type === 'already' ? (
+                                <svg width="18" height="18" viewBox="0 0 64 64" fill="none">
+                                    <circle cx="32" cy="20" r="5" fill="white"/>
+                                    <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
+                                </svg>
+                            ) : (
+                                <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+                                    <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            )}
+                        </motion.div>
+                    </motion.div>
 
                     {/* Nombre o mensaje */}
-                    <div className="text-center">
+                    <motion.div className="text-center"
+                        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.35 }}>
                         {feedback.type === 'not_found' ? (
                             <>
                                 <h1 className="text-white font-black leading-none" style={{ fontSize: 'clamp(44px, 9vw, 80px)' }}>
@@ -462,17 +495,19 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 </h1>
                             </>
                         )}
-                    </div>
+                    </motion.div>
 
                     {/* Actividad */}
                     {feedback.type !== 'not_found' && feedback.type !== 'already' && (
-                        <span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}>
+                        <motion.span className="px-6 py-2 rounded-full bg-white/20 text-white font-bold" style={{ fontSize: 24 }}
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
                             {feedback.actividad}
-                        </span>
+                        </motion.span>
                     )}
 
                     {/* Estado */}
-                    <div className="flex flex-col items-center gap-2">
+                    <motion.div className="flex flex-col items-center gap-2"
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.35 }}>
                         {feedback.type === 'not_found' ? (
                             <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
                                 Revisá el DNI ingresado
@@ -493,9 +528,10 @@ export default function RegistrarAsistenciaPorDNIPage() {
                                 )}
                             </>
                         )}
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             <div className="flex flex-col w-full mx-auto px-3 sm:px-5 pt-8 sm:pt-10 gap-2" style={{ height: '100%' }}>
 
