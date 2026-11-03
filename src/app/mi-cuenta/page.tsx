@@ -9,7 +9,7 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
-    Users, UserPlus, Search, Wallet, Landmark, Settings,
+    Users, UserPlus, Search, Wallet, Landmark, Settings, Bell,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
 import { esStaffAlumno } from '@/lib/staffAlumnos';
@@ -1332,15 +1332,15 @@ export default function MiCuentaPage() {
                             <BlurFade delay={0.05}>
                                 <div className="bg-white/[0.08] rounded-2xl p-1 flex gap-1">
                                     {([
-                                        { key: 'avisos' as const, label: 'Avisos' },
-                                        { key: 'hoy' as const, label: 'Hoy en el gimnasio' },
+                                        { key: 'avisos' as const, icon: <Bell size={18} /> },
+                                        { key: 'hoy' as const, icon: <Users size={18} /> },
                                     ]).map(s => (
-                                        <button key={s.key} onClick={() => setVigSubTab(s.key)}
+                                        <button key={s.key} onClick={() => setVigSubTab(s.key)} aria-label={s.key}
                                             className={cn(
-                                                'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all',
+                                                'flex-1 flex items-center justify-center py-2.5 rounded-xl transition-all',
                                                 vigSubTab === s.key ? 'bg-white text-black' : 'text-white/60',
                                             )}>
-                                            {s.label}
+                                            {s.icon}
                                         </button>
                                     ))}
                                 </div>
