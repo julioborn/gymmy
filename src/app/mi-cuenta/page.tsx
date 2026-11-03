@@ -374,33 +374,31 @@ export default function MiCuentaPage() {
         return (
             <div className="min-h-screen bg-[#0a0a0a] pb-24">
                 {/* Hero skeleton */}
-                <div className="mx-4 mt-4 bg-[#1a1a1a] rounded-[2rem] p-5 overflow-hidden relative">
-                    <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.03) 1px,transparent 1px)', backgroundSize:'20px 20px' }} />
-                    <div className="relative flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-white/[0.08] animate-pulse shrink-0" />
-                        <div className="flex-1 space-y-2">
-                            <div className="h-5 w-36 bg-white/[0.08] rounded-lg animate-pulse" />
-                            <div className="flex gap-2">
-                                <div className="h-4 w-24 bg-white/[0.06] rounded-full animate-pulse" />
-                                <div className="h-4 w-24 bg-white/[0.06] rounded-full animate-pulse" />
+                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)' }}>
+                    <div className="bg-[#111] rounded-[30px] p-5 overflow-hidden relative">
+                        <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.03) 1px,transparent 1px)', backgroundSize:'20px 20px' }} />
+                        <div className="relative flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-white/[0.08] animate-pulse shrink-0" />
+                            <div className="flex-1 space-y-2">
+                                <div className="h-5 w-36 bg-white/[0.08] rounded-lg animate-pulse" />
+                                <div className="h-6 w-28 bg-white/[0.06] rounded-full animate-pulse" />
                             </div>
                         </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
-                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
-                        <div className="flex-1 h-14 bg-white/[0.06] rounded-2xl animate-pulse" />
+                        <div className="relative flex gap-1.5 mt-4 pt-4 border-t border-white/[0.08]">
+                            <div className="flex-1 h-10 bg-white/[0.07] rounded-xl animate-pulse" />
+                            <div className="flex-1 h-10 bg-white/[0.07] rounded-xl animate-pulse" />
+                            <div className="flex-1 h-10 bg-white/[0.07] rounded-xl animate-pulse" />
+                        </div>
                     </div>
                 </div>
                 {/* Cards skeleton */}
-                <div className="px-4 pt-5 space-y-3">
-                    <div className="bg-white rounded-2xl p-5 h-32 animate-pulse" />
-                    <div className="bg-white rounded-2xl p-5 h-28 animate-pulse" />
-                    <div className="bg-white rounded-2xl p-5 h-40 animate-pulse" />
-                </div>
-                {/* Tab selector skeleton */}
-                <div className="px-4 pt-4">
-                    <div className="bg-white/[0.06] rounded-2xl h-12 animate-pulse" />
+                <div className="px-4 pt-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white border border-slate-200 rounded-2xl h-40 animate-pulse" />
+                        <div className="bg-white border border-slate-200 rounded-2xl h-40 animate-pulse" />
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-2xl h-16 animate-pulse" />
+                    <div className="bg-white border border-slate-200 rounded-2xl h-48 animate-pulse" />
                 </div>
             </div>
         );
@@ -720,7 +718,7 @@ export default function MiCuentaPage() {
                                 {/* Plan progress card */}
                                 {(planEj && !planEjComplete) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03] h-full flex flex-col">
+                                        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
@@ -746,7 +744,7 @@ export default function MiCuentaPage() {
 
                                 {(!planEj && tienePlan) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03] h-full flex flex-col">
+                                        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
@@ -770,7 +768,7 @@ export default function MiCuentaPage() {
 
                                 {/* Asistencias este mes */}
                                 <BlurFade delay={0.15}>
-                                    <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03] h-full flex flex-col">
+                                    <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
@@ -814,7 +812,7 @@ export default function MiCuentaPage() {
                             {/* Precios de cuotas */}
                             {tarifas.length > 0 && (
                                 <BlurFade delay={0.08}>
-                                    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                         <button onClick={() => setPreciosExpanded(v => !v)} className="w-full flex items-center gap-3 px-4 py-4 text-left">
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
                                                 <Banknote size={16} className="text-white" />
@@ -868,7 +866,7 @@ export default function MiCuentaPage() {
                                 if (!ultimas.length) return null;
                                 return (
                                     <BlurFade delay={0.2}>
-                                        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                             <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100">
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
@@ -1358,11 +1356,11 @@ export default function MiCuentaPage() {
                                             value={vigSearch}
                                             onChange={e => setVigSearch(e.target.value)}
                                             placeholder="Buscar por nombre, apellido o DNI..."
-                                            className="w-full bg-white border border-slate-100 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300"
+                                            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] focus:outline-none focus:border-emerald-300"
                                         />
                                     </BlurFade>
                                     <BlurFade delay={0.1}>
-                                        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
+                                        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] divide-y divide-slate-100">
                                             {vigAlumnos
                                                 .filter(a => {
                                                     const q = vigSearch.trim().toLowerCase();
@@ -1406,7 +1404,7 @@ export default function MiCuentaPage() {
                                         {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => {
                                             const open = !!vigSlotsExpanded[slot];
                                             return (
-                                                <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                <div key={slot} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                     <button onClick={() => setVigSlotsExpanded(prev => ({ ...prev, [slot]: !prev[slot] }))}
                                                         className="w-full flex items-center gap-2 px-4 py-3 border-b border-slate-100">
                                                         <p className="font-bold text-slate-900 text-base">{slot}</p>
@@ -1431,7 +1429,7 @@ export default function MiCuentaPage() {
                                             );
                                         })}
                                         {totalHoyVig === 0 && (
-                                            <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                 <p className="text-slate-400 text-sm">Todavía no vino nadie hoy.</p>
                                             </div>
                                         )}
@@ -1513,11 +1511,11 @@ export default function MiCuentaPage() {
                                                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                                                 <input type="text" value={staffSearch} onChange={e => setStaffSearch(e.target.value)}
                                                     placeholder="Buscar por nombre o DNI..."
-                                                    className="w-full bg-white border border-slate-100 rounded-2xl pl-11 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-lg shadow-slate-900/[0.03] focus:outline-none focus:border-emerald-300" />
+                                                    className="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-base text-slate-900 placeholder:text-slate-400 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] focus:outline-none focus:border-emerald-300" />
                                             </div>
                                         </BlurFade>
                                         <BlurFade delay={0.1}>
-                                            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03] divide-y divide-slate-100">
+                                            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] divide-y divide-slate-100">
                                                 {filtrados.map(a => {
                                                     const pagado = estaAlDia({ pagos: a.pagos as any, exentoCuota: a.exentoCuota }, mesActualStaff);
                                                     return (
@@ -1551,7 +1549,7 @@ export default function MiCuentaPage() {
                                             {SLOTS.filter(s => hoyPorTurno[s].length > 0).map(slot => {
                                                 const open = !!staffSlotsExpanded[slot];
                                                 return (
-                                                    <div key={slot} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                    <div key={slot} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                         <button onClick={() => setStaffSlotsExpanded(prev => ({ ...prev, [slot]: !prev[slot] }))}
                                                             className="w-full flex items-center gap-2 px-4 py-3 border-b border-slate-100">
                                                             <p className="font-bold text-slate-900 text-base">{slot}</p>
@@ -1576,7 +1574,7 @@ export default function MiCuentaPage() {
                                                 );
                                             })}
                                             {totalHoy === 0 && (
-                                                <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                                <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                     <p className="text-slate-400 text-sm">Todavía no vino nadie hoy.</p>
                                                 </div>
                                             )}
@@ -1588,13 +1586,13 @@ export default function MiCuentaPage() {
                                             <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-emerald-500 animate-spin" />
                                         </div>
                                     ) : !cajaPreview ? (
-                                        <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-lg shadow-slate-900/[0.03]">
+                                        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                             <p className="text-slate-400 text-sm">No se pudo cargar la caja.</p>
                                         </div>
                                     ) : (
                                         <BlurFade delay={0.08}>
                                             <div className="space-y-3">
-                                                <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-lg shadow-slate-900/[0.03]">
+                                                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                     <p className="text-slate-400 text-xs font-semibold mb-3">
                                                         Desde {new Date(cajaPreview.fechaDesde).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} hasta {new Date(cajaPreview.fechaHasta).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                     </p>
@@ -1617,7 +1615,7 @@ export default function MiCuentaPage() {
                                                     <p className="text-slate-400 text-xs mt-1">{cajaPreview.cantidadPagos} {cajaPreview.cantidadPagos === 1 ? 'pago' : 'pagos'} registrados</p>
                                                 </div>
 
-                                                <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
+                                                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
                                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2">Mis cierres</p>
                                                     {cajaCierres.length === 0 ? (
                                                         <p className="text-slate-400 text-sm text-center py-8">Todavía no cerraste ninguna caja.</p>
