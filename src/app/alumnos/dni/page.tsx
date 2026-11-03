@@ -403,8 +403,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             </svg>
                         ) : feedback.type === 'debt_warning' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                <circle cx="32" cy="20" r="5" fill="white"/>
-                                <rect x="28" y="30" width="8" height="22" rx="4" fill="white"/>
+                                <path d="M12 33L27 48L52 20" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         ) : feedback.type === 'already' ? (
                             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -469,11 +468,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         ) : (
                             <>
                                 <span className="text-white font-black" style={{ fontSize: 32 }}>
-                                    {feedback.type === 'paid' ? '✓ Cuota al día' : feedback.type === 'debt' ? '✗ Cuota pendiente' : '! Cuota pendiente'}
+                                    {feedback.type === 'paid' ? '✓ Cuota al día' : feedback.type === 'debt' ? '✗ Cuota pendiente' : '✓ Asistencia registrada'}
                                 </span>
-                                <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
-                                    Asistencia registrada
-                                </span>
+                                {feedback.type !== 'debt_warning' && (
+                                    <span className="text-white/50 uppercase tracking-widest" style={{ fontSize: 14 }}>
+                                        Asistencia registrada
+                                    </span>
+                                )}
                             </>
                         )}
                     </div>
