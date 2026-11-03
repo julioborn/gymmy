@@ -12,7 +12,7 @@ import { estaAlDia, getMesActual } from '@/lib/pagos';
 // Modo de prueba de pantallas: escribiendo 11/22/33 y tocando "Registrar" se dispara
 // el feedback correspondiente (pagó / aviso amarillo / debe) con datos ficticios, sin
 // pegarle a la API ni tocar asistencias reales. Para activar/desactivar, cambiar este flag.
-const DEBUG_SCREENS = true;
+const DEBUG_SCREENS = false;
 
 const DEFAULT_LOGO_URL = 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png';
 
