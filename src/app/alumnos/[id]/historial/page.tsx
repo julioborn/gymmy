@@ -1475,6 +1475,11 @@ export default function HistorialAlumnoPage() {
             const tarifaSel = tarifas.find(t => t.dias === dayModalPagoDias);
             if (!tarifaSel) return;
             const selDate = new Date(dayModal + 'T12:00:00');
+            // Si el día elegido es hoy, el pago se registra con la hora real (para que
+            // aparezca en el cierre de caja del turno actual); si es un día pasado, se
+            // guarda al mediodía de ese día (no importa la hora exacta, ya quedó fuera
+            // de cualquier caja abierta de todos modos).
+            const fechaPagoReal = dayModal === getTodayStr() ? new Date() : selDate;
             const esMesPasado = selDate < new Date(new Date().getFullYear(), new Date().getMonth(), 1);
             const recargoAplicable = esMesPasado ? recargoMes : (selDate.getDate() > 10 ? recargoDiez : 0);
             const montoRecargo = dayModalPagoRecargo ? recargoAplicable : 0;
@@ -1495,7 +1500,7 @@ export default function HistorialAlumnoPage() {
                     alumnoId: id,
                     nuevoPago: {
                         mes: mesNombre,
-                        fechaPago: selDate.toISOString(),
+                        fechaPago: fechaPagoReal.toISOString(),
                         diasMusculacion: dayModalPagoDias,
                         tarifa: tarifaSel.valor,
                         metodoPago: dayModalPagoMetodo,
