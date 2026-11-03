@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
-import { ChevronLeft, Banknote, Landmark, Wallet, Clock } from 'lucide-react';
+import { ChevronLeft, Banknote, Landmark, Wallet, Clock, ChevronDown } from 'lucide-react';
 
 type DetallePago = {
     tipo: 'cuota' | 'depaso';
@@ -52,6 +52,19 @@ export default function CierreCajaPage() {
     const [cierres, setCierres] = useState<Cierre[]>([]);
     const [loading, setLoading] = useState(true);
     const [cerrando, setCerrando] = useState(false);
+    const [cierreAbierto, setCierreAbierto] = useState<string | null>(null);
+    const [detalles, setDetalles] = useState<Record<string, DetallePago[]>>({});
+    const [cargandoDetalle, setCargandoDetalle] = useState<string | null>(null);
+
+    const toggleCierre = (id: string) => {
+        if (cierreAbierto === id) { setCierreAbierto(null); return; }
+        setCierreAbierto(id);
+        if (detalles[id]) return;
+        setCargandoDetalle(id);
+        fetch(`/api/caja/${id}`).then(r => r.json()).then(d => {
+            if (d.ok) setDetalles(prev => ({ ...prev, [id]: d.detalle }));
+        }).catch(() => {}).finally(() => setCargandoDetalle(null));
+    };
 
     useEffect(() => {
         if (status !== 'loading' && session?.user?.role !== 'recepcion') {
@@ -214,21 +227,53 @@ export default function CierreCajaPage() {
                                 <p className="text-white/40 text-sm text-center py-8">Todavía no se registró ningún cierre.</p>
                             ) : (
                                 <div className="divide-y divide-white/[0.04]">
-                                    {cierres.map(c => (
-                                        <div key={c._id} className="px-5 py-3">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-white/85 text-sm font-semibold">{fmtHora(c.fechaDesde)} → {fmtHora(c.fechaHasta)}</p>
-                                                <span className="text-white font-bold text-sm tabular-nums">{fmt(c.totalGeneral)}</span>
+                                    {cierres.map(c => {
+                                        const abierto = cierreAbierto === c._id;
+                                        const detalle = detalles[c._id];
+                                        return (
+                                            <div key={c._id}>
+                                                <button onClick={() => toggleCierre(c._id)} className="w-full text-left px-5 py-3 hover:bg-white/[0.03] transition-colors">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <p className="text-white/85 text-sm font-semibold">{fmtHora(c.fechaDesde)} → {fmtHora(c.fechaHasta)}</p>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <span className="text-white font-bold text-sm tabular-nums">{fmt(c.totalGeneral)}</span>
+                                                            <ChevronDown size={14} className={`text-white/30 transition-transform duration-200 ${abierto ? 'rotate-180' : ''}`} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-1 text-xs text-white/45">
+                                                        <span>Efectivo {fmt(c.totalEfectivo)}</span>
+                                                        <span>·</span>
+                                                        <span>Transferencia {fmt(c.totalTransferencia)}</span>
+                                                        <span>·</span>
+                                                        <span>{c.registradoPorNombre}</span>
+                                                    </div>
+                                                </button>
+                                                {abierto && (
+                                                    <div className="px-5 pb-3">
+                                                        {cargandoDetalle === c._id ? (
+                                                            <div className="flex justify-center py-6">
+                                                                <div className="w-6 h-6 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin" />
+                                                            </div>
+                                                        ) : !detalle || detalle.length === 0 ? (
+                                                            <p className="text-white/35 text-xs text-center py-4">Sin pagos en este cierre.</p>
+                                                        ) : (
+                                                            <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl divide-y divide-white/[0.04]">
+                                                                {detalle.map((p, i) => (
+                                                                    <div key={i} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-white/85 text-sm font-medium truncate">{p.apellido}, {p.nombre}</p>
+                                                                            <p className="text-white/40 text-xs capitalize">{p.tipo === 'depaso' ? 'De paso · ' : ''}{p.metodoPago} · {fmtHora(p.fecha)}</p>
+                                                                        </div>
+                                                                        <span className="text-white/70 text-sm font-semibold tabular-nums shrink-0">{fmt(p.monto)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-3 mt-1 text-xs text-white/45">
-                                                <span>Efectivo {fmt(c.totalEfectivo)}</span>
-                                                <span>·</span>
-                                                <span>Transferencia {fmt(c.totalTransferencia)}</span>
-                                                <span>·</span>
-                                                <span>{c.registradoPorNombre}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
