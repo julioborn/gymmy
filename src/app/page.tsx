@@ -605,8 +605,8 @@ export default function HomePage() {
                                                 onChange={(e) => { setFilterActividad(e.target.value); setListPage(0); }}
                                                 className="appearance-none bg-white/[0.06] border border-white/[0.1] rounded-xl pl-3 pr-7 py-1.5 text-xs font-semibold text-white/80 focus:outline-none focus:border-lime-400/40 cursor-pointer"
                                             >
-                                                <option value="Todos">Todos</option>
-                                                {TODAS_ACTIVIDADES.map(act => <option key={act} value={act}>{act}</option>)}
+                                                <option value="Todos" className="text-black bg-white">Todos</option>
+                                                {TODAS_ACTIVIDADES.map(act => <option key={act} value={act} className="text-black bg-white">{act}</option>)}
                                             </select>
                                             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
                                         </div>
