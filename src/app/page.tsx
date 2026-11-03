@@ -556,7 +556,9 @@ export default function HomePage() {
                                             <UserCheck size={12} className="text-lime-400" />
                                             <span className="text-white/70 text-xs font-semibold">Total hoy</span>
                                         </div>
-                                        <span className="text-white font-black text-base tabular-nums">{totalActivo}</span>
+                                        <span className="text-white font-black text-base tabular-nums">
+                                            {totalActivo}{data?.totalAlumnos ? <span className="text-white/40 font-semibold"> de {data.totalAlumnos}</span> : null}
+                                        </span>
                                     </div>
                                     {deudoresHoy > 0 && (
                                         <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
