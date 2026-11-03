@@ -1503,9 +1503,9 @@ export default function MiCuentaPage() {
                                                 </div>
 
                                                 <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/[0.03]">
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2">Historial de cierres</p>
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2">Mis cierres</p>
                                                     {cajaCierres.length === 0 ? (
-                                                        <p className="text-slate-400 text-sm text-center py-8">Todavía no se registró ningún cierre.</p>
+                                                        <p className="text-slate-400 text-sm text-center py-8">Todavía no cerraste ninguna caja.</p>
                                                     ) : (
                                                         <div className="divide-y divide-slate-100">
                                                             {cajaCierres.map(c => {

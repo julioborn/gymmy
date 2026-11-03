@@ -13,13 +13,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!auth.ok) return auth.error;
 
     await connectMongoDB();
-    const yo = await Alumno.findById(auth.session.user.id).select('dni gimnasioId');
+    const yo = await Alumno.findById(auth.session.user.id).select('dni nombre apellido gimnasioId');
     if (!yo || !esStaffAlumno(yo.dni)) {
         return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
     }
 
     const gid = String(yo.gimnasioId);
-    const cierre = await CierreCaja.findOne({ _id: params.id, gimnasioId: gid }).lean();
+    const miNombre = `${yo.nombre} ${yo.apellido}`;
+    const cierre = await CierreCaja.findOne({ _id: params.id, gimnasioId: gid, registradoPorNombre: miNombre }).lean();
     if (!cierre) {
         return NextResponse.json({ error: 'Cierre no encontrado' }, { status: 404 });
     }

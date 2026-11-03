@@ -13,7 +13,7 @@ export async function GET() {
     if (!auth.ok) return auth.error;
 
     await connectMongoDB();
-    const yo = await Alumno.findById(auth.session.user.id).select('dni gimnasioId');
+    const yo = await Alumno.findById(auth.session.user.id).select('dni nombre apellido gimnasioId');
     if (!yo || !esStaffAlumno(yo.dni)) {
         return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
     }
@@ -23,7 +23,8 @@ export async function GET() {
     const fechaHasta = new Date();
     const preview = await calcularCaja(gid, fechaDesde, fechaHasta);
 
-    const cierres = await CierreCaja.find({ gimnasioId: gid })
+    const miNombre = `${yo.nombre} ${yo.apellido}`;
+    const cierres = await CierreCaja.find({ gimnasioId: gid, registradoPorNombre: miNombre })
         .sort({ fechaHasta: -1 })
         .limit(50)
         .lean();
