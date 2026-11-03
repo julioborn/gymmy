@@ -170,6 +170,10 @@ const NAV_CARDS = [
         href: '/alumnos/estadisticas', label: 'Estadísticas', role: 'dueño' as string | null,
         icon: <BarChart3 size={18} className="text-white" />,
     },
+    {
+        href: '/caja', label: 'Caja', role: 'profesor' as string | null,
+        icon: <Wallet size={18} className="text-white" />,
+    },
 ];
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────

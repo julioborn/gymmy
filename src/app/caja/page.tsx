@@ -66,8 +66,10 @@ export default function CierreCajaPage() {
         }).catch(() => {}).finally(() => setCargandoDetalle(null));
     };
 
+    const puedeCerrar = session?.user?.role === 'recepcion';
+
     useEffect(() => {
-        if (status !== 'loading' && session?.user?.role !== 'recepcion') {
+        if (status !== 'loading' && !['recepcion', 'profesor'].includes(session?.user?.role ?? '')) {
             router.push('/');
         }
     }, [session, status, router]);
@@ -194,13 +196,15 @@ export default function CierreCajaPage() {
                             <p className="text-white/35 text-xs mt-1">{preview.cantidadPagos} {preview.cantidadPagos === 1 ? 'pago' : 'pagos'} registrados</p>
                         </div>
 
-                        <button
-                            onClick={handleCerrar}
-                            disabled={cerrando}
-                            className="w-full py-4 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 disabled:opacity-50 text-black font-bold text-base transition-all shadow-md shadow-lime-400/20"
-                        >
-                            {cerrando ? 'Cerrando...' : 'Cerrar caja'}
-                        </button>
+                        {puedeCerrar && (
+                            <button
+                                onClick={handleCerrar}
+                                disabled={cerrando}
+                                className="w-full py-4 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 disabled:opacity-50 text-black font-bold text-base transition-all shadow-md shadow-lime-400/20"
+                            >
+                                {cerrando ? 'Cerrando...' : 'Cerrar caja'}
+                            </button>
+                        )}
 
                         {/* Detalle del turno actual */}
                         {preview.detalle.length > 0 && (
