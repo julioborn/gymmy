@@ -394,11 +394,11 @@ export default function MiCuentaPage() {
                 {/* Cards skeleton */}
                 <div className="px-4 pt-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-white border border-slate-300 rounded-2xl h-40 animate-pulse" />
-                        <div className="bg-white border border-slate-300 rounded-2xl h-40 animate-pulse" />
+                        <div className="rounded-2xl h-40 animate-pulse" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }} />
+                        <div className="rounded-2xl h-40 animate-pulse" style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.2)' }} />
                     </div>
-                    <div className="bg-white border border-slate-300 rounded-2xl h-16 animate-pulse" />
-                    <div className="bg-white border border-slate-300 rounded-2xl h-48 animate-pulse" />
+                    <div className="rounded-2xl h-16 animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                    <div className="rounded-2xl h-48 animate-pulse" style={{ background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.2)' }} />
                 </div>
             </div>
         );
@@ -592,7 +592,7 @@ export default function MiCuentaPage() {
             <div className="pb-10">
 
                 {/* ── HERO BANNER ─────────────────────────────────────────── */}
-                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)' }}>
+                <div className="mx-4 mt-4 rounded-[2rem] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)', boxShadow: '0 0 36px -8px rgba(16,185,129,0.4), 0 0 50px -14px rgba(249,115,22,0.3)' }}>
                 <div className="relative bg-[#111] overflow-hidden rounded-[30px]">
                     {/* Dot grid */}
                     <div className="absolute inset-0" style={{ backgroundImage:'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'20px 20px' }} />
@@ -718,24 +718,25 @@ export default function MiCuentaPage() {
                                 {/* Plan progress card */}
                                 {(planEj && !planEjComplete) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="bg-white border border-slate-300 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
+                                        <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
+                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.35)', boxShadow: '0 0 0 1px rgba(16,185,129,0.06) inset, 0 10px 32px -10px rgba(16,185,129,0.45)' }}>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Plan activo</p>
+                                                <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Plan activo</p>
                                             </div>
-                                            <p className="text-slate-900 font-bold text-base leading-snug truncate">{planEj.nombre}</p>
+                                            <p className="text-white font-bold text-base leading-snug truncate">{planEj.nombre}</p>
                                             <div className="flex items-end gap-1.5 mb-3 mt-2">
-                                                <p className="font-black text-4xl leading-none tabular-nums text-emerald-600">
+                                                <p className="font-black text-4xl leading-none tabular-nums text-emerald-400">
                                                     <NumberTicker value={planEjDone} />
                                                 </p>
-                                                <span className="text-slate-300 font-bold text-3xl leading-none pb-px">/</span>
-                                                <p className="text-slate-500 font-black text-4xl leading-none tabular-nums">{planEjTotal}</p>
+                                                <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
+                                                <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{planEjTotal}</p>
                                             </div>
-                                            <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-slate-100" />
+                                            <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-white/10" />
                                             <button onClick={()=>changeTab('plan')}
-                                                className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-600">
+                                                className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-400">
                                                 Ver plan <ChevronRight size={14} />
                                             </button>
                                         </div>
@@ -744,22 +745,23 @@ export default function MiCuentaPage() {
 
                                 {(!planEj && tienePlan) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="bg-white border border-slate-300 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
+                                        <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
+                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.35)', boxShadow: '0 0 0 1px rgba(16,185,129,0.06) inset, 0 10px 32px -10px rgba(16,185,129,0.45)' }}>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Plan activo</p>
+                                                <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Plan activo</p>
                                             </div>
                                             <div className="flex items-end gap-1.5 mb-3">
-                                                <p className="text-emerald-600 font-black text-4xl leading-none tabular-nums">
+                                                <p className="text-emerald-400 font-black text-4xl leading-none tabular-nums">
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
-                                                <span className="text-slate-300 font-bold text-3xl leading-none pb-px">/</span>
-                                                <p className="text-slate-500 font-black text-4xl leading-none tabular-nums">{plan.duracion}</p>
+                                                <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
+                                                <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{plan.duracion}</p>
                                             </div>
-                                            <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-slate-100" />
-                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-600">
+                                            <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-white/10" />
+                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-400">
                                                 Ver historial <ChevronRight size={14} />
                                             </button>
                                         </div>
@@ -768,21 +770,22 @@ export default function MiCuentaPage() {
 
                                 {/* Asistencias este mes */}
                                 <BlurFade delay={0.15}>
-                                    <div className="bg-white border border-slate-300 rounded-2xl p-4 shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)] h-full flex flex-col">
+                                    <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
+                                        style={{ background: `linear-gradient(165deg, ${acento}1A, rgba(17,17,17,0.9))`, border: `1px solid ${acento}59`, boxShadow: `0 0 0 1px ${acento}0F inset, 0 10px 32px -10px ${acento}73` }}>
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
                                             </div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Asistencias</p>
+                                            <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Asistencias</p>
                                         </div>
-                                        <p className="text-slate-900 font-black text-4xl leading-none tabular-nums mb-auto">
+                                        <p className="text-white font-black text-4xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
                                         </p>
                                         {/* Mini bar chart */}
                                         <div className="flex items-end gap-[2px] h-8 mt-3">
                                             {monthAsistBars.map((count, i) => (
                                                 <motion.div key={i} className="flex-1 rounded-sm"
-                                                    style={{ backgroundColor: count > 0 ? acento : '#f1f5f9' }}
+                                                    style={{ backgroundColor: count > 0 ? acento : 'rgba(255,255,255,0.08)' }}
                                                     initial={{ height: 0 }}
                                                     animate={{ height: count > 0 ? '100%' : '30%' }}
                                                     transition={{ duration: 0.4, delay: 0.3 + i * 0.015, ease: 'easeOut' }}
@@ -797,13 +800,14 @@ export default function MiCuentaPage() {
                             {/* Plan completado */}
                             {(planEjComplete || (!planEj && plan?.terminado)) && (
                                 <BlurFade delay={0.05}>
-                                    <div className="bg-lime-50 border border-lime-200 rounded-2xl p-4 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-lime-100 flex items-center justify-center shrink-0">
-                                            <Trophy size={22} className="text-lime-600" />
+                                    <div className="rounded-2xl p-4 flex items-center gap-4"
+                                        style={{ background: 'linear-gradient(165deg, rgba(163,230,53,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(163,230,53,0.35)', boxShadow: '0 10px 32px -10px rgba(163,230,53,0.4)' }}>
+                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
+                                            <Trophy size={22} className="text-white" />
                                         </div>
                                         <div>
-                                            <p className="text-lime-800 font-bold text-sm">¡Plan completado!</p>
-                                            <p className="text-lime-600 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
+                                            <p className="text-lime-300 font-bold text-sm">¡Plan completado!</p>
+                                            <p className="text-white/40 text-xs mt-0.5">Completaste todas las sesiones del plan.</p>
                                         </div>
                                     </div>
                                 </BlurFade>
@@ -812,22 +816,23 @@ export default function MiCuentaPage() {
                             {/* Precios de cuotas */}
                             {tarifas.length > 0 && (
                                 <BlurFade delay={0.08}>
-                                    <div className="bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
+                                    <div className="rounded-2xl overflow-hidden"
+                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                                         <button onClick={() => setPreciosExpanded(v => !v)} className="w-full flex items-center gap-3 px-4 py-4 text-left">
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
                                                 <Banknote size={16} className="text-white" />
                                             </div>
-                                            <p className="flex-1 min-w-0 text-slate-900 font-bold text-base">Precios</p>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-slate-300 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
+                                            <p className="flex-1 min-w-0 text-white font-bold text-base">Precios</p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
                                         {preciosExpanded && (
-                                            <div className="border-t border-slate-100 divide-y divide-slate-100">
+                                            <div className="border-t border-white/10 divide-y divide-white/[0.06]">
                                                 {tarifas.map(t => (
                                                     <div key={t.dias} className="flex items-center justify-between px-4 py-3.5">
-                                                        <span className="text-slate-700 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
-                                                        <span className="text-amber-600 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
+                                                        <span className="text-white/70 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
+                                                        <span className="text-amber-400 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -839,14 +844,15 @@ export default function MiCuentaPage() {
                             {/* Cuota pendiente + pago */}
                             {!pagoEsteMes && !exenta && aliasGimnasio && (
                                 <BlurFade delay={0.1}>
-                                    <div className="bg-white border border-white/30 rounded-2xl overflow-hidden shadow-lg">
+                                    <div className="rounded-2xl overflow-hidden"
+                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                                         <div className="px-4 py-4">
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Transferí tu cuota</p>
+                                            <p className="text-xs font-bold text-white/40 uppercase tracking-wide mb-3">Transferí tu cuota</p>
                                             <div className="flex items-center justify-between gap-3">
-                                                <span className="text-slate-900 font-bold text-lg truncate">{aliasGimnasio}</span>
+                                                <span className="text-white font-bold text-lg truncate">{aliasGimnasio}</span>
                                                 <button onClick={()=>{ navigator.clipboard.writeText(aliasGimnasio); setAliasCopied(true); setTimeout(()=>setAliasCopied(false),2000); }}
-                                                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-600 text-sm font-semibold">
-                                                    {aliasCopied ? <><Check size={15} className="text-lime-600" /><span className="text-lime-600">Copiado</span></> : <><Copy size={15} />Copiar</>}
+                                                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition text-white/70 text-sm font-semibold">
+                                                    {aliasCopied ? <><Check size={15} className="text-lime-400" /><span className="text-lime-400">Copiado</span></> : <><Copy size={15} />Copiar</>}
                                                 </button>
                                             </div>
                                         </div>
@@ -866,33 +872,34 @@ export default function MiCuentaPage() {
                                 if (!ultimas.length) return null;
                                 return (
                                     <BlurFade delay={0.2}>
-                                        <div className="bg-white border border-slate-300 rounded-2xl overflow-hidden shadow-[0_10px_34px_-6px_rgba(255,255,255,0.07)]">
-                                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100">
+                                        <div className="relative rounded-2xl overflow-hidden"
+                                            style={{ background: 'linear-gradient(165deg, rgba(14,165,233,0.1), rgba(17,17,17,0.9))', border: '1px solid rgba(14,165,233,0.35)', boxShadow: '0 0 0 1px rgba(14,165,233,0.06) inset, 0 10px 32px -10px rgba(14,165,233,0.4)' }}>
+                                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
                                                         <Clock3 size={14} className="text-white" />
                                                     </div>
-                                                    <p className="font-bold text-base text-slate-900">Últimas asistencias</p>
+                                                    <p className="font-bold text-base text-white">Últimas asistencias</p>
                                                 </div>
-                                                <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-600">
+                                                <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-400">
                                                     Ver todas <ChevronRight size={15} />
                                                 </button>
                                             </div>
-                                            <div className="divide-y divide-slate-100">
+                                            <div className="divide-y divide-white/[0.06]">
                                                 {ultimas.map(a => {
                                                     const d = new Date(a.fecha);
                                                     const color = ACTIVIDAD_COLOR[a.actividad] || '#6b7280';
                                                     return (
                                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3.5">
                                                             <div className="w-11 shrink-0">
-                                                                <p className="text-slate-900 font-bold text-lg leading-none">{d.getDate()}</p>
-                                                                <p className="text-slate-400 text-xs font-semibold uppercase leading-none mt-1">{MESES_CORTO[d.getMonth()]}</p>
+                                                                <p className="text-white font-bold text-lg leading-none">{d.getDate()}</p>
+                                                                <p className="text-white/40 text-xs font-semibold uppercase leading-none mt-1">{MESES_CORTO[d.getMonth()]}</p>
                                                             </div>
                                                             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${color}20` }}>
                                                                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:color }} />
                                                             </div>
-                                                            <p className="flex-1 text-slate-700 font-semibold text-base truncate">{a.actividad}</p>
-                                                            <span className="text-slate-400 text-sm font-medium tabular-nums">
+                                                            <p className="flex-1 text-white/80 font-semibold text-base truncate">{a.actividad}</p>
+                                                            <span className="text-white/40 text-sm font-medium tabular-nums">
                                                                 {d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}
                                                             </span>
                                                         </div>
