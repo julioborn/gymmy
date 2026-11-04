@@ -712,34 +712,6 @@ export default function MiCuentaPage() {
                     {tab === 'resumen' && (
                         <div className="space-y-4">
 
-                            {/* Precios de cuotas */}
-                            {tarifas.length > 0 && (
-                                <BlurFade delay={0}>
-                                    <div className="rounded-2xl overflow-hidden"
-                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <button onClick={() => setPreciosExpanded(v => !v)} className="w-full flex items-center gap-3 px-4 py-4 text-left">
-                                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                                                <DollarSign size={16} className="text-white" />
-                                            </div>
-                                            <p className="flex-1 min-w-0 text-white font-bold text-base">Cuotas</p>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
-                                        {preciosExpanded && (
-                                            <div className="border-t border-white/10 divide-y divide-white/[0.06]">
-                                                {tarifas.map(t => (
-                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3.5">
-                                                        <span className="text-white/70 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
-                                                        <span className="text-amber-400 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </BlurFade>
-                            )}
-
                             {/* Plan activo + Asistencias mes — side by side */}
                             <div className="grid grid-cols-2 gap-3">
 
@@ -910,6 +882,34 @@ export default function MiCuentaPage() {
                                     </BlurFade>
                                 );
                             })()}
+
+                            {/* Precios de cuotas */}
+                            {tarifas.length > 0 && (
+                                <BlurFade delay={0.25}>
+                                    <div className="rounded-2xl overflow-hidden"
+                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <button onClick={() => setPreciosExpanded(v => !v)} className="w-full flex items-center gap-3 px-4 py-4 text-left">
+                                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                                                <DollarSign size={16} className="text-white" />
+                                            </div>
+                                            <p className="flex-1 min-w-0 text-white font-bold text-base">Cuotas</p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </button>
+                                        {preciosExpanded && (
+                                            <div className="border-t border-white/10 divide-y divide-white/[0.06]">
+                                                {tarifas.map(t => (
+                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3.5">
+                                                        <span className="text-white/70 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
+                                                        <span className="text-amber-400 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </BlurFade>
+                            )}
 
                         </div>
                     )}
