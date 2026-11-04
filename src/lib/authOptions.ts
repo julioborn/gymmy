@@ -98,7 +98,9 @@ export const authOptions: AuthOptions = {
     pages: { signIn: "/login" },
     session: {
         strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60,
+        // "Para siempre": JWT no soporta una expiración infinita real, así que usamos
+        // 100 años como equivalente práctico — la sesión nunca va a vencer en los hechos.
+        maxAge: 100 * 365 * 24 * 60 * 60,
     },
     callbacks: {
         async session({ session, token }: { session: any; token: any }) {
