@@ -3,7 +3,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -401,36 +401,46 @@ export default function ListaAlumnosPage() {
                 <div className="pointer-events-none absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-3xl" style={{ background: acento, opacity: 0.1 }} />
 
                 <div className="relative px-5 pt-5 pb-5">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-semibold text-white/55 uppercase tracking-[0.14em]">Gestión</span>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                            <Users size={20} className="text-white" />
+                        </div>
+                        <div className="min-w-0">
+                            <span className="text-white/40 text-[10px] font-semibold uppercase tracking-widest">Gestión</span>
+                            <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">Alumnos</h1>
+                        </div>
                         {!isLoading && (
-                            <span className="bg-white/[0.1] border border-white/[0.13] text-white/70 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                                {alumnos.length} inscriptos
+                            <span className="ml-auto flex items-center gap-1.5 bg-white/[0.1] border border-white/[0.13] text-white/80 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
+                                <Users size={11} />
+                                {alumnos.length}
                             </span>
                         )}
                     </div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight mb-4">Alumnos</h1>
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => router.push('/alumnos/nuevo')}
-                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
-                            style={{ background: acento }}
+                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95 shadow-md"
+                            style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})`, boxShadow: `0 6px 16px -6px ${acento}70` }}
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
+                            <UserPlus size={15} />
                             Registrar
                         </button>
                         {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                             <>
-                                <button className="px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>Cuotas</button>
-                                <button className="px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>Recargo</button>
+                                <button className="flex items-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>
+                                    <DollarSign size={15} />
+                                    Cuotas
+                                </button>
+                                <button className="flex items-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>
+                                    <Percent size={15} />
+                                    Recargo
+                                </button>
                             </>
                         )}
                         {session?.user?.role === 'dueño' && (
                             <button
                                 onClick={handleGenerateExcel}
-                                className="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all"
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
                                     <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
@@ -450,11 +460,9 @@ export default function ListaAlumnosPage() {
                         {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
                             <button
                                 onClick={() => router.push('/alumnos/revision-nombres')}
-                                className="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.15] active:scale-95 text-white/80 text-sm font-semibold rounded-2xl transition-all"
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-sky-400/10 border border-sky-400/25 hover:bg-sky-400/15 active:scale-95 text-sky-300 text-sm font-semibold rounded-2xl transition-all"
                             >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                </svg>
+                                <Search size={15} />
                                 Revisar nombres
                             </button>
                         )}
