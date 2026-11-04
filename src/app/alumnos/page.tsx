@@ -457,6 +457,7 @@ export default function ListaAlumnosPage() {
                                 Balance
                             </button>
                         )}
+                        {/* Revisar nombres — oculto por ahora, reactivar cuando haga falta
                         {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
                             <button
                                 onClick={() => router.push('/alumnos/revision-nombres')}
@@ -466,6 +467,7 @@ export default function ListaAlumnosPage() {
                                 Revisar nombres
                             </button>
                         )}
+                        */}
                     </div>
                 </div>
             </div>
