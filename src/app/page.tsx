@@ -179,7 +179,7 @@ const NAV_CARDS = [
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white/[0.06] border border-white/[0.1] rounded-2xl p-4 animate-pulse h-[150px] sm:h-[175px]">
+        <div className="bg-white/[0.06] border border-white/[0.1] rounded-2xl p-4 animate-pulse h-[165px] sm:h-[190px]">
             <div className="w-24 h-2.5 bg-white/[0.12] rounded mb-4" />
             <div className="w-16 h-9 bg-white/[0.12] rounded mb-2" />
             <div className="w-20 h-2.5 bg-white/[0.12] rounded" />
@@ -190,16 +190,16 @@ function SkeletonCard() {
 // ─── Glow helper (mismo lenguaje visual que mi-cuenta/estadisticas/finanzas) ──
 function glowStyle(rgb: string): React.CSSProperties {
     return {
-        background: `linear-gradient(165deg, rgba(${rgb},0.1), rgba(17,17,17,0.9))`,
-        border: `1px solid rgba(${rgb},0.35)`,
-        boxShadow: `0 0 0 1px rgba(${rgb},0.06) inset, 0 10px 28px -9px rgba(${rgb},0.4)`,
+        background: `linear-gradient(165deg, rgba(${rgb},0.06), rgba(17,17,17,0.9))`,
+        border: `1px solid rgba(${rgb},0.25)`,
+        boxShadow: `0 0 0 1px rgba(${rgb},0.04) inset, 0 8px 20px -10px rgba(${rgb},0.25)`,
     };
 }
 
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className, glow = '255,255,255' }: { children: React.ReactNode; className?: string; glow?: string }) {
     return (
-        <div className={cn('rounded-2xl p-4 flex flex-col h-[150px] sm:h-[175px] overflow-hidden', className)} style={glowStyle(glow)}>
+        <div className={cn('rounded-2xl p-4 flex flex-col h-[165px] sm:h-[190px] overflow-hidden', className)} style={glowStyle(glow)}>
             {children}
         </div>
     );
@@ -1021,32 +1021,32 @@ export default function HomePage() {
                                 {/* Planes venciendo */}
                                 <BlurFade delay={0.22}>
                                     <StatCard glow={data.planesVenciendo.length > 0 ? '245,158,11' : '255,255,255'}>
-                                        <div className="flex items-start justify-between mb-3">
-                                            <StatLabel>Planes venciendo</StatLabel>
-                                            <p className={cn('text-4xl font-bold leading-none tabular-nums -mt-0.5', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
-                                                <NumberTicker value={data.planesVenciendo.length} />
-                                            </p>
+                                        <StatLabel>Planes venciendo</StatLabel>
+                                        <p className={cn('text-4xl font-bold leading-none tabular-nums', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
+                                            <NumberTicker value={data.planesVenciendo.length} />
+                                        </p>
+                                        <div className="mt-3 pt-3 border-t border-white/[0.08]">
+                                            {data.planesVenciendo.length > 0 ? (
+                                                <div className="space-y-1.5">
+                                                    {data.planesVenciendo.slice(0, 3).map(a => (
+                                                        <Link key={a._id} href={`/alumnos/${a._id}/historial`}
+                                                            className="flex items-center gap-2 group">
+                                                            <span className={cn(
+                                                                'text-[9px] font-black px-1.5 h-5 min-w-[20px] rounded-full flex items-center justify-center text-white shrink-0 leading-none',
+                                                                a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400',
+                                                            )}>
+                                                                {a.diasRestantes}d
+                                                            </span>
+                                                            <span className="text-sm text-white/70 truncate group-hover:text-white transition-colors">
+                                                                {a.apellido}, {a.nombre}
+                                                            </span>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-white/50">Sin vencimientos</p>
+                                            )}
                                         </div>
-                                        {data.planesVenciendo.length > 0 ? (
-                                            <div className="space-y-1.5">
-                                                {data.planesVenciendo.slice(0, 3).map(a => (
-                                                    <Link key={a._id} href={`/alumnos/${a._id}/historial`}
-                                                        className="flex items-center gap-2 group">
-                                                        <span className={cn(
-                                                            'text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0 leading-none',
-                                                            a.diasRestantes === 0 ? 'bg-red-500' : 'bg-amber-400',
-                                                        )}>
-                                                            {a.diasRestantes}
-                                                        </span>
-                                                        <span className="text-sm text-white/70 truncate group-hover:text-white transition-colors">
-                                                            {a.apellido}, {a.nombre}
-                                                        </span>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-white/50">Sin vencimientos</p>
-                                        )}
                                     </StatCard>
                                 </BlurFade>
                             </div>
