@@ -641,9 +641,9 @@ export default function MiCuentaPage() {
                                 <h1 className="text-white font-bold text-xl leading-tight truncate">
                                     {alumno.nombre} {alumno.apellido}
                                 </h1>
-                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                <div className="mt-2">
                                     <span className={cn(
-                                        'text-sm font-bold px-3 py-1 rounded-full tabular-nums',
+                                        'inline-block text-sm font-bold px-3 py-1 rounded-full tabular-nums',
                                         exenta
                                             ? 'bg-white/[0.08] text-slate-300 border border-white/[0.12]'
                                             : pagoEsteMes
@@ -653,8 +653,8 @@ export default function MiCuentaPage() {
                                         {exenta ? 'Sin cuota' : pagoEsteMes ? `✓ Pagó $${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '✗ Debe la cuota'}
                                     </span>
                                     {tarifas.length > 0 && (
-                                        <button onClick={handleVerPrecios} className="text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-2 transition-colors">
-                                            Ver precios
+                                        <button onClick={handleVerPrecios} className="block mt-1.5 text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-2 transition-colors">
+                                            Ver cuotas
                                         </button>
                                     )}
                                 </div>
