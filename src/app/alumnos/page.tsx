@@ -514,33 +514,38 @@ export default function ListaAlumnosPage() {
                                                     <div
                                                         key={i}
                                                         onClick={() => router.push(`/alumnos/${a.id}/historial`)}
-                                                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all"
+                                                        className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all"
                                                     >
-                                                        <div className="w-7 h-7 rounded-lg bg-white/[0.1] flex items-center justify-center text-xs font-bold text-white/70 shrink-0">
-                                                            {a.nombre?.[0]}{a.apellido?.[0]}
+                                                        <div className="flex items-center gap-2.5 basis-full sm:basis-0 sm:flex-1 min-w-0">
+                                                            <div className="w-7 h-7 rounded-lg bg-white/[0.1] flex items-center justify-center text-xs font-bold text-white/70 shrink-0">
+                                                                {a.nombre?.[0]}{a.apellido?.[0]}
+                                                            </div>
+                                                            <span className="flex-1 min-w-0 text-sm font-semibold text-white/85 truncate">
+                                                                {a.apellido}, {a.nombre}
+                                                            </span>
+                                                            <span className="sm:hidden text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
                                                         </div>
-                                                        <span className="flex-1 text-sm font-semibold text-white/85 truncate">
-                                                            {a.apellido}, {a.nombre}
-                                                        </span>
-                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
-                                                            {a.actividad}
-                                                        </span>
-                                                        {a.exentoCuota ? (
-                                                            <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50 shrink-0">
-                                                                Exenta
+                                                        <div className="flex items-center gap-1.5 pl-9 sm:pl-0">
+                                                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
+                                                                {a.actividad}
                                                             </span>
-                                                        ) : a.pagado && a.metodoPago ? (
-                                                            <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 ${a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                                                                <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
-                                                                {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
-                                                                {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
-                                                            </span>
-                                                        ) : !a.pagado ? (
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
-                                                                Debe
-                                                            </span>
-                                                        ) : null}
-                                                        <span className="text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                            {a.exentoCuota ? (
+                                                                <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50 shrink-0">
+                                                                    Exenta
+                                                                </span>
+                                                            ) : a.pagado && a.metodoPago ? (
+                                                                <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 ${a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                    <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
+                                                                    {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
+                                                                    {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
+                                                                </span>
+                                                            ) : !a.pagado ? (
+                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                                                                    Debe
+                                                                </span>
+                                                            ) : null}
+                                                            <span className="hidden sm:inline-flex text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -614,9 +619,10 @@ export default function ListaAlumnosPage() {
                                 return (
                                     <div
                                         key={alumno._id}
-                                        className="flex items-center gap-3 p-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.99] cursor-pointer transition-all"
+                                        className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.99] cursor-pointer transition-all"
                                         onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
                                     >
+                                        <div className="flex items-center gap-3 basis-full sm:basis-0 sm:flex-1 min-w-0">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${pagado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                                             {alumno.nombre?.[0]}{alumno.apellido?.[0]}
                                         </div>
@@ -636,7 +642,8 @@ export default function ListaAlumnosPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="shrink-0 flex items-center gap-2">
+                                        </div>
+                                        <div className="shrink-0 flex items-center gap-2 ml-auto sm:ml-0">
                                             {alumno.exentoCuota ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/[0.08] text-white/50 whitespace-nowrap">
                                                     Exenta
