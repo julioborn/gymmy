@@ -179,25 +179,34 @@ const NAV_CARDS = [
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="bg-white/[0.1] border border-white/[0.15] rounded-2xl p-4 animate-pulse h-[160px]">
-            <div className="w-24 h-2 bg-white/[0.12] rounded mb-4" />
-            <div className="w-14 h-8 bg-white/[0.12] rounded mb-2" />
-            <div className="w-20 h-2 bg-white/[0.12] rounded" />
+        <div className="bg-white/[0.06] border border-white/[0.1] rounded-2xl p-4 animate-pulse h-[150px] sm:h-[175px]">
+            <div className="w-24 h-2.5 bg-white/[0.12] rounded mb-4" />
+            <div className="w-16 h-9 bg-white/[0.12] rounded mb-2" />
+            <div className="w-20 h-2.5 bg-white/[0.12] rounded" />
         </div>
     );
 }
 
+// ─── Glow helper (mismo lenguaje visual que mi-cuenta/estadisticas/finanzas) ──
+function glowStyle(rgb: string): React.CSSProperties {
+    return {
+        background: `linear-gradient(165deg, rgba(${rgb},0.1), rgba(17,17,17,0.9))`,
+        border: `1px solid rgba(${rgb},0.35)`,
+        boxShadow: `0 0 0 1px rgba(${rgb},0.06) inset, 0 10px 28px -9px rgba(${rgb},0.4)`,
+    };
+}
+
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
-function StatCard({ children, className }: { children: React.ReactNode; className?: string }) {
+function StatCard({ children, className, glow = '255,255,255' }: { children: React.ReactNode; className?: string; glow?: string }) {
     return (
-        <div className={cn('bg-white/[0.15] border border-white/[0.22] rounded-2xl p-4 flex flex-col h-[140px] sm:h-[160px] overflow-hidden', className)}>
+        <div className={cn('rounded-2xl p-4 flex flex-col h-[150px] sm:h-[175px] overflow-hidden', className)} style={glowStyle(glow)}>
             {children}
         </div>
     );
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
-    return <p className="text-[10px] font-bold text-white/55 uppercase tracking-[0.12em] mb-2">{children}</p>;
+    return <p className="text-xs font-bold text-white uppercase tracking-[0.1em] mb-2">{children}</p>;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -927,7 +936,7 @@ export default function HomePage() {
                                 {/* Balance */}
                                 {esDueño && (
                                     <BlurFade delay={0.1}>
-                                        <StatCard>
+                                        <StatCard glow={data.balance >= 0 ? '16,185,129' : '239,68,68'}>
                                             <div className="flex items-start justify-between mb-3">
                                                 <StatLabel>Balance · {mesLabel}</StatLabel>
                                                 <button onClick={toggleBalance}
@@ -935,7 +944,7 @@ export default function HomePage() {
                                                     {showBalance ? <Eye size={12} /> : <EyeOff size={12} />}
                                                 </button>
                                             </div>
-                                            <p className={cn('text-3xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                                            <p className={cn('text-4xl font-bold leading-none tracking-tight', data.balance >= 0 ? 'text-emerald-400' : 'text-red-400')}>
                                                 {showBalance
                                                     ? <>{data.balance < 0 ? '−' : ''}$<NumberTicker value={Math.abs(data.balance)} /></>
                                                     : '$ ••••'}
@@ -943,13 +952,13 @@ export default function HomePage() {
                                             {showBalance && (
                                                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
                                                     <div>
-                                                        <p className="text-xs font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
-                                                        <p className="text-[10px] text-white/50 mt-0.5">ingresos</p>
+                                                        <p className="text-sm font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                                        <p className="text-[11px] text-white/50 mt-0.5">ingresos</p>
                                                     </div>
                                                     <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                                     <div>
-                                                        <p className="text-xs font-bold text-red-400">−${fmt(data.gastosMes)}</p>
-                                                        <p className="text-[10px] text-white/50 mt-0.5">egresos</p>
+                                                        <p className="text-sm font-bold text-red-400">−${fmt(data.gastosMes)}</p>
+                                                        <p className="text-[11px] text-white/50 mt-0.5">egresos</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -960,50 +969,50 @@ export default function HomePage() {
                                 {/* Cuotas */}
                                 {!esProfesor && !esRecepcion && (
                                     <BlurFade delay={0.14}>
-                                        <StatCard>
+                                        <StatCard glow="245,158,11">
                                             <StatLabel>Cuotas · {mesLabel}</StatLabel>
                                             <div className="flex items-stretch gap-2 mb-3">
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-3xl font-bold text-emerald-400 leading-none tabular-nums">
+                                                    <p className="text-4xl font-bold text-emerald-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.pagados} />
                                                     </p>
                                                     <p className="text-xs text-emerald-400/80 mt-1.5 font-semibold">Pagaron</p>
                                                 </div>
                                                 <div className="w-px bg-white/[0.1] self-stretch" />
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-3xl font-bold text-red-400 leading-none tabular-nums">
+                                                    <p className="text-4xl font-bold text-red-400 leading-none tabular-nums">
                                                         <NumberTicker value={data.totalAlumnos - data.pagados} />
                                                     </p>
                                                     <p className="text-xs text-red-400/80 mt-1.5 font-semibold">Deben</p>
                                                 </div>
                                             </div>
                                             <AnimatedBar pct={data.porcentajePagados} color={pagoBarColor} />
-                                            <p className="text-xs text-white/55 mt-2 text-right font-medium">{data.porcentajePagados}% pagado</p>
+                                            <p className="text-xs text-white/60 mt-2 text-right font-medium">{data.porcentajePagados}% pagado</p>
                                         </StatCard>
                                     </BlurFade>
                                 )}
 
                                 {/* Asistencias hoy */}
                                 <BlurFade delay={0.18}>
-                                    <StatCard>
+                                    <StatCard glow="163,230,53">
                                         <StatLabel>Asistencias · Hoy</StatLabel>
-                                        <p className="text-3xl font-bold text-white leading-none tabular-nums">
+                                        <p className="text-4xl font-bold text-white leading-none tabular-nums">
                                             <NumberTicker value={data.asistenciasHoy} />
                                         </p>
                                         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
                                             <div>
-                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.manana ?? 0}</p>
-                                                <p className="text-[10px] text-white/50 mt-0.5">mañana</p>
+                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.manana ?? 0}</p>
+                                                <p className="text-[11px] text-white/50 mt-0.5">mañana</p>
                                             </div>
                                             <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                             <div>
-                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.siesta ?? 0}</p>
-                                                <p className="text-[10px] text-white/50 mt-0.5">siesta</p>
+                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.siesta ?? 0}</p>
+                                                <p className="text-[11px] text-white/50 mt-0.5">siesta</p>
                                             </div>
                                             <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                             <div>
-                                                <p className="text-xs font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.tarde ?? 0}</p>
-                                                <p className="text-[10px] text-white/50 mt-0.5">tarde</p>
+                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.tarde ?? 0}</p>
+                                                <p className="text-[11px] text-white/50 mt-0.5">tarde</p>
                                             </div>
                                         </div>
                                     </StatCard>
@@ -1011,10 +1020,10 @@ export default function HomePage() {
 
                                 {/* Planes venciendo */}
                                 <BlurFade delay={0.22}>
-                                    <StatCard>
+                                    <StatCard glow={data.planesVenciendo.length > 0 ? '245,158,11' : '255,255,255'}>
                                         <div className="flex items-start justify-between mb-3">
                                             <StatLabel>Planes venciendo</StatLabel>
-                                            <p className={cn('text-3xl font-bold leading-none tabular-nums -mt-0.5', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
+                                            <p className={cn('text-4xl font-bold leading-none tabular-nums -mt-0.5', data.planesVenciendo.length > 0 ? 'text-amber-400' : 'text-white')}>
                                                 <NumberTicker value={data.planesVenciendo.length} />
                                             </p>
                                         </div>
@@ -1029,14 +1038,14 @@ export default function HomePage() {
                                                         )}>
                                                             {a.diasRestantes}
                                                         </span>
-                                                        <span className="text-xs text-white/70 truncate group-hover:text-white transition-colors">
+                                                        <span className="text-sm text-white/70 truncate group-hover:text-white transition-colors">
                                                             {a.apellido}, {a.nombre}
                                                         </span>
                                                     </Link>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-xs text-white/50">Sin vencimientos</p>
+                                            <p className="text-sm text-white/50">Sin vencimientos</p>
                                         )}
                                     </StatCard>
                                 </BlurFade>
