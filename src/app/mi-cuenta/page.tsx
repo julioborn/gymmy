@@ -813,7 +813,7 @@ export default function MiCuentaPage() {
                                         <div className="flex items-end gap-[2px] h-8 mt-3">
                                             {monthAsistBars.map((count, i) => (
                                                 <motion.div key={i} className="flex-1 rounded-sm"
-                                                    style={{ backgroundColor: count > 0 ? acento : 'rgba(255,255,255,0.08)' }}
+                                                    style={{ backgroundColor: count > 0 ? acento : 'rgba(255,255,255,0.22)' }}
                                                     initial={{ height: 0 }}
                                                     animate={{ height: count > 0 ? '100%' : '30%' }}
                                                     transition={{ duration: 0.4, delay: 0.3 + i * 0.015, ease: 'easeOut' }}
