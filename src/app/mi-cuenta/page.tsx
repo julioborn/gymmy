@@ -769,7 +769,10 @@ export default function MiCuentaPage() {
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Plan activo</p>
+                                                <div>
+                                                    <p className="text-xs font-bold text-white uppercase tracking-wide">Plan activo</p>
+                                                    <p className="text-white/55 text-[11px] font-semibold">Musculación</p>
+                                                </div>
                                             </div>
                                             <div className="flex items-end gap-1.5 mb-3">
                                                 <p className="text-white font-black text-4xl leading-none tabular-nums">
@@ -794,9 +797,11 @@ export default function MiCuentaPage() {
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
                                             </div>
-                                            <p className="text-xs font-bold text-white uppercase tracking-wide">Asistencias</p>
+                                            <div>
+                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Asistencias</p>
+                                                <p className="text-white/55 text-[11px] font-semibold capitalize">{mesActual}</p>
+                                            </div>
                                         </div>
-                                        <p className="text-white/55 text-[11px] font-semibold capitalize -mt-1 mb-2">{mesActual}</p>
                                         <p className="text-white font-black text-4xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
                                         </p>
