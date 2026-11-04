@@ -194,7 +194,7 @@ export default function RegistrarAsistenciaPorDNIPage() {
     const showFeedback = (type: 'paid' | 'debt' | 'debt_warning' | 'not_found' | 'already', act: string, nombre?: string) => {
         if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
         setFeedback({ type, nombre, actividad: act });
-        feedbackTimer.current = setTimeout(() => setFeedback(null), 4000);
+        feedbackTimer.current = setTimeout(() => setFeedback(null), 6000);
     };
 
     const handleKeyPress = (button: string) => {
@@ -530,11 +530,13 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         )}
                     </motion.div>
 
-                    {feedback.type !== 'not_found' && (
+                    {(feedback.type === 'debt' || feedback.type === 'debt_warning') && (
                         <motion.p
-                            className="absolute bottom-8 sm:bottom-10 left-0 right-0 text-center text-white/55 font-semibold uppercase px-6"
-                            style={{ fontSize: 13, letterSpacing: '0.08em' }}
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }}
+                            className="absolute bottom-8 sm:bottom-10 left-0 right-0 text-center text-white font-bold uppercase px-6"
+                            style={{ fontSize: 18, letterSpacing: '0.08em', textShadow: '0 0 12px rgba(255,255,255,0.8)' }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 1, 0.4, 1] }}
+                            transition={{ opacity: { delay: 0.4, duration: 1.6, repeat: Infinity, repeatDelay: 0.3 } }}
                         >
                             Abonar antes del 10 sin recargo
                         </motion.p>
