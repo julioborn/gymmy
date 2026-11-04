@@ -918,7 +918,7 @@ export default function MiCuentaPage() {
                         <div className="space-y-4">
                             <BlurFade delay={0.05}>
                                 <div className="rounded-2xl p-5"
-                                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    style={{ background: `linear-gradient(165deg, ${acento}12, rgba(17,17,17,0.9))`, border: `1px solid ${acento}40`, boxShadow: `0 0 0 1px ${acento}0A inset, 0 10px 26px -9px ${acento}40` }}>
                                     <div className="flex items-center justify-between mb-6">
                                         <button onClick={prevMonth} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 transition-colors">
                                             <ChevronLeft size={20} />
