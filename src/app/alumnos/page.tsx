@@ -331,7 +331,6 @@ export default function ListaAlumnosPage() {
         XLSX.writeFile(workbook, `Alumnos_${mesLabel.replace(' ', '_')}.xlsx`);
     };
 
-    const card = 'bg-white/[0.08] border border-white/[0.12] rounded-2xl';
 
     // ── Hoy en el gimnasio ──────────────────────────────────────────────────
     type TurnSlot = 'mañana' | 'siesta' | 'tarde' | 'noche';
@@ -392,7 +391,8 @@ export default function ListaAlumnosPage() {
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8">
 
             {/* Hero */}
-            <div className="relative bg-[#111] rounded-[2rem] overflow-hidden mb-4">
+            <div className="rounded-[2rem] p-[1.5px] mb-4" style={{ background: `linear-gradient(135deg, ${acento} 0%, ${acento2} 100%)`, boxShadow: `0 0 24px -9px ${acento}40, 0 0 32px -14px ${acento2}30` }}>
+            <div className="relative bg-[#111] rounded-[30px] overflow-hidden">
                 {/* Dot grid */}
                 <div className="pointer-events-none absolute inset-0 opacity-[0.13]"
                     style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
@@ -461,9 +461,11 @@ export default function ListaAlumnosPage() {
                     </div>
                 </div>
             </div>
+            </div>
 
             {/* Hoy en el gimnasio */}
-            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl mb-4 overflow-hidden">
+            <div className="rounded-2xl mb-4 overflow-hidden"
+                style={{ background: 'linear-gradient(165deg, rgba(163,230,53,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(163,230,53,0.25)', boxShadow: '0 0 0 1px rgba(163,230,53,0.04) inset, 0 8px 20px -10px rgba(163,230,53,0.22)' }}>
                 <button
                     onClick={() => setHoyExpanded(v => !v)}
                     className="w-full flex items-center justify-between px-4 py-3.5"
@@ -552,7 +554,8 @@ export default function ListaAlumnosPage() {
             </div>
 
             {/* Body */}
-            <div className={`${card} p-4 space-y-4`}>
+            <div className="rounded-2xl p-4 space-y-4"
+                style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
 
                 {/* Filtros */}
                 <Suspense fallback={<Loader />}>

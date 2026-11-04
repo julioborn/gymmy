@@ -32,6 +32,8 @@ function toTitleCase(str: string) {
     return str.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
 }
 
+const glow = { background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' } as const;
+
 export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSuccess }: { endpoint?: string; onSuccess?: () => void }) {
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
@@ -105,14 +107,15 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
         }
     };
 
-    const inputCls = "w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent placeholder:text-slate-400 transition";
-    const labelCls = "block text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-1";
+    const inputCls = "w-full border border-white/10 rounded-xl px-3 py-2.5 bg-white/[0.04] text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 placeholder:text-white/25 transition";
+    const labelCls = "block text-[11px] text-white/40 font-semibold uppercase tracking-wide mb-1";
     const selectCls = `${inputCls} appearance-none`;
+    const optionCls = "bg-[#1a1a1a] text-white";
 
     const SectionHeader = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-        <div className="px-5 py-3 border-b border-slate-100">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</p>
-            {subtitle && <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>}
+        <div className="px-5 py-3 border-b border-white/10">
+            <p className="text-xs font-bold text-white uppercase tracking-widest">{title}</p>
+            {subtitle && <p className="text-[11px] text-white/40 mt-0.5">{subtitle}</p>}
         </div>
     );
 
@@ -120,7 +123,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
         <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Datos básicos */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={glow}>
                 <SectionHeader title="Datos básicos" />
                 <div className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -150,16 +153,16 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
                             <label className={labelCls}>Fecha de nacimiento</label>
                             <div className="grid grid-cols-3 gap-2">
                                 <select value={diaNac} onChange={e => setDiaNac(e.target.value)} autoComplete="off" className={selectCls}>
-                                    <option value="">Día</option>
-                                    {DIAS_MES.map(d => <option key={d} value={String(d)}>{d}</option>)}
+                                    <option value="" className={optionCls}>Día</option>
+                                    {DIAS_MES.map(d => <option key={d} value={String(d)} className={optionCls}>{d}</option>)}
                                 </select>
                                 <select value={mesNac} onChange={e => setMesNac(e.target.value)} autoComplete="off" className={selectCls}>
-                                    <option value="">Mes</option>
-                                    {MESES.map(m => <option key={m} value={m}>{m}</option>)}
+                                    <option value="" className={optionCls}>Mes</option>
+                                    {MESES.map(m => <option key={m} value={m} className={optionCls}>{m}</option>)}
                                 </select>
                                 <select value={anioNac} onChange={e => setAnioNac(e.target.value)} autoComplete="off" className={selectCls}>
-                                    <option value="">Año</option>
-                                    {ANIOS.map(a => <option key={a} value={String(a)}>{a}</option>)}
+                                    <option value="" className={optionCls}>Año</option>
+                                    {ANIOS.map(a => <option key={a} value={String(a)} className={optionCls}>{a}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -180,7 +183,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
                             {(['mañana', 'siesta', 'tarde'] as const).map(h => (
                                 <button key={h} type="button"
                                     onClick={() => setHorario(horario === h ? '' : h)}
-                                    className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all capitalize ${horario === h ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                                    className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all capitalize ${horario === h ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white/[0.04] border-white/10 text-white/50 hover:border-white/20'}`}>
                                     {h}
                                 </button>
                             ))}
@@ -190,22 +193,22 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
             </div>
 
             {/* Objetivo */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={glow}>
                 <SectionHeader title="Objetivo" />
                 <div className="p-5 space-y-2.5">
                     {AREAS.map(a => {
                         const sel = area === a.value;
                         return (
                             <button key={a.value} type="button" onClick={() => setArea(sel ? '' : a.value)}
-                                className={`w-full text-left rounded-xl border-2 px-4 py-3 transition-all ${sel ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}>
+                                className={`w-full text-left rounded-xl border-2 px-4 py-3 transition-all ${sel ? 'border-emerald-400/60 bg-emerald-400/10' : 'border-white/10 bg-white/[0.04] hover:border-white/20'}`}>
                                 <div className="flex items-center gap-3">
                                     <span className="text-xl leading-none">{a.emoji}</span>
                                     <div className="min-w-0 flex-1">
-                                        <p className={`font-bold text-sm ${sel ? 'text-emerald-700' : 'text-slate-800'}`}>{a.label}</p>
-                                        <p className="text-slate-500 text-xs mt-0.5 leading-snug">{a.desc}</p>
+                                        <p className={`font-bold text-sm ${sel ? 'text-emerald-300' : 'text-white'}`}>{a.label}</p>
+                                        <p className="text-white/40 text-xs mt-0.5 leading-snug">{a.desc}</p>
                                     </div>
-                                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${sel ? 'border-emerald-500' : 'border-slate-300'}`}>
-                                        {sel && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${sel ? 'border-emerald-400' : 'border-white/20'}`}>
+                                        {sel && <div className="w-2 h-2 rounded-full bg-emerald-400" />}
                                     </div>
                                 </div>
                             </button>
@@ -215,7 +218,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
             </div>
 
             {/* Condición física */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={glow}>
                 <SectionHeader title="Condición física" subtitle="¿Tiene alguna lesión, dolor o condición a tener en cuenta?" />
                 <div className="p-5 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -224,7 +227,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
                             return (
                                 <button key={op} type="button"
                                     onClick={() => { setTieneCondicion(sel ? '' : op); if (op === 'no') setCondicionDetalle(''); }}
-                                    className={`py-3 rounded-xl border-2 text-sm font-bold transition-all ${sel ? (op === 'no' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-amber-500 border-amber-500 text-white') : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                                    className={`py-3 rounded-xl border-2 text-sm font-bold transition-all ${sel ? (op === 'no' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-amber-500 border-amber-500 text-white') : 'bg-white/[0.04] border-white/10 text-white/50 hover:border-white/20'}`}>
                                     {op === 'no' ? 'No' : 'Sí'}
                                 </button>
                             );
@@ -243,21 +246,21 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
             </div>
 
             {/* Nivel de experiencia */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={glow}>
                 <SectionHeader title="Nivel de experiencia" />
                 <div className="p-5 space-y-2.5">
                     {NIVELES.map(n => {
                         const sel = nivel === n.value;
                         return (
                             <button key={n.value} type="button" onClick={() => setNivel(sel ? '' : n.value)}
-                                className={`w-full text-left rounded-xl border-2 px-4 py-3 transition-all ${sel ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}>
+                                className={`w-full text-left rounded-xl border-2 px-4 py-3 transition-all ${sel ? 'border-emerald-400/60 bg-emerald-400/10' : 'border-white/10 bg-white/[0.04] hover:border-white/20'}`}>
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className={`font-bold text-sm ${sel ? 'text-emerald-700' : 'text-slate-800'}`}>{n.label}</p>
-                                        <p className="text-slate-500 text-xs mt-0.5">{n.desc}</p>
+                                        <p className={`font-bold text-sm ${sel ? 'text-emerald-300' : 'text-white'}`}>{n.label}</p>
+                                        <p className="text-white/40 text-xs mt-0.5">{n.desc}</p>
                                     </div>
-                                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${sel ? 'border-emerald-500' : 'border-slate-300'}`}>
-                                        {sel && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${sel ? 'border-emerald-400' : 'border-white/20'}`}>
+                                        {sel && <div className="w-2 h-2 rounded-full bg-emerald-400" />}
                                     </div>
                                 </div>
                             </button>
@@ -267,7 +270,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
             </div>
 
             {/* Días y fecha de inicio */}
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={glow}>
                 <SectionHeader title="Entrenamiento" subtitle="Opcional" />
                 <div className="p-5 space-y-4">
                     <div>
@@ -275,7 +278,7 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
                         <div className="grid grid-cols-4 gap-2">
                             {DIAS_SEMANA.map(d => (
                                 <button key={d} type="button" onClick={() => setDiasSemana(diasSemana === d ? 0 : d)}
-                                    className={`py-3 rounded-xl border-2 text-base font-bold transition-all ${diasSemana === d ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                                    className={`py-3 rounded-xl border-2 text-base font-bold transition-all ${diasSemana === d ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white/[0.04] border-white/10 text-white/50 hover:border-white/20'}`}>
                                     {d}
                                 </button>
                             ))}
@@ -283,13 +286,13 @@ export default function AlumnoRegistroForm({ endpoint = '/api/alumnos', onSucces
                     </div>
                     <div>
                         <label className={labelCls}>Fecha de inicio</label>
-                        <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className={inputCls} />
+                        <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className={inputCls} style={{ colorScheme: 'dark' }} />
                     </div>
                 </div>
             </div>
 
             <button type="submit" disabled={saving}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 text-white font-semibold rounded-2xl transition shadow-sm">
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-white font-semibold rounded-2xl transition shadow-sm">
                 {saving ? 'Registrando...' : 'Registrar Alumno'}
             </button>
 
