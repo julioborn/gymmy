@@ -557,6 +557,17 @@ export default function HomePage() {
                                 </div>
                             )}
 
+                            {/* Cuotas del mes */}
+                            {data && (
+                                <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Banknote size={12} className="text-emerald-400" />
+                                        <span className="text-emerald-400/80 text-xs font-semibold capitalize">Cuotas · {mesLabel}</span>
+                                    </div>
+                                    <span className="text-emerald-400 font-black text-base tabular-nums">{data.pagados}/{data.totalAlumnos}</span>
+                                </div>
+                            )}
+
                             {/* Summary badges */}
                             {diaActivo && totalActivo > 0 && (
                                 <div className="flex flex-col gap-1.5">
