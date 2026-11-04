@@ -901,20 +901,20 @@ export default function HomePage() {
                                     )}
                                 </div>
 
-                                {/* Nav tiles — cuadraditos en fila, icono + label */}
-                                <div className="flex gap-2">
+                                {/* Nav tiles — de a dos en mobile, en fila desde sm+ */}
+                                <div className="grid grid-cols-2 sm:flex gap-2">
                                     {visibleCards.map((c) => (
                                         <Link key={c.href} href={c.href}
-                                            className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
+                                            className="sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
                                             <span className="opacity-90">{c.icon}</span>
-                                            <span className="text-[9px] font-semibold uppercase tracking-wide text-center leading-tight">{c.label}</span>
+                                            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight">{c.label}</span>
                                         </Link>
                                     ))}
                                     {esProfesor && session.user?.id && (
                                         <Link href="/mi-perfil#plan"
-                                            className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
+                                            className="sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
                                             <FileText size={18} className="opacity-90" />
-                                            <span className="text-[9px] font-semibold uppercase tracking-wide text-center leading-tight">Mi plan</span>
+                                            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight">Mi plan</span>
                                         </Link>
                                     )}
                                 </div>
