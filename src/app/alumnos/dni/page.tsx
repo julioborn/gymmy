@@ -566,6 +566,18 @@ export default function RegistrarAsistenciaPorDNIPage() {
                     )}
                 </div>
 
+                {/* Aviso sutil de vencimiento de cuota */}
+                <p className="flex-none text-center" style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(255,255,255,0.32)',
+                    marginTop: -4,
+                }}>
+                    Abonar antes del 10 sin recargo
+                </p>
+
                 {/* Display DNI — pantalla digital */}
                 <div
                     className="rounded-2xl flex-none relative overflow-hidden flex items-center justify-center"
