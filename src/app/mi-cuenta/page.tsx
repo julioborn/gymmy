@@ -724,11 +724,11 @@ export default function MiCuentaPage() {
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Plan activo</p>
+                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Plan activo</p>
                                             </div>
                                             <p className="text-white font-bold text-base leading-snug truncate">{planEj.nombre}</p>
                                             <div className="flex items-end gap-1.5 mb-3 mt-2">
-                                                <p className="font-black text-4xl leading-none tabular-nums text-emerald-400">
+                                                <p className="font-black text-4xl leading-none tabular-nums text-white">
                                                     <NumberTicker value={planEjDone} />
                                                 </p>
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
@@ -751,10 +751,10 @@ export default function MiCuentaPage() {
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
                                                     <Dumbbell size={16} className="text-white" />
                                                 </div>
-                                                <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Plan activo</p>
+                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Plan activo</p>
                                             </div>
                                             <div className="flex items-end gap-1.5 mb-3">
-                                                <p className="text-emerald-400 font-black text-4xl leading-none tabular-nums">
+                                                <p className="text-white font-black text-4xl leading-none tabular-nums">
                                                     <NumberTicker value={asistenciasEnPlan} />
                                                 </p>
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
@@ -776,7 +776,7 @@ export default function MiCuentaPage() {
                                             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, #fb923c)` }}>
                                                 <CalendarCheck size={16} className="text-white" />
                                             </div>
-                                            <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Asistencias</p>
+                                            <p className="text-xs font-bold text-white uppercase tracking-wide">Asistencias</p>
                                         </div>
                                         <p className="text-white font-black text-4xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
@@ -837,11 +837,19 @@ export default function MiCuentaPage() {
                                 </BlurFade>
                             )}
 
-                            {/* Últimas asistencias */}
+                            {/* Asistencias semana */}
                             {(() => {
-                                const ultimas = [...alumno.asistencia].filter(a=>a.presente)
-                                    .sort((a,b)=>new Date(b.fecha).getTime()-new Date(a.fecha).getTime()).slice(0,4);
-                                if (!ultimas.length) return null;
+                                const hoy = new Date();
+                                const dow = hoy.getDay();
+                                const diffLunes = dow === 0 ? -6 : 1 - dow;
+                                const lunes = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + diffLunes, 0, 0, 0, 0);
+                                const domingo = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + 6, 23, 59, 59, 999);
+                                const semana = [...alumno.asistencia].filter(a => {
+                                    if (!a.presente) return false;
+                                    const f = new Date(a.fecha);
+                                    return f >= lunes && f <= domingo;
+                                }).sort((a,b)=>new Date(a.fecha).getTime()-new Date(b.fecha).getTime()).slice(0,5);
+                                if (!semana.length) return null;
                                 return (
                                     <BlurFade delay={0.2}>
                                         <div className="relative rounded-2xl overflow-hidden"
@@ -851,21 +859,21 @@ export default function MiCuentaPage() {
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
                                                         <Clock3 size={14} className="text-white" />
                                                     </div>
-                                                    <p className="font-bold text-base text-white">Últimas asistencias</p>
+                                                    <p className="font-bold text-base text-white uppercase tracking-wide">Asistencias semana</p>
                                                 </div>
                                                 <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-400">
                                                     Ver todas <ChevronRight size={15} />
                                                 </button>
                                             </div>
                                             <div className="divide-y divide-white/[0.06]">
-                                                {ultimas.map(a => {
+                                                {semana.map(a => {
                                                     const d = new Date(a.fecha);
                                                     const color = ACTIVIDAD_COLOR[a.actividad] || '#6b7280';
                                                     return (
                                                         <div key={a._id} className="flex items-center gap-3 px-4 py-3.5">
-                                                            <div className="w-11 shrink-0">
-                                                                <p className="text-white font-bold text-lg leading-none">{d.getDate()}</p>
-                                                                <p className="text-white/40 text-xs font-semibold uppercase leading-none mt-1">{MESES_CORTO[d.getMonth()]}</p>
+                                                            <div className="w-20 shrink-0">
+                                                                <p className="text-white font-bold text-sm leading-none capitalize">{d.toLocaleDateString('es-AR',{weekday:'long'})}</p>
+                                                                <p className="text-white/40 text-xs font-semibold leading-none mt-1.5">{d.getDate()} {MESES_CORTO[d.getMonth()]}</p>
                                                             </div>
                                                             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${color}20` }}>
                                                                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:color }} />
@@ -918,22 +926,22 @@ export default function MiCuentaPage() {
                     {tab === 'historial' && (
                         <div className="space-y-4">
                             <BlurFade delay={0.05}>
-                                <div className="rounded-2xl p-4"
+                                <div className="rounded-2xl p-5"
                                     style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <div className="flex items-center justify-between mb-5">
-                                        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 transition-colors">
-                                            <ChevronLeft size={18} />
+                                    <div className="flex items-center justify-between mb-6">
+                                        <button onClick={prevMonth} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 transition-colors">
+                                            <ChevronLeft size={20} />
                                         </button>
-                                        <span className="text-white font-bold capitalize">{MESES[calMonth]} {calYear}</span>
+                                        <span className="text-white font-bold text-lg capitalize">{MESES[calMonth]} {calYear}</span>
                                         <button onClick={nextMonth} disabled={calYear===now.getFullYear()&&calMonth===now.getMonth()}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 transition-colors disabled:opacity-25">
-                                            <ChevronRight size={18} />
+                                            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 transition-colors disabled:opacity-25">
+                                            <ChevronRight size={20} />
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-7 mb-2">
-                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-white/40 text-[10px] font-bold py-1">{d}</div>)}
+                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-white text-xs font-bold py-1">{d}</div>)}
                                     </div>
-                                    <div className="grid grid-cols-7 gap-y-1">
+                                    <div className="grid grid-cols-7 gap-y-1.5">
                                         {calDays.map((day, i) => {
                                             if (!day) return <div key={`e-${i}`} />;
                                             const key = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
@@ -946,36 +954,35 @@ export default function MiCuentaPage() {
                                             const planBoundary = planBoundaryMap[key];
                                             return (
                                                 <button key={key} onClick={()=>setSelectedDay(isSelected?null:key)}
-                                                    className={cn('relative flex flex-col items-center py-1.5 rounded-xl transition-all', {
+                                                    className={cn('relative flex flex-col items-center py-2 rounded-xl transition-all', {
                                                         'bg-white/15': isSelected,
                                                         'bg-lime-400/10 hover:bg-lime-400/15': !isSelected && planDay==='active',
                                                         'bg-violet-400/10 hover:bg-violet-400/15': !isSelected && planDay==='completed',
                                                         'hover:bg-white/5': !isSelected && !planDay && hasData,
                                                         'cursor-default': !isSelected && !planDay && !hasData,
                                                     })}>
-                                                    <span className={cn('text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full', {
+                                                    <span className={cn('text-sm font-semibold leading-none mb-1 w-8 h-8 flex items-center justify-center rounded-full', {
                                                         'bg-lime-400 text-black': isToday,
                                                         'bg-lime-500 text-white': !isToday && planBoundary==='start',
                                                         'bg-violet-500 text-white': !isToday && planBoundary==='end',
-                                                        'text-white': !isToday && !planBoundary && (hasData||planDay),
-                                                        'text-white/25': !isToday && !planBoundary && !hasData && !planDay,
+                                                        'text-white': !isToday && !planBoundary,
                                                     })}>
                                                         {day}
                                                     </span>
-                                                    <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
-                                                        {asists.map((a,idx) => <span key={idx} className={cn('w-1.5 h-1.5 rounded-full', ACTIVIDAD_DOT[a.actividad]||'bg-white/30')} />)}
-                                                        {pagos.length>0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                                                    <div className="flex gap-0.5 flex-wrap justify-center max-w-[32px]">
+                                                        {asists.map((a,idx) => <span key={idx} className={cn('w-2 h-2 rounded-full', ACTIVIDAD_DOT[a.actividad]||'bg-white/30')} />)}
+                                                        {pagos.length>0 && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
                                                     </div>
                                                 </button>
                                             );
                                         })}
                                     </div>
                                     <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/10 flex-wrap gap-y-2">
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white/40 text-xs">Musculación</span></div>
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/40 text-xs">Intermitente</span></div>
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-white/40 text-xs">Pago</span></div>
-                                        {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-lime-400/15 border border-lime-400/30" /><span className="text-white/40 text-xs">Plan activo</span></div>}
-                                        {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-violet-400/15 border border-violet-400/30" /><span className="text-white/40 text-xs">Plan anterior</span></div>}
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white text-xs">Musculación</span></div>
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white text-xs">Intermitente</span></div>
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-white text-xs">Pago</span></div>
+                                        {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-lime-400/15 border border-lime-400/30" /><span className="text-white text-xs">Plan activo</span></div>}
+                                        {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-violet-400/15 border border-violet-400/30" /><span className="text-white text-xs">Plan anterior</span></div>}
                                     </div>
                                 </div>
                             </BlurFade>
@@ -1027,7 +1034,7 @@ export default function MiCuentaPage() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="rounded-2xl p-4"
                                         style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
-                                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Asistencias</p>
+                                        <p className="text-[9px] font-bold text-white uppercase tracking-widest mb-1">Asistencias</p>
                                         <p className="text-2xl font-bold text-white tabular-nums">
                                             {Object.entries(asistenciasMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,a])=>s+a.length,0)}
                                         </p>
@@ -1035,7 +1042,7 @@ export default function MiCuentaPage() {
                                     </div>
                                     <div className="rounded-2xl p-4"
                                         style={{ background: 'linear-gradient(165deg, rgba(245,158,11,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(245,158,11,0.32)', boxShadow: '0 0 0 1px rgba(245,158,11,0.05) inset, 0 10px 26px -9px rgba(245,158,11,0.3)' }}>
-                                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Pagado</p>
+                                        <p className="text-[9px] font-bold text-white uppercase tracking-widest mb-1">Pagado</p>
                                         <p className="text-2xl font-bold text-white tabular-nums">
                                             ${Object.entries(pagosMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,ps])=>s+ps.reduce((x,p)=>x+p.tarifa,0),0).toLocaleString('es-AR')}
                                         </p>
