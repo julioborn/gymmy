@@ -982,69 +982,6 @@ export default function MiCuentaPage() {
                                 </div>
                             </BlurFade>
 
-                            {selectedDay && (selectedAsistencias.length>0 || selectedPagos.length>0 || planBoundaryMap[selectedDay]) && (
-                                <BlurFade delay={0}>
-                                    <div className="rounded-2xl p-4 space-y-3"
-                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <p className="font-bold text-white capitalize text-sm">
-                                            {new Date(selectedDay+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}
-                                        </p>
-                                        {planBoundaryMap[selectedDay]==='start' && (
-                                            <div className="flex items-center gap-2 bg-lime-400/10 border border-lime-400/25 rounded-xl px-3 py-2.5">
-                                                <span className="w-2 h-2 rounded-full bg-lime-400 shrink-0" />
-                                                <span className="text-lime-300 text-sm font-semibold">Inicio de plan{planEj?.nombre?` — ${planEj.nombre}`:''}</span>
-                                            </div>
-                                        )}
-                                        {planBoundaryMap[selectedDay]==='end' && (
-                                            <div className="flex items-center gap-2 bg-violet-400/10 border border-violet-400/25 rounded-xl px-3 py-2.5">
-                                                <span className="w-2 h-2 rounded-full bg-violet-400 shrink-0" />
-                                                <span className="text-violet-300 text-sm font-semibold">Fin de plan</span>
-                                            </div>
-                                        )}
-                                        {selectedAsistencias.map(a => (
-                                            <div key={a._id} className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={cn('w-2 h-2 rounded-full shrink-0', ACTIVIDAD_DOT[a.actividad]||'bg-white/30')} />
-                                                    <span className="text-white/80 text-sm font-semibold">{a.actividad}</span>
-                                                </div>
-                                                <span className="text-white/40 text-xs tabular-nums">
-                                                    {new Date(a.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
-                                                </span>
-                                            </div>
-                                        ))}
-                                        {selectedPagos.map(p => (
-                                            <div key={p._id} className="flex items-center justify-between bg-emerald-400/10 border border-emerald-400/25 rounded-xl px-3 py-2.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                                                    <span className="text-emerald-300 text-sm font-semibold capitalize">Pago — {p.mes}</span>
-                                                </div>
-                                                <span className="text-emerald-300 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </BlurFade>
-                            )}
-
-                            <BlurFade delay={0.1}>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="rounded-2xl p-4"
-                                        style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
-                                        <p className="text-[9px] font-bold text-white uppercase tracking-widest mb-1">Asistencias</p>
-                                        <p className="text-2xl font-bold text-white tabular-nums">
-                                            {Object.entries(asistenciasMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,a])=>s+a.length,0)}
-                                        </p>
-                                        <p className="text-xs text-white/40 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
-                                    </div>
-                                    <div className="rounded-2xl p-4"
-                                        style={{ background: 'linear-gradient(165deg, rgba(245,158,11,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(245,158,11,0.32)', boxShadow: '0 0 0 1px rgba(245,158,11,0.05) inset, 0 10px 26px -9px rgba(245,158,11,0.3)' }}>
-                                        <p className="text-[9px] font-bold text-white uppercase tracking-widest mb-1">Pagado</p>
-                                        <p className="text-2xl font-bold text-white tabular-nums">
-                                            ${Object.entries(pagosMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,ps])=>s+ps.reduce((x,p)=>x+p.tarifa,0),0).toLocaleString('es-AR')}
-                                        </p>
-                                        <p className="text-xs text-white/40 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
-                                    </div>
-                                </div>
-                            </BlurFade>
                         </div>
                     )}
 
