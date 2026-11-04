@@ -753,6 +753,7 @@ export default function MiCuentaPage() {
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
                                                 <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{planEjTotal}</p>
                                             </div>
+                                            <p className="text-white/40 text-xs font-semibold -mt-2 mb-3">días de plan</p>
                                             <div className="mt-auto">
                                                 <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-white/10" />
                                             </div>
@@ -781,6 +782,7 @@ export default function MiCuentaPage() {
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
                                                 <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{plan.duracion}</p>
                                             </div>
+                                            <p className="text-white/40 text-xs font-semibold -mt-2 mb-3">días de plan</p>
                                             <div className="mt-auto">
                                                 <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-white/10" />
                                             </div>
@@ -907,7 +909,7 @@ export default function MiCuentaPage() {
                                                                     </span>
                                                                 </>
                                                             ) : (
-                                                                <p className="flex-1 text-white/30 font-semibold text-sm">Sin asistencia</p>
+                                                                <div className="flex-1" />
                                                             )}
                                                         </div>
                                                     );
