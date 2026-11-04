@@ -796,6 +796,7 @@ export default function MiCuentaPage() {
                                             </div>
                                             <p className="text-xs font-bold text-white uppercase tracking-wide">Asistencias</p>
                                         </div>
+                                        <p className="text-white/55 text-[11px] font-semibold capitalize -mt-1 mb-2">{mesActual}</p>
                                         <p className="text-white font-black text-4xl leading-none tabular-nums mb-auto">
                                             <NumberTicker value={asistenciasEsteMes.length} />
                                         </p>
