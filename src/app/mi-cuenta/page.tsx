@@ -8,7 +8,7 @@ import {
     ChartBar, Clock3, Dumbbell, EyeOff,
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
-    ChevronLeft, ChevronDown, Banknote, DollarSign, CalendarCheck,
+    ChevronLeft, ChevronDown, Banknote, CalendarCheck,
     Users, UserPlus, Search, Wallet, Landmark, Settings, Bell,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
@@ -147,7 +147,6 @@ export default function MiCuentaPage() {
     const [pagoResult, setPagoResult] = useState<'ok'|'error'|'pendiente'|null>(null);
     const [aliasGimnasio, setAliasGimnasio] = useState('');
     const [tarifas, setTarifas] = useState<{ dias: number; valor: number }[]>([]);
-    const [preciosExpanded, setPreciosExpanded] = useState(false);
     const [aliasCopied, setAliasCopied] = useState(false);
     const [planEj, setPlanEj] = useState<PlanEjAsignado | null>(null);
     const [loadingPlan, setLoadingPlan] = useState(false);
@@ -521,6 +520,20 @@ export default function MiCuentaPage() {
         ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={16} /> }] : []),
     ];
 
+    const handleVerPrecios = () => {
+        const filas = tarifas.map(t => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <span style="color:rgba(255,255,255,0.7);font-size:0.9rem;">${t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
+                <span style="color:#fbbf24;font-weight:700;font-size:0.9rem;">$${t.valor.toLocaleString('es-AR')}</span>
+            </div>`).join('');
+        Swal.fire({
+            ...swalBase,
+            title: 'Precios de cuotas',
+            html: `<div style="text-align:left;">${filas}</div>`,
+            confirmButtonText: 'Cerrar',
+        });
+    };
+
     const handleAjustesPerfil = async () => {
         const { value: nuevoEmail } = await Swal.fire({
             ...swalBase,
@@ -639,6 +652,11 @@ export default function MiCuentaPage() {
                                     )}>
                                         {exenta ? 'Sin cuota' : pagoEsteMes ? `✓ Pagó $${pagoEsteMes.tarifa.toLocaleString('es-AR')}` : '✗ Debe la cuota'}
                                     </span>
+                                    {tarifas.length > 0 && (
+                                        <button onClick={handleVerPrecios} className="text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-2 transition-colors">
+                                            Ver precios
+                                        </button>
+                                    )}
                                 </div>
                             </BlurFade>
 
@@ -859,7 +877,7 @@ export default function MiCuentaPage() {
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
                                                         <Clock3 size={14} className="text-white" />
                                                     </div>
-                                                    <p className="font-bold text-base text-white uppercase tracking-wide">Asistencias semana</p>
+                                                    <p className="font-bold text-xs text-white uppercase tracking-wide">Asistencias semana</p>
                                                 </div>
                                                 <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-400">
                                                     Ver todas <ChevronRight size={15} />
@@ -891,34 +909,6 @@ export default function MiCuentaPage() {
                                 );
                             })()}
 
-                            {/* Precios de cuotas */}
-                            {tarifas.length > 0 && (
-                                <BlurFade delay={0.25}>
-                                    <div className="rounded-2xl overflow-hidden"
-                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <button onClick={() => setPreciosExpanded(v => !v)} className="w-full flex items-center gap-3 px-4 py-4 text-left">
-                                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                                                <DollarSign size={16} className="text-white" />
-                                            </div>
-                                            <p className="flex-1 min-w-0 text-white font-bold text-base">Cuotas</p>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${preciosExpanded ? 'rotate-180' : ''}`}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
-                                        {preciosExpanded && (
-                                            <div className="border-t border-white/10 divide-y divide-white/[0.06]">
-                                                {tarifas.map(t => (
-                                                    <div key={t.dias} className="flex items-center justify-between px-4 py-3.5">
-                                                        <span className="text-white/70 text-base font-medium">{t.dias === 1 ? 'Precio de una sesión' : `${t.dias} días por semana`}</span>
-                                                        <span className="text-amber-400 font-bold text-base tabular-nums">${t.valor.toLocaleString('es-AR')}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </BlurFade>
-                            )}
-
                         </div>
                     )}
 
@@ -939,7 +929,7 @@ export default function MiCuentaPage() {
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-7 mb-2">
-                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-white text-xs font-bold py-1">{d}</div>)}
+                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-orange-400 text-xs font-bold py-1">{d}</div>)}
                                     </div>
                                     <div className="grid grid-cols-7 gap-y-1.5">
                                         {calDays.map((day, i) => {
