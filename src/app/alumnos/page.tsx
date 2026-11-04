@@ -425,6 +425,14 @@ export default function ListaAlumnosPage() {
                             <UserPlus size={15} />
                             Registrar
                         </button>
+                        {session?.user?.role === 'recepcion' && (
+                            <div className="flex flex-col items-center justify-center gap-0.5 px-4 py-2 bg-emerald-400/10 border border-emerald-400/25 rounded-2xl">
+                                <span className="text-emerald-300/70 text-[10px] font-semibold uppercase tracking-wide capitalize">{new Date().toLocaleDateString('es-AR', { month: 'long' })}</span>
+                                <span className="text-emerald-300 text-sm font-bold tabular-nums">
+                                    {alumnos.filter(a => verificarPagoMesActual(a.pagos, a.exentoCuota)).length}/{alumnos.length} alumnos
+                                </span>
+                            </div>
+                        )}
                         {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                             <>
                                 <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>
