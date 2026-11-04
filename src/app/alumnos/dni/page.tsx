@@ -12,7 +12,7 @@ import { estaAlDia, getMesActual } from '@/lib/pagos';
 // Modo de prueba de pantallas: escribiendo 11/22/33 y tocando "Registrar" se dispara
 // el feedback correspondiente (pagó / aviso amarillo / debe) con datos ficticios, sin
 // pegarle a la API ni tocar asistencias reales. Para activar/desactivar, cambiar este flag.
-const DEBUG_SCREENS = false;
+const DEBUG_SCREENS = true;
 
 const DEFAULT_LOGO_URL = 'https://res.cloudinary.com/dwz4lcvya/image/upload/v1787862453/DD63C2C7-F086-4C9E-9AB7-BF21F9C51685_h8oera.png';
 
@@ -529,6 +529,16 @@ export default function RegistrarAsistenciaPorDNIPage() {
                             </>
                         )}
                     </motion.div>
+
+                    {feedback.type !== 'not_found' && (
+                        <motion.p
+                            className="absolute bottom-8 sm:bottom-10 left-0 right-0 text-center text-white/55 font-semibold uppercase px-6"
+                            style={{ fontSize: 13, letterSpacing: '0.08em' }}
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }}
+                        >
+                            Abonar antes del 10 sin recargo
+                        </motion.p>
+                    )}
                 </motion.div>
             )}
             </AnimatePresence>
@@ -565,18 +575,6 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         <span className="text-white font-bold text-3xl tracking-tight">{gymNombre}</span>
                     )}
                 </div>
-
-                {/* Aviso sutil de vencimiento de cuota */}
-                <p className="flex-none text-center" style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.32)',
-                    marginTop: -4,
-                }}>
-                    Abonar antes del 10 sin recargo
-                </p>
 
                 {/* Display DNI — pantalla digital */}
                 <div
