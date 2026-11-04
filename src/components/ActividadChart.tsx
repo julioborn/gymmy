@@ -15,9 +15,10 @@ function hexToRgba(hex: string, alpha: number) {
 interface Props {
     data: { actividad: string; cantidad: number }[];
     colors?: [string, string];
+    scales?: any;
 }
 
-export default function ActividadChart({ data, colors = ['#10b981', '#f97316'] }: Props) {
+export default function ActividadChart({ data, colors = ['#10b981', '#f97316'], scales }: Props) {
     return (
         <Bar
             data={{
@@ -39,7 +40,7 @@ export default function ActividadChart({ data, colors = ['#10b981', '#f97316'] }
                 plugins: {
                     legend: { display: false },
                 },
-                scales: {
+                scales: scales ?? {
                     y: { beginAtZero: true, ticks: { precision: 0 } },
                     x: {},
                 },

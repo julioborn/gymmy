@@ -5,11 +5,54 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { motion, animate } from 'framer-motion';
+import { Wallet, TrendingDown, Scale, Banknote, Landmark, Plus } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { swalBase, swalDanger, swalNotify } from '@/utils/swalConfig';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+// ─── Magic UI: entrance + counter ──────────────────────────────────────────
+function NumberTicker({ value }: { value: number }) {
+    const [display, setDisplay] = useState(0);
+    useEffect(() => {
+        const ctrl = animate(0, value, {
+            duration: 1,
+            ease: [0.16, 1, 0.3, 1],
+            onUpdate(v) { setDisplay(Math.floor(v)); },
+        });
+        return ctrl.stop;
+    }, [value]);
+    return <>{display.toLocaleString('es-ES')}</>;
+}
+function BlurFade({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
+    return (
+        <motion.div
+            className={className}
+            initial={{ opacity: 0, filter: 'blur(8px)', y: 12 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+        >
+            {children}
+        </motion.div>
+    );
+}
+function glassStyle(rgb: string, intensity: 'neutral' | 'glow' = 'glow'): React.CSSProperties {
+    if (intensity === 'neutral') {
+        return { background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' };
+    }
+    return {
+        background: `linear-gradient(165deg, rgba(${rgb},0.09), rgba(17,17,17,0.9))`,
+        border: `1px solid rgba(${rgb},0.32)`,
+        boxShadow: `0 0 0 1px rgba(${rgb},0.05) inset, 0 10px 26px -9px rgba(${rgb},0.34)`,
+    };
+}
+const chartDarkScales = {
+    y: { beginAtZero: true, ticks: { precision: 0, color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.07)' } },
+    x: { ticks: { color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+};
+const chartDarkLegend = { labels: { color: 'rgba(255,255,255,0.6)', boxWidth: 12, font: { size: 11 } } };
 
 type Pago = {
     mes: string;
@@ -509,206 +552,247 @@ const ControlFinanciero = () => {
     const resultado = totalIngresosCombinados - totalGastos;
 
     const chevronSvg = (
-        <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
     );
 
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)]';
-    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
+    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
+    const editBtn = 'p-1.5 bg-white/10 hover:bg-white/15 text-white/60 rounded-lg transition mr-1';
+    const delBtn = 'p-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-400 rounded-lg transition';
 
     return (
-        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-5">
+        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
 
             {/* Banner */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25" style={{ background: acento }} />
-                <div className="relative flex items-start justify-between gap-3 flex-wrap">
-                    <div>
-                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Gestión económica</p>
-                        <h1 className="text-xl font-bold text-white mt-0.5">Finanzas</h1>
-                        <div className="mt-2.5">
-                            <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-                                {selectedMonth === -1 ? `Año ${selectedYear}` : `${meses[selectedMonth]} ${selectedYear}`}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <div className="relative">
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                                className="appearance-none bg-white/10 text-slate-200 text-xs font-semibold rounded-xl px-3 py-1.5 pr-7 focus:outline-none cursor-pointer"
-                            >
-                                {availableYears.map((year) => <option key={year} value={year} className="bg-slate-800 text-white">{year}</option>)}
-                            </select>
-                            {chevronSvg}
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                                className="appearance-none bg-white/10 text-slate-200 text-xs font-semibold rounded-xl px-3 py-1.5 pr-7 focus:outline-none cursor-pointer"
-                            >
-                                <option value={-1} className="bg-slate-800 text-white">Todos</option>
-                                {meses.map((m, i) => <option key={i} value={i} className="bg-slate-800 text-white">{m}</option>)}
-                            </select>
-                            {chevronSvg}
+            <BlurFade delay={0}>
+                <div className="rounded-[2rem] p-[1.5px]" style={{ background: `linear-gradient(135deg, ${acento} 0%, ${acento2} 100%)`, boxShadow: `0 0 28px -9px ${acento}50, 0 0 36px -14px ${acento2}38` }}>
+                    <div className="relative bg-[#111] rounded-[30px] px-5 pt-5 pb-5 overflow-hidden">
+                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                        <div className="pointer-events-none absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-20" style={{ background: acento }} />
+                        <div className="pointer-events-none absolute -bottom-8 -left-4 w-40 h-40 rounded-full blur-3xl opacity-15" style={{ background: acento2 }} />
+                        <div className="relative flex items-start justify-between gap-3 flex-wrap">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                                    <Wallet size={20} className="text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest">Gestión económica</p>
+                                    <h1 className="text-xl font-bold text-white leading-tight">Finanzas</h1>
+                                    <span className="inline-block mt-1.5 bg-white/10 ring-1 ring-white/10 text-white/70 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                                        {selectedMonth === -1 ? `Año ${selectedYear}` : `${meses[selectedMonth]} ${selectedYear}`}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="relative">
+                                    <select
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                        className="appearance-none bg-white/10 text-white/80 text-xs font-semibold rounded-xl px-3 py-1.5 pr-7 focus:outline-none cursor-pointer"
+                                    >
+                                        {availableYears.map((year) => <option key={year} value={year} className="bg-slate-800 text-white">{year}</option>)}
+                                    </select>
+                                    {chevronSvg}
+                                </div>
+                                <div className="relative">
+                                    <select
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                                        className="appearance-none bg-white/10 text-white/80 text-xs font-semibold rounded-xl px-3 py-1.5 pr-7 focus:outline-none cursor-pointer"
+                                    >
+                                        <option value={-1} className="bg-slate-800 text-white">Todos</option>
+                                        {meses.map((m, i) => <option key={i} value={i} className="bg-slate-800 text-white">{m}</option>)}
+                                    </select>
+                                    {chevronSvg}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </BlurFade>
 
             {/* KPI Summary */}
-            <div className="grid grid-cols-3 gap-2 lg:gap-4">
-                <div className={`${card} p-3 lg:p-5`}>
-                    <p className={`${lbl} mb-1.5`}>Ingresos</p>
-                    <p className="text-base lg:text-2xl font-bold leading-tight text-emerald-600 break-all">${totalIngresosCombinados.toLocaleString('es-ES')}</p>
-                </div>
-                <div className={`${card} p-3 lg:p-5`}>
-                    <p className={`${lbl} mb-1.5`}>Gastos</p>
-                    <p className="text-base lg:text-2xl font-bold leading-tight text-red-500 break-all">${totalGastos.toLocaleString('es-ES')}</p>
-                </div>
-                <div className={`${card} p-3 lg:p-5`}>
-                    <p className={`${lbl} mb-1.5`}>Resultado</p>
-                    <p className={`text-base lg:text-2xl font-bold leading-tight break-all ${resultado >= 0 ? 'text-slate-800' : 'text-red-500'}`}>${resultado.toLocaleString('es-ES')}</p>
-                </div>
+            <div className="grid grid-cols-3 gap-2 lg:gap-3">
+                <BlurFade delay={0.05}>
+                    <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <TrendingDown size={12} className="text-emerald-400 rotate-180 shrink-0" />
+                            <p className={lbl}>Ingresos</p>
+                        </div>
+                        <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalIngresosCombinados} /></p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.1}>
+                    <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('239,68,68')}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <TrendingDown size={12} className="text-red-400 shrink-0" />
+                            <p className={lbl}>Gastos</p>
+                        </div>
+                        <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalGastos} /></p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.15}>
+                    <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle(resultado >= 0 ? '16,185,129' : '239,68,68')}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <Scale size={12} className={resultado >= 0 ? 'text-emerald-400 shrink-0' : 'text-red-400 shrink-0'} />
+                            <p className={lbl}>Resultado</p>
+                        </div>
+                        <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">${resultado.toLocaleString('es-ES')}</p>
+                    </div>
+                </BlurFade>
             </div>
 
             {/* Cuotas por método de pago */}
-            <div className="grid grid-cols-2 gap-2 lg:gap-4">
-                <div className={`${card} p-3 lg:p-5`}>
-                    <p className={`${lbl} mb-1.5`}>Cuotas en efectivo</p>
-                    <p className="text-base lg:text-2xl font-bold leading-tight text-emerald-600 break-all">${totalEfectivo.toLocaleString('es-ES')}</p>
-                </div>
-                <div className={`${card} p-3 lg:p-5`}>
-                    <p className={`${lbl} mb-1.5`}>Cuotas por transferencia</p>
-                    <p className="text-base lg:text-2xl font-bold leading-tight text-sky-600 break-all">${totalTransferencia.toLocaleString('es-ES')}</p>
-                </div>
+            <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                <BlurFade delay={0.2}>
+                    <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <Banknote size={12} className="text-emerald-400 shrink-0" />
+                            <p className={lbl}>Cuotas en efectivo</p>
+                        </div>
+                        <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalEfectivo} /></p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.25}>
+                    <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('14,165,233')}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <Landmark size={12} className="text-sky-400 shrink-0" />
+                            <p className={lbl}>Cuotas por transferencia</p>
+                        </div>
+                        <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalTransferencia} /></p>
+                    </div>
+                </BlurFade>
             </div>
 
             {/* Desktop: tables left, chart right */}
-            <div className="lg:grid lg:grid-cols-[1fr_420px] lg:gap-6 space-y-5 lg:space-y-0">
-                <div className="space-y-5">
+            <div className="lg:grid lg:grid-cols-[1fr_420px] lg:gap-4 space-y-4 lg:space-y-0">
+                <div className="space-y-4">
                     {/* Ingresos Adicionales */}
-                    <div className={`${card} overflow-hidden`}>
-                        <div className="px-4 py-3 flex items-center justify-between border-b border-slate-50">
-                            <div>
-                                <p className={lbl}>Ingresos adicionales</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Total: <span className="font-bold text-slate-700">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
+                    <BlurFade delay={0.3}>
+                        <div className="rounded-2xl overflow-hidden" style={glassStyle('0,0,0', 'neutral')}>
+                            <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
+                                <div>
+                                    <p className={lbl}>Ingresos adicionales</p>
+                                    <p className="text-xs text-white/40 mt-0.5">Total: <span className="font-bold text-white/70">${totalIngresosAdicionales.toLocaleString('es-ES')}</span></p>
+                                </div>
+                                <button onClick={handleAgregarIngreso} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
+                                    <Plus size={13} /> Agregar
+                                </button>
                             </div>
-                            <button onClick={handleAgregarIngreso} className="px-3 py-1.5 bg-[#111] hover:bg-zinc-800 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
-                                + Agregar
-                            </button>
+                            {ingresosAdicionales.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm min-w-[480px]">
+                                        <thead>
+                                            <tr className="bg-white/[0.03] border-b border-white/10">
+                                                <th className="px-4 py-2 text-left text-[10px] text-white/40 font-bold uppercase tracking-wide">Fecha</th>
+                                                <th className="px-4 py-2 text-left text-[10px] text-white/40 font-bold uppercase tracking-wide">Detalle</th>
+                                                <th className="px-4 py-2 text-right text-[10px] text-white/40 font-bold uppercase tracking-wide">Importe</th>
+                                                <th className="px-4 py-2" />
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/[0.06]">
+                                            {ingresosAdicionales.map((ingreso) => (
+                                                <tr key={ingreso._id} className="hover:bg-white/[0.03] transition">
+                                                    <td className="px-4 py-2.5 text-white/50 text-xs whitespace-nowrap">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
+                                                    <td className="px-4 py-2.5 text-white/70 text-xs">{ingreso.detalle}</td>
+                                                    <td className="px-4 py-2.5 text-right font-bold text-white text-xs whitespace-nowrap">${ingreso.importe.toLocaleString('es-ES')}</td>
+                                                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                                                        <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className={editBtn}><FaEdit size={11} /></button>
+                                                        <button onClick={() => handleEliminarIngreso(ingreso._id)} className={delBtn}><FaTrashAlt size={11} /></button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="text-white/30 text-sm text-center py-8">Sin ingresos registrados</p>
+                            )}
                         </div>
-                        {ingresosAdicionales.length > 0 ? (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="bg-slate-50/60 border-b border-slate-50">
-                                        <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Fecha</th>
-                                        <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Detalle</th>
-                                        <th className="px-4 py-2 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wide">Importe</th>
-                                        <th className="px-4 py-2" />
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {ingresosAdicionales.map((ingreso) => (
-                                        <tr key={ingreso._id} className="hover:bg-slate-50/60 transition">
-                                            <td className="px-4 py-2.5 text-slate-500 text-xs">{new Date(ingreso.fecha).toLocaleDateString('es-ES')}</td>
-                                            <td className="px-4 py-2.5 text-slate-700 text-xs">{ingreso.detalle}</td>
-                                            <td className="px-4 py-2.5 text-right font-bold text-slate-800 text-xs">${ingreso.importe.toLocaleString('es-ES')}</td>
-                                            <td className="px-4 py-2.5 text-right">
-                                                <button onClick={() => handleEditarIngreso(ingreso._id, ingreso.fecha, ingreso.detalle, ingreso.importe)} className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition mr-1"><FaEdit size={11} /></button>
-                                                <button onClick={() => handleEliminarIngreso(ingreso._id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition"><FaTrashAlt size={11} /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <p className="text-slate-400 text-sm text-center py-8">Sin ingresos registrados</p>
-                        )}
-                    </div>
+                    </BlurFade>
 
                     {/* Gastos */}
-                    <div className={`${card} overflow-hidden`}>
-                        <div className="px-4 py-3 flex items-center justify-between border-b border-slate-50">
-                            <div>
-                                <p className={lbl}>Gastos</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Total: <span className="font-bold text-red-500">${totalGastos.toLocaleString('es-ES')}</span></p>
+                    <BlurFade delay={0.35}>
+                        <div className="rounded-2xl overflow-hidden" style={glassStyle('0,0,0', 'neutral')}>
+                            <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
+                                <div>
+                                    <p className={lbl}>Gastos</p>
+                                    <p className="text-xs text-white/40 mt-0.5">Total: <span className="font-bold text-red-400">${totalGastos.toLocaleString('es-ES')}</span></p>
+                                </div>
+                                <button onClick={handleAgregarGasto} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-400 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
+                                    <Plus size={13} /> Agregar
+                                </button>
                             </div>
-                            <button onClick={handleAgregarGasto} className="px-3 py-1.5 bg-red-500 hover:bg-red-400 active:scale-95 text-white text-xs font-semibold rounded-xl transition">
-                                + Agregar
-                            </button>
+                            {gastos.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm min-w-[480px]">
+                                        <thead>
+                                            <tr className="bg-white/[0.03] border-b border-white/10">
+                                                <th className="px-4 py-2 text-left text-[10px] text-white/40 font-bold uppercase tracking-wide">Fecha</th>
+                                                <th className="px-4 py-2 text-left text-[10px] text-white/40 font-bold uppercase tracking-wide">Detalle</th>
+                                                <th className="px-4 py-2 text-right text-[10px] text-white/40 font-bold uppercase tracking-wide">Importe</th>
+                                                <th className="px-4 py-2" />
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-white/[0.06]">
+                                            {gastos.map((gasto) => (
+                                                <tr key={gasto._id} className="hover:bg-white/[0.03] transition">
+                                                    <td className="px-4 py-2.5 text-white/50 text-xs whitespace-nowrap">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
+                                                    <td className="px-4 py-2.5 text-white/70 text-xs">{gasto.detalle}</td>
+                                                    <td className="px-4 py-2.5 text-right font-bold text-red-400 text-xs whitespace-nowrap">${gasto.importe.toLocaleString('es-ES')}</td>
+                                                    <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                                                        <button onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)} className={editBtn}><FaEdit size={11} /></button>
+                                                        <button onClick={() => handleEliminarGasto(gasto._id)} className={delBtn}><FaTrashAlt size={11} /></button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="text-white/30 text-sm text-center py-8">Sin gastos registrados</p>
+                            )}
                         </div>
-                        {gastos.length > 0 ? (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="bg-slate-50/60 border-b border-slate-50">
-                                        <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Fecha</th>
-                                        <th className="px-4 py-2 text-left text-[10px] text-slate-400 font-bold uppercase tracking-wide">Detalle</th>
-                                        <th className="px-4 py-2 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wide">Importe</th>
-                                        <th className="px-4 py-2" />
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {gastos.map((gasto) => (
-                                        <tr key={gasto._id} className="hover:bg-slate-50/60 transition">
-                                            <td className="px-4 py-2.5 text-slate-500 text-xs">{new Date(gasto.fecha).toLocaleDateString('es-ES')}</td>
-                                            <td className="px-4 py-2.5 text-slate-700 text-xs">{gasto.detalle}</td>
-                                            <td className="px-4 py-2.5 text-right font-bold text-red-500 text-xs">${gasto.importe.toLocaleString('es-ES')}</td>
-                                            <td className="px-4 py-2.5 text-right">
-                                                <button onClick={() => handleEditarGasto(gasto._id, gasto.fecha, gasto.detalle, gasto.importe)} className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition mr-1"><FaEdit size={11} /></button>
-                                                <button onClick={() => handleEliminarGasto(gasto._id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition"><FaTrashAlt size={11} /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <p className="text-slate-400 text-sm text-center py-8">Sin gastos registrados</p>
-                        )}
-                    </div>
+                    </BlurFade>
                 </div>
 
                 {/* Gráfico (sidebar en desktop) */}
-                <div className={`${card} p-4 lg:self-start`}>
-                    <p className={`${lbl} mb-4`}>Ingresos vs Gastos — {selectedYear}</p>
-                    <Bar
-                        data={{
-                            labels: meses,
-                            datasets: [
-                                {
-                                    label: `Ingresos (${selectedYear})`,
-                                    data: ingresosMensualesCombinados,
-                                    backgroundColor: 'rgba(34,197,94,0.55)',
-                                    borderColor: 'rgba(34,197,94,1)',
-                                    borderWidth: 1,
-                                    borderRadius: 4,
-                                },
-                                {
-                                    label: `Gastos (${selectedYear})`,
-                                    data: gastosMensuales,
-                                    backgroundColor: 'rgba(239,68,68,0.55)',
-                                    borderColor: 'rgba(239,68,68,1)',
-                                    borderWidth: 1,
-                                    borderRadius: 4,
-                                },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: { legend: { display: true } },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { precision: 0 } },
-                                x: {},
-                            },
-                        }}
-                        style={{ maxHeight: '280px' }}
-                    />
-                </div>
+                <BlurFade delay={0.4}>
+                    <div className="rounded-2xl p-4 lg:self-start" style={glassStyle('0,0,0', 'neutral')}>
+                        <p className={`${lbl} mb-4`}>Ingresos vs Gastos — {selectedYear}</p>
+                        <Bar
+                            data={{
+                                labels: meses,
+                                datasets: [
+                                    {
+                                        label: `Ingresos (${selectedYear})`,
+                                        data: ingresosMensualesCombinados,
+                                        backgroundColor: 'rgba(16,185,129,0.55)',
+                                        borderColor: 'rgba(16,185,129,1)',
+                                        borderWidth: 1,
+                                        borderRadius: 4,
+                                    },
+                                    {
+                                        label: `Gastos (${selectedYear})`,
+                                        data: gastosMensuales,
+                                        backgroundColor: 'rgba(239,68,68,0.55)',
+                                        borderColor: 'rgba(239,68,68,1)',
+                                        borderWidth: 1,
+                                        borderRadius: 4,
+                                    },
+                                ],
+                            }}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: { legend: { display: true, labels: chartDarkLegend.labels } },
+                                scales: chartDarkScales,
+                            }}
+                            style={{ maxHeight: '280px' }}
+                        />
+                    </div>
+                </BlurFade>
             </div>
 
         </div>

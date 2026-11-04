@@ -3,8 +3,36 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { motion, animate } from 'framer-motion';
+import { Activity, TrendingUp, Clock3, Dumbbell, Users } from 'lucide-react';
 import TopHorariosChart from '@/components/TopHorariosChart';
 import ActividadChart from '@/components/ActividadChart';
+
+// ─── Magic UI: entrance + counter ──────────────────────────────────────────
+function NumberTicker({ value }: { value: number }) {
+    const [display, setDisplay] = useState(0);
+    useEffect(() => {
+        const ctrl = animate(0, value, {
+            duration: 1,
+            ease: [0.16, 1, 0.3, 1],
+            onUpdate(v) { setDisplay(Math.floor(v)); },
+        });
+        return ctrl.stop;
+    }, [value]);
+    return <>{display}</>;
+}
+function BlurFade({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
+    return (
+        <motion.div
+            className={className}
+            initial={{ opacity: 0, filter: 'blur(8px)', y: 12 }}
+            animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+            transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+        >
+            {children}
+        </motion.div>
+    );
+}
 
 type Asistencia = {
     fecha: string;
@@ -17,6 +45,23 @@ type Alumno = {
     nombre: string;
     apellido: string;
     asistencia: Asistencia[];
+};
+
+// ─── Glass card helper ──────────────────────────────────────────────────────
+function glassStyle(rgb: string, intensity: 'neutral' | 'glow' = 'glow') {
+    if (intensity === 'neutral') {
+        return { background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' } as React.CSSProperties;
+    }
+    return {
+        background: `linear-gradient(165deg, rgba(${rgb},0.09), rgba(17,17,17,0.9))`,
+        border: `1px solid rgba(${rgb},0.32)`,
+        boxShadow: `0 0 0 1px rgba(${rgb},0.05) inset, 0 10px 26px -9px rgba(${rgb},0.34)`,
+    } as React.CSSProperties;
+}
+
+const chartDarkScales = {
+    y: { beginAtZero: true, ticks: { precision: 0, color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.07)' } },
+    x: { ticks: { color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.04)' } },
 };
 
 export default function Estadisticas() {
@@ -94,59 +139,96 @@ export default function Estadisticas() {
     const totalAsistencias = porDia.reduce((a, b) => a + b.cantidad, 0);
     const actividadLider = [...porActividad].sort((a, b) => b.cantidad - a.cantidad)[0]?.actividad ?? '-';
 
-    const card = 'bg-white border border-black/[0.07] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_14px_rgba(0,0,0,0.04)] p-4';
-    const lbl = 'text-[10px] font-bold text-slate-400 uppercase tracking-widest';
-    const num = 'text-3xl font-bold leading-none';
-
     return (
-        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-5">
+        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
 
             {/* Banner */}
-            <div className="relative bg-[#111] rounded-2xl px-5 pt-5 pb-5 overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.05),transparent_55%)]" />
-                <div className="pointer-events-none absolute -bottom-8 -right-4 w-36 h-36 rounded-full blur-3xl opacity-25" style={{ background: acento2 }} />
-                <div className="relative">
-                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Resumen general</p>
-                    <h1 className="text-xl font-bold text-white mt-0.5">Estadísticas</h1>
-                    <div className="flex items-center gap-2 mt-2.5">
-                        <span className="bg-white/10 ring-1 ring-white/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-                            {alumnos.length} alumnos
-                        </span>
+            <BlurFade delay={0}>
+                <div className="rounded-[2rem] p-[1.5px]" style={{ background: `linear-gradient(135deg, ${acento} 0%, ${acento2} 100%)`, boxShadow: `0 0 28px -9px ${acento}50, 0 0 36px -14px ${acento2}38` }}>
+                    <div className="relative bg-[#111] rounded-[30px] px-5 pt-5 pb-5 overflow-hidden">
+                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                        <div className="pointer-events-none absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-20" style={{ background: acento }} />
+                        <div className="pointer-events-none absolute -bottom-8 -left-4 w-40 h-40 rounded-full blur-3xl opacity-15" style={{ background: acento2 }} />
+                        <div className="relative flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                                <TrendingUp size={20} className="text-white" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest">Resumen general</p>
+                                <h1 className="text-xl font-bold text-white leading-tight">Estadísticas</h1>
+                            </div>
+                            <span className="ml-auto flex items-center gap-1.5 bg-white/10 ring-1 ring-white/10 text-white/80 text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+                                <Users size={11} />
+                                {alumnos.length}
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </BlurFade>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className={card}>
-                    <p className={`${lbl} mb-2`}>Total asistencias</p>
-                    <p className={`${num} text-slate-900`}>{totalAsistencias}</p>
-                </div>
-                <div className={card}>
-                    <p className={`${lbl} mb-2`}>Promedio / día</p>
-                    <p className={`${num} text-slate-900`}>{promedio}</p>
-                </div>
-                <div className={card}>
-                    <p className={`${lbl} mb-2`}>Hora pico</p>
-                    <p className={`${num}`} style={{ color: acento2 }}>{topHorarios[0]?.hora ?? '-'}</p>
-                </div>
-                <div className={card}>
-                    <p className={`${lbl} mb-2`}>Actividad líder</p>
-                    <p className="text-xl font-bold leading-tight truncate" style={{ color: acento }}>{actividadLider}</p>
-                </div>
+                <BlurFade delay={0.05}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('16,185,129')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
+                                <Activity size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total asistencias</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={totalAsistencias} /></p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.1}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('14,165,233')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
+                                <TrendingUp size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Promedio / día</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums">{promedio}</p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.15}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('245,158,11')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                                <Clock3 size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Hora pico</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums">{topHorarios[0]?.hora ?? '-'}</p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.2}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('163,230,53')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #a3e635, #65a30d)' }}>
+                                <Dumbbell size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Actividad líder</p>
+                        </div>
+                        <p className="text-xl font-bold leading-tight text-white truncate">{actividadLider}</p>
+                    </div>
+                </BlurFade>
             </div>
 
             {/* Charts — side by side on desktop */}
-            <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-5 lg:space-y-0">
-                <div className={card}>
-                    <h3 className={`${lbl} mb-4`}>Horarios Musculación</h3>
-                    <TopHorariosChart topHorarios={topHorarios} color={acento2} />
-                </div>
+            <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
+                <BlurFade delay={0.25}>
+                    <div className="rounded-2xl p-4" style={glassStyle('0,0,0', 'neutral')}>
+                        <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Horarios Musculación</h3>
+                        <TopHorariosChart topHorarios={topHorarios} color={acento2} scales={chartDarkScales} />
+                    </div>
+                </BlurFade>
 
-                <div className={card}>
-                    <h3 className={`${lbl} mb-4`}>Asistencias por actividad</h3>
-                    <ActividadChart data={porActividad} colors={[acento, acento2]} />
-                </div>
+                <BlurFade delay={0.3}>
+                    <div className="rounded-2xl p-4" style={glassStyle('0,0,0', 'neutral')}>
+                        <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Asistencias por actividad</h3>
+                        <ActividadChart data={porActividad} colors={[acento, acento2]} scales={chartDarkScales} />
+                    </div>
+                </BlurFade>
             </div>
 
         </div>

@@ -9,6 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 type TopHorariosChartProps = {
     topHorarios: { hora: string; frecuencia: number }[];
     color?: string;
+    scales?: any;
 };
 
 function hexToRgba(hex: string, alpha: number) {
@@ -18,7 +19,7 @@ function hexToRgba(hex: string, alpha: number) {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios, color = '#10b981' }) => {
+const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios, color = '#10b981', scales }) => {
     return (
         <Bar
             data={{
@@ -40,7 +41,7 @@ const TopHorariosChart: React.FC<TopHorariosChartProps> = ({ topHorarios, color 
                 plugins: {
                     legend: { display: false },
                 },
-                scales: {
+                scales: scales ?? {
                     y: { beginAtZero: true, ticks: { precision: 0 } },
                     x: {},
                 },
