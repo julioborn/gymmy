@@ -860,19 +860,18 @@ export default function MiCuentaPage() {
                                 </BlurFade>
                             )}
 
-                            {/* Asistencias semana */}
+                            {/* Asistencias por semana */}
                             {(() => {
                                 const hoy = new Date();
                                 const dow = hoy.getDay();
                                 const diffLunes = dow === 0 ? -6 : 1 - dow;
                                 const lunes = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + diffLunes, 0, 0, 0, 0);
-                                const domingo = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + 6, 23, 59, 59, 999);
-                                const semana = [...alumno.asistencia].filter(a => {
-                                    if (!a.presente) return false;
-                                    const f = new Date(a.fecha);
-                                    return f >= lunes && f <= domingo;
-                                }).sort((a,b)=>new Date(a.fecha).getTime()-new Date(b.fecha).getTime()).slice(0,5);
-                                if (!semana.length) return null;
+                                const diasSemana = Array.from({ length: 5 }, (_, i) => {
+                                    const d = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
+                                    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                    const asists = asistenciasMap[key] || [];
+                                    return { d, key, asistencia: asists[0] || null };
+                                });
                                 return (
                                     <BlurFade delay={0.2}>
                                         <div className="relative rounded-2xl overflow-hidden"
@@ -882,29 +881,34 @@ export default function MiCuentaPage() {
                                                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
                                                         <Clock3 size={14} className="text-white" />
                                                     </div>
-                                                    <p className="font-bold text-xs text-white uppercase tracking-wide">Asistencias semana</p>
+                                                    <p className="font-bold text-xs text-white uppercase tracking-wide">Asistencias por semana</p>
                                                 </div>
                                                 <button onClick={()=>changeTab('historial')} className="flex items-center gap-1 text-sm font-semibold text-sky-400">
                                                     Ver todas <ChevronRight size={15} />
                                                 </button>
                                             </div>
                                             <div className="divide-y divide-white/[0.06]">
-                                                {semana.map(a => {
-                                                    const d = new Date(a.fecha);
-                                                    const color = ACTIVIDAD_COLOR[a.actividad] || '#6b7280';
+                                                {diasSemana.map(({ d, key, asistencia: a }) => {
+                                                    const color = a ? (ACTIVIDAD_COLOR[a.actividad] || '#6b7280') : null;
                                                     return (
-                                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3.5">
+                                                        <div key={key} className="flex items-center gap-3 px-4 py-3.5">
                                                             <div className="w-20 shrink-0">
-                                                                <p className="text-white font-bold text-sm leading-none capitalize">{d.toLocaleDateString('es-AR',{weekday:'long'})}</p>
+                                                                <p className={cn('font-bold text-sm leading-none capitalize', a ? 'text-white' : 'text-white/40')}>{d.toLocaleDateString('es-AR',{weekday:'long'})}</p>
                                                                 <p className="text-white/40 text-xs font-semibold leading-none mt-1.5">{d.getDate()} {MESES_CORTO[d.getMonth()]}</p>
                                                             </div>
-                                                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor:`${color}20` }}>
-                                                                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:color }} />
+                                                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: a ? `${color}20` : 'rgba(255,255,255,0.05)' }}>
+                                                                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: a ? color! : 'rgba(255,255,255,0.15)' }} />
                                                             </div>
-                                                            <p className="flex-1 text-white/80 font-semibold text-base truncate">{a.actividad}</p>
-                                                            <span className="text-white/40 text-sm font-medium tabular-nums">
-                                                                {d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}
-                                                            </span>
+                                                            {a ? (
+                                                                <>
+                                                                    <p className="flex-1 text-white/80 font-semibold text-base truncate">{a.actividad}</p>
+                                                                    <span className="text-white/40 text-sm font-medium tabular-nums">
+                                                                        {new Date(a.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                <p className="flex-1 text-white/30 font-semibold text-sm">Sin asistencia</p>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
