@@ -930,7 +930,11 @@ export default function MiCuentaPage() {
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-7 mb-2">
-                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-orange-400 text-xs font-bold py-1">{d}</div>)}
+                                        {DIAS_SEMANA.map(d => (
+                                            <div key={d} className="flex items-center justify-center py-1">
+                                                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.06] text-white text-xs font-bold">{d}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                     <div className="grid grid-cols-7 gap-y-1.5">
                                         {calDays.map((day, i) => {
