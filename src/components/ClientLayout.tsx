@@ -509,10 +509,11 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     <button
                         type="button"
                         onClick={() => router.back()}
-                        className={`${role === 'recepcion' ? 'flex' : 'hidden sm:flex'} w-8 h-8 items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90`}
+                        className={`${role === 'recepcion' ? 'flex rounded-full shadow-md' : 'hidden sm:flex text-slate-400 hover:text-slate-200'} w-8 h-8 items-center justify-center transition-all active:scale-90`}
+                        style={role === 'recepcion' ? { background: 'linear-gradient(135deg, #10b981 0%, #f97316 100%)' } : undefined}
                         aria-label="Volver"
                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <svg className={`w-5 h-5 ${role === 'recepcion' ? 'text-white' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                         </svg>
                     </button>
