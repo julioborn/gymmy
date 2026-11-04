@@ -402,7 +402,7 @@ export default function ListaAlumnosPage() {
 
                 <div className="relative px-5 pt-5 pb-5">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: acento }}>
                             <Users size={20} className="text-white" />
                         </div>
                         <div className="min-w-0">
@@ -416,22 +416,22 @@ export default function ListaAlumnosPage() {
                             </span>
                         )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => router.push('/alumnos/nuevo')}
-                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95 shadow-md"
-                            style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})`, boxShadow: `0 6px 16px -6px ${acento}70` }}
+                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
+                            style={{ background: acento }}
                         >
                             <UserPlus size={15} />
                             Registrar
                         </button>
                         {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                             <>
-                                <button className="flex items-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>
+                                <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>
                                     <DollarSign size={15} />
                                     Cuotas
                                 </button>
-                                <button className="flex items-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>
+                                <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>
                                     <Percent size={15} />
                                     Recargo
                                 </button>
@@ -440,7 +440,7 @@ export default function ListaAlumnosPage() {
                         {session?.user?.role === 'dueño' && (
                             <button
                                 onClick={handleGenerateExcel}
-                                className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all"
+                                className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
                                     <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
@@ -460,7 +460,7 @@ export default function ListaAlumnosPage() {
                         {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
                             <button
                                 onClick={() => router.push('/alumnos/revision-nombres')}
-                                className="flex items-center gap-1.5 px-4 py-2.5 bg-sky-400/10 border border-sky-400/25 hover:bg-sky-400/15 active:scale-95 text-sky-300 text-sm font-semibold rounded-2xl transition-all"
+                                className="col-span-2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-400/10 border border-sky-400/25 hover:bg-sky-400/15 active:scale-95 text-sky-300 text-sm font-semibold rounded-2xl transition-all"
                             >
                                 <Search size={15} />
                                 Revisar nombres
