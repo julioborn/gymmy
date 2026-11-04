@@ -1056,8 +1056,8 @@ export default function HomePage() {
                     {/* Config panel */}
                     {!esProfesor && !esRecepcion && (
                         <BlurFade delay={0.26} className="mt-4">
-                            <p className="text-xs font-bold text-white/50 uppercase tracking-[0.12em] mb-3">Configuración</p>
-                            <div className="bg-white/[0.07] border border-white/[0.1] rounded-2xl overflow-hidden">
+                            <p className="text-xs font-bold text-white uppercase tracking-[0.12em] mb-3">Configuración</p>
+                            <div className="rounded-2xl overflow-hidden" style={glowStyle('255,255,255')}>
                                 {configItems.map((item, idx, arr) => (
                                     <div key={item.label}>
                                         <button onClick={item.onClick}
