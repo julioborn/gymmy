@@ -199,7 +199,7 @@ function glowStyle(rgb: string): React.CSSProperties {
 // ─── Stat Card wrapper ────────────────────────────────────────────────────────
 function StatCard({ children, className, glow = '255,255,255' }: { children: React.ReactNode; className?: string; glow?: string }) {
     return (
-        <div className={cn('rounded-2xl p-4 flex flex-col h-[165px] sm:h-[190px] overflow-hidden', className)} style={glowStyle(glow)}>
+        <div className={cn('rounded-2xl p-4 flex flex-col min-h-[165px] sm:min-h-[190px]', className)} style={glowStyle(glow)}>
             {children}
         </div>
     );
@@ -952,13 +952,13 @@ export default function HomePage() {
                                             {showBalance && (
                                                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
                                                     <div>
-                                                        <p className="text-sm font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
-                                                        <p className="text-[11px] text-white/50 mt-0.5">ingresos</p>
+                                                        <p className="text-base font-bold text-emerald-400">+${fmt(data.ingresosCuotas + data.ingresosExtra)}</p>
+                                                        <p className="text-xs text-white/50 mt-0.5">ingresos</p>
                                                     </div>
                                                     <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                                     <div>
-                                                        <p className="text-sm font-bold text-red-400">−${fmt(data.gastosMes)}</p>
-                                                        <p className="text-[11px] text-white/50 mt-0.5">egresos</p>
+                                                        <p className="text-base font-bold text-red-400">−${fmt(data.gastosMes)}</p>
+                                                        <p className="text-xs text-white/50 mt-0.5">egresos</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -1001,18 +1001,18 @@ export default function HomePage() {
                                         </p>
                                         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.08]">
                                             <div>
-                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.manana ?? 0}</p>
-                                                <p className="text-[11px] text-white/50 mt-0.5">mañana</p>
+                                                <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.manana ?? 0}</p>
+                                                <p className="text-xs text-white/50 mt-0.5">mañana</p>
                                             </div>
                                             <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                             <div>
-                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.siesta ?? 0}</p>
-                                                <p className="text-[11px] text-white/50 mt-0.5">siesta</p>
+                                                <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.siesta ?? 0}</p>
+                                                <p className="text-xs text-white/50 mt-0.5">siesta</p>
                                             </div>
                                             <div className="w-px h-5 bg-white/[0.1] shrink-0" />
                                             <div>
-                                                <p className="text-sm font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.tarde ?? 0}</p>
-                                                <p className="text-[11px] text-white/50 mt-0.5">tarde</p>
+                                                <p className="text-base font-bold text-white tabular-nums">{data.asistenciasHoyFranja?.tarde ?? 0}</p>
+                                                <p className="text-xs text-white/50 mt-0.5">tarde</p>
                                             </div>
                                         </div>
                                     </StatCard>
