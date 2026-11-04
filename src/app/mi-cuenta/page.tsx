@@ -351,10 +351,11 @@ export default function MiCuentaPage() {
                     .then(data => { if (data.ok) fetchAlumno().catch(()=>{}); }).catch(()=>{});
             }
         }
-        fetchAlumno().then(data => { if (data?._id) fetchPlan(data._id, data); }).catch(()=>{}).finally(()=>setLoading(false));
+        const alumnoPromise = fetchAlumno().then(data => { if (data?._id) fetchPlan(data._id, data); }).catch(()=>{});
+        const temaPromise = fetch('/api/gimnasio/tema').then(r=>r.json()).then(d=>{ if (d.temaAcento) setAcento(d.temaAcento); }).catch(()=>{});
+        Promise.all([alumnoPromise, temaPromise]).finally(()=>setLoading(false));
         fetch('/api/gimnasio/alias').then(r=>r.json()).then(d=>setAliasGimnasio(d.alias??'')).catch(()=>{});
         fetch('/api/tarifas').then(r=>r.json()).then(d=>{ if (d.ok) setTarifas((d.tarifas||[]).slice().sort((a:any,b:any)=>a.dias-b.dias)); }).catch(()=>{});
-        fetch('/api/gimnasio/tema').then(r=>r.json()).then(d=>{ if (d.temaAcento) setAcento(d.temaAcento); }).catch(()=>{});
         const onVisible = () => { if (document.visibilityState==='visible') fetchAlumno().catch(()=>{}); };
         const onPageShow = (e: PageTransitionEvent) => { if (e.persisted) fetchAlumno().catch(()=>{}); };
         const onFocus = () => fetchAlumno().catch(()=>{});
