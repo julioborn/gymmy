@@ -918,19 +918,20 @@ export default function MiCuentaPage() {
                     {tab === 'historial' && (
                         <div className="space-y-4">
                             <BlurFade delay={0.05}>
-                                <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
+                                <div className="rounded-2xl p-4"
+                                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                                     <div className="flex items-center justify-between mb-5">
-                                        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors">
+                                        <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 transition-colors">
                                             <ChevronLeft size={18} />
                                         </button>
-                                        <span className="text-slate-900 font-bold capitalize">{MESES[calMonth]} {calYear}</span>
+                                        <span className="text-white font-bold capitalize">{MESES[calMonth]} {calYear}</span>
                                         <button onClick={nextMonth} disabled={calYear===now.getFullYear()&&calMonth===now.getMonth()}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 transition-colors disabled:opacity-25">
+                                            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10 text-white/50 transition-colors disabled:opacity-25">
                                             <ChevronRight size={18} />
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-7 mb-2">
-                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-slate-400 text-[10px] font-bold py-1">{d}</div>)}
+                                        {DIAS_SEMANA.map(d => <div key={d} className="text-center text-white/40 text-[10px] font-bold py-1">{d}</div>)}
                                     </div>
                                     <div className="grid grid-cols-7 gap-y-1">
                                         {calDays.map((day, i) => {
@@ -946,75 +947,76 @@ export default function MiCuentaPage() {
                                             return (
                                                 <button key={key} onClick={()=>setSelectedDay(isSelected?null:key)}
                                                     className={cn('relative flex flex-col items-center py-1.5 rounded-xl transition-all', {
-                                                        'bg-slate-200': isSelected,
-                                                        'bg-lime-50 hover:bg-lime-100': !isSelected && planDay==='active',
-                                                        'bg-violet-50 hover:bg-violet-100': !isSelected && planDay==='completed',
-                                                        'hover:bg-slate-100': !isSelected && !planDay && hasData,
+                                                        'bg-white/15': isSelected,
+                                                        'bg-lime-400/10 hover:bg-lime-400/15': !isSelected && planDay==='active',
+                                                        'bg-violet-400/10 hover:bg-violet-400/15': !isSelected && planDay==='completed',
+                                                        'hover:bg-white/5': !isSelected && !planDay && hasData,
                                                         'cursor-default': !isSelected && !planDay && !hasData,
                                                     })}>
                                                     <span className={cn('text-xs font-semibold leading-none mb-1 w-6 h-6 flex items-center justify-center rounded-full', {
                                                         'bg-lime-400 text-black': isToday,
                                                         'bg-lime-500 text-white': !isToday && planBoundary==='start',
                                                         'bg-violet-500 text-white': !isToday && planBoundary==='end',
-                                                        'text-slate-900': !isToday && !planBoundary && (hasData||planDay),
-                                                        'text-slate-300': !isToday && !planBoundary && !hasData && !planDay,
+                                                        'text-white': !isToday && !planBoundary && (hasData||planDay),
+                                                        'text-white/25': !isToday && !planBoundary && !hasData && !planDay,
                                                     })}>
                                                         {day}
                                                     </span>
                                                     <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
-                                                        {asists.map((a,idx) => <span key={idx} className={cn('w-1.5 h-1.5 rounded-full', ACTIVIDAD_DOT[a.actividad]||'bg-slate-400')} />)}
+                                                        {asists.map((a,idx) => <span key={idx} className={cn('w-1.5 h-1.5 rounded-full', ACTIVIDAD_DOT[a.actividad]||'bg-white/30')} />)}
                                                         {pagos.length>0 && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
                                                     </div>
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 flex-wrap gap-y-2">
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-slate-400 text-xs">Musculación</span></div>
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-slate-400 text-xs">Intermitente</span></div>
-                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-slate-400 text-xs">Pago</span></div>
-                                        {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-lime-100 border border-lime-200" /><span className="text-slate-400 text-xs">Plan activo</span></div>}
-                                        {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-violet-100 border border-violet-200" /><span className="text-slate-400 text-xs">Plan anterior</span></div>}
+                                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/10 flex-wrap gap-y-2">
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-400" /><span className="text-white/40 text-xs">Musculación</span></div>
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-white/40 text-xs">Intermitente</span></div>
+                                        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-white/40 text-xs">Pago</span></div>
+                                        {Object.values(planDaysMap).includes('active') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-lime-400/15 border border-lime-400/30" /><span className="text-white/40 text-xs">Plan activo</span></div>}
+                                        {Object.values(planDaysMap).includes('completed') && <div className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-violet-400/15 border border-violet-400/30" /><span className="text-white/40 text-xs">Plan anterior</span></div>}
                                     </div>
                                 </div>
                             </BlurFade>
 
                             {selectedDay && (selectedAsistencias.length>0 || selectedPagos.length>0 || planBoundaryMap[selectedDay]) && (
                                 <BlurFade delay={0}>
-                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg space-y-3">
-                                        <p className="font-bold text-slate-900 capitalize text-sm">
+                                    <div className="rounded-2xl p-4 space-y-3"
+                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <p className="font-bold text-white capitalize text-sm">
                                             {new Date(selectedDay+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}
                                         </p>
                                         {planBoundaryMap[selectedDay]==='start' && (
-                                            <div className="flex items-center gap-2 bg-lime-50 border border-lime-200 rounded-xl px-3 py-2.5">
-                                                <span className="w-2 h-2 rounded-full bg-lime-500 shrink-0" />
-                                                <span className="text-lime-700 text-sm font-semibold">Inicio de plan{planEj?.nombre?` — ${planEj.nombre}`:''}</span>
+                                            <div className="flex items-center gap-2 bg-lime-400/10 border border-lime-400/25 rounded-xl px-3 py-2.5">
+                                                <span className="w-2 h-2 rounded-full bg-lime-400 shrink-0" />
+                                                <span className="text-lime-300 text-sm font-semibold">Inicio de plan{planEj?.nombre?` — ${planEj.nombre}`:''}</span>
                                             </div>
                                         )}
                                         {planBoundaryMap[selectedDay]==='end' && (
-                                            <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-xl px-3 py-2.5">
-                                                <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
-                                                <span className="text-violet-700 text-sm font-semibold">Fin de plan</span>
+                                            <div className="flex items-center gap-2 bg-violet-400/10 border border-violet-400/25 rounded-xl px-3 py-2.5">
+                                                <span className="w-2 h-2 rounded-full bg-violet-400 shrink-0" />
+                                                <span className="text-violet-300 text-sm font-semibold">Fin de plan</span>
                                             </div>
                                         )}
                                         {selectedAsistencias.map(a => (
                                             <div key={a._id} className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={cn('w-2 h-2 rounded-full shrink-0', ACTIVIDAD_DOT[a.actividad]||'bg-slate-400')} />
-                                                    <span className="text-slate-700 text-sm font-semibold">{a.actividad}</span>
+                                                    <span className={cn('w-2 h-2 rounded-full shrink-0', ACTIVIDAD_DOT[a.actividad]||'bg-white/30')} />
+                                                    <span className="text-white/80 text-sm font-semibold">{a.actividad}</span>
                                                 </div>
-                                                <span className="text-slate-400 text-xs tabular-nums">
+                                                <span className="text-white/40 text-xs tabular-nums">
                                                     {new Date(a.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
                                                 </span>
                                             </div>
                                         ))}
                                         {selectedPagos.map(p => (
-                                            <div key={p._id} className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5">
+                                            <div key={p._id} className="flex items-center justify-between bg-emerald-400/10 border border-emerald-400/25 rounded-xl px-3 py-2.5">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                                                    <span className="text-emerald-700 text-sm font-semibold capitalize">Pago — {p.mes}</span>
+                                                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                                                    <span className="text-emerald-300 text-sm font-semibold capitalize">Pago — {p.mes}</span>
                                                 </div>
-                                                <span className="text-emerald-700 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
+                                                <span className="text-emerald-300 font-bold text-sm">${p.tarifa.toLocaleString('es-AR')}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -1023,19 +1025,21 @@ export default function MiCuentaPage() {
 
                             <BlurFade delay={0.1}>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Asistencias</p>
-                                        <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                                    <div className="rounded-2xl p-4"
+                                        style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
+                                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Asistencias</p>
+                                        <p className="text-2xl font-bold text-white tabular-nums">
                                             {Object.entries(asistenciasMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,a])=>s+a.length,0)}
                                         </p>
-                                        <p className="text-xs text-slate-400 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
+                                        <p className="text-xs text-white/40 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
                                     </div>
-                                    <div className="bg-white border border-white/30 rounded-2xl p-4 shadow-lg">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pagado</p>
-                                        <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                                    <div className="rounded-2xl p-4"
+                                        style={{ background: 'linear-gradient(165deg, rgba(245,158,11,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(245,158,11,0.32)', boxShadow: '0 0 0 1px rgba(245,158,11,0.05) inset, 0 10px 26px -9px rgba(245,158,11,0.3)' }}>
+                                        <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Pagado</p>
+                                        <p className="text-2xl font-bold text-white tabular-nums">
                                             ${Object.entries(pagosMap).filter(([k])=>k.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).reduce((s,[,ps])=>s+ps.reduce((x,p)=>x+p.tarifa,0),0).toLocaleString('es-AR')}
                                         </p>
-                                        <p className="text-xs text-slate-400 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
+                                        <p className="text-xs text-white/40 capitalize">{MESES_CORTO[calMonth]} {calYear}</p>
                                     </div>
                                 </div>
                             </BlurFade>
