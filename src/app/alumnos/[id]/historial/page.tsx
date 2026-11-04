@@ -2118,9 +2118,10 @@ export default function HistorialAlumnoPage() {
 
     return (
         <>
-        <div className="max-w-7xl mx-auto space-y-4">
+        <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
             {/* Header + Info */}
-            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl overflow-hidden">
+            <div className="rounded-2xl overflow-hidden"
+                style={{ background: `linear-gradient(165deg, ${acento}14, rgba(17,17,17,0.9))`, border: `1px solid ${acento}45`, boxShadow: `0 0 0 1px ${acento}0A inset, 0 10px 26px -9px ${acento}35` }}>
 
                 {/* Barra siempre visible */}
                 <div className="px-4 sm:px-5 py-4 flex items-start gap-3">
@@ -2326,14 +2327,15 @@ export default function HistorialAlumnoPage() {
                 )}
             </div>
 
-            <div className="bg-white/[0.08] border border-white/[0.12] rounded-2xl overflow-hidden">
+            <div className="rounded-2xl overflow-hidden"
+                style={{ background: `linear-gradient(165deg, ${acento}14, rgba(17,17,17,0.9))`, border: `1px solid ${acento}45`, boxShadow: `0 0 0 1px ${acento}0A inset, 0 10px 26px -9px ${acento}35` }}>
                 {/* Calendario */}
                 <div className="px-4 sm:px-5 py-4 border-b border-white/[0.08] overflow-x-hidden">
 
                     {/* ── Calendario ────────────────────────────────────── */}
                     <div className="flex flex-col gap-3">
 
-                        <div className="order-2 bg-white/[0.11] rounded-xl border border-white/[0.18] p-3 sm:pt-5 sm:px-0 sm:pb-5">
+                        <div className="order-2 rounded-xl p-3 sm:pt-5 sm:px-0 sm:pb-5" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${acento}30` }}>
                                 {/* Nav */}
                                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                                     <button
@@ -2348,13 +2350,15 @@ export default function HistorialAlumnoPage() {
                                     >›</button>
                                 </div>
                                 {/* Day headers */}
-                                <div className="grid grid-cols-7 sm:border-t sm:border-l sm:border-white/[0.18]">
+                                <div className="grid grid-cols-7 sm:border-t sm:border-l" style={{ borderColor: `${acento}25` }}>
                                     {DIAS_CAL.map(d => (
-                                        <div key={d} className="text-center text-white/60 text-xs font-semibold py-1.5 sm:py-2 sm:border-r sm:border-b sm:border-white/[0.18]">{d.toLowerCase()}</div>
+                                        <div key={d} className="flex items-center justify-center py-1.5 sm:py-2 sm:border-r sm:border-b" style={{ borderColor: `${acento}25` }}>
+                                            <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.06] text-white text-xs font-bold sm:bg-transparent sm:w-auto sm:h-auto sm:font-semibold">{d.toLowerCase()}</span>
+                                        </div>
                                     ))}
                                 </div>
                                 {/* Grid */}
-                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l sm:border-white/[0.18]">
+                                <div className="grid grid-cols-7 gap-y-0.5 sm:gap-0 sm:border-l" style={{ borderColor: `${acento}25` }}>
                                     {calDaysGrid(mobCalYear, mobCalMonth).map((calDay, i) => {
                                         const key = `${calDay.year}-${String(calDay.month + 1).padStart(2, '0')}-${String(calDay.day).padStart(2, '0')}`;
                                         const asists = asistenciasMapMob[key] || [];
@@ -2368,7 +2372,8 @@ export default function HistorialAlumnoPage() {
                                             <button
                                                 key={`${key}-${i}`}
                                                 onClick={() => openDayModal(key)}
-                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b sm:border-white/[0.18] transition-colors overflow-hidden ${
+                                                style={{ borderColor: `${acento}25` }}
+                                                className={`relative flex flex-col items-center py-1 sm:py-0 sm:items-start sm:min-h-[90px] rounded-lg sm:rounded-none sm:border-r sm:border-b transition-colors overflow-hidden ${
                                                     isSelected
                                                         ? 'bg-white/[0.22]'
                                                         : planDaysMap[key] === 'active'
@@ -2487,12 +2492,14 @@ export default function HistorialAlumnoPage() {
                     </div>
 
                     {/* Resumen del mes — tarjeta separada */}
-                    <div className="mt-4 bg-white/[0.10] rounded-xl border border-white/[0.18] p-4">
+                    <div className="mt-4 rounded-xl p-4"
+                        style={{ background: `linear-gradient(165deg, ${acento}0F, rgba(17,17,17,0.9))`, border: `1px solid ${acento}30` }}>
                         <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-3 capitalize">
                             Resumen — {new Date(mobCalYear, mobCalMonth, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
                         </p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white/[0.12] rounded-xl p-3 text-center border border-white/[0.18]">
+                            <div className="rounded-xl p-3 text-center"
+                                style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
                                 <div className="text-2xl font-bold text-white">
                                     {Object.entries(asistenciasMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
@@ -2500,8 +2507,9 @@ export default function HistorialAlumnoPage() {
                                 </div>
                                 <div className="text-white/60 text-xs mt-0.5">asistencias</div>
                             </div>
-                            <div className="bg-white/[0.12] rounded-xl p-3 text-center border border-white/[0.18]">
-                                <div className="text-2xl font-bold text-emerald-400">
+                            <div className="rounded-xl p-3 text-center"
+                                style={{ background: 'linear-gradient(165deg, rgba(245,158,11,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(245,158,11,0.32)', boxShadow: '0 0 0 1px rgba(245,158,11,0.05) inset, 0 10px 26px -9px rgba(245,158,11,0.34)' }}>
+                                <div className="text-2xl font-bold text-amber-400">
                                     ${Object.entries(pagosMapMob)
                                         .filter(([k]) => k.startsWith(`${mobCalYear}-${String(mobCalMonth+1).padStart(2,'0')}`))
                                         .reduce((sum, [, ps]) => sum + ps.reduce((s, p) => s + (p.totalPagado ?? p.tarifa ?? 0), 0), 0)
