@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
     allowNavigation: ['*'],
   },
   ios: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#111111',
   },
   plugins: {
     FirebaseMessaging: {
