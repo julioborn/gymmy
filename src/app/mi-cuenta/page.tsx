@@ -514,10 +514,10 @@ export default function MiCuentaPage() {
 
     // Bottom nav tabs config
     const TABS = [
-        { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={16} /> },
-        { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={16} /> },
-        { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={16} /> },
-        ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={16} /> }] : []),
+        { key: 'resumen' as Tab, label: 'Resumen', icon: <ChartBar size={18} /> },
+        { key: 'historial' as Tab, label: 'Historial', icon: <Clock3 size={18} /> },
+        { key: 'plan' as Tab, label: 'Mi Plan', icon: <Dumbbell size={18} /> },
+        ...(isStaffAlumno ? [{ key: 'staff' as Tab, label: 'Alumnos', icon: <Users size={18} /> }] : []),
     ];
 
     const handleVerPrecios = () => {
@@ -677,7 +677,7 @@ export default function MiCuentaPage() {
                                     return (
                                         <button key={t.key} onClick={() => changeTab(t.key)}
                                             className={cn(
-                                                'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap',
+                                                'flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold transition-all border whitespace-nowrap',
                                                 isActive
                                                     ? 'bg-white text-black border-white shadow-md'
                                                     : 'bg-white/[0.07] text-white/70 border-white/[0.12] hover:bg-white/[0.12] hover:text-white',
