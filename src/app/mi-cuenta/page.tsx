@@ -736,7 +736,8 @@ export default function MiCuentaPage() {
                                 {/* Plan progress card */}
                                 {(planEj && !planEjComplete) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
+                                        <div onClick={()=>changeTab('plan')}
+                                            className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
                                             style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
@@ -752,18 +753,17 @@ export default function MiCuentaPage() {
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
                                                 <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{planEjTotal}</p>
                                             </div>
-                                            <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-white/10" />
-                                            <button onClick={()=>changeTab('plan')}
-                                                className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-400">
-                                                Ver plan <ChevronRight size={14} />
-                                            </button>
+                                            <div className="mt-auto">
+                                                <AnimatedProgress pct={(planEjDone / (planEjTotal||1)) * 100} color="bg-lime-400" trackColor="bg-white/10" />
+                                            </div>
                                         </div>
                                     </BlurFade>
                                 )}
 
                                 {(!planEj && tienePlan) && (
                                     <BlurFade delay={0.05}>
-                                        <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
+                                        <div onClick={()=>changeTab('historial')}
+                                            className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
                                             style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
@@ -781,10 +781,9 @@ export default function MiCuentaPage() {
                                                 <span className="text-white/20 font-bold text-3xl leading-none pb-px">/</span>
                                                 <p className="text-white/50 font-black text-4xl leading-none tabular-nums">{plan.duracion}</p>
                                             </div>
-                                            <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-white/10" />
-                                            <button onClick={()=>changeTab('historial')} className="mt-auto pt-3 flex items-center gap-1 text-sm font-bold text-emerald-400">
-                                                Ver historial <ChevronRight size={14} />
-                                            </button>
+                                            <div className="mt-auto">
+                                                <AnimatedProgress pct={(asistenciasEnPlan/(plan.duracion||1))*100} color="bg-lime-400" trackColor="bg-white/10" />
+                                            </div>
                                         </div>
                                     </BlurFade>
                                 )}
