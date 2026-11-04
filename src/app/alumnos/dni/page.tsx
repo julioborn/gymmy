@@ -534,9 +534,9 @@ export default function RegistrarAsistenciaPorDNIPage() {
                         <motion.p
                             className="absolute bottom-8 sm:bottom-10 left-0 right-0 text-center text-white font-bold uppercase px-6"
                             style={{ fontSize: 18, letterSpacing: '0.08em', textShadow: '0 0 12px rgba(255,255,255,0.8)' }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0, 1, 0.4, 1] }}
-                            transition={{ opacity: { delay: 0.4, duration: 1.6, repeat: Infinity, repeatDelay: 0.3 } }}
+                            initial={{ opacity: 0.35 }}
+                            animate={{ opacity: [0.35, 1, 0.35] }}
+                            transition={{ opacity: { delay: 0.4, duration: 1.1, repeat: Infinity, ease: 'easeInOut' } }}
                         >
                             Abonar antes del 10 sin recargo
                         </motion.p>
