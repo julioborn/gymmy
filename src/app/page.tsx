@@ -627,7 +627,7 @@ export default function HomePage() {
 
                         {/* RIGHT: attendee table */}
                         <BlurFade delay={0.1} className="flex-1 flex flex-col gap-0 min-w-0">
-                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex flex-col">
+                            <div className="h-full bg-white/[0.04] border border-white/[0.07] rounded-[1.5rem] overflow-hidden flex flex-col">
                                 {/* Table header: title + search + filter */}
                                 <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/[0.06] flex-wrap">
                                     <div className="flex items-center gap-3 min-w-0">
