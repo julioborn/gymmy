@@ -227,6 +227,7 @@ export default function HomePage() {
     const [gimnasioNombre, setGimnasioNombre] = useState<string>('');
     const [actividadesRecepcion, setActividadesRecepcion] = useState<string[]>(['Musculación']);
     const [diasData, setDiasData] = useState<DiaData[]>([]);
+    const [ultimoCierre, setUltimoCierre] = useState<{ fechaHasta: string; totalGeneral: number; registradoPorNombre: string } | null>(null);
     const [diaExpandido, setDiaExpandido] = useState<string | null>(null);
     const [activeSlot, setActiveSlot] = useState<string | null>(null);
     const [listPage, setListPage] = useState(0);
@@ -372,6 +373,9 @@ export default function HomePage() {
         fetch('/api/recargo').then(r => r.json()).then(d => { setRecargoDiez(d.montoDiez ?? 0); setRecargoMes(d.montoMes ?? 0); }).catch(() => { });
         fetch('/api/gimnasio/alias').then(r => r.json()).then(d => { setAliasGimnasio(d.alias ?? ''); setGimnasioNombre(d.nombre ?? ''); }).catch(() => { });
         fetch('/api/gimnasio/tema').then(r => r.json()).then(d => { if (d?.actividadesRecepcion?.length) setActividadesRecepcion(d.actividadesRecepcion); }).catch(() => { });
+        if (session.user?.role === 'recepcion') {
+            fetch('/api/caja').then(r => r.json()).then(d => { if (d.ok && d.cierres?.length) setUltimoCierre(d.cierres[0]); }).catch(() => { });
+        }
     }, [session]);
 
     const handleConfiguracionTarifas = async () => {
@@ -529,6 +533,30 @@ export default function HomePage() {
                                     })}
                             </div>
 
+                            {/* Total hoy */}
+                            {diaActivo && totalActivo > 0 && (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2.5 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <UserCheck size={12} className="text-lime-400" />
+                                            <span className="text-white/70 text-[10px] font-bold uppercase tracking-wide">Total hoy</span>
+                                        </div>
+                                        <span className="text-white font-black text-base tabular-nums">
+                                            {totalActivo}{data?.totalAlumnos ? <span className="text-white/40 font-semibold"> de {data.totalAlumnos}</span> : null}
+                                        </span>
+                                    </div>
+                                    {deudoresHoy > 0 && (
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <AlertTriangle size={12} className="text-red-400" />
+                                                <span className="text-red-400/70 text-xs font-semibold">Con deuda</span>
+                                            </div>
+                                            <span className="text-red-400 font-black text-base tabular-nums">{deudoresHoy}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Slot stat cards */}
                             {diaActivo && (
                                 <div className="grid grid-cols-2 gap-1.5">
@@ -567,33 +595,25 @@ export default function HomePage() {
                                 <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <Banknote size={12} className="text-emerald-400" />
-                                        <span className="text-emerald-400/80 text-xs font-semibold capitalize">Cuotas · {mesLabel}</span>
+                                        <span className="text-emerald-400/80 text-[10px] font-bold uppercase tracking-wide">Cuotas · <span className="capitalize">{mesLabel}</span></span>
                                     </div>
                                     <span className="text-emerald-400 font-black text-base tabular-nums">{data.pagados}/{data.totalAlumnos}</span>
                                 </div>
                             )}
 
-                            {/* Summary badges */}
-                            {diaActivo && totalActivo > 0 && (
-                                <div className="flex flex-col gap-1.5">
-                                    <div className="bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2.5 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <UserCheck size={12} className="text-lime-400" />
-                                            <span className="text-white/70 text-xs font-semibold">Total hoy</span>
-                                        </div>
-                                        <span className="text-white font-black text-base tabular-nums">
-                                            {totalActivo}{data?.totalAlumnos ? <span className="text-white/40 font-semibold"> de {data.totalAlumnos}</span> : null}
-                                        </span>
+                            {/* Último cierre de caja */}
+                            {ultimoCierre && (
+                                <div className="bg-sky-400/10 border border-sky-400/20 rounded-xl px-3 py-2.5">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Wallet size={12} className="text-sky-400" />
+                                        <span className="text-sky-400/80 text-[10px] font-bold uppercase tracking-wide">Último cierre</span>
                                     </div>
-                                    {deudoresHoy > 0 && (
-                                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <AlertTriangle size={12} className="text-red-400" />
-                                                <span className="text-red-400/70 text-xs font-semibold">Con deuda</span>
-                                            </div>
-                                            <span className="text-red-400 font-black text-base tabular-nums">{deudoresHoy}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-white/50 text-xs">
+                                            {new Date(ultimoCierre.fechaHasta).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} · {ultimoCierre.registradoPorNombre.split(' ')[0]}
+                                        </span>
+                                        <span className="text-sky-400 font-black text-base tabular-nums">${ultimoCierre.totalGeneral.toLocaleString('es-AR')}</span>
+                                    </div>
                                 </div>
                             )}
                         </BlurFade>
