@@ -686,7 +686,7 @@ const ControlFinanciero = () => {
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Banknote size={12} className="text-emerald-400 shrink-0" />
-                            <p className={lbl}>Cuotas efectivo</p>
+                            <p className={lbl}>Efectivo</p>
                         </div>
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalEfectivo} /></p>
                     </div>
@@ -695,7 +695,7 @@ const ControlFinanciero = () => {
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('14,165,233')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Landmark size={12} className="text-sky-400 shrink-0" />
-                            <p className={lbl}>Cuotas transferencia</p>
+                            <p className={lbl}>Transferencia</p>
                         </div>
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalTransferencia} /></p>
                     </div>
