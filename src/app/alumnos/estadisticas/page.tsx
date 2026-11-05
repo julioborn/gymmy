@@ -160,7 +160,7 @@ export default function Estadisticas() {
                         <div className="pointer-events-none absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-20" style={{ background: acento }} />
                         <div className="pointer-events-none absolute -bottom-8 -left-4 w-40 h-40 rounded-full blur-3xl opacity-15" style={{ background: acento2 }} />
                         <div className="relative flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: acento }}>
                                 <TrendingUp size={20} className="text-white" />
                             </div>
                             <div className="min-w-0">
