@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, animate } from 'framer-motion';
-import { TrendingUp, Clock3, Dumbbell, Users, UserCheck, UserX } from 'lucide-react';
+import { TrendingUp, Clock3, Dumbbell, Users, UserCheck, UserX, ChevronDown, ChevronRight } from 'lucide-react';
 import TopHorariosChart from '@/components/TopHorariosChart';
 import ActividadChart from '@/components/ActividadChart';
 
@@ -73,6 +74,8 @@ export default function Estadisticas() {
     const [porDia, setPorDia] = useState<{ fecha: string; cantidad: number }[]>([]);
     const [promedio, setPromedio] = useState<number>(0);
     const [alumnosActivos, setAlumnosActivos] = useState<number>(0);
+    const [alumnosInactivos, setAlumnosInactivos] = useState<{ _id: string; nombre: string; apellido: string }[]>([]);
+    const [showInactivos, setShowInactivos] = useState(false);
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
 
@@ -138,16 +141,21 @@ export default function Estadisticas() {
             .slice(0, 3)
             .map(([hora, frecuencia]) => ({ hora, frecuencia }));
 
+        const inactivos = alumnos
+            .filter(a => !alumnosActivosSet.has(a._id))
+            .map(a => ({ _id: a._id, nombre: a.nombre, apellido: a.apellido }))
+            .sort((a, b) => `${a.apellido}, ${a.nombre}`.localeCompare(`${b.apellido}, ${b.nombre}`));
+
         setPorActividad(actividadData);
         setPorDia(diaData);
         setTopHorarios(top3);
         setPromedio(diaData.length ? Math.round(Object.values(diaCount).reduce((a, b) => a + b, 0) / diaData.length) : 0);
         setAlumnosActivos(alumnosActivosSet.size);
+        setAlumnosInactivos(inactivos);
     };
 
     const actividadLider = [...porActividad].sort((a, b) => b.cantidad - a.cantidad)[0]?.actividad ?? '-';
     const mesActual = new Date().toLocaleDateString('es-AR', { month: 'long' });
-    const sinAsistenciaMes = Math.max(alumnos.length - alumnosActivos, 0);
 
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
@@ -225,18 +233,46 @@ export default function Estadisticas() {
                     </div>
                 </BlurFade>
                 <BlurFade delay={0.25}>
-                    <div className="rounded-2xl p-4 h-full" style={glassStyle('239,68,68')}>
+                    <button onClick={() => setShowInactivos(v => !v)}
+                        className="w-full text-left rounded-2xl p-4 h-full transition-opacity hover:opacity-90" style={glassStyle('239,68,68')}>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#ef4444' }}>
                                 <UserX size={14} className="text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sin asistencia</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex-1">Sin asistencia</p>
+                            <ChevronDown size={14} className={`text-white/40 transition-transform ${showInactivos ? 'rotate-180' : ''}`} />
                         </div>
-                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={sinAsistenciaMes} /></p>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosInactivos.length} /></p>
                         <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
-                    </div>
+                    </button>
                 </BlurFade>
             </div>
+
+            {/* Lista de alumnos sin asistencia este mes */}
+            {showInactivos && (
+                <BlurFade delay={0}>
+                    <div className="rounded-2xl overflow-hidden" style={glassStyle('239,68,68')}>
+                        <div className="px-4 py-3 border-b border-white/10">
+                            <p className="text-xs font-bold text-white uppercase tracking-wide">
+                                {alumnosInactivos.length} {alumnosInactivos.length === 1 ? 'alumno' : 'alumnos'} sin asistencia · <span className="capitalize">{mesActual}</span>
+                            </p>
+                        </div>
+                        {alumnosInactivos.length > 0 ? (
+                            <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.06]">
+                                {alumnosInactivos.map(a => (
+                                    <Link key={a._id} href={`/alumnos/${a._id}/historial`}
+                                        className="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.05] transition-colors group">
+                                        <span className="text-white/80 text-sm font-medium group-hover:text-white truncate">{a.apellido}, {a.nombre}</span>
+                                        <ChevronRight size={14} className="text-white/25 shrink-0" />
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="px-4 py-4 text-white/50 text-sm">Todos los alumnos asistieron este mes.</p>
+                        )}
+                    </div>
+                </BlurFade>
+            )}
 
             {/* Charts — side by side on desktop */}
             <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
