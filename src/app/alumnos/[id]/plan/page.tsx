@@ -11,14 +11,17 @@ import { swalBase, swalDanger } from '@/utils/swalConfig';
 type EjercicioAlumno = {
     nombre: string;
     notas: string;
-    semana1_5: string;
-    semana2_6: string;
+    semana1: string;
+    semana2: string;
     semana3: string;
     semana4: string;
+    semana5: string;
+    semana6: string;
+    semana7: string;
     kg: string;
-    kgAlumno: string;
-    observacionesAlumno: string;
 };
+
+const SEMANA_KEYS = ['semana1', 'semana2', 'semana3', 'semana4', 'semana5', 'semana6', 'semana7'] as const;
 
 type DiaAlumno = {
     titulo: string;
@@ -65,13 +68,14 @@ type Alumno = { _id: string; nombre: string; apellido: string };
 const emptyEjercicio = (): EjercicioAlumno => ({
     nombre: '',
     notas: '',
-    semana1_5: '',
-    semana2_6: '',
+    semana1: '',
+    semana2: '',
     semana3: '',
     semana4: '',
+    semana5: '',
+    semana6: '',
+    semana7: '',
     kg: '',
-    kgAlumno: '',
-    observacionesAlumno: '',
 });
 
 const emptyDia = (): DiaAlumno => ({
@@ -96,9 +100,16 @@ const plantillaToAlumnoPlan = (p: Plantilla): PlanState => ({
         descripcion: d.descripcion,
         bloqueActivacion: d.bloqueActivacion,
         ejercicios: d.ejercicios.map((e) => ({
-            ...e,
-            kgAlumno: '',
-            observacionesAlumno: '',
+            nombre: e.nombre,
+            notas: e.notas,
+            semana1: e.semana1_5,
+            semana2: e.semana2_6,
+            semana3: e.semana3,
+            semana4: e.semana4,
+            semana5: '',
+            semana6: '',
+            semana7: '',
+            kg: e.kg,
         })),
         _collapsed: false,
     })),
@@ -394,7 +405,7 @@ export default function PlanAlumnoPage() {
                                     <input
                                         type="number"
                                         min={1}
-                                        max={20}
+                                        max={7}
                                         value={plan.totalSemanas}
                                         onChange={(e) => setPlan((p) => p ? { ...p, totalSemanas: Number(e.target.value) } : p)}
                                         className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
@@ -463,6 +474,10 @@ export default function PlanAlumnoPage() {
                         )}
 
                         {/* Días */}
+                        {(() => {
+                            const numSemanas = Math.min(Math.max(plan.totalSemanas || 4, 1), 7);
+                            const semanaCols = SEMANA_KEYS.slice(0, numSemanas);
+                            return (
                         <div className="space-y-3">
                             {plan.dias.map((dia, dIdx) => (
                                 <div key={dIdx} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -518,10 +533,9 @@ export default function PlanAlumnoPage() {
                                                     <thead>
                                                         <tr className="text-slate-400">
                                                             <th className="text-left font-semibold pb-1.5 pr-2 w-36">Ejercicio</th>
-                                                            <th className="text-center font-semibold pb-1.5 px-1">Sem 1/5</th>
-                                                            <th className="text-center font-semibold pb-1.5 px-1">Sem 2/6</th>
-                                                            <th className="text-center font-semibold pb-1.5 px-1">Sem 3</th>
-                                                            <th className="text-center font-semibold pb-1.5 px-1">Sem 4</th>
+                                                            {semanaCols.map((sem, i) => (
+                                                                <th key={sem} className="text-center font-semibold pb-1.5 px-1">Sem {i + 1}</th>
+                                                            ))}
                                                             <th className="text-center font-semibold pb-1.5 px-1 text-slate-600">KG ref</th>
                                                             <th className="w-6" />
                                                         </tr>
@@ -547,7 +561,7 @@ export default function PlanAlumnoPage() {
                                                                         />
                                                                     </div>
                                                                 </td>
-                                                                {(['semana1_5', 'semana2_6', 'semana3', 'semana4'] as const).map((sem) => (
+                                                                {semanaCols.map((sem) => (
                                                                     <td key={sem} className="px-1 py-1">
                                                                         <input
                                                                             type="text"
@@ -598,6 +612,8 @@ export default function PlanAlumnoPage() {
                                 + Agregar día
                             </button>
                         </div>
+                            );
+                        })()}
 
                         {/* Delete plan */}
                         {planId && (

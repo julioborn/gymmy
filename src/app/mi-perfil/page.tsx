@@ -30,12 +30,12 @@ interface Alumno {
 interface EjercicioAsignado {
     nombre: string;
     notas: string;
-    trepada1: string; trepada2: string; trepada3: string; trepada4: string; trepada5: string;
-    semana1: string; semana2: string; semana3: string; semana4: string; semana5: string;
+    trepada1: string; trepada2: string; trepada3: string; trepada4: string; trepada5: string; trepada6: string; trepada7: string;
+    semana1: string; semana2: string; semana3: string; semana4: string; semana5: string; semana6: string; semana7: string;
     kg: string;
-    kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string;
+    kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string; kgAlumno6: string; kgAlumno7: string;
     observacionesAlumno1: string; observacionesAlumno2: string; observacionesAlumno3: string;
-    observacionesAlumno4: string; observacionesAlumno5: string;
+    observacionesAlumno4: string; observacionesAlumno5: string; observacionesAlumno6: string; observacionesAlumno7: string;
     grupoCombo: string;
 }
 
@@ -335,14 +335,14 @@ export default function MiPerfilPage() {
 
     function getSemanaField(ej: EjercicioAsignado, sem: number): string {
         const map: Record<number, keyof EjercicioAsignado> = {
-            1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5',
+            1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5', 6: 'semana6', 7: 'semana7',
         };
         return (ej[map[sem]] as string) || '';
     }
 
     function getTrepadaField(ej: EjercicioAsignado, sem: number): string {
         const map: Record<number, keyof EjercicioAsignado> = {
-            1: 'trepada1', 2: 'trepada2', 3: 'trepada3', 4: 'trepada4', 5: 'trepada5',
+            1: 'trepada1', 2: 'trepada2', 3: 'trepada3', 4: 'trepada4', 5: 'trepada5', 6: 'trepada6', 7: 'trepada7',
         };
         return (ej[map[sem]] as string) || '';
     }

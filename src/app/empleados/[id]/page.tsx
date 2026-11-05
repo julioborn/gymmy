@@ -16,10 +16,10 @@ type Empleado = {
 
 type EjercicioAsignado = {
     nombre: string; notas: string;
-    semana1: string; semana2: string; semana3: string; semana4: string; semana5: string;
+    semana1: string; semana2: string; semana3: string; semana4: string; semana5: string; semana6: string; semana7: string;
     kg: string;
-    kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string;
-    observacionesAlumno1: string; observacionesAlumno2: string; observacionesAlumno3: string; observacionesAlumno4: string; observacionesAlumno5: string;
+    kgAlumno1: string; kgAlumno2: string; kgAlumno3: string; kgAlumno4: string; kgAlumno5: string; kgAlumno6: string; kgAlumno7: string;
+    observacionesAlumno1: string; observacionesAlumno2: string; observacionesAlumno3: string; observacionesAlumno4: string; observacionesAlumno5: string; observacionesAlumno6: string; observacionesAlumno7: string;
     grupoCombo: string;
 };
 
@@ -46,7 +46,7 @@ const COMBO_PALETTE = [
 ];
 
 function getSemanaField(ej: EjercicioAsignado, sem: number): string {
-    const map: Record<number, keyof EjercicioAsignado> = { 1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5' };
+    const map: Record<number, keyof EjercicioAsignado> = { 1: 'semana1', 2: 'semana2', 3: 'semana3', 4: 'semana4', 5: 'semana5', 6: 'semana6', 7: 'semana7' };
     return (ej[map[sem]] as string) || '';
 }
 

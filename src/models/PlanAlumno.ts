@@ -8,22 +8,30 @@ export interface IEjercicioPlanAlumno {
     trepada3: string;
     trepada4: string;
     trepada5: string;
+    trepada6: string;
+    trepada7: string;
     semana1: string;
     semana2: string;
     semana3: string;
     semana4: string;
     semana5: string;
+    semana6: string;
+    semana7: string;
     kg: string;
     kgAlumno1: string;
     kgAlumno2: string;
     kgAlumno3: string;
     kgAlumno4: string;
     kgAlumno5: string;
+    kgAlumno6: string;
+    kgAlumno7: string;
     observacionesAlumno1: string;
     observacionesAlumno2: string;
     observacionesAlumno3: string;
     observacionesAlumno4: string;
     observacionesAlumno5: string;
+    observacionesAlumno6: string;
+    observacionesAlumno7: string;
     grupoCombo: string;
 }
 
@@ -60,22 +68,30 @@ const EjercicioSchema = new Schema({
     trepada3: { type: String, default: '' },
     trepada4: { type: String, default: '' },
     trepada5: { type: String, default: '' },
+    trepada6: { type: String, default: '' },
+    trepada7: { type: String, default: '' },
     semana1: { type: String, default: '' },
     semana2: { type: String, default: '' },
     semana3: { type: String, default: '' },
     semana4: { type: String, default: '' },
     semana5: { type: String, default: '' },
+    semana6: { type: String, default: '' },
+    semana7: { type: String, default: '' },
     kg: { type: String, default: '' },
     kgAlumno1: { type: String, default: '' },
     kgAlumno2: { type: String, default: '' },
     kgAlumno3: { type: String, default: '' },
     kgAlumno4: { type: String, default: '' },
     kgAlumno5: { type: String, default: '' },
+    kgAlumno6: { type: String, default: '' },
+    kgAlumno7: { type: String, default: '' },
     observacionesAlumno1: { type: String, default: '' },
     observacionesAlumno2: { type: String, default: '' },
     observacionesAlumno3: { type: String, default: '' },
     observacionesAlumno4: { type: String, default: '' },
     observacionesAlumno5: { type: String, default: '' },
+    observacionesAlumno6: { type: String, default: '' },
+    observacionesAlumno7: { type: String, default: '' },
     grupoCombo: { type: String, default: '' },
 }, { _id: false });
 

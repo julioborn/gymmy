@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { alumnoId: 
             const clientEj = clientDia.ejercicios?.[j];
             if (!clientEj) return ej;
             const merged: Record<string, string> = {};
-            for (let s = 1; s <= 5; s++) {
+            for (let s = 1; s <= 7; s++) {
                 const kk = `kgAlumno${s}`;
                 const ok = `observacionesAlumno${s}`;
                 const tk = `trepada${s}`;
