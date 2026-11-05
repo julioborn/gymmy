@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, animate } from 'framer-motion';
-import { TrendingUp, Clock3, Dumbbell, Users, UserCheck } from 'lucide-react';
+import { TrendingUp, Clock3, Dumbbell, Users, UserCheck, UserX } from 'lucide-react';
 import TopHorariosChart from '@/components/TopHorariosChart';
 import ActividadChart from '@/components/ActividadChart';
 
@@ -141,12 +141,13 @@ export default function Estadisticas() {
         setPorActividad(actividadData);
         setPorDia(diaData);
         setTopHorarios(top3);
-        setPromedio(diaData.length ? Math.round((Object.values(diaCount).reduce((a, b) => a + b, 0) / diaData.length) * 100) / 100 : 0);
+        setPromedio(diaData.length ? Math.round(Object.values(diaCount).reduce((a, b) => a + b, 0) / diaData.length) : 0);
         setAlumnosActivos(alumnosActivosSet.size);
     };
 
     const actividadLider = [...porActividad].sort((a, b) => b.cantidad - a.cantidad)[0]?.actividad ?? '-';
     const mesActual = new Date().toLocaleDateString('es-AR', { month: 'long' });
+    const sinAsistenciaMes = Math.max(alumnos.length - alumnosActivos, 0);
 
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
@@ -221,6 +222,18 @@ export default function Estadisticas() {
                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Actividad líder</p>
                         </div>
                         <p className="text-xl font-bold leading-tight text-white truncate">{actividadLider}</p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.25}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('239,68,68')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#ef4444' }}>
+                                <UserX size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sin asistencia</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={sinAsistenciaMes} /></p>
+                        <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
                     </div>
                 </BlurFade>
             </div>
