@@ -19,6 +19,7 @@ type EjercicioAlumno = {
     semana6: string;
     semana7: string;
     kg: string;
+    grupoCombo: string;
 };
 
 const SEMANA_KEYS = ['semana1', 'semana2', 'semana3', 'semana4', 'semana5', 'semana6', 'semana7'] as const;
@@ -76,6 +77,7 @@ const emptyEjercicio = (): EjercicioAlumno => ({
     semana6: '',
     semana7: '',
     kg: '',
+    grupoCombo: '',
 });
 
 const emptyDia = (): DiaAlumno => ({
@@ -110,6 +112,7 @@ const plantillaToAlumnoPlan = (p: Plantilla): PlanState => ({
             semana6: '',
             semana7: '',
             kg: e.kg,
+            grupoCombo: '',
         })),
         _collapsed: false,
     })),
@@ -543,6 +546,7 @@ export default function PlanAlumnoPage() {
                                                                 <th key={sem} className="text-center font-semibold pb-1.5 px-1">Sem {i + 1}</th>
                                                             ))}
                                                             <th className="text-center font-semibold pb-1.5 px-1 text-emerald-400/70">KG ref</th>
+                                                            <th className="text-center font-semibold pb-1.5 px-1 w-14" title="Marcá con la misma letra los ejercicios combinados (superset)">Combo</th>
                                                             <th className="w-6" />
                                                         </tr>
                                                     </thead>
@@ -583,6 +587,15 @@ export default function PlanAlumnoPage() {
                                                                         value={ej.kg}
                                                                         onChange={(e) => updateEjercicio(dIdx, eIdx, 'kg', e.target.value)}
                                                                         className="w-full border border-emerald-400/25 bg-emerald-400/[0.07] rounded-lg px-2 py-1.5 text-xs text-center text-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-400/60"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-1 py-1">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="—"
+                                                                        value={ej.grupoCombo}
+                                                                        onChange={(e) => updateEjercicio(dIdx, eIdx, 'grupoCombo', e.target.value)}
+                                                                        className={`${inputSmCls} text-center`}
                                                                     />
                                                                 </td>
                                                                 <td className="py-1 pl-1">
