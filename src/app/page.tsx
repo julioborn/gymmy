@@ -246,6 +246,7 @@ export default function HomePage() {
         localStorage.setItem('gymmy_showBalance', String(next));
         return next;
     });
+    const [showCierreMonto, setShowCierreMonto] = useState(false);
 
     useEffect(() => {
         if (session?.user?.role === 'registro') router.push('/alumnos/dni');
@@ -592,28 +593,34 @@ export default function HomePage() {
 
                             {/* Cuotas del mes */}
                             {data && (
-                                <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-3 py-2.5 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                                <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-xl px-3 py-3">
+                                    <div className="flex items-center gap-2 mb-1.5">
                                         <Banknote size={12} className="text-emerald-400" />
                                         <span className="text-emerald-400/80 text-[10px] font-bold uppercase tracking-wide">Cuotas · <span className="capitalize">{mesLabel}</span></span>
                                     </div>
-                                    <span className="text-emerald-400 font-black text-base tabular-nums">{data.pagados}/{data.totalAlumnos}</span>
+                                    <p className="text-emerald-400 font-black text-2xl leading-none tabular-nums">{data.pagados}/{data.totalAlumnos}</p>
                                 </div>
                             )}
 
                             {/* Último cierre de caja */}
                             {ultimoCierre && (
-                                <div className="bg-sky-400/10 border border-sky-400/20 rounded-xl px-3 py-2.5">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Wallet size={12} className="text-sky-400" />
-                                        <span className="text-sky-400/80 text-[10px] font-bold uppercase tracking-wide">Último cierre</span>
+                                <div className="bg-sky-400/10 border border-sky-400/20 rounded-xl px-3 py-3">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <Wallet size={12} className="text-sky-400" />
+                                            <span className="text-sky-400/80 text-[10px] font-bold uppercase tracking-wide">Último cierre</span>
+                                        </div>
+                                        <button onClick={() => setShowCierreMonto(v => !v)}
+                                            className="w-5 h-5 rounded-md bg-white/[0.07] flex items-center justify-center text-white/40 hover:text-white/70 transition-colors shrink-0">
+                                            {showCierreMonto ? <Eye size={10} /> : <EyeOff size={10} />}
+                                        </button>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-white/50 text-xs">
-                                            {new Date(ultimoCierre.fechaHasta).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} · {ultimoCierre.registradoPorNombre.split(' ')[0]}
-                                        </span>
-                                        <span className="text-sky-400 font-black text-base tabular-nums">${ultimoCierre.totalGeneral.toLocaleString('es-AR')}</span>
-                                    </div>
+                                    <p className="text-white/50 text-xs mb-1">
+                                        {new Date(ultimoCierre.fechaHasta).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} · {new Date(ultimoCierre.fechaHasta).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} · {ultimoCierre.registradoPorNombre.split(' ')[0]}
+                                    </p>
+                                    <p className="text-sky-400 font-black text-2xl leading-none tabular-nums">
+                                        {showCierreMonto ? `$${ultimoCierre.totalGeneral.toLocaleString('es-AR')}` : '$ ••••'}
+                                    </p>
                                 </div>
                             )}
                         </BlurFade>
