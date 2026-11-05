@@ -613,7 +613,7 @@ const ControlFinanciero = () => {
             </BlurFade>
 
             {/* KPI Summary */}
-            <div className="grid grid-cols-3 gap-2 lg:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3">
                 <BlurFade delay={0.05}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
@@ -641,15 +641,11 @@ const ControlFinanciero = () => {
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">${resultado.toLocaleString('es-ES')}</p>
                     </div>
                 </BlurFade>
-            </div>
-
-            {/* Cuotas por método de pago */}
-            <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 <BlurFade delay={0.2}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Banknote size={12} className="text-emerald-400 shrink-0" />
-                            <p className={lbl}>Cuotas en efectivo</p>
+                            <p className={lbl}>Cuotas efectivo</p>
                         </div>
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalEfectivo} /></p>
                     </div>
@@ -658,7 +654,7 @@ const ControlFinanciero = () => {
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('14,165,233')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Landmark size={12} className="text-sky-400 shrink-0" />
-                            <p className={lbl}>Cuotas por transferencia</p>
+                            <p className={lbl}>Cuotas transferencia</p>
                         </div>
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalTransferencia} /></p>
                     </div>
