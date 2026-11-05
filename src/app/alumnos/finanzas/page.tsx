@@ -43,9 +43,9 @@ function glassStyle(rgb: string, intensity: 'neutral' | 'glow' = 'glow'): React.
         return { background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' };
     }
     return {
-        background: `linear-gradient(165deg, rgba(${rgb},0.09), rgba(17,17,17,0.9))`,
-        border: `1px solid rgba(${rgb},0.32)`,
-        boxShadow: `0 0 0 1px rgba(${rgb},0.05) inset, 0 10px 26px -9px rgba(${rgb},0.34)`,
+        background: `linear-gradient(165deg, rgba(${rgb},0.06), rgba(17,17,17,0.9))`,
+        border: `1px solid rgba(${rgb},0.25)`,
+        boxShadow: `0 0 0 1px rgba(${rgb},0.04) inset, 0 8px 20px -10px rgba(${rgb},0.25)`,
     };
 }
 const chartDarkScales = {
