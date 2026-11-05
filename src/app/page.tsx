@@ -504,7 +504,7 @@ export default function HomePage() {
                     <div className="flex gap-4">
 
                         {/* LEFT: day selector + slot stats */}
-                        <BlurFade delay={0.06} className="flex flex-col gap-2.5 w-52 shrink-0">
+                        <BlurFade delay={0.06} className="flex flex-col gap-2.5 w-52 shrink-0 justify-between">
                             {/* Day pills */}
                             <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1">Semana</p>
