@@ -206,7 +206,7 @@ function StatCard({ children, className, glow = '255,255,255' }: { children: Rea
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
-    return <p className="text-xs font-bold text-white uppercase tracking-[0.1em] mb-2">{children}</p>;
+    return <p className="text-xs font-bold text-white uppercase tracking-[0.1em] mb-2 truncate min-w-0">{children}</p>;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

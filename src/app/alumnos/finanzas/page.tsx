@@ -557,7 +557,7 @@ const ControlFinanciero = () => {
         </svg>
     );
 
-    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest';
+    const lbl = 'text-[10px] font-bold text-white/40 uppercase tracking-widest truncate';
     const editBtn = 'p-1.5 bg-white/10 hover:bg-white/15 text-white/60 rounded-lg transition mr-1';
     const delBtn = 'p-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-400 rounded-lg transition';
 
@@ -616,7 +616,7 @@ const ControlFinanciero = () => {
             <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 <BlurFade delay={0.05}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
                             <TrendingDown size={12} className="text-emerald-400 rotate-180 shrink-0" />
                             <p className={lbl}>Ingresos</p>
                         </div>
@@ -625,7 +625,7 @@ const ControlFinanciero = () => {
                 </BlurFade>
                 <BlurFade delay={0.1}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('239,68,68')}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
                             <TrendingDown size={12} className="text-red-400 shrink-0" />
                             <p className={lbl}>Gastos</p>
                         </div>
@@ -675,7 +675,7 @@ const ControlFinanciero = () => {
             <div className="grid grid-cols-3 gap-2 lg:gap-3">
                 <BlurFade delay={0.2}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle(resultado >= 0 ? '16,185,129' : '239,68,68')}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
                             <Scale size={12} className={resultado >= 0 ? 'text-emerald-400 shrink-0' : 'text-red-400 shrink-0'} />
                             <p className={lbl}>Resultado</p>
                         </div>
@@ -684,7 +684,7 @@ const ControlFinanciero = () => {
                 </BlurFade>
                 <BlurFade delay={0.25}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
                             <Banknote size={12} className="text-emerald-400 shrink-0" />
                             <p className={lbl}>Cuotas efectivo</p>
                         </div>
@@ -693,7 +693,7 @@ const ControlFinanciero = () => {
                 </BlurFade>
                 <BlurFade delay={0.3}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('14,165,233')}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
                             <Landmark size={12} className="text-sky-400 shrink-0" />
                             <p className={lbl}>Cuotas transferencia</p>
                         </div>

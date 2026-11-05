@@ -209,11 +209,11 @@ export default function Estadisticas() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <BlurFade delay={0.05}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('14,165,233')}>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 min-w-0">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#0ea5e9' }}>
                                 <TrendingUp size={14} className="text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Promedio / día</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">Promedio / día</p>
                         </div>
                         <p className="text-3xl font-bold leading-none text-white tabular-nums">{promedio}</p>
                         <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
@@ -221,11 +221,11 @@ export default function Estadisticas() {
                 </BlurFade>
                 <BlurFade delay={0.1}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('139,92,246')}>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 min-w-0">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#8b5cf6' }}>
                                 <UserCheck size={14} className="text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Alumnos activos</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">Alumnos activos</p>
                         </div>
                         <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosActivos} /></p>
                         <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
@@ -233,22 +233,22 @@ export default function Estadisticas() {
                 </BlurFade>
                 <BlurFade delay={0.15}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('245,158,11')}>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 min-w-0">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#f59e0b' }}>
                                 <Clock3 size={14} className="text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Hora pico</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">Hora pico</p>
                         </div>
                         <p className="text-3xl font-bold leading-none text-white tabular-nums">{topHorarios[0]?.hora ?? '-'}</p>
                     </div>
                 </BlurFade>
                 <BlurFade delay={0.2}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('163,230,53')}>
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 min-w-0">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#a3e635' }}>
                                 <Dumbbell size={14} className="text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Actividad líder</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">Actividad líder</p>
                         </div>
                         <p className="text-xl font-bold leading-tight text-white truncate">{actividadLider}</p>
                     </div>
@@ -281,7 +281,7 @@ export default function Estadisticas() {
                             <UserX size={16} className="text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sin asistencia</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest truncate">Sin asistencia</p>
                             <p className="text-white/30 text-[10px] font-semibold capitalize">{mesActual}</p>
                         </div>
                         <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosInactivos.length} /></p>
