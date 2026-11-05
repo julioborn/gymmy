@@ -117,6 +117,12 @@ const plantillaToAlumnoPlan = (p: Plantilla): PlanState => ({
 
 const CATEGORIAS = ['Fuerza', 'Hipertrofia', 'Rehabilitación', 'Resistencia', 'Pérdida de peso', 'Tonificación', 'General'];
 
+// ── Dark glass + glow helpers (mismo lenguaje visual del resto de la app) ──────
+const cardNeutral: React.CSSProperties = { background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' };
+const cardGlow: React.CSSProperties = { background: 'linear-gradient(165deg, rgba(16,185,129,0.06), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.22)', boxShadow: '0 0 0 1px rgba(16,185,129,0.03) inset, 0 8px 20px -12px rgba(16,185,129,0.22)' };
+const inputCls = 'w-full border border-white/10 bg-white/[0.04] rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50';
+const inputSmCls = 'w-full border border-white/10 bg-white/[0.04] rounded-lg px-2 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-emerald-400/50';
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PlanAlumnoPage() {
@@ -289,16 +295,16 @@ export default function PlanAlumnoPage() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-slate-700" />
+            <div className="flex justify-center items-center min-h-screen bg-[#0a0a0a]">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-emerald-500/60" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20">
+        <div className="min-h-screen bg-[#0a0a0a] pb-20">
             {/* Header */}
-            <div className="bg-[#111] text-white px-4 pt-6 pb-8 rounded-b-3xl shadow-lg">
+            <div className="bg-[#111] text-white px-4 pt-6 pb-8 rounded-b-3xl border-b border-white/5">
                 <div className="max-w-2xl mx-auto flex items-center gap-3">
                     <Link
                         href={`/alumnos/${alumnoId}/historial`}
@@ -309,7 +315,7 @@ export default function PlanAlumnoPage() {
                         </svg>
                     </Link>
                     <div className="flex-1 min-w-0">
-                        <p className="text-slate-400 text-xs font-medium">Plan de entrenamiento</p>
+                        <p className="text-white/40 text-xs font-medium">Plan de entrenamiento</p>
                         <h1 className="text-lg font-bold truncate">
                             {alumno ? `${alumno.nombre} ${alumno.apellido}` : '...'}
                         </h1>
@@ -329,24 +335,24 @@ export default function PlanAlumnoPage() {
             <div className="max-w-2xl mx-auto px-4 -mt-4 space-y-4">
                 {/* No plan assigned */}
                 {!plan && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center mt-6">
-                        <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <div className="rounded-2xl p-8 text-center mt-6" style={cardNeutral}>
+                        <div className="w-14 h-14 bg-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-7 h-7 text-white/40" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                             </svg>
                         </div>
-                        <p className="text-slate-600 font-semibold mb-1">Sin plan asignado</p>
-                        <p className="text-slate-400 text-sm mb-5">Elegí una plantilla como base o creá un plan desde cero</p>
+                        <p className="text-white/80 font-semibold mb-1">Sin plan asignado</p>
+                        <p className="text-white/40 text-sm mb-5">Elegí una plantilla como base o creá un plan desde cero</p>
                         <div className="flex flex-col sm:flex-row gap-2 justify-center">
                             <button
                                 onClick={() => setShowPlantillasModal(true)}
-                                className="px-5 py-2.5 bg-[#111] hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-colors"
+                                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-colors"
                             >
                                 Usar plantilla
                             </button>
                             <button
                                 onClick={() => setPlan({ nombre: '', categoria: '', descripcion: '', totalSemanas: 4, fechaInicio: todayStr(), entradaCalor: { ejercicios: [] }, dias: [emptyDia()] })}
-                                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
+                                className="px-5 py-2.5 bg-white/[0.08] hover:bg-white/[0.12] text-white/80 text-sm font-semibold rounded-xl transition-colors"
                             >
                                 Crear desde cero
                             </button>
@@ -358,12 +364,12 @@ export default function PlanAlumnoPage() {
                 {plan && (
                     <>
                         {/* Datos generales */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-3">
+                        <div className="rounded-2xl p-4 space-y-3" style={cardGlow}>
                             <div className="flex items-center justify-between">
-                                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Datos generales</h2>
+                                <h2 className="text-sm font-bold text-white/70 uppercase tracking-wide">Datos generales</h2>
                                 <button
                                     onClick={() => setShowPlantillasModal(true)}
-                                    className="text-xs text-emerald-600 font-semibold hover:text-emerald-500"
+                                    className="text-xs text-emerald-400 font-semibold hover:text-emerald-300"
                                 >
                                     Cambiar plantilla
                                 </button>
@@ -373,42 +379,42 @@ export default function PlanAlumnoPage() {
                                 placeholder="Nombre del plan"
                                 value={plan.nombre}
                                 onChange={(e) => setPlan((p) => p ? { ...p, nombre: e.target.value } : p)}
-                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                className={inputCls}
                             />
                             <select
                                 value={plan.categoria}
                                 onChange={(e) => setPlan((p) => p ? { ...p, categoria: e.target.value } : p)}
-                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                className={inputCls}
                             >
-                                <option value="">Categoría</option>
-                                {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                                <option value="" className="bg-[#1a1a1a] text-white">Categoría</option>
+                                {CATEGORIAS.map((c) => <option key={c} value={c} className="bg-[#1a1a1a] text-white">{c}</option>)}
                             </select>
                             <textarea
                                 placeholder="Descripción (opcional)"
                                 value={plan.descripcion}
                                 onChange={(e) => setPlan((p) => p ? { ...p, descripcion: e.target.value } : p)}
                                 rows={2}
-                                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 resize-none"
+                                className={`${inputCls} resize-none`}
                             />
                             <div className="flex gap-3">
                                 <div className="flex-1">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Fecha de inicio</label>
+                                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-1 block">Fecha de inicio</label>
                                     <input
                                         type="date"
                                         value={plan.fechaInicio}
                                         onChange={(e) => setPlan((p) => p ? { ...p, fechaInicio: e.target.value } : p)}
-                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                        className={`${inputCls} [color-scheme:dark]`}
                                     />
                                 </div>
                                 <div className="w-28">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Semanas</label>
+                                    <label className="text-xs font-semibold text-white/50 uppercase tracking-wide mb-1 block">Semanas</label>
                                     <input
                                         type="number"
                                         min={1}
                                         max={7}
                                         value={plan.totalSemanas}
                                         onChange={(e) => setPlan((p) => p ? { ...p, totalSemanas: Number(e.target.value) } : p)}
-                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                        className={inputCls}
                                     />
                                 </div>
                             </div>
@@ -416,8 +422,8 @@ export default function PlanAlumnoPage() {
 
                         {/* Entrada en calor */}
                         {plan.entradaCalor.ejercicios.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-2">
-                                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3">Entrada en calor</h2>
+                            <div className="rounded-2xl p-4 space-y-2" style={cardNeutral}>
+                                <h2 className="text-sm font-bold text-white/70 uppercase tracking-wide mb-3">Entrada en calor</h2>
                                 {plan.entradaCalor.ejercicios.map((ej, i) => (
                                     <div key={i} className="flex gap-2">
                                         <input
@@ -429,7 +435,7 @@ export default function PlanAlumnoPage() {
                                                 ejercicios[i] = { ...ejercicios[i], nombre: e.target.value };
                                                 setPlan((p) => p ? { ...p, entradaCalor: { ejercicios } } : p);
                                             }}
-                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                            className={`flex-1 ${inputSmCls}`}
                                         />
                                         <input
                                             type="text"
@@ -440,14 +446,14 @@ export default function PlanAlumnoPage() {
                                                 ejercicios[i] = { ...ejercicios[i], notas: e.target.value };
                                                 setPlan((p) => p ? { ...p, entradaCalor: { ejercicios } } : p);
                                             }}
-                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                            className={`flex-1 ${inputSmCls}`}
                                         />
                                         <button
                                             onClick={() => {
                                                 const ejercicios = plan.entradaCalor.ejercicios.filter((_, j) => j !== i);
                                                 setPlan((p) => p ? { ...p, entradaCalor: { ejercicios } } : p);
                                             }}
-                                            className="w-8 h-9 flex items-center justify-center text-red-400 hover:text-red-600 shrink-0"
+                                            className="w-8 h-9 flex items-center justify-center text-red-400 hover:text-red-300 shrink-0"
                                         >
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -457,7 +463,7 @@ export default function PlanAlumnoPage() {
                                 ))}
                                 <button
                                     onClick={() => setPlan((p) => p ? { ...p, entradaCalor: { ejercicios: [...p.entradaCalor.ejercicios, { nombre: '', notas: '' }] } } : p)}
-                                    className="text-xs text-emerald-600 font-semibold hover:text-emerald-500 mt-1"
+                                    className="text-xs text-emerald-400 font-semibold hover:text-emerald-300 mt-1"
                                 >
                                     + Agregar ejercicio
                                 </button>
@@ -467,7 +473,7 @@ export default function PlanAlumnoPage() {
                         {plan.entradaCalor.ejercicios.length === 0 && (
                             <button
                                 onClick={() => setPlan((p) => p ? { ...p, entradaCalor: { ejercicios: [{ nombre: '', notas: '' }] } } : p)}
-                                className="w-full bg-white rounded-2xl border border-dashed border-slate-200 p-3 text-xs text-slate-400 font-semibold hover:border-slate-300 hover:text-slate-500 transition-colors"
+                                className="w-full rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-3 text-xs text-white/40 font-semibold hover:border-white/25 hover:text-white/60 transition-colors"
                             >
                                 + Agregar entrada en calor
                             </button>
@@ -480,20 +486,20 @@ export default function PlanAlumnoPage() {
                             return (
                         <div className="space-y-3">
                             {plan.dias.map((dia, dIdx) => (
-                                <div key={dIdx} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                                <div key={dIdx} className="rounded-2xl overflow-hidden" style={cardNeutral}>
                                     {/* Day header */}
-                                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100">
+                                    <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/10">
                                         <button onClick={() => toggleCollapse(dIdx)} className="flex-1 flex items-center gap-2 text-left">
-                                            <svg className={`w-4 h-4 text-slate-400 transition-transform ${dia._collapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <svg className={`w-4 h-4 text-white/40 transition-transform ${dia._collapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
-                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                                            <span className="text-xs font-bold text-white/60 uppercase tracking-wide">
                                                 Día {dIdx + 1}{dia.titulo ? ` — ${dia.titulo}` : ''}
                                             </span>
                                         </button>
                                         <button
                                             onClick={() => removeDia(dIdx)}
-                                            className="w-7 h-7 flex items-center justify-center text-red-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                            className="w-7 h-7 flex items-center justify-center text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition-colors"
                                         >
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -509,14 +515,14 @@ export default function PlanAlumnoPage() {
                                                     placeholder="Título del día"
                                                     value={dia.titulo}
                                                     onChange={(e) => updateDia(dIdx, 'titulo', e.target.value)}
-                                                    className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                    className={inputSmCls}
                                                 />
                                                 <input
                                                     type="text"
                                                     placeholder="Descripción"
                                                     value={dia.descripcion}
                                                     onChange={(e) => updateDia(dIdx, 'descripcion', e.target.value)}
-                                                    className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                    className={inputSmCls}
                                                 />
                                             </div>
                                             <textarea
@@ -524,23 +530,23 @@ export default function PlanAlumnoPage() {
                                                 value={dia.bloqueActivacion}
                                                 onChange={(e) => updateDia(dIdx, 'bloqueActivacion', e.target.value)}
                                                 rows={2}
-                                                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 resize-none"
+                                                className={`${inputSmCls} resize-none`}
                                             />
 
                                             {/* Exercise table */}
                                             <div className="overflow-x-auto -mx-4 px-4">
                                                 <table className="w-full text-xs min-w-[580px]">
                                                     <thead>
-                                                        <tr className="text-slate-400">
+                                                        <tr className="text-white/40">
                                                             <th className="text-left font-semibold pb-1.5 pr-2 w-36">Ejercicio</th>
                                                             {semanaCols.map((sem, i) => (
                                                                 <th key={sem} className="text-center font-semibold pb-1.5 px-1">Sem {i + 1}</th>
                                                             ))}
-                                                            <th className="text-center font-semibold pb-1.5 px-1 text-slate-600">KG ref</th>
+                                                            <th className="text-center font-semibold pb-1.5 px-1 text-emerald-400/70">KG ref</th>
                                                             <th className="w-6" />
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-slate-50">
+                                                    <tbody className="divide-y divide-white/[0.06]">
                                                         {dia.ejercicios.map((ej, eIdx) => (
                                                             <tr key={eIdx}>
                                                                 <td className="pr-2 py-1">
@@ -550,14 +556,14 @@ export default function PlanAlumnoPage() {
                                                                             placeholder="Nombre"
                                                                             value={ej.nombre}
                                                                             onChange={(e) => updateEjercicio(dIdx, eIdx, 'nombre', e.target.value)}
-                                                                            className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                                            className={inputSmCls}
                                                                         />
                                                                         <input
                                                                             type="text"
                                                                             placeholder="Notas"
                                                                             value={ej.notas}
                                                                             onChange={(e) => updateEjercicio(dIdx, eIdx, 'notas', e.target.value)}
-                                                                            className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400 text-slate-400"
+                                                                            className={`${inputSmCls} text-white/40`}
                                                                         />
                                                                     </div>
                                                                 </td>
@@ -567,7 +573,7 @@ export default function PlanAlumnoPage() {
                                                                             type="text"
                                                                             value={ej[sem]}
                                                                             onChange={(e) => updateEjercicio(dIdx, eIdx, sem, e.target.value)}
-                                                                            className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                                            className={`${inputSmCls} text-center`}
                                                                         />
                                                                     </td>
                                                                 ))}
@@ -576,13 +582,13 @@ export default function PlanAlumnoPage() {
                                                                         type="text"
                                                                         value={ej.kg}
                                                                         onChange={(e) => updateEjercicio(dIdx, eIdx, 'kg', e.target.value)}
-                                                                        className="w-full border border-emerald-200 bg-emerald-50 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                                                                        className="w-full border border-emerald-400/25 bg-emerald-400/[0.07] rounded-lg px-2 py-1.5 text-xs text-center text-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-400/60"
                                                                     />
                                                                 </td>
                                                                 <td className="py-1 pl-1">
                                                                     <button
                                                                         onClick={() => removeEjercicio(dIdx, eIdx)}
-                                                                        className="w-6 h-6 flex items-center justify-center text-red-300 hover:text-red-500"
+                                                                        className="w-6 h-6 flex items-center justify-center text-red-400/60 hover:text-red-400"
                                                                     >
                                                                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -596,7 +602,7 @@ export default function PlanAlumnoPage() {
                                             </div>
                                             <button
                                                 onClick={() => addEjercicio(dIdx)}
-                                                className="text-xs text-emerald-600 font-semibold hover:text-emerald-500"
+                                                className="text-xs text-emerald-400 font-semibold hover:text-emerald-300"
                                             >
                                                 + Agregar ejercicio
                                             </button>
@@ -607,7 +613,7 @@ export default function PlanAlumnoPage() {
 
                             <button
                                 onClick={addDia}
-                                className="w-full bg-white rounded-2xl border border-dashed border-slate-200 p-3 text-xs text-slate-400 font-semibold hover:border-emerald-300 hover:text-emerald-600 transition-colors"
+                                className="w-full rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-3 text-xs text-white/40 font-semibold hover:border-emerald-400/30 hover:text-emerald-400 transition-colors"
                             >
                                 + Agregar día
                             </button>
@@ -620,7 +626,7 @@ export default function PlanAlumnoPage() {
                             <div className="pt-2 pb-4">
                                 <button
                                     onClick={handleEliminarPlan}
-                                    className="w-full py-2.5 text-xs font-semibold text-red-400 hover:text-red-600 transition-colors"
+                                    className="w-full py-2.5 text-xs font-semibold text-red-400/70 hover:text-red-400 transition-colors"
                                 >
                                     Eliminar plan del alumno
                                 </button>
@@ -632,13 +638,13 @@ export default function PlanAlumnoPage() {
 
             {/* Plantillas modal */}
             {showPlantillasModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl">
-                        <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                            <h3 className="font-bold text-slate-800">Elegir plantilla</h3>
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
+                    <div className="rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.06), #111111)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <h3 className="font-bold text-white">Elegir plantilla</h3>
                             <button
                                 onClick={() => setShowPlantillasModal(false)}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-white/50"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -647,19 +653,19 @@ export default function PlanAlumnoPage() {
                         </div>
                         <div className="overflow-y-auto flex-1 p-3 space-y-2">
                             {plantillas.length === 0 && (
-                                <p className="text-center text-slate-400 text-sm py-8">No hay plantillas creadas</p>
+                                <p className="text-center text-white/40 text-sm py-8">No hay plantillas creadas</p>
                             )}
                             {plantillas.map((p) => (
                                 <button
                                     key={p._id}
                                     onClick={() => handleAsignarPlantilla(p)}
-                                    className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+                                    className="w-full text-left p-3 rounded-xl border border-white/10 bg-white/[0.03] hover:border-emerald-400/30 hover:bg-emerald-400/[0.06] transition-colors"
                                 >
-                                    <p className="font-semibold text-slate-800 text-sm">{p.nombre}</p>
-                                    <p className="text-slate-400 text-xs mt-0.5">
+                                    <p className="font-semibold text-white text-sm">{p.nombre}</p>
+                                    <p className="text-white/40 text-xs mt-0.5">
                                         {p.categoria} · {p.dias.length} día{p.dias.length !== 1 ? 's' : ''}
                                     </p>
-                                    {p.descripcion && <p className="text-slate-400 text-xs mt-1 line-clamp-1">{p.descripcion}</p>}
+                                    {p.descripcion && <p className="text-white/40 text-xs mt-1 line-clamp-1">{p.descripcion}</p>}
                                 </button>
                             ))}
                         </div>
