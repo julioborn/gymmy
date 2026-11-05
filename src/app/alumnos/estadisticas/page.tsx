@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, animate } from 'framer-motion';
-import { Activity, TrendingUp, Clock3, Dumbbell, Users } from 'lucide-react';
+import { TrendingUp, Clock3, Dumbbell, Users, UserCheck } from 'lucide-react';
 import TopHorariosChart from '@/components/TopHorariosChart';
 import ActividadChart from '@/components/ActividadChart';
 
@@ -72,6 +72,7 @@ export default function Estadisticas() {
     const [porActividad, setPorActividad] = useState<{ actividad: string; cantidad: number }[]>([]);
     const [porDia, setPorDia] = useState<{ fecha: string; cantidad: number }[]>([]);
     const [promedio, setPromedio] = useState<number>(0);
+    const [alumnosActivos, setAlumnosActivos] = useState<number>(0);
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
 
@@ -101,24 +102,31 @@ export default function Estadisticas() {
     }, []);
 
     const calcularEstadisticas = (alumnos: Alumno[]) => {
+        const ahora = new Date();
+        const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+
         const actividadCount: Record<string, number> = {};
         const diaCount: Record<string, number> = {};
         const horarioFrecuencia: Record<string, number> = {};
+        const alumnosActivosSet = new Set<string>();
 
         alumnos.forEach(alumno => {
             alumno.asistencia.forEach(({ fecha, actividad, presente }) => {
                 if (!presente) return;
+                const fechaObj = new Date(fecha);
+                if (fechaObj < inicioMes) return;
 
                 actividadCount[actividad] = (actividadCount[actividad] || 0) + 1;
+                alumnosActivosSet.add(alumno._id);
 
-                const dia = new Date(fecha).toISOString().split('T')[0];
+                const dia = fechaObj.toISOString().split('T')[0];
                 diaCount[dia] = (diaCount[dia] || 0) + 1;
 
-                const hora = new Date(fecha).getHours();
-                const minutos = new Date(fecha).getMinutes();
+                const hora = fechaObj.getHours();
+                const minutos = fechaObj.getMinutes();
                 const horarioRedondeado = minutos < 15 ? `${hora.toString().padStart(2, '0')}:00`
                     : minutos < 45 ? `${hora.toString().padStart(2, '0')}:30`
-                    : `${(hora + 1).toString().padStart(2, '0')}:00`;
+                    : `${((hora + 1) % 24).toString().padStart(2, '0')}:00`;
                 horarioFrecuencia[horarioRedondeado] = (horarioFrecuencia[horarioRedondeado] || 0) + 1;
             });
         });
@@ -134,10 +142,11 @@ export default function Estadisticas() {
         setPorDia(diaData);
         setTopHorarios(top3);
         setPromedio(diaData.length ? Math.round((Object.values(diaCount).reduce((a, b) => a + b, 0) / diaData.length) * 100) / 100 : 0);
+        setAlumnosActivos(alumnosActivosSet.size);
     };
 
-    const totalAsistencias = porDia.reduce((a, b) => a + b.cantidad, 0);
     const actividadLider = [...porActividad].sort((a, b) => b.cantidad - a.cantidad)[0]?.actividad ?? '-';
+    const mesActual = new Date().toLocaleDateString('es-AR', { month: 'long' });
 
     return (
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8 space-y-4">
@@ -166,34 +175,36 @@ export default function Estadisticas() {
                 </div>
             </BlurFade>
 
-            {/* KPI Cards */}
+            {/* KPI Cards — {mesActual} */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <BlurFade delay={0.05}>
-                    <div className="rounded-2xl p-4 h-full" style={glassStyle('16,185,129')}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
-                                <Activity size={14} className="text-white" />
-                            </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total asistencias</p>
-                        </div>
-                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={totalAsistencias} /></p>
-                    </div>
-                </BlurFade>
-                <BlurFade delay={0.1}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('14,165,233')}>
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#0ea5e9' }}>
                                 <TrendingUp size={14} className="text-white" />
                             </div>
                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Promedio / día</p>
                         </div>
                         <p className="text-3xl font-bold leading-none text-white tabular-nums">{promedio}</p>
+                        <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.1}>
+                    <div className="rounded-2xl p-4 h-full" style={glassStyle('139,92,246')}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#8b5cf6' }}>
+                                <UserCheck size={14} className="text-white" />
+                            </div>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Alumnos activos</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosActivos} /></p>
+                        <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
                     </div>
                 </BlurFade>
                 <BlurFade delay={0.15}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('245,158,11')}>
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#f59e0b' }}>
                                 <Clock3 size={14} className="text-white" />
                             </div>
                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Hora pico</p>
@@ -204,7 +215,7 @@ export default function Estadisticas() {
                 <BlurFade delay={0.2}>
                     <div className="rounded-2xl p-4 h-full" style={glassStyle('163,230,53')}>
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #a3e635, #65a30d)' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#a3e635' }}>
                                 <Dumbbell size={14} className="text-white" />
                             </div>
                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Actividad líder</p>
