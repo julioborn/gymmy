@@ -672,8 +672,8 @@ const ControlFinanciero = () => {
             </BlurFade>
 
             {/* Resultado y Cuotas por método de pago */}
-            <div className="grid grid-cols-3 gap-2 lg:gap-3">
-                <BlurFade delay={0.2}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 lg:gap-3">
+                <BlurFade delay={0.2} className="col-span-2 sm:col-span-1">
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle(resultado >= 0 ? '16,185,129' : '239,68,68')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Scale size={12} className={resultado >= 0 ? 'text-emerald-400 shrink-0' : 'text-red-400 shrink-0'} />
