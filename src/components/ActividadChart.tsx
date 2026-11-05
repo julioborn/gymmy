@@ -18,7 +18,14 @@ interface Props {
     scales?: any;
 }
 
+const ACTIVIDAD_COLORS: Record<string, string> = {
+    'Musculación': '#0ea5e9',
+    'Intermitente': '#f97316',
+    'Otro': '#94a3b8',
+};
+
 export default function ActividadChart({ data, colors = ['#10b981', '#f97316'], scales }: Props) {
+    const colorFor = (actividad: string, i: number) => ACTIVIDAD_COLORS[actividad] ?? colors[i % 2];
     return (
         <Bar
             data={{
@@ -27,8 +34,8 @@ export default function ActividadChart({ data, colors = ['#10b981', '#f97316'], 
                     {
                         label: 'Asistencias',
                         data: data.map(d => d.cantidad),
-                        backgroundColor: data.map((_, i) => hexToRgba(colors[i % 2], 0.55)),
-                        borderColor: data.map((_, i) => hexToRgba(colors[i % 2], 1)),
+                        backgroundColor: data.map((d, i) => hexToRgba(colorFor(d.actividad, i), 0.55)),
+                        borderColor: data.map((d, i) => hexToRgba(colorFor(d.actividad, i), 1)),
                         borderWidth: 1,
                         borderRadius: 6,
                     },
