@@ -76,6 +76,7 @@ export default function Estadisticas() {
     const [alumnosActivos, setAlumnosActivos] = useState<number>(0);
     const [alumnosInactivos, setAlumnosInactivos] = useState<{ _id: string; nombre: string; apellido: string }[]>([]);
     const [showInactivos, setShowInactivos] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [acento, setAcento] = useState('#10b981');
     const [acento2, setAcento2] = useState('#f97316');
 
@@ -101,7 +102,8 @@ export default function Estadisticas() {
             .then(data => {
                 setAlumnos(data);
                 calcularEstadisticas(data);
-            });
+            })
+            .finally(() => setLoading(false));
     }, []);
 
     const calcularEstadisticas = (alumnos: Alumno[]) => {
@@ -184,6 +186,25 @@ export default function Estadisticas() {
                 </div>
             </BlurFade>
 
+            {loading ? (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="rounded-2xl p-4 h-[104px] animate-pulse" style={glassStyle('255,255,255', 'neutral')}>
+                                <div className="w-8 h-8 rounded-lg bg-white/[0.08] mb-3" />
+                                <div className="w-16 h-6 rounded bg-white/[0.08]" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
+                        {[0, 1].map(i => (
+                            <div key={i} className="rounded-2xl p-4 h-64 animate-pulse" style={glassStyle('255,255,255', 'neutral')} />
+                        ))}
+                    </div>
+                    <div className="rounded-2xl p-4 h-16 animate-pulse" style={glassStyle('255,255,255', 'neutral')} />
+                </div>
+            ) : (
+            <>
             {/* KPI Cards — {mesActual} */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <BlurFade delay={0.05}>
@@ -285,6 +306,8 @@ export default function Estadisticas() {
                     )}
                 </div>
             </BlurFade>
+            </>
+            )}
 
         </div>
     );
