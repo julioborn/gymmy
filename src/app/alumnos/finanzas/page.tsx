@@ -573,7 +573,7 @@ const ControlFinanciero = () => {
                         <div className="pointer-events-none absolute -bottom-8 -left-4 w-40 h-40 rounded-full blur-3xl opacity-15" style={{ background: acento2 }} />
                         <div className="relative flex items-start justify-between gap-3 flex-wrap">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${acento}, ${acento2})` }}>
+                                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: acento }}>
                                     <Wallet size={20} className="text-white" />
                                 </div>
                                 <div className="min-w-0">
@@ -612,8 +612,8 @@ const ControlFinanciero = () => {
                 </div>
             </BlurFade>
 
-            {/* KPI Summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3">
+            {/* Ingresos y Gastos */}
+            <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 <BlurFade delay={0.05}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
@@ -632,7 +632,48 @@ const ControlFinanciero = () => {
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalGastos} /></p>
                     </div>
                 </BlurFade>
-                <BlurFade delay={0.15}>
+            </div>
+
+            {/* Gráfico Ingresos vs Gastos — debajo de las dos cards de arriba */}
+            <BlurFade delay={0.15}>
+                <div className="rounded-2xl p-4" style={glassStyle('0,0,0', 'neutral')}>
+                    <p className={`${lbl} mb-4`}>Ingresos vs Gastos — {selectedYear}</p>
+                    <Bar
+                        data={{
+                            labels: meses,
+                            datasets: [
+                                {
+                                    label: `Ingresos (${selectedYear})`,
+                                    data: ingresosMensualesCombinados,
+                                    backgroundColor: 'rgba(16,185,129,0.55)',
+                                    borderColor: 'rgba(16,185,129,1)',
+                                    borderWidth: 1,
+                                    borderRadius: 4,
+                                },
+                                {
+                                    label: `Gastos (${selectedYear})`,
+                                    data: gastosMensuales,
+                                    backgroundColor: 'rgba(239,68,68,0.55)',
+                                    borderColor: 'rgba(239,68,68,1)',
+                                    borderWidth: 1,
+                                    borderRadius: 4,
+                                },
+                            ],
+                        }}
+                        options={{
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: true, labels: chartDarkLegend.labels } },
+                            scales: chartDarkScales,
+                        }}
+                        style={{ maxHeight: '280px' }}
+                    />
+                </div>
+            </BlurFade>
+
+            {/* Resultado y Cuotas por método de pago */}
+            <div className="grid grid-cols-3 gap-2 lg:gap-3">
+                <BlurFade delay={0.2}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle(resultado >= 0 ? '16,185,129' : '239,68,68')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Scale size={12} className={resultado >= 0 ? 'text-emerald-400 shrink-0' : 'text-red-400 shrink-0'} />
@@ -641,7 +682,7 @@ const ControlFinanciero = () => {
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">${resultado.toLocaleString('es-ES')}</p>
                     </div>
                 </BlurFade>
-                <BlurFade delay={0.2}>
+                <BlurFade delay={0.25}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('16,185,129')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Banknote size={12} className="text-emerald-400 shrink-0" />
@@ -650,7 +691,7 @@ const ControlFinanciero = () => {
                         <p className="text-base lg:text-2xl font-bold leading-tight text-white tabular-nums break-all">$<NumberTicker value={totalEfectivo} /></p>
                     </div>
                 </BlurFade>
-                <BlurFade delay={0.25}>
+                <BlurFade delay={0.3}>
                     <div className="rounded-2xl p-3 lg:p-4 h-full" style={glassStyle('14,165,233')}>
                         <div className="flex items-center gap-1.5 mb-1.5">
                             <Landmark size={12} className="text-sky-400 shrink-0" />
@@ -661,9 +702,8 @@ const ControlFinanciero = () => {
                 </BlurFade>
             </div>
 
-            {/* Desktop: tables left, chart right */}
-            <div className="lg:grid lg:grid-cols-[1fr_420px] lg:gap-4 space-y-4 lg:space-y-0">
-                <div className="space-y-4">
+            {/* Tablas de ingresos adicionales y gastos */}
+            <div className="space-y-4">
                     {/* Ingresos Adicionales */}
                     <BlurFade delay={0.3}>
                         <div className="rounded-2xl overflow-hidden" style={glassStyle('0,0,0', 'neutral')}>
@@ -751,44 +791,6 @@ const ControlFinanciero = () => {
                             )}
                         </div>
                     </BlurFade>
-                </div>
-
-                {/* Gráfico (sidebar en desktop) */}
-                <BlurFade delay={0.4}>
-                    <div className="rounded-2xl p-4 lg:self-start" style={glassStyle('0,0,0', 'neutral')}>
-                        <p className={`${lbl} mb-4`}>Ingresos vs Gastos — {selectedYear}</p>
-                        <Bar
-                            data={{
-                                labels: meses,
-                                datasets: [
-                                    {
-                                        label: `Ingresos (${selectedYear})`,
-                                        data: ingresosMensualesCombinados,
-                                        backgroundColor: 'rgba(16,185,129,0.55)',
-                                        borderColor: 'rgba(16,185,129,1)',
-                                        borderWidth: 1,
-                                        borderRadius: 4,
-                                    },
-                                    {
-                                        label: `Gastos (${selectedYear})`,
-                                        data: gastosMensuales,
-                                        backgroundColor: 'rgba(239,68,68,0.55)',
-                                        borderColor: 'rgba(239,68,68,1)',
-                                        borderWidth: 1,
-                                        borderRadius: 4,
-                                    },
-                                ],
-                            }}
-                            options={{
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                plugins: { legend: { display: true, labels: chartDarkLegend.labels } },
-                                scales: chartDarkScales,
-                            }}
-                            style={{ maxHeight: '280px' }}
-                        />
-                    </div>
-                </BlurFade>
             </div>
 
         </div>
