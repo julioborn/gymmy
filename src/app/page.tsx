@@ -156,23 +156,28 @@ type DashboardData = {
 const NAV_CARDS = [
     {
         href: '/alumnos', label: 'Alumnos', role: null as string | null,
-        icon: <Users size={18} className="text-white" />,
+        icon: <Users size={18} className="text-sky-300" />,
+        tileClasses: 'bg-sky-400/10 border-sky-400/25 hover:bg-sky-400/15 text-sky-300',
     },
     {
         href: '/empleados', label: 'Empleados', role: 'dueño' as string | null,
-        icon: <Briefcase size={18} className="text-white" />,
+        icon: <Briefcase size={18} className="text-violet-300" />,
+        tileClasses: 'bg-violet-400/10 border-violet-400/25 hover:bg-violet-400/15 text-violet-300',
     },
     {
         href: '/alumnos/finanzas', label: 'Finanzas', role: 'dueño' as string | null,
-        icon: <TrendingUp size={18} className="text-white" />,
+        icon: <TrendingUp size={18} className="text-emerald-300" />,
+        tileClasses: 'bg-emerald-400/10 border-emerald-400/25 hover:bg-emerald-400/15 text-emerald-300',
     },
     {
         href: '/alumnos/estadisticas', label: 'Estadísticas', role: 'dueño' as string | null,
-        icon: <BarChart3 size={18} className="text-white" />,
+        icon: <BarChart3 size={18} className="text-amber-300" />,
+        tileClasses: 'bg-amber-400/10 border-amber-400/25 hover:bg-amber-400/15 text-amber-300',
     },
     {
         href: '/caja', label: 'Caja', role: 'profesor' as string | null,
-        icon: <Wallet size={18} className="text-white" />,
+        icon: <Wallet size={18} className="text-lime-300" />,
+        tileClasses: 'bg-lime-400/10 border-lime-400/25 hover:bg-lime-400/15 text-lime-300',
     },
 ];
 
@@ -916,16 +921,16 @@ export default function HomePage() {
                                 <div className="grid grid-cols-2 sm:flex gap-2">
                                     {visibleCards.map((c) => (
                                         <Link key={c.href} href={c.href}
-                                            className="sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
-                                            <span className="opacity-90">{c.icon}</span>
-                                            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight">{c.label}</span>
+                                            className={`sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl border active:scale-95 transition-all font-semibold ${c.tileClasses}`}>
+                                            {c.icon}
+                                            <span className="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">{c.label}</span>
                                         </Link>
                                     ))}
                                     {esProfesor && session.user?.id && (
                                         <Link href="/mi-perfil#plan"
-                                            className="sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.10] border border-white/[0.18] hover:bg-white/[0.16] active:scale-95 transition-all text-white/80 hover:text-white">
-                                            <FileText size={18} className="opacity-90" />
-                                            <span className="text-[10px] font-semibold uppercase tracking-wide text-center leading-tight">Mi plan</span>
+                                            className="sm:flex-1 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl border active:scale-95 transition-all font-semibold bg-orange-400/10 border-orange-400/25 hover:bg-orange-400/15 text-orange-300">
+                                            <FileText size={18} className="text-orange-300" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Mi plan</span>
                                         </Link>
                                     )}
                                 </div>
