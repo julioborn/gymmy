@@ -419,8 +419,8 @@ export default function ListaAlumnosPage() {
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => router.push('/alumnos/nuevo')}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
-                            style={{ background: acento }}
+                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all active:scale-95"
+                            style={{ background: `${acento}1A`, borderColor: `${acento}40`, color: acento }}
                         >
                             <UserPlus size={15} />
                             Registrar
