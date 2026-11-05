@@ -232,47 +232,7 @@ export default function Estadisticas() {
                         <p className="text-xl font-bold leading-tight text-white truncate">{actividadLider}</p>
                     </div>
                 </BlurFade>
-                <BlurFade delay={0.25}>
-                    <button onClick={() => setShowInactivos(v => !v)}
-                        className="w-full text-left rounded-2xl p-4 h-full transition-opacity hover:opacity-90" style={glassStyle('239,68,68')}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#ef4444' }}>
-                                <UserX size={14} className="text-white" />
-                            </div>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest flex-1">Sin asistencia</p>
-                            <ChevronDown size={14} className={`text-white/40 transition-transform ${showInactivos ? 'rotate-180' : ''}`} />
-                        </div>
-                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosInactivos.length} /></p>
-                        <p className="text-white/30 text-[10px] font-semibold mt-1.5 capitalize">{mesActual}</p>
-                    </button>
-                </BlurFade>
             </div>
-
-            {/* Lista de alumnos sin asistencia este mes */}
-            {showInactivos && (
-                <BlurFade delay={0}>
-                    <div className="rounded-2xl overflow-hidden" style={glassStyle('239,68,68')}>
-                        <div className="px-4 py-3 border-b border-white/10">
-                            <p className="text-xs font-bold text-white uppercase tracking-wide">
-                                {alumnosInactivos.length} {alumnosInactivos.length === 1 ? 'alumno' : 'alumnos'} sin asistencia · <span className="capitalize">{mesActual}</span>
-                            </p>
-                        </div>
-                        {alumnosInactivos.length > 0 ? (
-                            <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.06]">
-                                {alumnosInactivos.map(a => (
-                                    <Link key={a._id} href={`/alumnos/${a._id}/historial`}
-                                        className="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.05] transition-colors group">
-                                        <span className="text-white/80 text-sm font-medium group-hover:text-white truncate">{a.apellido}, {a.nombre}</span>
-                                        <ChevronRight size={14} className="text-white/25 shrink-0" />
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="px-4 py-4 text-white/50 text-sm">Todos los alumnos asistieron este mes.</p>
-                        )}
-                    </div>
-                </BlurFade>
-            )}
 
             {/* Charts — side by side on desktop */}
             <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-4 lg:space-y-0">
@@ -290,6 +250,41 @@ export default function Estadisticas() {
                     </div>
                 </BlurFade>
             </div>
+
+            {/* Sin asistencia — ancho completo, al final */}
+            <BlurFade delay={0.35}>
+                <div className="rounded-2xl overflow-hidden" style={glassStyle('239,68,68')}>
+                    <button onClick={() => setShowInactivos(v => !v)}
+                        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:opacity-90 transition-opacity">
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#ef4444' }}>
+                            <UserX size={16} className="text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sin asistencia</p>
+                            <p className="text-white/30 text-[10px] font-semibold capitalize">{mesActual}</p>
+                        </div>
+                        <p className="text-3xl font-bold leading-none text-white tabular-nums"><NumberTicker value={alumnosInactivos.length} /></p>
+                        <ChevronDown size={16} className={`text-white/40 transition-transform shrink-0 ${showInactivos ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showInactivos && (
+                        <div className="border-t border-white/10">
+                            {alumnosInactivos.length > 0 ? (
+                                <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.06]">
+                                    {alumnosInactivos.map(a => (
+                                        <Link key={a._id} href={`/alumnos/${a._id}/historial`}
+                                            className="flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.05] transition-colors group">
+                                            <span className="text-white/80 text-sm font-medium group-hover:text-white truncate">{a.apellido}, {a.nombre}</span>
+                                            <ChevronRight size={14} className="text-white/25 shrink-0" />
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="px-4 py-4 text-white/50 text-sm">Todos los alumnos asistieron este mes.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </BlurFade>
 
         </div>
     );
