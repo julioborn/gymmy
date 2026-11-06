@@ -9,7 +9,7 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
-    Users, UserPlus, Search, Wallet, Landmark, Settings, Bell,
+    Users, UserPlus, Search, Wallet, Landmark, Settings, Bell, DollarSign,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
 import { esStaffAlumno } from '@/lib/staffAlumnos';
@@ -992,6 +992,48 @@ export default function MiCuentaPage() {
                                     </div>
                                 </div>
                             </BlurFade>
+
+                            {selectedDay && (
+                                <BlurFade delay={0.05}>
+                                    <div className="rounded-2xl overflow-hidden"
+                                        style={{ background: `linear-gradient(165deg, ${acento}12, rgba(17,17,17,0.9))`, border: `1px solid ${acento}40` }}>
+                                        <div className="px-4 py-3.5 border-b border-white/10">
+                                            <p className="text-white font-bold text-sm capitalize">
+                                                {new Date(selectedDay + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                            </p>
+                                        </div>
+                                        {(selectedAsistencias.length > 0 || selectedPagos.length > 0) ? (
+                                            <div className="divide-y divide-white/[0.06]">
+                                                {selectedAsistencias.map(a => {
+                                                    const color = ACTIVIDAD_COLOR[a.actividad] || '#6b7280';
+                                                    return (
+                                                        <div key={a._id} className="flex items-center gap-3 px-4 py-3">
+                                                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}20` }}>
+                                                                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                                            </div>
+                                                            <p className="flex-1 text-white/80 font-semibold text-sm truncate">{a.actividad}</p>
+                                                            <span className="text-white/40 text-xs font-medium tabular-nums">
+                                                                {new Date(a.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {selectedPagos.map(p => (
+                                                    <div key={p._id} className="flex items-center gap-3 px-4 py-3">
+                                                        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-emerald-400/20">
+                                                            <DollarSign size={14} className="text-emerald-400" />
+                                                        </div>
+                                                        <p className="flex-1 text-white/80 font-semibold text-sm truncate capitalize">Cuota {p.mes}</p>
+                                                        <span className="text-emerald-400 text-sm font-bold tabular-nums">${p.tarifa.toLocaleString('es-AR')}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="px-4 py-5 text-white/40 text-sm text-center">Sin actividad este día</p>
+                                        )}
+                                    </div>
+                                </BlurFade>
+                            )}
 
                         </div>
                     )}
