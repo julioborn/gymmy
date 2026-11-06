@@ -408,7 +408,40 @@ export default function HomePage() {
 
     const handleAlumnoDePasoGlobal = async () => {
         const actividadesDisp = actividadesRecepcion.length > 0 ? actividadesRecepcion : ['Musculación'];
-        const { value: datos } = await Swal.fire({ ...swalBase, title: 'Alumno de paso', html: `<div class="swal-form-body"><div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div><div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div><div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div><div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div><div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div></div>`, focusConfirm: false, showCancelButton: true, confirmButtonText: 'Registrar', cancelButtonText: 'Cancelar', preConfirm: () => { const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim(); const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim(); if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; } return { nombre, apellido, actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value, monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0, metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value }; } });
+        const { value: datos } = await Swal.fire({
+            ...swalBase,
+            title: 'Alumno de paso',
+            html: `
+                <div class="swal-form-body">
+                    <div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div>
+                    <div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div>
+                    <div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div>
+                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" type="number" min="0" step="1" inputmode="numeric" class="swal2-input" placeholder="0"></div>
+                    <div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Registrar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: async () => {
+                const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim();
+                const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim();
+                if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; }
+                const montoRaw = (document.getElementById('dp-monto') as HTMLInputElement).value;
+                const monto = montoRaw ? Math.max(0, Math.round(Number(montoRaw))) : 0;
+                if (monto === 0) {
+                    const { isConfirmed } = await Swal.fire({ ...swalBase, icon: 'warning', title: `¿Registrar a ${nombre} sin cobrar nada?`, text: 'El monto quedó en $0.', showCancelButton: true, confirmButtonText: 'Sí, registrar en $0', cancelButtonText: 'Volver a cargar el monto' });
+                    if (!isConfirmed) { Swal.showValidationMessage('Cargá el monto y volvé a tocar Registrar'); return; }
+                }
+                return {
+                    nombre, apellido,
+                    actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value,
+                    monto,
+                    metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value,
+                };
+            },
+        });
         if (!datos) return;
         try { const res = await fetch('/api/alumnos-de-paso', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) }); if (res.ok) { Swal.fire({ ...swalNotify, icon: 'success', title: 'Alumno de paso registrado' }); fetchAsistencias(); } else { const err = await res.json(); Swal.fire({ ...swalNotify, icon: 'error', title: err.error || 'Error al registrar' }); } } catch { Swal.fire({ ...swalNotify, icon: 'error', title: 'Error al registrar' }); }
     };

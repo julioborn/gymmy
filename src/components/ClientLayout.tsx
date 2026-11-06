@@ -260,7 +260,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     <div><label class="swal-form-label">Nombre *</label><input id="dp-nombre" class="swal2-input" placeholder="Nombre"></div>
                     <div><label class="swal-form-label">Apellido *</label><input id="dp-apellido" class="swal2-input" placeholder="Apellido"></div>
                     <div><label class="swal-form-label">Actividad</label><select id="dp-actividad" class="swal2-input">${actividadesDisp.map((a: string) => `<option value="${a}">${a}</option>`).join('')}</select></div>
-                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
+                    <div><label class="swal-form-label">Monto ($)</label><input id="dp-monto" type="number" min="0" step="1" inputmode="numeric" class="swal2-input" placeholder="0"></div>
                     <div><label class="swal-form-label">Método de pago</label><select id="dp-metodo" class="swal2-input"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select></div>
                 </div>
             `,
@@ -268,15 +268,21 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
             showCancelButton: true,
             confirmButtonText: 'Registrar',
             cancelButtonText: 'Cancelar',
-            preConfirm: () => {
+            preConfirm: async () => {
                 const nombre = (document.getElementById('dp-nombre') as HTMLInputElement).value.trim();
                 const apellido = (document.getElementById('dp-apellido') as HTMLInputElement).value.trim();
                 if (!nombre || !apellido) { Swal.showValidationMessage('Nombre y apellido son obligatorios'); return; }
+                const montoRaw = (document.getElementById('dp-monto') as HTMLInputElement).value;
+                const monto = montoRaw ? Math.max(0, Math.round(Number(montoRaw))) : 0;
+                if (monto === 0) {
+                    const { isConfirmed } = await Swal.fire({ ...swalBase, icon: 'warning', title: `¿Registrar a ${nombre} sin cobrar nada?`, text: 'El monto quedó en $0.', showCancelButton: true, confirmButtonText: 'Sí, registrar en $0', cancelButtonText: 'Volver a cargar el monto' });
+                    if (!isConfirmed) { Swal.showValidationMessage('Cargá el monto y volvé a tocar Registrar'); return; }
+                }
                 return {
                     nombre,
                     apellido,
                     actividad: (document.getElementById('dp-actividad') as HTMLSelectElement).value,
-                    monto: Number((document.getElementById('dp-monto') as HTMLInputElement).value.replace(/\D/g, '')) || 0,
+                    monto,
                     metodoPago: (document.getElementById('dp-metodo') as HTMLSelectElement).value,
                 };
             },
