@@ -461,6 +461,16 @@ export default function MiCuentaPage() {
             }
         }
     }
+    if (planEj?.fechaInicio) {
+        const startStr = planDateToKey(planEj.fechaInicio);
+        if (!planBoundaryMap[startStr]) planBoundaryMap[startStr] = 'start';
+        const cur = new Date(startStr + 'T12:00:00');
+        const today = new Date(todayKey + 'T12:00:00');
+        while (cur <= today) {
+            const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+            planDaysMap[k] = 'active'; cur.setDate(cur.getDate()+1);
+        }
+    }
     for (const plan of (alumno.planEntrenamientoHistorial || [])) {
         if (!plan.fechaInicio || !plan.fechaFin) continue;
         const startStr = planDateToKey(plan.fechaInicio); const endStr = planDateToKey(plan.fechaFin);
