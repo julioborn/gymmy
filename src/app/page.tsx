@@ -179,6 +179,11 @@ const NAV_CARDS = [
         icon: <Wallet size={18} className="text-lime-300" />,
         tileClasses: 'bg-lime-400/10 border-lime-400/25 hover:bg-lime-400/15 text-lime-300',
     },
+    {
+        href: '/caja', label: 'Caja', role: 'dueño' as string | null,
+        icon: <Wallet size={18} className="text-lime-300" />,
+        tileClasses: 'bg-lime-400/10 border-lime-400/25 hover:bg-lime-400/15 text-lime-300',
+    },
 ];
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────

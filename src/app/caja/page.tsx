@@ -69,7 +69,7 @@ export default function CierreCajaPage() {
     const puedeCerrar = session?.user?.role === 'recepcion';
 
     useEffect(() => {
-        if (status !== 'loading' && !['recepcion', 'profesor'].includes(session?.user?.role ?? '')) {
+        if (status !== 'loading' && !['recepcion', 'profesor', 'dueño', 'admin'].includes(session?.user?.role ?? '')) {
             router.push('/');
         }
     }, [session, status, router]);

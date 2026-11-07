@@ -35,6 +35,19 @@ type PlanEj = {
     dias: DiaAsignado[];
 };
 
+type Cierre = {
+    _id: string;
+    fechaDesde: string;
+    fechaHasta: string;
+    totalEfectivo: number;
+    totalTransferencia: number;
+    totalGeneral: number;
+    registradoPorNombre: string;
+};
+
+const fmtCierre = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const fmtMonto = (n: number) => `$${n.toLocaleString('es-AR')}`;
+
 const ROLE_LABEL: Record<string, string> = { dueño: 'Dueño', admin: 'Admin', profesor: 'Profesor', registro: 'Registro' };
 const ROLE_AVATAR: Record<string, string> = { dueño: 'bg-slate-700', admin: 'bg-slate-800', profesor: 'bg-violet-500', registro: 'bg-amber-400' };
 
@@ -72,6 +85,7 @@ export default function EmpleadoPerfilPage() {
     const [selectedDia, setSelectedDia] = useState(0);
     const [expandedEj, setExpandedEj] = useState<number | null>(null);
     const [savingEj, setSavingEj] = useState<number | null>(null);
+    const [cierres, setCierres] = useState<Cierre[]>([]);
 
     const myRole = session?.user?.role;
     const myId = session?.user?.id;
@@ -93,6 +107,15 @@ export default function EmpleadoPerfilPage() {
             .catch(() => {})
             .finally(() => setLoading(false));
     }, [id]);
+
+    useEffect(() => {
+        if (!empleado?.nombre || !empleado?.apellido) return;
+        const nombreCompleto = `${empleado.nombre} ${empleado.apellido}`;
+        fetch('/api/caja')
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { if (d?.ok) setCierres((d.cierres as Cierre[]).filter(c => c.registradoPorNombre === nombreCompleto)); })
+            .catch(() => {});
+    }, [empleado]);
 
     useEffect(() => {
         if (!id) return;
@@ -193,6 +216,24 @@ export default function EmpleadoPerfilPage() {
                     )}
                 </div>
             </div>
+
+            {/* Cierres de caja */}
+            {cierres.length > 0 && (
+                <div className="bg-white rounded-2xl border border-black/[0.07] shadow-sm overflow-hidden">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2">Cierres de caja</p>
+                    <div className="divide-y divide-slate-100">
+                        {cierres.map(c => (
+                            <div key={c._id} className="flex items-center justify-between gap-3 px-4 py-3">
+                                <div className="min-w-0">
+                                    <p className="text-slate-700 text-sm font-semibold">{fmtCierre(c.fechaHasta)}</p>
+                                    <p className="text-slate-400 text-xs">Efectivo {fmtMonto(c.totalEfectivo)} · Transferencia {fmtMonto(c.totalTransferencia)}</p>
+                                </div>
+                                <span className="text-slate-900 font-bold text-sm tabular-nums shrink-0">{fmtMonto(c.totalGeneral)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Plan section */}
             {loadingPlan && (

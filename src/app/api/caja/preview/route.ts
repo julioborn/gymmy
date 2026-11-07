@@ -9,7 +9,7 @@ export async function GET() {
     if (!auth.ok) return auth.error;
     const { gimnasioId, role } = auth.session.user;
 
-    if (role !== 'recepcion' && role !== 'profesor') {
+    if (!['recepcion', 'profesor', 'dueño', 'admin'].includes(role ?? '')) {
         return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
     }
 
