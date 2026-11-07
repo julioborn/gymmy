@@ -10,6 +10,9 @@ export type DetallePagoCaja = {
     metodoPago: string;
     monto: number;
     fecha: string;
+    alumnoId?: string;
+    pagoId?: string;
+    depasoId?: string;
 };
 
 export type ResumenCaja = {
@@ -120,7 +123,7 @@ export async function calcularCaja(gimnasioId: string, fechaDesde: Date, fechaHa
             } else {
                 totalOtros += monto;
             }
-            detalle.push({ tipo: 'cuota', nombre: a.nombre, apellido: a.apellido, metodoPago: p.metodoPago, monto, fecha: f.toISOString() });
+            detalle.push({ tipo: 'cuota', nombre: a.nombre, apellido: a.apellido, metodoPago: p.metodoPago, monto, fecha: f.toISOString(), alumnoId: String(a._id), pagoId: String(p._id) });
         }
     }
 
@@ -129,7 +132,7 @@ export async function calcularCaja(gimnasioId: string, fechaDesde: Date, fechaHa
         if (d.metodoPago === 'efectivo') totalEfectivo += monto;
         else if (d.metodoPago === 'transferencia') totalTransferencia += monto;
         else totalOtros += monto;
-        detalle.push({ tipo: 'depaso', nombre: d.nombre, apellido: d.apellido, metodoPago: d.metodoPago, monto, fecha: new Date(d.fecha).toISOString() });
+        detalle.push({ tipo: 'depaso', nombre: d.nombre, apellido: d.apellido, metodoPago: d.metodoPago, monto, fecha: new Date(d.fecha).toISOString(), depasoId: String(d._id) });
     }
 
     detalle.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
@@ -144,4 +147,19 @@ export async function calcularCaja(gimnasioId: string, fechaDesde: Date, fechaHa
         cantidadPagos: detalle.length,
         detalle,
     };
+}
+
+/** Recalcula y persiste los totales de cualquier cierre ya cerrado cuyo período incluya esta fecha. */
+export async function recalcularCierresQueIncluyen(gimnasioId: string, fecha: Date): Promise<void> {
+    await connectMongoDB();
+    const cierres = await CierreCaja.find({ gimnasioId, fechaDesde: { $lt: fecha }, fechaHasta: { $gte: fecha } });
+    for (const cierre of cierres) {
+        const resumen = await calcularCaja(gimnasioId, cierre.fechaDesde, cierre.fechaHasta);
+        cierre.totalEfectivo = resumen.totalEfectivo;
+        cierre.totalTransferencia = resumen.totalTransferencia;
+        cierre.totalOtros = resumen.totalOtros;
+        cierre.totalGeneral = resumen.totalGeneral;
+        cierre.cantidadPagos = resumen.cantidadPagos;
+        await cierre.save();
+    }
 }

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
-import { ChevronLeft, Banknote, Landmark, Wallet, Clock, ChevronDown } from 'lucide-react';
+import { ChevronLeft, Banknote, Landmark, Wallet, Clock, ChevronDown, Pencil } from 'lucide-react';
 
 type DetallePago = {
     tipo: 'cuota' | 'depaso';
@@ -15,6 +15,9 @@ type DetallePago = {
     metodoPago: string;
     monto: number;
     fecha: string;
+    alumnoId?: string;
+    pagoId?: string;
+    depasoId?: string;
 };
 
 type Preview = {
@@ -67,6 +70,7 @@ export default function CierreCajaPage() {
     };
 
     const puedeCerrar = session?.user?.role === 'recepcion';
+    const puedeEditar = ['dueño', 'admin'].includes(session?.user?.role ?? '');
 
     useEffect(() => {
         if (status !== 'loading' && !['recepcion', 'profesor', 'dueño', 'admin'].includes(session?.user?.role ?? '')) {
@@ -86,6 +90,66 @@ export default function CierreCajaPage() {
     };
 
     useEffect(() => { cargar(); }, []);
+
+    const handleEditarPago = async (p: DetallePago, cierreIdAbierto: string | null) => {
+        const { value: datos } = await Swal.fire({
+            ...swalBase,
+            title: `${p.apellido}, ${p.nombre}`,
+            html: `
+                <div class="swal-form-body">
+                    <label class="swal-form-label">Monto ($)</label>
+                    <input id="edit-monto" type="number" min="0" step="1" inputmode="numeric" class="swal2-input" value="${p.monto}">
+                    <label class="swal-form-label">Método de pago</label>
+                    <select id="edit-metodo" class="swal2-select">
+                        <option value="efectivo" ${p.metodoPago === 'efectivo' ? 'selected' : ''}>Efectivo</option>
+                        <option value="transferencia" ${p.metodoPago === 'transferencia' ? 'selected' : ''}>Transferencia</option>
+                        <option value="mercadopago" ${p.metodoPago === 'mercadopago' ? 'selected' : ''}>Mercado Pago</option>
+                    </select>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const montoRaw = (document.getElementById('edit-monto') as HTMLInputElement).value;
+                const monto = Math.max(0, Math.round(Number(montoRaw) || 0));
+                const metodoPago = (document.getElementById('edit-metodo') as HTMLSelectElement).value;
+                return { monto, metodoPago };
+            },
+        });
+        if (!datos) return;
+
+        try {
+            const res = await fetch('/api/caja/pago', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: p.tipo,
+                    alumnoId: p.alumnoId,
+                    pagoId: p.pagoId,
+                    depasoId: p.depasoId,
+                    monto: datos.monto,
+                    metodoPago: datos.metodoPago,
+                }),
+            });
+            if (res.ok) {
+                Swal.fire({ ...swalNotify, icon: 'success', title: 'Pago actualizado', timer: 1200, showConfirmButton: false });
+                cargar();
+                if (cierreIdAbierto) {
+                    setDetalles(prev => { const next = { ...prev }; delete next[cierreIdAbierto]; return next; });
+                    fetch(`/api/caja/${cierreIdAbierto}`).then(r => r.json()).then(d => {
+                        if (d.ok) setDetalles(prev => ({ ...prev, [cierreIdAbierto]: d.detalle }));
+                    }).catch(() => {});
+                }
+            } else {
+                const d = await res.json().catch(() => ({}));
+                Swal.fire({ ...swalNotify, icon: 'error', title: d.error || 'No se pudo actualizar el pago' });
+            }
+        } catch {
+            Swal.fire({ ...swalNotify, icon: 'error', title: 'Error de conexión' });
+        }
+    };
 
     const handleCerrar = async () => {
         if (!preview) return;
@@ -217,7 +281,14 @@ export default function CierreCajaPage() {
                                                 <p className="text-white/85 text-sm font-medium truncate">{p.apellido}, {p.nombre}</p>
                                                 <p className="text-white/40 text-xs capitalize">{p.metodoPago} · {fmtHora(p.fecha)}</p>
                                             </div>
-                                            <span className="text-white/70 text-sm font-semibold tabular-nums shrink-0">{fmt(p.monto)}</span>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className="text-white/70 text-sm font-semibold tabular-nums">{fmt(p.monto)}</span>
+                                                {puedeEditar && (
+                                                    <button onClick={() => handleEditarPago(p, null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors">
+                                                        <Pencil size={13} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -268,7 +339,14 @@ export default function CierreCajaPage() {
                                                                             <p className="text-white/85 text-sm font-medium truncate">{p.apellido}, {p.nombre}</p>
                                                                             <p className="text-white/40 text-xs capitalize">{p.tipo === 'depaso' ? 'De paso · ' : ''}{p.metodoPago} · {fmtHora(p.fecha)}</p>
                                                                         </div>
-                                                                        <span className="text-white/70 text-sm font-semibold tabular-nums shrink-0">{fmt(p.monto)}</span>
+                                                                        <div className="flex items-center gap-2 shrink-0">
+                                                                            <span className="text-white/70 text-sm font-semibold tabular-nums">{fmt(p.monto)}</span>
+                                                                            {puedeEditar && (
+                                                                                <button onClick={() => handleEditarPago(p, c._id)} className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors">
+                                                                                    <Pencil size={13} />
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                 ))}
                                                             </div>
