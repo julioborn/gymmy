@@ -162,7 +162,7 @@ export default function PagosPage() {
                             metodoPago: metodoPagoEsp,
                             esEspecial: true,
                             fechaDesde: new Date(datosEsp.desde + 'T12:00:00').toISOString(),
-                            fechaHasta: new Date(datosEsp.hasta + 'T12:00:00').toISOString(),
+                            fechaHasta: new Date(datosEsp.hasta + 'T23:59:59').toISOString(),
                         },
                     }),
                 });

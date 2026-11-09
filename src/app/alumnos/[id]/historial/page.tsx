@@ -1463,7 +1463,7 @@ export default function HistorialAlumnoPage() {
                             recargo: 0,
                             esEspecial: true,
                             fechaDesde: new Date(dayModalEspecial.desde + 'T12:00:00').toISOString(),
-                            fechaHasta: new Date(dayModalEspecial.hasta + 'T12:00:00').toISOString(),
+                            fechaHasta: new Date(dayModalEspecial.hasta + 'T23:59:59').toISOString(),
                             ...(dayModalPagoMetodo === 'mixto' ? { montoEfectivo: splitMixto().efectivo, montoTransferencia: splitMixto().transferencia } : {}),
                         },
                     }),
