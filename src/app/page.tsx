@@ -653,8 +653,8 @@ export default function HomePage() {
                                             {showCierreMonto ? <Eye size={10} /> : <EyeOff size={10} />}
                                         </button>
                                     </div>
-                                    <p className="text-white/50 text-xs mb-1">
-                                        {new Date(ultimoCierre.fechaHasta).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} · {new Date(ultimoCierre.fechaHasta).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} · {ultimoCierre.registradoPorNombre.split(' ')[0]}
+                                    <p className="text-white/50 text-xs mb-1 capitalize">
+                                        {new Date(ultimoCierre.fechaHasta).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} · {new Date(ultimoCierre.fechaHasta).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} · {ultimoCierre.registradoPorNombre.split(' ')[0]}
                                     </p>
                                     <p className="text-sky-400 font-black text-2xl leading-none tabular-nums">
                                         {showCierreMonto ? `$${ultimoCierre.totalGeneral.toLocaleString('es-AR')}` : '$ ••••'}

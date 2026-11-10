@@ -43,7 +43,7 @@ type Cierre = {
     registradoPorNombre: string;
 };
 
-const fmtHora = (iso: string) => new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const fmtHora = (iso: string) => new Date(iso).toLocaleString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const fmt = (n: number) => `$${n.toLocaleString('es-AR')}`;
 
 const RESPONSABLES = ['Victoria Cardonati', 'Maximiliano Cerdán', 'Candela Fiad', 'Bruno Martinenghi', 'Canela Zordán'];

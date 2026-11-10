@@ -45,7 +45,7 @@ type Cierre = {
     registradoPorNombre: string;
 };
 
-const fmtCierre = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const fmtCierre = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 const fmtMonto = (n: number) => `$${n.toLocaleString('es-AR')}`;
 
 const ROLE_LABEL: Record<string, string> = { dueño: 'Dueño', admin: 'Admin', profesor: 'Profesor', registro: 'Registro' };
