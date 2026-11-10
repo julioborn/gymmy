@@ -801,6 +801,25 @@ export default function MiCuentaPage() {
                                     </BlurFade>
                                 )}
 
+                                {(!planEj && !tienePlan && !plan?.terminado) && (
+                                    <BlurFade delay={0.05}>
+                                        <div onClick={()=>changeTab('plan')}
+                                            className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                                            style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #84cc16)' }}>
+                                                    <Dumbbell size={16} className="text-white" />
+                                                </div>
+                                                <p className="text-xs font-bold text-white uppercase tracking-wide">Plan activo</p>
+                                            </div>
+                                            <div className="flex-1 flex flex-col justify-center">
+                                                <p className="text-white/70 font-semibold text-sm leading-snug">Todavía no tenés plan iniciado</p>
+                                                <p className="text-white/35 text-xs mt-1">Tu profe te lo va a asignar pronto</p>
+                                            </div>
+                                        </div>
+                                    </BlurFade>
+                                )}
+
                                 {/* Asistencias este mes */}
                                 <BlurFade delay={0.15}>
                                     <div className="relative rounded-2xl p-4 h-full flex flex-col overflow-hidden"
