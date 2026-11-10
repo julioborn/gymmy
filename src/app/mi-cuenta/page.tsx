@@ -915,7 +915,7 @@ export default function MiCuentaPage() {
                                                             {a ? (
                                                                 <>
                                                                     <p className="flex-1 text-white/80 font-semibold text-base truncate">{a.actividad}</p>
-                                                                    <span className="text-white/40 text-sm font-medium tabular-nums">
+                                                                    <span className="text-white text-sm font-medium tabular-nums">
                                                                         {new Date(a.fecha).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})}
                                                                     </span>
                                                                 </>
