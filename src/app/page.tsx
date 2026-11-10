@@ -712,27 +712,6 @@ export default function HomePage() {
                                                 Ver todos
                                             </button>
                                         )}
-                                        <div className="w-px h-6 bg-white/[0.08] mx-0.5 shrink-0" />
-                                        <Link href="/alumnos"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
-                                            <Users size={13} />
-                                            Alumnos
-                                        </Link>
-                                        <Link href="/alumnos/nuevo"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/60 hover:text-white text-xs font-semibold whitespace-nowrap">
-                                            <UserPlus size={13} />
-                                            Nuevo
-                                        </Link>
-                                        <button onClick={handleAlumnoDePasoGlobal}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs rounded-xl transition-all shadow-md shadow-lime-400/20 whitespace-nowrap">
-                                            <UserPlus size={13} />
-                                            De paso
-                                        </button>
-                                        <Link href="/caja"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 transition-all text-white font-bold text-xs whitespace-nowrap shadow-md shadow-orange-500/20">
-                                            <Wallet size={13} />
-                                            Cierre de caja
-                                        </Link>
                                     </div>
                                 </div>
 
@@ -935,6 +914,30 @@ export default function HomePage() {
                                     )}
                                 </div>
                             </div>
+                        </BlurFade>
+
+                        {/* RIGHT: quick actions */}
+                        <BlurFade delay={0.14} className="grid grid-cols-2 content-start gap-2 w-40 shrink-0">
+                            <Link href="/alumnos"
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/70 hover:text-white">
+                                <Users size={18} />
+                                <span className="text-[10px] font-bold text-center leading-tight">Alumnos</span>
+                            </Link>
+                            <Link href="/alumnos/nuevo"
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/70 hover:text-white">
+                                <UserPlus size={18} />
+                                <span className="text-[10px] font-bold text-center leading-tight">Nuevo</span>
+                            </Link>
+                            <button onClick={handleAlumnoDePasoGlobal}
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black transition-all shadow-md shadow-lime-400/20">
+                                <UserPlus size={18} />
+                                <span className="text-[10px] font-bold text-center leading-tight">De paso</span>
+                            </button>
+                            <Link href="/caja"
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white transition-all shadow-md shadow-orange-500/20">
+                                <Wallet size={18} />
+                                <span className="text-[10px] font-bold text-center leading-tight">Cierre de caja</span>
+                            </Link>
                         </BlurFade>
                     </div>
                 </div>
