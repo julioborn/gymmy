@@ -1400,15 +1400,18 @@ export default function HistorialAlumnoPage() {
     };
 
     const handleEspecialCard = async () => {
-        const hoy = new Date().toISOString().split('T')[0];
+        const ahora = new Date();
+        const hoy = ahora.toISOString().split('T')[0];
+        const finDeMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).toISOString().split('T')[0];
         const { value: datosEsp } = await Swal.fire({
             ...swalBase,
             title: 'Pago especial',
             html: `<div class="swal-form-body">
+                <p style="text-align:center;color:rgba(255,255,255,0.5);font-size:0.8rem;margin:0 0 0.75rem;">Por defecto cubre hasta fin de mes — acortalo solo si es por un día suelto.</p>
                 <div><label class="swal-form-label">Monto ($) *</label><input id="esp-monto" class="swal2-input" inputmode="numeric" placeholder="0"></div>
                 <div><label class="swal-form-label">Días por semana *</label><input id="esp-dias" class="swal2-input" inputmode="numeric" placeholder="Ej: 3"></div>
                 <div><label class="swal-form-label">Desde *</label><input id="esp-desde" class="swal2-input" type="date" value="${hoy}"></div>
-                <div><label class="swal-form-label">Hasta *</label><input id="esp-hasta" class="swal2-input" type="date" value="${hoy}"></div>
+                <div><label class="swal-form-label">Hasta *</label><input id="esp-hasta" class="swal2-input" type="date" value="${finDeMes}"></div>
             </div>`,
             focusConfirm: false,
             showCancelButton: true,
