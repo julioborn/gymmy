@@ -917,26 +917,26 @@ export default function HomePage() {
                         </BlurFade>
 
                         {/* RIGHT: quick actions */}
-                        <BlurFade delay={0.14} className="grid grid-cols-2 content-start gap-2 w-40 shrink-0">
+                        <BlurFade delay={0.14} className="flex flex-col gap-2 w-40 shrink-0">
                             <Link href="/alumnos"
-                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/70 hover:text-white">
-                                <Users size={18} />
-                                <span className="text-[10px] font-bold text-center leading-tight">Alumnos</span>
+                                className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20">
+                                <Users size={16} className="shrink-0" />
+                                Alumnos
                             </Link>
                             <Link href="/alumnos/nuevo"
-                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.1] transition-all text-white/70 hover:text-white">
-                                <UserPlus size={18} />
-                                <span className="text-[10px] font-bold text-center leading-tight">Nuevo</span>
+                                className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
+                                <UserPlus size={16} className="shrink-0" />
+                                Nuevo
                             </Link>
                             <button onClick={handleAlumnoDePasoGlobal}
-                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black transition-all shadow-md shadow-lime-400/20">
-                                <UserPlus size={18} />
-                                <span className="text-[10px] font-bold text-center leading-tight">De paso</span>
+                                className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-bold text-xs transition-all shadow-md shadow-emerald-500/20">
+                                <UserPlus size={16} className="shrink-0" />
+                                De paso
                             </button>
                             <Link href="/caja"
-                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white transition-all shadow-md shadow-orange-500/20">
-                                <Wallet size={18} />
-                                <span className="text-[10px] font-bold text-center leading-tight">Cierre de caja</span>
+                                className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
+                                <Wallet size={16} className="shrink-0" />
+                                Cierre de caja
                             </Link>
                         </BlurFade>
                     </div>
