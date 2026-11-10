@@ -481,6 +481,22 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                             </Link>
                                         );
                                     })}
+                                    {role !== 'registro' && role !== 'superadmin' && (
+                                        <Link
+                                            href="/timer"
+                                            onClick={() => setDesktopMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/10 border-t border-white/10"
+                                            style={{ color: pathname.startsWith('/timer') ? (acento2 ?? acento) : 'rgba(255,255,255,0.7)' }}
+                                        >
+                                            <svg className="w-[20px] h-[20px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z" />
+                                            </svg>
+                                            <span className="text-sm font-semibold">Timer</span>
+                                            {pathname.startsWith('/timer') && (
+                                                <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: acento2 ?? acento }} />
+                                            )}
+                                        </Link>
+                                    )}
                                     <div className="border-t border-white/10">
                                         <button
                                             onClick={async () => {

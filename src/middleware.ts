@@ -31,9 +31,9 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    // Alumno: solo /mi-cuenta
+    // Alumno: solo /mi-cuenta (y el timer, que es de uso general)
     if (token.role === 'alumno') {
-        if (!pathname.startsWith('/mi-cuenta')) {
+        if (!pathname.startsWith('/mi-cuenta') && !pathname.startsWith('/timer')) {
             const url = req.nextUrl.clone();
             url.pathname = '/mi-cuenta';
             return NextResponse.redirect(url);
