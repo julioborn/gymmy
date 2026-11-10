@@ -917,27 +917,30 @@ export default function HomePage() {
                         </BlurFade>
 
                         {/* RIGHT: quick actions — mismo ancho que la columna izquierda para que la tabla quede centrada */}
-                        <BlurFade delay={0.14} className="flex flex-col items-center gap-2 w-52 shrink-0">
-                            <Link href="/alumnos"
-                                className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs transition-all shadow-md shadow-lime-400/20">
-                                <Users size={15} className="shrink-0" />
-                                Alumnos
-                            </Link>
-                            <Link href="/alumnos/nuevo"
-                                className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
-                                <UserPlus size={15} className="shrink-0" />
-                                Nuevo
-                            </Link>
-                            <button onClick={handleAlumnoDePasoGlobal}
-                                className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs transition-all shadow-md shadow-lime-400/20">
-                                <UserPlus size={15} className="shrink-0" />
-                                De paso
-                            </button>
-                            <Link href="/caja"
-                                className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
-                                <Wallet size={15} className="shrink-0" />
-                                Cierre de caja
-                            </Link>
+                        <BlurFade delay={0.14} className="w-52 shrink-0">
+                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col items-center gap-2">
+                                <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1 self-start">Acciones</p>
+                                <Link href="/alumnos"
+                                    className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs transition-all shadow-md shadow-lime-400/20">
+                                    <Users size={15} className="shrink-0" />
+                                    Alumnos
+                                </Link>
+                                <Link href="/alumnos/nuevo"
+                                    className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
+                                    <UserPlus size={15} className="shrink-0" />
+                                    Nuevo
+                                </Link>
+                                <button onClick={handleAlumnoDePasoGlobal}
+                                    className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs transition-all shadow-md shadow-lime-400/20">
+                                    <UserPlus size={15} className="shrink-0" />
+                                    De paso
+                                </button>
+                                <Link href="/caja"
+                                    className="w-32 flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20">
+                                    <Wallet size={15} className="shrink-0" />
+                                    Cierre de caja
+                                </Link>
+                            </div>
                         </BlurFade>
                     </div>
                 </div>
