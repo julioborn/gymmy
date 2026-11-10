@@ -13,10 +13,10 @@ const withPWA = nextPWA({
             urlPattern: /^https?:\/\/.*\/api\/alumno\/me$/,
             handler: 'NetworkOnly',
         },
-        // Streams SSE (asistencias/pagos en vivo) — nunca interceptar/cachear,
-        // NetworkFirst corta/bufferiza la conexión persistente y rompe el realtime
+        // Polling de asistencias/pagos en vivo — siempre pedir fresco, nunca servir
+        // una respuesta vieja del cache (rompería la comparación de firma/fecha)
         {
-            urlPattern: /^https?:\/\/.*\/api\/(asistencias\/events|pagos\/mp\/events)$/,
+            urlPattern: /^https?:\/\/.*\/api\/(asistencias\/signature|pagos\/mp\/check)$/,
             handler: 'NetworkOnly',
         },
         // Resto de APIs — NetworkFirst con fallback corto
