@@ -792,20 +792,20 @@ export default function HomePage() {
                                                                         <Dumbbell size={12} className="text-white/35 shrink-0" />
                                                                         <span className="text-xs font-medium truncate">{a.actividad}</span>
                                                                     </div>
-                                                                    <div className="flex items-center justify-end w-auto sm:w-24 shrink-0">
+                                                                    <div className="flex items-center justify-center w-20 shrink-0">
                                                                         {isNew && (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
+                                                                            <span className="inline-flex items-center justify-center gap-1 w-full text-[10px] font-bold px-2 py-0.5 rounded-full bg-lime-400 text-black shrink-0">
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         )}
                                                                         {!isNew && a.exentoCuota && (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/55 shrink-0">
+                                                                            <span className="inline-flex items-center justify-center gap-1 w-full text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/55 shrink-0">
                                                                                 Exenta
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && a.pagado && (
                                                                             <span className={cn(
-                                                                                'inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0',
+                                                                                'inline-flex flex-col items-center justify-center w-full leading-tight text-[10px] font-bold px-2 py-1 rounded-xl shrink-0',
                                                                                 a.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
                                                                             )}>
                                                                                 <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
@@ -814,7 +814,7 @@ export default function HomePage() {
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && !a.pagado && (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                                                                            <span className="inline-flex items-center justify-center gap-1 w-full text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
                                                                                 <AlertTriangle size={8} /> Debe
                                                                             </span>
                                                                         )}
@@ -888,14 +888,14 @@ export default function HomePage() {
                                                                         <Dumbbell size={12} className="shrink-0" />
                                                                         <span className="text-xs font-medium truncate">{a.actividad}</span>
                                                                     </div>
-                                                                    <div className="flex items-center justify-end w-auto sm:w-24 shrink-0">
+                                                                    <div className="flex items-center justify-center w-20 shrink-0">
                                                                         {isNew ? (
-                                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
+                                                                            <span className="inline-flex items-center justify-center gap-1 w-full text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-400 text-black shrink-0">
                                                                                 <CheckCircle2 size={8} /> Nuevo
                                                                             </span>
                                                                         ) : (
                                                                             <span className={cn(
-                                                                                'inline-flex flex-col items-center leading-tight text-[10px] font-bold px-2.5 py-1 rounded-xl shrink-0',
+                                                                                'inline-flex flex-col items-center justify-center w-full leading-tight text-[10px] font-bold px-2 py-1 rounded-xl shrink-0',
                                                                                 a.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : a.metodoPago === 'efectivo' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-teal-400/15 text-teal-400',
                                                                             )}>
                                                                                 <span className="capitalize">{a.metodoPago || 'Asistió'}</span>
