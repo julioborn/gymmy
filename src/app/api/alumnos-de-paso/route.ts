@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const soloHoy = searchParams.get('hoy') === '1';
+    const q = searchParams.get('q')?.trim();
 
     await connectMongoDB();
 
@@ -27,7 +28,17 @@ export async function GET(req: NextRequest) {
         query.fecha = { $gte: inicioHoy, $lt: finHoy };
     }
 
-    const registros = await AlumnoDePaso.find(query).sort({ fecha: -1 }).lean();
+    if (q) {
+        const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.$or = [
+            { nombre: { $regex: safe, $options: 'i' } },
+            { apellido: { $regex: safe, $options: 'i' } },
+        ];
+    }
+
+    let find = AlumnoDePaso.find(query).sort({ fecha: -1 });
+    if (q) find = find.limit(20);
+    const registros = await find.lean();
     return NextResponse.json({ ok: true, registros });
 }
 

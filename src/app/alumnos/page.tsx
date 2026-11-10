@@ -91,6 +91,8 @@ export default function ListaAlumnosPage() {
     const [acento2, setAcento2] = useState('#f97316');
     const [hoyExpanded, setHoyExpanded] = useState(false);
     const [slotsExpanded, setSlotsExpanded] = useState<Record<string, boolean>>({ mañana: false, siesta: false, tarde: false, noche: false });
+    const [dePasoResultados, setDePasoResultados] = useState<any[]>([]);
+    const [buscandoDePaso, setBuscandoDePaso] = useState(false);
 
     const fetchAlumnos = async (silent = false) => {
         if (!silent) setIsLoading(true);
@@ -120,6 +122,28 @@ export default function ListaAlumnosPage() {
     }, []);
 
     usePaymentEvents(() => fetchAlumnos(true));
+
+    useEffect(() => {
+        const q = busqueda.trim();
+        if (q.length < 2) {
+            setDePasoResultados([]);
+            return;
+        }
+        const timeout = setTimeout(async () => {
+            setBuscandoDePaso(true);
+            try {
+                const response = await fetch(`/api/alumnos-de-paso?q=${encodeURIComponent(q)}`);
+                if (!response.ok) throw new Error('Error en la solicitud');
+                const data = await response.json();
+                setDePasoResultados(data.registros ?? []);
+            } catch {
+                setDePasoResultados([]);
+            } finally {
+                setBuscandoDePaso(false);
+            }
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [busqueda]);
 
     const fetchTarifas = async () => {
         try {
@@ -611,6 +635,43 @@ export default function ListaAlumnosPage() {
                         }}
                     />
                 </Suspense>
+
+                {/* Resultados de alumnos de paso */}
+                {busqueda.trim().length >= 2 && (buscandoDePaso || dePasoResultados.length > 0) && (
+                    <div className="rounded-2xl overflow-hidden"
+                        style={{ background: 'linear-gradient(165deg, rgba(251,146,60,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(251,146,60,0.25)' }}>
+                        <div className="px-4 py-3 border-b border-white/[0.08] flex items-center gap-2">
+                            <UserPlus size={14} className="text-orange-400" />
+                            <span className="text-xs font-bold text-orange-300 uppercase tracking-wide">De paso</span>
+                            {!buscandoDePaso && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-400/15 text-orange-300">{dePasoResultados.length}</span>
+                            )}
+                        </div>
+                        <div className="px-3 py-2 space-y-1">
+                            {buscandoDePaso ? (
+                                <div className="h-9 rounded-xl bg-white/[0.08] animate-pulse" />
+                            ) : (
+                                dePasoResultados.map((r) => (
+                                    <div key={r._id} className="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-2 rounded-xl hover:bg-white/[0.06] transition-all">
+                                        <div className="flex items-center gap-2.5 basis-full sm:basis-0 sm:flex-1 min-w-0">
+                                            <div className="w-7 h-7 rounded-lg bg-orange-400/15 flex items-center justify-center text-xs font-bold text-orange-300 shrink-0">
+                                                {r.nombre?.[0]}{r.apellido?.[0]}
+                                            </div>
+                                            <span className="flex-1 min-w-0 text-sm font-semibold text-white/85 truncate">
+                                                {r.apellido}, {r.nombre}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 pl-9 sm:pl-0">
+                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.1] text-white/60">{r.actividad}</span>
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 tabular-nums">${Number(r.monto).toLocaleString('es-AR')}</span>
+                                            <span className="text-xs text-white/40 tabular-nums">{new Date(r.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Lista */}
                 {isLoading ? (
