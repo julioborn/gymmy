@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
-import { estaAlDia, pagoVigente, getMesActual } from '@/lib/pagos';
+import { estaAlDia, pagosVigentesDelMes, getMesActual } from '@/lib/pagos';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -311,15 +311,19 @@ export default function ListaAlumnosPage() {
         const formattedData = [...alumnos]
             .sort((a, b) => (a.apellido || '').localeCompare(b.apellido || '', 'es'))
             .map((alumno) => {
-                const pagoMes = pagoVigente(alumno.pagos, mesActual);
+                const pagosMes = pagosVigentesDelMes(alumno.pagos, mesActual);
+                const ultimoPago = pagosMes.length
+                    ? pagosMes.reduce((max, p) => new Date(p.fechaPago) > new Date(max.fechaPago) ? p : max)
+                    : null;
+                const totalPagado = pagosMes.reduce((sum, p) => sum + (p.tarifa ?? 0), 0);
                 return {
                     'Apellido y Nombre': `${alumno.apellido || ''} ${alumno.nombre || ''}`.trim(),
-                    'Fecha de pago': pagoMes
-                        ? new Date(pagoMes.fechaPago).toLocaleDateString('es-AR')
+                    'Fecha de pago': ultimoPago
+                        ? new Date(ultimoPago.fechaPago).toLocaleDateString('es-AR')
                         : '-',
                     'Días/semana': alumno.diasEntrenaSemana || '-',
-                    'Precio cuota': pagoMes ? `$${pagoMes.tarifa}` : '-',
-                    'Estado': alumno.exentoCuota ? 'Exento' : pagoMes ? 'Pagó' : 'No pagó',
+                    'Precio cuota': pagosMes.length ? `$${totalPagado}` : '-',
+                    'Estado': alumno.exentoCuota ? 'Exento' : pagosMes.length ? 'Pagó' : 'No pagó',
                 };
             });
 
@@ -350,14 +354,14 @@ export default function ListaAlumnosPage() {
     const slotOf = (hour: number): TurnSlot =>
         hour < 12 ? 'mañana' : hour < 15 ? 'siesta' : hour < 20 ? 'tarde' : 'noche';
 
-    const hoyPorTurno: Record<TurnSlot, { nombre: string; apellido: string; actividad: string; hora: string; id: string; exentoCuota?: boolean; pagado?: boolean; metodoPago?: string; monto?: number; fechaPago?: string }[]> = {
+    const hoyPorTurno: Record<TurnSlot, { nombre: string; apellido: string; actividad: string; hora: string; id: string; exentoCuota?: boolean; pagado?: boolean; pagosDelMes: { metodoPago: string; tarifa: number; fechaPago: string }[] }[]> = {
         mañana: [], siesta: [], tarde: [], noche: [],
     };
     if (!isLoading) {
         const mesActualHoy = getMesActual(new Date());
         for (const alumno of alumnos) {
             const pagadoHoy = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
-            const pagoInfoHoy = alumno.exentoCuota ? null : pagoVigente(alumno.pagos, mesActualHoy);
+            const pagosDelMesHoy = alumno.exentoCuota ? [] : pagosVigentesDelMes(alumno.pagos, mesActualHoy);
             for (const a of (alumno.asistencia || [])) {
                 if (!a.presente) continue;
                 const { key, hour, hora } = getArgInfo(a.fecha);
@@ -366,7 +370,7 @@ export default function ListaAlumnosPage() {
                     nombre: alumno.nombre, apellido: alumno.apellido,
                     actividad: a.actividad, hora, id: alumno._id,
                     exentoCuota: !!alumno.exentoCuota, pagado: pagadoHoy,
-                    metodoPago: pagoInfoHoy?.metodoPago, monto: pagoInfoHoy?.tarifa, fechaPago: pagoInfoHoy?.fechaPago,
+                    pagosDelMes: pagosDelMesHoy as any,
                 });
             }
         }
@@ -551,12 +555,16 @@ export default function ListaAlumnosPage() {
                                                                 <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50 shrink-0">
                                                                     Exenta
                                                                 </span>
-                                                            ) : a.pagado && a.metodoPago ? (
-                                                                <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold shrink-0 ${a.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                                                                    <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
-                                                                    {a.monto != null && <span className="tabular-nums">${a.monto.toLocaleString('es-AR')}</span>}
-                                                                    {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
-                                                                </span>
+                                                            ) : a.pagado && a.pagosDelMes.length > 0 ? (
+                                                                <div className="flex flex-col gap-1 shrink-0">
+                                                                    {a.pagosDelMes.map((p, pi) => (
+                                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold ${p.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : p.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                            <span className="capitalize">{p.metodoPago === 'mixto' ? 'Mixto' : p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
+                                                                            <span className="tabular-nums">${p.tarifa.toLocaleString('es-AR')}</span>
+                                                                            {a.pagosDelMes.length === 1 && p.fechaPago && <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
                                                             ) : !a.pagado ? (
                                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
                                                                     Debe
@@ -620,9 +628,9 @@ export default function ListaAlumnosPage() {
                         <div className="space-y-2">
                             {paginatedAlumnos.map((alumno) => {
                                 const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
-                                const pagoInfo = alumno.exentoCuota ? null : pagoVigente(alumno.pagos, getMesActual(new Date()));
-                                const metodoLabel = pagoInfo?.metodoPago === 'mixto' ? 'Mixto' : pagoInfo?.metodoPago === 'mercadopago' ? 'MercadoPago' : pagoInfo?.metodoPago;
-                                const metodoCls = pagoInfo?.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : pagoInfo?.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
+                                const pagosDelMes = alumno.exentoCuota ? [] : pagosVigentesDelMes(alumno.pagos, getMesActual(new Date()));
+                                const metodoLabel = (m?: string) => m === 'mixto' ? 'Mixto' : m === 'mercadopago' ? 'MercadoPago' : m;
+                                const metodoCls = (m?: string) => m === 'mixto' ? 'bg-amber-500/15 text-amber-400' : m === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
                                 const dr = alumno.diasRestantes;
                                 const planText = dr != null
                                     ? `${dr} día${dr !== 1 ? 's' : ''} de plan`
@@ -666,14 +674,18 @@ export default function ListaAlumnosPage() {
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/[0.08] text-white/50 whitespace-nowrap">
                                                     Exenta
                                                 </span>
-                                            ) : pagado && pagoInfo ? (
-                                                <span className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap ${metodoCls}`}>
-                                                    <span className="capitalize">{metodoLabel}</span>
-                                                    <span className="tabular-nums">${(pagoInfo.tarifa ?? 0).toLocaleString('es-AR')}</span>
-                                                    {pagoInfo.fechaPago && (
-                                                        <span className="tabular-nums opacity-70">{new Date(pagoInfo.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
-                                                    )}
-                                                </span>
+                                            ) : pagado && pagosDelMes.length > 0 ? (
+                                                <div className="flex flex-col gap-1">
+                                                    {pagosDelMes.map((p, pi) => (
+                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap ${metodoCls(p.metodoPago)}`}>
+                                                            <span className="capitalize">{metodoLabel(p.metodoPago)}</span>
+                                                            <span className="tabular-nums">${(p.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                            {pagosDelMes.length === 1 && p.fechaPago && (
+                                                                <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
+                                                            )}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             ) : pagado ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

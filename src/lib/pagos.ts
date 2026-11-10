@@ -39,6 +39,25 @@ export function pagoVigente(pagos: PagoLike[] | undefined, mesActual: string, fe
 }
 
 /**
+ * Igual que pagoVigente pero devuelve TODOS los pagos vigentes del mes, no solo
+ * el primero. Útil cuando alguien pagó en más de un pago especial (ej. parte en
+ * efectivo y parte por transferencia) y hay que mostrar el conjunto completo.
+ */
+export function pagosVigentesDelMes(pagos: PagoLike[] | undefined, mesActual: string, fechaRef: Date = new Date()): PagoLike[] {
+    return (pagos ?? []).filter(p => {
+        if (p.esEspecial) {
+            if (p.fechaDesde && p.fechaHasta) {
+                const desde = new Date(p.fechaDesde);
+                const hasta = new Date(p.fechaHasta);
+                return fechaRef >= desde && fechaRef <= hasta;
+            }
+            return p.mes?.toLowerCase().replace(/^especial-/, '') === mesActual;
+        }
+        return p.mes?.toLowerCase() === mesActual;
+    });
+}
+
+/**
  * ¿El alumno está al día este mes? Respeta exentoCuota (ej. profes que solo
  * registran asistencia) y reconoce pagos especiales correctamente.
  */

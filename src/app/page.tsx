@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { useAttendanceEvents } from '@/hooks/useAttendanceEvents';
-import { estaAlDia, pagoVigente, getMesActual } from '@/lib/pagos';
+import { estaAlDia, pagosVigentesDelMes, getMesActual } from '@/lib/pagos';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -130,9 +130,10 @@ function fmtDate(): string {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Tarifa = { dias: number; valor: number };
+type PagoDelMes = { metodoPago: string; monto: number; fecha: string };
 type AlumnoAsistencia = {
     nombre: string; apellido: string; actividad: string; hora: string; id: string; pagado: boolean; dni: string;
-    exentoCuota?: boolean; metodoPago?: string; montoPagado?: number; fechaPago?: string;
+    exentoCuota?: boolean; pagosDelMes: PagoDelMes[];
 };
 type DePasoEntry = { nombre: string; apellido: string; actividad: string; hora: string; id: string; metodoPago?: string; monto?: number };
 type DiaData = { key: string; labelDay: string; labelNum: number; fechaLarga: string; alumnos: AlumnoAsistencia[]; depaso: DePasoEntry[] };
@@ -298,7 +299,8 @@ export default function HomePage() {
             }
             for (const al of (alumnosData || [])) {
                 const pagado = estaAlDia({ pagos: al.pagos, exentoCuota: al.exentoCuota }, mesActual);
-                const pagoInfo = al.exentoCuota ? null : pagoVigente(al.pagos, mesActual);
+                const pagosDelMes: PagoDelMes[] = al.exentoCuota ? [] : pagosVigentesDelMes(al.pagos, mesActual)
+                    .map((p: any) => ({ metodoPago: p.metodoPago, monto: p.tarifa, fecha: p.fechaPago }));
                 for (const a of (al.asistencia || [])) {
                     if (!a.presente) continue;
                     const dArg = new Date(new Date(a.fecha).getTime() + ARG);
@@ -309,8 +311,7 @@ export default function HomePage() {
                     dia.alumnos.push({
                         nombre: al.nombre, apellido: al.apellido, actividad: a.actividad ?? '',
                         hora: `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, id: al._id, pagado, dni: al.dni ?? '',
-                        exentoCuota: !!al.exentoCuota, metodoPago: pagoInfo?.metodoPago, montoPagado: pagoInfo?.tarifa,
-                        fechaPago: pagoInfo?.fechaPago,
+                        exentoCuota: !!al.exentoCuota, pagosDelMes,
                     });
                 }
             }
@@ -804,14 +805,18 @@ export default function HomePage() {
                                                                             </span>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && a.pagado && (
-                                                                            <span className={cn(
-                                                                                'inline-flex flex-col items-center justify-center w-full leading-tight text-[10px] font-bold px-2 py-1 rounded-xl shrink-0',
-                                                                                a.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : a.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
-                                                                            )}>
-                                                                                <span className="capitalize">{a.metodoPago === 'mixto' ? 'Mixto' : a.metodoPago === 'mercadopago' ? 'MP' : a.metodoPago}</span>
-                                                                                {a.montoPagado != null && <span className="tabular-nums">${a.montoPagado.toLocaleString('es-AR')}</span>}
-                                                                                {a.fechaPago && <span className="tabular-nums opacity-70">{new Date(a.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
-                                                                            </span>
+                                                                            <div className="w-full flex flex-col gap-1">
+                                                                                {a.pagosDelMes.map((p, pi) => (
+                                                                                    <span key={pi} className={cn(
+                                                                                        'inline-flex flex-col items-center justify-center w-full leading-tight text-[10px] font-bold px-2 py-1 rounded-xl shrink-0',
+                                                                                        p.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : p.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
+                                                                                    )}>
+                                                                                        <span className="capitalize">{p.metodoPago === 'mixto' ? 'Mixto' : p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
+                                                                                        <span className="tabular-nums">${p.monto.toLocaleString('es-AR')}</span>
+                                                                                        {a.pagosDelMes.length === 1 && p.fecha && <span className="tabular-nums opacity-70">{new Date(p.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
+                                                                                    </span>
+                                                                                ))}
+                                                                            </div>
                                                                         )}
                                                                         {!isNew && !a.exentoCuota && !a.pagado && (
                                                                             <span className="inline-flex items-center justify-center gap-1 w-full text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
