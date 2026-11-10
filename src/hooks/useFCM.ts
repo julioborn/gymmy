@@ -3,7 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 
-async function isCapacitor(): Promise<boolean> {
+export type NotifStatus = 'granted' | 'denied' | 'default' | 'unsupported';
+
+export async function isCapacitor(): Promise<boolean> {
     try {
         const { Capacitor } = await import('@capacitor/core');
         return Capacitor.isNativePlatform();
@@ -20,14 +22,31 @@ async function registerToken(token: string) {
     });
 }
 
-async function initNativeFCM() {
+/** Estado actual del permiso, sin pedirlo. Para decidir qué mostrar (campanita, banner, etc). */
+export async function getNotificationStatus(): Promise<NotifStatus> {
+    try {
+        if (await isCapacitor()) {
+            const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
+            const { receive } = await FirebaseMessaging.checkPermissions();
+            if (receive === 'granted') return 'granted';
+            if (receive === 'denied') return 'denied';
+            return 'default';
+        }
+        if (typeof Notification === 'undefined') return 'unsupported';
+        return Notification.permission; // 'granted' | 'denied' | 'default'
+    } catch {
+        return 'unsupported';
+    }
+}
+
+async function initNativeFCM(): Promise<NotifStatus> {
     const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
 
     const { receive } = await FirebaseMessaging.requestPermissions();
-    if (receive !== 'granted') return;
+    if (receive !== 'granted') return receive === 'denied' ? 'denied' : 'default';
 
     const { token } = await FirebaseMessaging.getToken();
-    if (!token) return;
+    if (!token) return 'granted';
 
     await registerToken(token);
 
@@ -49,20 +68,23 @@ async function initNativeFCM() {
         const url = (event.notification.data as any)?.url;
         if (url) window.location.href = url;
     });
+
+    return 'granted';
 }
 
-async function initWebFCM() {
+async function initWebFCM(): Promise<NotifStatus> {
+    if (typeof Notification === 'undefined') return 'unsupported';
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-    if (!vapidKey) return;
+    if (!vapidKey) return 'unsupported';
 
     const { getMessagingInstance } = await import('@/lib/firebase');
     const { getToken, onMessage } = await import('firebase/messaging');
 
     const messaging = await getMessagingInstance();
-    if (!messaging) return;
+    if (!messaging) return 'unsupported';
 
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    if (permission !== 'granted') return permission;
 
     const existing = await navigator.serviceWorker.getRegistrations();
     for (const reg of existing) {
@@ -73,7 +95,7 @@ async function initWebFCM() {
     await navigator.serviceWorker.ready;
 
     const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg });
-    if (!token) return;
+    if (!token) return 'granted';
 
     await registerToken(token);
 
@@ -91,6 +113,19 @@ async function initWebFCM() {
             });
         }
     });
+
+    return 'granted';
+}
+
+/** Pide el permiso (dispara el cartel nativo/del navegador) y registra el token si lo conceden. */
+export async function requestNotificationPermission(): Promise<NotifStatus> {
+    try {
+        if (await isCapacitor()) return await initNativeFCM();
+        return await initWebFCM();
+    } catch (e) {
+        console.error('[FCM] request error:', e);
+        return 'unsupported';
+    }
 }
 
 export function useFCM() {
@@ -100,17 +135,6 @@ export function useFCM() {
     useEffect(() => {
         if (status !== 'authenticated' || initialized.current) return;
         initialized.current = true;
-
-        (async () => {
-            try {
-                if (await isCapacitor()) {
-                    await initNativeFCM();
-                } else {
-                    await initWebFCM();
-                }
-            } catch (e) {
-                console.error('[FCM] init error:', e);
-            }
-        })();
+        requestNotificationPermission().catch((e) => console.error('[FCM] init error:', e));
     }, [status]);
 }

@@ -4,7 +4,7 @@ import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useFCM } from '@/hooks/useFCM';
+import { useFCM, getNotificationStatus, requestNotificationPermission, type NotifStatus } from '@/hooks/useFCM';
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import Swal from 'sweetalert2';
 import { swalDanger, swalBase, swalNotify } from '@/utils/swalConfig';
@@ -68,6 +68,43 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
         const id = setInterval(tick, 1000);
         return () => clearInterval(id);
     }, [session?.user?.role]);
+
+    // ── Notificaciones push: estado + banner de activación ──
+    const [notifStatus, setNotifStatus] = useState<NotifStatus | null>(null);
+    const [showNotifBanner, setShowNotifBanner] = useState(false);
+    useEffect(() => {
+        if (status !== 'authenticated') return;
+        getNotificationStatus().then((s) => {
+            setNotifStatus(s);
+            if (s === 'default' && !sessionStorage.getItem('gymmy_notif_banner_dismissed')) {
+                setShowNotifBanner(true);
+            }
+        }).catch(() => {});
+    }, [status]);
+
+    const activarNotificaciones = async () => {
+        const { isConfirmed } = await Swal.fire({
+            ...swalBase,
+            icon: 'info',
+            title: 'Activar notificaciones',
+            text: 'Te avisamos cuando venza tu cuota, si asistís, y otras novedades del gym. Te va a aparecer un cartel para confirmar.',
+            showCancelButton: true,
+            confirmButtonText: 'Activar',
+            cancelButtonText: 'Ahora no',
+        });
+        setShowNotifBanner(false);
+        if (!isConfirmed) {
+            sessionStorage.setItem('gymmy_notif_banner_dismissed', '1');
+            return;
+        }
+        const result = await requestNotificationPermission();
+        setNotifStatus(result);
+        if (result === 'granted') {
+            Swal.fire({ ...swalNotify, icon: 'success', title: 'Notificaciones activadas' });
+        } else if (result === 'denied') {
+            Swal.fire({ ...swalBase, icon: 'warning', title: 'Quedaron bloqueadas', text: 'Las bloqueaste en el sistema. Para activarlas entrá a los ajustes de notificaciones del celular/navegador para esta app.' });
+        }
+    };
 
     // ── Gesture ref (shared mutable state for event closures) ──
     const g = useRef({
@@ -550,13 +587,39 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                         />
                     </Link>
 
-                    {role === 'recepcion' ? (
-                        <p className="hidden sm:block text-white font-black text-2xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
-                            {horaHeader || '--:--'}
-                        </p>
-                    ) : (
-                        <div className="w-8" />
-                    )}
+                    <div className="flex items-center gap-2">
+                        {role === 'recepcion' && (
+                            <p className="hidden sm:block text-white font-black text-2xl tabular-nums leading-none" style={{ letterSpacing: '-0.03em' }}>
+                                {horaHeader || '--:--'}
+                            </p>
+                        )}
+                        {status === 'authenticated' && (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (notifStatus === 'granted') {
+                                        Swal.fire({ ...swalNotify, icon: 'success', title: 'Las notificaciones ya están activadas' });
+                                        return;
+                                    }
+                                    if (notifStatus === 'denied') {
+                                        await Swal.fire({ ...swalBase, icon: 'warning', title: 'Notificaciones bloqueadas', text: 'Las bloqueaste en el sistema. Para activarlas entrá a los ajustes de notificaciones del celular/navegador para esta app.' });
+                                        return;
+                                    }
+                                    activarNotificaciones();
+                                }}
+                                className="relative w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors active:scale-90"
+                                aria-label="Notificaciones"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                </svg>
+                                <span
+                                    className="absolute top-1 right-1 w-2 h-2 rounded-full border border-[#111]"
+                                    style={{ background: notifStatus === 'granted' ? '#a3e635' : notifStatus === 'denied' ? '#ef4444' : '#f97316' }}
+                                />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -633,6 +696,25 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                     willChange: swipeX > 0 ? 'transform' : undefined,
                 }}
             >
+                {showNotifBanner && !isStaticPage && !isLoginPage && !isRegistroPage && (
+                    <div className="px-4 pt-3 flex items-center gap-3">
+                        <div className="flex-1 min-w-0 bg-white/[0.06] border border-white/[0.1] rounded-2xl px-4 py-3 flex items-center gap-3">
+                            <p className="flex-1 text-white/80 text-xs leading-snug">
+                                Activá las notificaciones para enterarte de vencimientos de cuota y novedades del gym.
+                            </p>
+                            <button onClick={activarNotificaciones}
+                                className="shrink-0 px-3 py-1.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-black text-xs font-bold transition-colors">
+                                Activar
+                            </button>
+                            <button onClick={() => { setShowNotifBanner(false); sessionStorage.setItem('gymmy_notif_banner_dismissed', '1'); }}
+                                className="shrink-0 w-7 h-7 flex items-center justify-center text-white/40 hover:text-white/70 transition-colors">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 {children}
             </main>
 
