@@ -918,7 +918,7 @@ export default function HomePage() {
 
                         {/* RIGHT: quick actions — mismo ancho que la columna izquierda para que la tabla quede centrada */}
                         <BlurFade delay={0.14} className="w-52 shrink-0">
-                            <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col items-start gap-2">
+                            <div className="w-fit bg-white/[0.04] border border-white/[0.07] rounded-2xl p-2 flex flex-col items-start gap-2">
                                 <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.16em] px-2 py-1">Acciones</p>
                                 <Link href="/alumnos"
                                     className="w-32 flex items-center justify-start gap-1.5 px-3 py-3 rounded-2xl bg-lime-400 hover:bg-lime-300 active:bg-lime-500 text-black font-bold text-xs transition-all shadow-md shadow-lime-400/20">
