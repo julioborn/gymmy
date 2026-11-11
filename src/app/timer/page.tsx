@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
+import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
@@ -322,13 +322,14 @@ export default function TimerPage() {
 
             <div className="relative max-w-md mx-auto px-4 pt-4 space-y-5">
                 <div className="flex items-center gap-3">
-                    <Link href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all">
+                    <Link href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
                         <ChevronLeft size={18} />
                     </Link>
-                    <div className="flex items-center gap-2">
-                        <TimerIcon size={20} style={{ color: LIME }} />
-                        <h1 className="text-white font-bold text-2xl">Timer Intermitente</h1>
+                    <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+                        <TimerIcon size={20} style={{ color: LIME }} className="shrink-0" />
+                        <h1 className="text-white font-bold text-2xl truncate">Intermitente</h1>
                     </div>
+                    <div className="w-9 h-9 shrink-0" />
                 </div>
 
                 {/* Dial */}
@@ -345,22 +346,30 @@ export default function TimerPage() {
                             gaugeSecondaryColor="rgba(255,255,255,0.08)"
                             transitionLength={snapRing ? '0s' : '1s'}
                         />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
-                            <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
-                            <span className="font-black text-white tabular-nums leading-none mt-2" style={{ fontSize: 'clamp(58px, 18vw, 80px)' }}>
-                                {isRunning || phase === 'done' ? fmtClock(phase === 'done' ? 0 : secondsLeft) : '--:--'}
-                            </span>
-                            {showRound && (
-                                <span className="text-white text-xl font-bold mt-3">
-                                    Ronda <NumberTicker value={round} className="text-white font-black" style={{ color }} /> <span className="text-white/50">de {totalRounds}</span>
+                        {phase === 'done' ? (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-8 text-center done-pop">
+                                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+                                    style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)', boxShadow: '0 0 0 1px rgba(163,230,53,0.2) inset, 0 8px 24px -6px rgba(163,230,53,0.55)' }}>
+                                    <Trophy size={30} className="text-black" />
+                                </div>
+                                <span className="text-white font-black text-2xl leading-tight">¡Entrenamiento<br />completo!</span>
+                                <span className="text-white/60 text-base font-semibold mt-3">
+                                    <NumberTicker value={totalRounds} className="text-white font-black" /> rondas · {fmtClock(work * totalRounds)} de trabajo
                                 </span>
-                            )}
-                            {phase === 'done' && (
-                                <span className="text-white text-xl font-bold mt-3">
-                                    <NumberTicker value={totalRounds} className="text-white font-black" /> <span className="text-white/50">rondas completadas</span>
+                            </div>
+                        ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
+                                <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
+                                <span className="font-black text-white tabular-nums leading-none mt-2" style={{ fontSize: 'clamp(58px, 18vw, 80px)' }}>
+                                    {isRunning ? fmtClock(secondsLeft) : '--:--'}
                                 </span>
-                            )}
-                        </div>
+                                {showRound && (
+                                    <span className="text-white text-xl font-bold mt-3">
+                                        Ronda <NumberTicker value={round} className="text-white font-black" style={{ color }} /> <span className="text-white/50">de {totalRounds}</span>
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
