@@ -36,11 +36,8 @@ function buildTimeline(prep: number, work: number, rest: number, rounds: number)
     return steps;
 }
 
-const WHEEL_ITEM_H = 34;
-const WHEEL_VISIBLE = 3;
-
-function WheelPicker({ label, value, onChange, min, max, step = 1, disabled }: {
-    label: string; value: number; onChange: (v: number) => void; min: number; max: number; step?: number; disabled?: boolean;
+function WheelPicker({ value, onChange, min, max, step = 1, itemHeight = 44, visibleCount = 5, large }: {
+    value: number; onChange: (v: number) => void; min: number; max: number; step?: number; itemHeight?: number; visibleCount?: number; large?: boolean;
 }) {
     const options = useMemo(() => {
         const arr: number[] = [];
@@ -51,16 +48,16 @@ function WheelPicker({ label, value, onChange, min, max, step = 1, disabled }: {
     const containerRef = useRef<HTMLDivElement>(null);
     const settleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const programmaticRef = useRef(false);
-    const padding = WHEEL_ITEM_H * Math.floor(WHEEL_VISIBLE / 2);
+    const padding = itemHeight * Math.floor(visibleCount / 2);
 
     const scrollToValue = useCallback((v: number, smooth: boolean) => {
         const el = containerRef.current;
         const idx = options.indexOf(v);
         if (!el || idx === -1) return;
         programmaticRef.current = true;
-        el.scrollTo({ top: idx * WHEEL_ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
+        el.scrollTo({ top: idx * itemHeight, behavior: smooth ? 'smooth' : 'auto' });
         setTimeout(() => { programmaticRef.current = false; }, smooth ? 300 : 50);
-    }, [options]);
+    }, [options, itemHeight]);
 
     useEffect(() => { scrollToValue(value, false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -69,7 +66,7 @@ function WheelPicker({ label, value, onChange, min, max, step = 1, disabled }: {
         settleRef.current = setTimeout(() => {
             const el = containerRef.current;
             if (programmaticRef.current || !el) return;
-            const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / WHEEL_ITEM_H)));
+            const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / itemHeight)));
             const newVal = options[idx];
             if (newVal !== value) onChange(newVal);
             scrollToValue(newVal, true);
@@ -77,28 +74,35 @@ function WheelPicker({ label, value, onChange, min, max, step = 1, disabled }: {
     };
 
     return (
-        <div className="flex-1">
-            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block text-center">{label}</label>
-            <div className={`relative ${disabled ? 'opacity-40 pointer-events-none' : ''}`} style={{ height: WHEEL_ITEM_H * WHEEL_VISIBLE }}>
-                <div className="absolute left-0 right-0 rounded-lg bg-white/[0.1] pointer-events-none" style={{ top: padding, height: WHEEL_ITEM_H }} />
-                <div
-                    ref={containerRef}
-                    onScroll={handleScroll}
-                    className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden"
-                    style={{ scrollSnapType: 'y mandatory', paddingTop: padding, paddingBottom: padding, scrollbarWidth: 'none' }}
-                >
-                    {options.map(opt => (
-                        <div key={opt}
-                            onClick={() => { onChange(opt); scrollToValue(opt, true); }}
-                            style={{ height: WHEEL_ITEM_H, scrollSnapAlign: 'center' }}
-                            className={`flex items-center justify-center font-bold tabular-nums transition-all cursor-pointer ${opt === value ? 'text-white text-2xl' : 'text-white/25 text-base'}`}
-                        >
-                            {opt}
-                        </div>
-                    ))}
-                </div>
+        <div className="relative" style={{ height: itemHeight * visibleCount }}>
+            <div className="absolute left-0 right-0 rounded-xl bg-white/[0.1] pointer-events-none" style={{ top: padding, height: itemHeight }} />
+            <div
+                ref={containerRef}
+                onScroll={handleScroll}
+                className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden"
+                style={{ scrollSnapType: 'y mandatory', paddingTop: padding, paddingBottom: padding, scrollbarWidth: 'none' }}
+            >
+                {options.map(opt => (
+                    <div key={opt}
+                        onClick={() => { onChange(opt); scrollToValue(opt, true); }}
+                        style={{ height: itemHeight, scrollSnapAlign: 'center' }}
+                        className={`flex items-center justify-center font-bold tabular-nums transition-all cursor-pointer ${opt === value ? `text-white ${large ? 'text-3xl' : 'text-2xl'}` : `text-white/25 ${large ? 'text-xl' : 'text-base'}`}`}
+                    >
+                        {opt}
+                    </div>
+                ))}
             </div>
         </div>
+    );
+}
+
+function FieldChip({ label, value, onClick, disabled }: { label: string; value: number; onClick: () => void; disabled?: boolean }) {
+    return (
+        <button type="button" disabled={disabled} onClick={onClick}
+            className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-center disabled:opacity-40 active:scale-[0.97] transition-all">
+            <p className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1">{label}</p>
+            <p className="text-white font-bold text-2xl tabular-nums">{value}</p>
+        </button>
     );
 }
 
@@ -112,6 +116,7 @@ export default function TimerPage() {
     const [round, setRound] = useState(0);
     const [remainingMs, setRemainingMs] = useState(0);
     const [paused, setPaused] = useState(false);
+    const [activePicker, setActivePicker] = useState<null | 'work' | 'rest' | 'rounds' | 'prep'>(null);
 
     const stepsRef = useRef<Step[]>([]);
     const stepIdxRef = useRef(0);
@@ -120,6 +125,8 @@ export default function TimerPage() {
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const audioCtxRef = useRef<AudioContext | null>(null);
     const lastTickSecondRef = useRef<number | null>(null);
+    const wakeLockRef = useRef<any>(null);
+    const runningRef = useRef(false);
 
     // ── Config persistence ──
     useEffect(() => {
@@ -138,7 +145,33 @@ export default function TimerPage() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ work, rest, rounds, prep })); } catch {}
     }, [work, rest, rounds, prep]);
 
-    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
+    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Mantener la pantalla encendida mientras corre ──
+    const requestWakeLock = useCallback(async () => {
+        try {
+            if ('wakeLock' in navigator) wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        } catch {}
+    }, []);
+
+    const releaseWakeLock = useCallback(() => {
+        try { wakeLockRef.current?.release(); } catch {}
+        wakeLockRef.current = null;
+    }, []);
+
+    useEffect(() => {
+        runningRef.current = phase !== 'idle' && phase !== 'done' && !paused;
+    }, [phase, paused]);
+
+    // El wake lock se libera solo cuando la pestaña se oculta (se cambia de app, se apaga la pantalla);
+    // al volver, si el timer sigue corriendo, lo volvemos a pedir.
+    useEffect(() => {
+        const onVisible = () => {
+            if (document.visibilityState === 'visible' && runningRef.current) requestWakeLock();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
+    }, [requestWakeLock]);
 
     // ── Sound ──
     const ensureAudio = useCallback(() => {
@@ -184,6 +217,7 @@ export default function TimerPage() {
             setRemainingMs(0);
             playPhaseSound('done');
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+            releaseWakeLock();
             return;
         }
         const step = steps[idx];
@@ -194,7 +228,7 @@ export default function TimerPage() {
         setRemainingMs(step.duration * 1000);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
-    }, [playPhaseSound]);
+    }, [playPhaseSound, releaseWakeLock]);
 
     const tick = useCallback(() => {
         const remaining = phaseEndRef.current - Date.now();
@@ -220,12 +254,14 @@ export default function TimerPage() {
         goToStep(0, now);
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(tick, 100);
+        requestWakeLock();
     };
 
     const handlePause = () => {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         pausedRemainingRef.current = phaseEndRef.current - Date.now();
         setPaused(true);
+        releaseWakeLock();
     };
 
     const handleResume = () => {
@@ -233,6 +269,7 @@ export default function TimerPage() {
         setPaused(false);
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(tick, 100);
+        requestWakeLock();
     };
 
     const handleReset = () => {
@@ -243,12 +280,21 @@ export default function TimerPage() {
         setPaused(false);
         stepsRef.current = [];
         stepIdxRef.current = 0;
+        releaseWakeLock();
     };
 
     const isRunning = phase !== 'idle' && phase !== 'done';
     const totalRounds = rounds;
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
+
+    const FIELD_DEFS = {
+        work: { label: 'Trabajo (seg)', value: work, onChange: setWork, min: 5, max: 600 },
+        rest: { label: 'Descanso (seg)', value: rest, onChange: setRest, min: 0, max: 600 },
+        rounds: { label: 'Series', value: rounds, onChange: setRounds, min: 1, max: 50 },
+        prep: { label: 'Preparación (seg)', value: prep, onChange: setPrep, min: 0, max: 60 },
+    } as const;
+    const activeDef = activePicker ? FIELD_DEFS[activePicker] : null;
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] pb-20">
@@ -285,12 +331,12 @@ export default function TimerPage() {
                 <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
                     <div className="flex gap-2">
-                        <WheelPicker label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} step={5} disabled={isRunning} />
-                        <WheelPicker label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} step={5} disabled={isRunning} />
+                        <FieldChip label="Trabajo (seg)" value={work} onClick={() => setActivePicker('work')} disabled={isRunning} />
+                        <FieldChip label="Descanso (seg)" value={rest} onClick={() => setActivePicker('rest')} disabled={isRunning} />
                     </div>
                     <div className="flex gap-2">
-                        <WheelPicker label="Series" value={rounds} onChange={setRounds} min={1} max={50} step={1} disabled={isRunning} />
-                        <WheelPicker label="Preparación (seg)" value={prep} onChange={setPrep} min={0} max={60} step={5} disabled={isRunning} />
+                        <FieldChip label="Series" value={rounds} onClick={() => setActivePicker('rounds')} disabled={isRunning} />
+                        <FieldChip label="Preparación (seg)" value={prep} onClick={() => setActivePicker('prep')} disabled={isRunning} />
                     </div>
                 </div>
 
@@ -326,6 +372,22 @@ export default function TimerPage() {
                     Mantené la app abierta y la pantalla encendida durante el ejercicio para que los avisos sonoros funcionen bien.
                 </p>
             </div>
+
+            {activeDef && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setActivePicker(null)}>
+                    <div className="absolute inset-0 bg-black/60" />
+                    <div onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-md rounded-t-[2rem] p-5"
+                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.06), rgba(17,17,17,0.98))', border: '1px solid rgba(255,255,255,0.12)', borderBottom: 'none', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
+                        <p className="text-white font-bold text-center text-base mb-3">{activeDef.label}</p>
+                        <WheelPicker value={activeDef.value} onChange={activeDef.onChange} min={activeDef.min} max={activeDef.max} step={1} itemHeight={46} visibleCount={5} large />
+                        <button onClick={() => setActivePicker(null)}
+                            className="w-full mt-4 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-base transition-all">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
