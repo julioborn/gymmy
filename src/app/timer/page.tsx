@@ -46,45 +46,56 @@ function WheelPicker({ value, onChange, min, max, step = 1, itemHeight = 44, vis
     }, [min, max, step]);
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const settleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const programmaticRef = useRef(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const padding = itemHeight * Math.floor(visibleCount / 2);
+
+    // El valor "elegido" siempre se calcula desde donde el scroll termina en reposo
+    // (evento scrollend, o un debounce de respaldo si el navegador no lo soporta),
+    // nunca desde un timeout adivinado — así el número grande siempre coincide
+    // con el que queda centrado en el recuadro, sea que llegaste arrastrando o tocando.
+    const commitFromScroll = useCallback(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / itemHeight)));
+        onChange(options[idx]);
+    }, [options, itemHeight, onChange]);
 
     const scrollToValue = useCallback((v: number, smooth: boolean) => {
         const el = containerRef.current;
         const idx = options.indexOf(v);
         if (!el || idx === -1) return;
-        programmaticRef.current = true;
         el.scrollTo({ top: idx * itemHeight, behavior: smooth ? 'smooth' : 'auto' });
-        setTimeout(() => { programmaticRef.current = false; }, smooth ? 300 : 50);
     }, [options, itemHeight]);
 
     useEffect(() => { scrollToValue(value, false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleScroll = () => {
-        if (settleRef.current) clearTimeout(settleRef.current);
-        settleRef.current = setTimeout(() => {
-            const el = containerRef.current;
-            if (programmaticRef.current || !el) return;
-            const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / itemHeight)));
-            const newVal = options[idx];
-            if (newVal !== value) onChange(newVal);
-            scrollToValue(newVal, true);
-        }, 110);
-    };
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const onScroll = () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(commitFromScroll, 120);
+        };
+        el.addEventListener('scroll', onScroll, { passive: true });
+        el.addEventListener('scrollend', commitFromScroll);
+        return () => {
+            el.removeEventListener('scroll', onScroll);
+            el.removeEventListener('scrollend', commitFromScroll);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, [commitFromScroll]);
 
     return (
         <div className="relative" style={{ height: itemHeight * visibleCount }}>
-            <div className="absolute left-0 right-0 rounded-xl bg-white/[0.1] pointer-events-none" style={{ top: padding, height: itemHeight }} />
+            <div className="absolute left-0 right-0 rounded-xl pointer-events-none" style={{ top: padding, height: itemHeight, background: '#2a2a2a', border: '1px solid rgba(255,255,255,0.1)' }} />
             <div
                 ref={containerRef}
-                onScroll={handleScroll}
                 className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden"
                 style={{ scrollSnapType: 'y mandatory', paddingTop: padding, paddingBottom: padding, scrollbarWidth: 'none' }}
             >
                 {options.map(opt => (
                     <div key={opt}
-                        onClick={() => { onChange(opt); scrollToValue(opt, true); }}
+                        onClick={() => scrollToValue(opt, true)}
                         style={{ height: itemHeight, scrollSnapAlign: 'center' }}
                         className={`flex items-center justify-center font-bold tabular-nums transition-all cursor-pointer ${opt === value ? `text-white ${large ? 'text-3xl' : 'text-2xl'}` : `text-white/25 ${large ? 'text-xl' : 'text-base'}`}`}
                     >
@@ -378,7 +389,7 @@ export default function TimerPage() {
                     <div className="absolute inset-0 bg-black/60" />
                     <div onClick={(e) => e.stopPropagation()}
                         className="relative w-full max-w-md rounded-t-[2rem] p-5"
-                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.06), rgba(17,17,17,0.98))', border: '1px solid rgba(255,255,255,0.12)', borderBottom: 'none', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
+                        style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.12)', borderBottom: 'none', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
                         <p className="text-white font-bold text-center text-base mb-3">{activeDef.label}</p>
                         <WheelPicker value={activeDef.value} onChange={activeDef.onChange} min={activeDef.min} max={activeDef.max} step={1} itemHeight={46} visibleCount={5} large />
                         <button onClick={() => setActivePicker(null)}
