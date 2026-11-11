@@ -40,3 +40,10 @@ src/app/alumnos/planificacion/
 src/app/api/ejercicios
 src/app/api/planes
 src/app/models/Plan.ts
+
+# Binarios/cache local del skill impeccable (se descargan solos en cada maquina,
+# no deben versionarse — causaban conflictos de git pull entre maquinas distintas)
+.claude/skills/impeccable/scripts/
+
+# Config de permisos de Claude Code, es por maquina/usuario, no de el proyecto
+.claude/settings.local.json
