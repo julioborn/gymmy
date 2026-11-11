@@ -1,14 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
+import { NumberTicker } from '@/components/magicui/number-ticker';
 
 type PhaseKind = 'prep' | 'work' | 'rest';
 type Phase = PhaseKind | 'idle' | 'done';
 type Step = { phase: PhaseKind; duration: number; round: number };
 
 const STORAGE_KEY = 'gymmy_timer_config_v1';
+
+// Paleta de marca de SportTime — el resto de la app ya usa este mismo par.
+const LIME = '#a3e635';
+const ORANGE = '#f97316';
+const NEUTRAL = '#cbd5e1';
 
 const PHASE_LABEL: Record<Phase, string> = {
     idle: 'Listo para arrancar',
@@ -19,11 +28,11 @@ const PHASE_LABEL: Record<Phase, string> = {
 };
 
 const PHASE_COLOR: Record<Phase, string> = {
-    idle: '#94a3b8',
-    prep: '#f59e0b',
-    work: '#10b981',
-    rest: '#0ea5e9',
-    done: '#a3e635',
+    idle: NEUTRAL,
+    prep: NEUTRAL,
+    work: LIME,
+    rest: ORANGE,
+    done: LIME,
 };
 
 function buildTimeline(prep: number, work: number, rest: number, rounds: number): Step[] {
@@ -36,84 +45,36 @@ function buildTimeline(prep: number, work: number, rest: number, rounds: number)
     return steps;
 }
 
-function WheelPicker({ value, onChange, min, max, step = 1, itemHeight = 44, visibleCount = 5, large }: {
-    value: number; onChange: (v: number) => void; min: number; max: number; step?: number; itemHeight?: number; visibleCount?: number; large?: boolean;
-}) {
-    const options = useMemo(() => {
-        const arr: number[] = [];
-        for (let v = min; v <= max; v += step) arr.push(v);
-        return arr;
-    }, [min, max, step]);
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const padding = itemHeight * Math.floor(visibleCount / 2);
-
-    // El valor "elegido" siempre se calcula desde donde el scroll termina en reposo
-    // (evento scrollend, o un debounce de respaldo si el navegador no lo soporta),
-    // nunca desde un timeout adivinado — así el número grande siempre coincide
-    // con el que queda centrado en el recuadro, sea que llegaste arrastrando o tocando.
-    const commitFromScroll = useCallback(() => {
-        const el = containerRef.current;
-        if (!el) return;
-        const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / itemHeight)));
-        onChange(options[idx]);
-    }, [options, itemHeight, onChange]);
-
-    const scrollToValue = useCallback((v: number, smooth: boolean) => {
-        const el = containerRef.current;
-        const idx = options.indexOf(v);
-        if (!el || idx === -1) return;
-        el.scrollTo({ top: idx * itemHeight, behavior: smooth ? 'smooth' : 'auto' });
-    }, [options, itemHeight]);
-
-    useEffect(() => { scrollToValue(value, false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el) return;
-        const onScroll = () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(commitFromScroll, 120);
-        };
-        el.addEventListener('scroll', onScroll, { passive: true });
-        el.addEventListener('scrollend', commitFromScroll);
-        return () => {
-            el.removeEventListener('scroll', onScroll);
-            el.removeEventListener('scrollend', commitFromScroll);
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, [commitFromScroll]);
-
-    return (
-        <div className="relative" style={{ height: itemHeight * visibleCount }}>
-            <div className="absolute left-0 right-0 rounded-xl pointer-events-none" style={{ top: padding, height: itemHeight, background: '#2a2a2a', border: '1px solid rgba(255,255,255,0.1)' }} />
-            <div
-                ref={containerRef}
-                className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden"
-                style={{ scrollSnapType: 'y mandatory', paddingTop: padding, paddingBottom: padding, scrollbarWidth: 'none' }}
-            >
-                {options.map(opt => (
-                    <div key={opt}
-                        onClick={() => scrollToValue(opt, true)}
-                        style={{ height: itemHeight, scrollSnapAlign: 'center' }}
-                        className={`flex items-center justify-center font-bold tabular-nums transition-all cursor-pointer ${opt === value ? `text-white ${large ? 'text-3xl' : 'text-2xl'}` : `text-white/25 ${large ? 'text-xl' : 'text-base'}`}`}
-                    >
-                        {opt}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+function fmtClock(totalSeconds: number): string {
+    const s = Math.max(0, totalSeconds);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-function FieldChip({ label, value, onClick, disabled }: { label: string; value: number; onClick: () => void; disabled?: boolean }) {
+function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, disabled }: {
+    label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; accent: string; suffix?: string; disabled?: boolean;
+}) {
     return (
-        <button type="button" disabled={disabled} onClick={onClick}
-            className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-center disabled:opacity-40 active:scale-[0.97] transition-all">
-            <p className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1">{label}</p>
-            <p className="text-white font-bold text-2xl tabular-nums">{value}</p>
-        </button>
+        <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`} style={{ ['--slider-accent' as string]: accent } as React.CSSProperties}>
+            <div className="flex items-center justify-between mb-2.5">
+                <span className="text-sm font-semibold text-white/80">{label}</span>
+                <span className="text-sm font-bold tabular-nums px-2.5 py-0.5 rounded-full" style={{ color: accent, background: `${accent}1A` }}>
+                    {value}{suffix ? ` ${suffix}` : ''}
+                </span>
+            </div>
+            <Slider
+                value={[value]}
+                min={min}
+                max={max}
+                step={step}
+                onValueChange={([v]) => onChange(v)}
+                disabled={disabled}
+                trackClassName="h-2 bg-white/10"
+                rangeClassName="bg-[var(--slider-accent)]"
+                thumbClassName="h-5 w-5 border-2 border-[var(--slider-accent)] bg-white shadow-md"
+            />
+        </div>
     );
 }
 
@@ -126,8 +87,8 @@ export default function TimerPage() {
     const [phase, setPhase] = useState<Phase>('idle');
     const [round, setRound] = useState(0);
     const [remainingMs, setRemainingMs] = useState(0);
+    const [currentDuration, setCurrentDuration] = useState(0);
     const [paused, setPaused] = useState(false);
-    const [activePicker, setActivePicker] = useState<null | 'work' | 'rest' | 'rounds' | 'prep'>(null);
 
     const stepsRef = useRef<Step[]>([]);
     const stepIdxRef = useRef(0);
@@ -237,6 +198,7 @@ export default function TimerPage() {
         setPhase(step.phase);
         setRound(step.round);
         setRemainingMs(step.duration * 1000);
+        setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
     }, [playPhaseSound, releaseWakeLock]);
@@ -288,6 +250,7 @@ export default function TimerPage() {
         setPhase('idle');
         setRound(0);
         setRemainingMs(0);
+        setCurrentDuration(0);
         setPaused(false);
         stepsRef.current = [];
         stepIdxRef.current = 0;
@@ -298,107 +261,103 @@ export default function TimerPage() {
     const totalRounds = rounds;
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
-
-    const FIELD_DEFS = {
-        work: { label: 'Trabajo (seg)', value: work, onChange: setWork, min: 5, max: 600 },
-        rest: { label: 'Descanso (seg)', value: rest, onChange: setRest, min: 0, max: 600 },
-        rounds: { label: 'Series', value: rounds, onChange: setRounds, min: 1, max: 50 },
-        prep: { label: 'Preparación (seg)', value: prep, onChange: setPrep, min: 0, max: 60 },
-    } as const;
-    const activeDef = activePicker ? FIELD_DEFS[activePicker] : null;
+    const pct = phase === 'done' ? 100 : (currentDuration > 0 ? Math.max(0, Math.min(100, (remainingMs / 1000 / currentDuration) * 100)) : 0);
+    const showRound = phase === 'work' || phase === 'rest';
+    const pulseKey = `${phase}-${round}`;
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] pb-20">
             <div className="fixed inset-0 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative max-w-md mx-auto px-4 pt-4 space-y-4">
+            <div className="relative max-w-md mx-auto px-4 pt-4 space-y-5">
                 <div className="flex items-center gap-3">
                     <Link href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all">
                         <ChevronLeft size={18} />
                     </Link>
                     <div className="flex items-center gap-2">
-                        <TimerIcon size={20} className="text-emerald-400" />
+                        <TimerIcon size={20} style={{ color: LIME }} />
                         <h1 className="text-white font-bold text-2xl">Timer Intermitente</h1>
                     </div>
                 </div>
 
-                {/* Display */}
-                <div className="rounded-[2rem] p-8 flex flex-col items-center justify-center text-center overflow-hidden relative"
-                    style={{ background: `linear-gradient(165deg, ${color}18, rgba(17,17,17,0.95))`, border: `1px solid ${color}40`, boxShadow: `0 0 0 1px ${color}0A inset, 0 10px 30px -12px ${color}35` }}>
-                    <p className="text-sm font-bold uppercase tracking-[0.2em] mb-2" style={{ color }}>{PHASE_LABEL[phase]}</p>
-                    <p className="font-black text-white leading-none tabular-nums" style={{ fontSize: 'clamp(72px, 22vw, 108px)' }}>
-                        {isRunning || phase === 'done' ? secondsLeft : '--'}
-                    </p>
-                    {phase !== 'idle' && phase !== 'done' && phase !== 'prep' && (
-                        <p className="text-white/50 text-base font-semibold mt-3">Ronda {round} de {totalRounds}</p>
+                {/* Dial */}
+                <div className="flex justify-center py-2">
+                    <div className="relative" style={{ width: 288, height: 288 }}>
+                        {phase !== 'idle' && (
+                            <div key={pulseKey} className="absolute inset-0 rounded-full timer-pulse-ring pointer-events-none" style={{ border: `3px solid ${color}` }} />
+                        )}
+                        <AnimatedCircularProgressBar
+                            className="size-72"
+                            value={pct}
+                            max={100}
+                            gaugePrimaryColor={color}
+                            gaugeSecondaryColor="rgba(255,255,255,0.08)"
+                        />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
+                            <span className="text-xs font-bold uppercase tracking-[0.25em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
+                            <span className="font-black text-white tabular-nums leading-none mt-3" style={{ fontSize: 'clamp(52px, 16vw, 72px)' }}>
+                                {isRunning || phase === 'done' ? fmtClock(phase === 'done' ? 0 : secondsLeft) : '--:--'}
+                            </span>
+                            {showRound && (
+                                <span className="text-white/45 text-sm font-semibold mt-3">
+                                    Ronda <NumberTicker value={round} className="text-white/80 font-bold" /> de {totalRounds}
+                                </span>
+                            )}
+                            {phase === 'done' && (
+                                <span className="text-white/45 text-sm font-semibold mt-3">
+                                    <NumberTicker value={totalRounds} className="text-white/80 font-bold" /> rondas completadas
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Controles */}
+                <div className="flex items-center justify-center gap-4">
+                    {!isRunning && phase !== 'done' && (
+                        <Button onClick={handleStart}
+                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                            style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
+                            <Play size={26} className="text-black ml-1" fill="currentColor" />
+                        </Button>
                     )}
-                    {phase === 'done' && (
-                        <p className="text-white/50 text-base font-semibold mt-3">{totalRounds} rondas completadas</p>
+                    {isRunning && !paused && (
+                        <Button onClick={handlePause}
+                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                            style={{ background: ORANGE, boxShadow: `0 10px 28px -10px ${ORANGE}aa` }}>
+                            <Pause size={24} className="text-black" fill="currentColor" />
+                        </Button>
+                    )}
+                    {isRunning && paused && (
+                        <Button onClick={handleResume}
+                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                            style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
+                            <Play size={26} className="text-black ml-1" fill="currentColor" />
+                        </Button>
+                    )}
+                    {(isRunning || phase === 'done') && (
+                        <Button onClick={handleReset} variant="outline"
+                            className="h-14 w-14 rounded-full p-0 border-white/15 bg-white/[0.05] hover:bg-white/10 active:scale-90 transition-transform">
+                            <RotateCcw size={20} className="text-white/70" />
+                        </Button>
                     )}
                 </div>
 
                 {/* Config */}
-                <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="rounded-3xl p-5 space-y-5"
+                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
-                    <div className="flex gap-2">
-                        <FieldChip label="Trabajo (seg)" value={work} onClick={() => setActivePicker('work')} disabled={isRunning} />
-                        <FieldChip label="Descanso (seg)" value={rest} onClick={() => setActivePicker('rest')} disabled={isRunning} />
-                    </div>
-                    <div className="flex gap-2">
-                        <FieldChip label="Series" value={rounds} onClick={() => setActivePicker('rounds')} disabled={isRunning} />
-                        <FieldChip label="Preparación (seg)" value={prep} onClick={() => setActivePicker('prep')} disabled={isRunning} />
-                    </div>
-                </div>
-
-                {/* Controls */}
-                <div className="flex gap-2">
-                    {!isRunning && phase !== 'done' && (
-                        <button onClick={handleStart}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-lg transition-all shadow-md shadow-emerald-500/20">
-                            <Play size={20} fill="currentColor" /> Empezar
-                        </button>
-                    )}
-                    {isRunning && !paused && (
-                        <button onClick={handlePause}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-black font-bold text-lg transition-all">
-                            <Pause size={20} fill="currentColor" /> Pausar
-                        </button>
-                    )}
-                    {isRunning && paused && (
-                        <button onClick={handleResume}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-lg transition-all">
-                            <Play size={20} fill="currentColor" /> Continuar
-                        </button>
-                    )}
-                    {(isRunning || phase === 'done') && (
-                        <button onClick={handleReset}
-                            className="w-16 flex items-center justify-center rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] active:scale-95 text-white/60 transition-all">
-                            <RotateCcw size={20} />
-                        </button>
-                    )}
+                    <ConfigRow label="Trabajo" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" disabled={isRunning} />
+                    <ConfigRow label="Descanso" value={rest} onChange={setRest} min={0} max={180} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
+                    <ConfigRow label="Series" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={LIME} disabled={isRunning} />
+                    <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
                 </div>
 
                 <p className="text-white/25 text-xs text-center px-4">
                     Mantené la app abierta y la pantalla encendida durante el ejercicio para que los avisos sonoros funcionen bien.
                 </p>
             </div>
-
-            {activeDef && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setActivePicker(null)}>
-                    <div className="absolute inset-0 bg-black/60" />
-                    <div onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-md rounded-t-[2rem] p-5"
-                        style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.12)', borderBottom: 'none', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
-                        <p className="text-white font-bold text-center text-base mb-3">{activeDef.label}</p>
-                        <WheelPicker value={activeDef.value} onChange={activeDef.onChange} min={activeDef.min} max={activeDef.max} step={1} itemHeight={46} visibleCount={5} large />
-                        <button onClick={() => setActivePicker(null)}
-                            className="w-full mt-4 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-base transition-all">
-                            OK
-                        </button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
