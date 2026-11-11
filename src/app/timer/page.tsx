@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon, Trophy } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { swalNotify } from '@/utils/swalConfig';
 import { Button } from '@/components/ui/button';
 import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
@@ -306,8 +308,34 @@ export default function TimerPage() {
         setSnapRing(true);
     };
 
-    const isRunning = phase !== 'idle' && phase !== 'done';
     const totalRounds = rounds;
+
+    // Al terminar, un swal con el resumen (no texto apretado adentro del anillo).
+    const doneAlertShownRef = useRef(false);
+    useEffect(() => {
+        if (phase === 'done' && !doneAlertShownRef.current) {
+            doneAlertShownRef.current = true;
+            const t = setTimeout(() => {
+                Swal.fire({
+                    ...swalNotify,
+                    title: '¡Entrenamiento completo!',
+                    html: `
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding-bottom:1.5rem;">
+                            <div style="font-size:2.5rem;font-weight:900;color:${LIME};line-height:1;">${totalRounds}</div>
+                            <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">rondas completadas</div>
+                            <div style="margin-top:0.9rem;font-size:1.3rem;font-weight:800;color:${ORANGE};line-height:1;">${fmtClock(work * totalRounds)}</div>
+                            <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">de trabajo total</div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Listo',
+                }).then(() => { handleReset(); });
+            }, 250);
+            return () => clearTimeout(t);
+        }
+        if (phase !== 'done') doneAlertShownRef.current = false;
+    }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const isRunning = phase !== 'idle' && phase !== 'done';
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
     // Como las agujas de un reloj: el anillo crece de menos a más a medida que pasa el tiempo.
@@ -347,15 +375,11 @@ export default function TimerPage() {
                             transitionLength={snapRing ? '0s' : '1s'}
                         />
                         {phase === 'done' ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-8 text-center done-pop">
-                                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
-                                    style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)', boxShadow: '0 0 0 1px rgba(163,230,53,0.2) inset, 0 8px 24px -6px rgba(163,230,53,0.55)' }}>
-                                    <Trophy size={30} className="text-black" />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none done-pop">
+                                <div className="w-24 h-24 rounded-full flex items-center justify-center"
+                                    style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)', boxShadow: '0 0 0 1px rgba(163,230,53,0.2) inset, 0 10px 30px -6px rgba(163,230,53,0.55)' }}>
+                                    <Trophy size={42} className="text-black" />
                                 </div>
-                                <span className="text-white font-black text-2xl leading-tight">¡Entrenamiento<br />completo!</span>
-                                <span className="text-white/60 text-base font-semibold mt-3">
-                                    <NumberTicker value={totalRounds} className="text-white font-black" /> rondas · {fmtClock(work * totalRounds)} de trabajo
-                                </span>
                             </div>
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">

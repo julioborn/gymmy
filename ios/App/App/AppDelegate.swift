@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import AVFoundation
 
 // MARK: - AppIconPlugin
 // Capacitor plugin for switching the app icon between default (Gymmy) and gym-specific icons.
@@ -50,6 +51,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Categoria "playback": el audio de la webview (beeps del timer, etc.)
+        // suena igual que la musica/videos aunque el celular este en silencio,
+        // igual que hacen apps como YouTube o Instagram.
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("No se pudo configurar la sesion de audio: \(error)")
+        }
         return true
     }
 
