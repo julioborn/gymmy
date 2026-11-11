@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
-import { estaAlDia, pagosVigentesDelMes, getMesActual } from '@/lib/pagos';
+import { estaAlDia, pagosVigentesDelMes, expandirPagosMixtos, getMesActual } from '@/lib/pagos';
 
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
@@ -385,7 +385,7 @@ export default function ListaAlumnosPage() {
         const mesActualHoy = getMesActual(new Date());
         for (const alumno of alumnos) {
             const pagadoHoy = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
-            const pagosDelMesHoy = alumno.exentoCuota ? [] : pagosVigentesDelMes(alumno.pagos, mesActualHoy);
+            const pagosDelMesHoy = alumno.exentoCuota ? [] : expandirPagosMixtos(pagosVigentesDelMes(alumno.pagos, mesActualHoy));
             for (const a of (alumno.asistencia || [])) {
                 if (!a.presente) continue;
                 const { key, hour, hora } = getArgInfo(a.fecha);
@@ -582,8 +582,8 @@ export default function ListaAlumnosPage() {
                                                             ) : a.pagado && a.pagosDelMes.length > 0 ? (
                                                                 <div className="flex flex-col gap-1 shrink-0">
                                                                     {a.pagosDelMes.map((p, pi) => (
-                                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold ${p.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : p.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                                                                            <span className="capitalize">{p.metodoPago === 'mixto' ? 'Mixto' : p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
+                                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold ${p.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                            <span className="capitalize">{p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
                                                                             <span className="tabular-nums">${p.tarifa.toLocaleString('es-AR')}</span>
                                                                             {a.pagosDelMes.length === 1 && p.fechaPago && <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
                                                                         </span>
@@ -689,9 +689,9 @@ export default function ListaAlumnosPage() {
                         <div className="space-y-2">
                             {paginatedAlumnos.map((alumno) => {
                                 const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
-                                const pagosDelMes = alumno.exentoCuota ? [] : pagosVigentesDelMes(alumno.pagos, getMesActual(new Date()));
-                                const metodoLabel = (m?: string) => m === 'mixto' ? 'Mixto' : m === 'mercadopago' ? 'MercadoPago' : m;
-                                const metodoCls = (m?: string) => m === 'mixto' ? 'bg-amber-500/15 text-amber-400' : m === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
+                                const pagosDelMes = alumno.exentoCuota ? [] : expandirPagosMixtos(pagosVigentesDelMes(alumno.pagos, getMesActual(new Date())));
+                                const metodoLabel = (m?: string) => m === 'mercadopago' ? 'MercadoPago' : m;
+                                const metodoCls = (m?: string) => m === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
                                 const dr = alumno.diasRestantes;
                                 const planText = dr != null
                                     ? `${dr} día${dr !== 1 ? 's' : ''} de plan`

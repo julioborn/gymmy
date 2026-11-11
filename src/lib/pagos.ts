@@ -57,6 +57,25 @@ export function pagosVigentesDelMes(pagos: PagoLike[] | undefined, mesActual: st
     });
 }
 
+export type PagoExpandido = { metodoPago: string; tarifa: number; fechaPago: string | Date };
+
+/**
+ * Expande cada pago "mixto" en sus dos partes (efectivo + transferencia) como si
+ * fueran pagos independientes, para mostrarlas por separado en vez de una sola
+ * etiqueta "Mixto" sin desglose.
+ */
+export function expandirPagosMixtos(pagos: PagoLike[]): PagoExpandido[] {
+    return pagos.flatMap((p): PagoExpandido[] => {
+        if (p.metodoPago === 'mixto') {
+            const partes: PagoExpandido[] = [];
+            if (p.montoEfectivo) partes.push({ metodoPago: 'efectivo', tarifa: p.montoEfectivo, fechaPago: p.fechaPago });
+            if (p.montoTransferencia) partes.push({ metodoPago: 'transferencia', tarifa: p.montoTransferencia, fechaPago: p.fechaPago });
+            return partes;
+        }
+        return [{ metodoPago: p.metodoPago, tarifa: p.tarifa, fechaPago: p.fechaPago }];
+    });
+}
+
 /**
  * ¿El alumno está al día este mes? Respeta exentoCuota (ej. profes que solo
  * registran asistencia) y reconoce pagos especiales correctamente.

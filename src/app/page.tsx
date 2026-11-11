@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import { useAttendanceEvents } from '@/hooks/useAttendanceEvents';
-import { estaAlDia, pagosVigentesDelMes, getMesActual } from '@/lib/pagos';
+import { estaAlDia, pagosVigentesDelMes, expandirPagosMixtos, getMesActual } from '@/lib/pagos';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -299,8 +299,8 @@ export default function HomePage() {
             }
             for (const al of (alumnosData || [])) {
                 const pagado = estaAlDia({ pagos: al.pagos, exentoCuota: al.exentoCuota }, mesActual);
-                const pagosDelMes: PagoDelMes[] = al.exentoCuota ? [] : pagosVigentesDelMes(al.pagos, mesActual)
-                    .map((p: any) => ({ metodoPago: p.metodoPago, monto: p.tarifa, fecha: p.fechaPago }));
+                const pagosDelMes: PagoDelMes[] = al.exentoCuota ? [] : expandirPagosMixtos(pagosVigentesDelMes(al.pagos, mesActual))
+                    .map((p) => ({ metodoPago: p.metodoPago, monto: p.tarifa, fecha: String(p.fechaPago) }));
                 for (const a of (al.asistencia || [])) {
                     if (!a.presente) continue;
                     const dArg = new Date(new Date(a.fecha).getTime() + ARG);
@@ -809,9 +809,9 @@ export default function HomePage() {
                                                                                 {a.pagosDelMes.map((p, pi) => (
                                                                                     <span key={pi} className={cn(
                                                                                         'inline-flex flex-col items-center justify-center w-full leading-tight text-[10px] font-bold px-2 py-1 rounded-xl shrink-0',
-                                                                                        p.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : p.metodoPago === 'mixto' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
+                                                                                        p.metodoPago === 'transferencia' ? 'bg-blue-500/15 text-blue-400' : 'bg-emerald-500/15 text-emerald-400',
                                                                                     )}>
-                                                                                        <span className="capitalize">{p.metodoPago === 'mixto' ? 'Mixto' : p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
+                                                                                        <span className="capitalize">{p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
                                                                                         <span className="tabular-nums">${p.monto.toLocaleString('es-AR')}</span>
                                                                                         {a.pagosDelMes.length === 1 && p.fecha && <span className="tabular-nums opacity-70">{new Date(p.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
                                                                                     </span>
