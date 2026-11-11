@@ -84,12 +84,12 @@ export default function TimerPage() {
         return audioCtxRef.current;
     }, []);
 
-    const beep = useCallback((freq: number, duration: number, vol = 0.3) => {
+    const beep = useCallback((freq: number, duration: number, vol = 0.4, type: OscillatorType = 'sine') => {
         try {
             const ctx = ensureAudio();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            osc.type = 'sine';
+            osc.type = type;
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(0, ctx.currentTime);
             gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
@@ -102,10 +102,12 @@ export default function TimerPage() {
     }, [ensureAudio]);
 
     const playPhaseSound = useCallback((p: PhaseKind | 'done') => {
-        if (p === 'work') beep(880, 0.18, 0.35);
-        else if (p === 'rest') beep(440, 0.18, 0.3);
-        else if (p === 'prep') beep(660, 0.12, 0.25);
-        else if (p === 'done') { beep(660, 0.12); setTimeout(() => beep(880, 0.12), 150); setTimeout(() => beep(1100, 0.22), 300); }
+        // Fin de descanso / arranca trabajo: doble beep agudo y marcado
+        if (p === 'work') { beep(1050, 0.16, 0.8, 'square'); setTimeout(() => beep(1050, 0.18, 0.8, 'square'), 170); }
+        // Fin de trabajo / arranca descanso: doble beep grave y marcado
+        else if (p === 'rest') { beep(520, 0.18, 0.75, 'square'); setTimeout(() => beep(520, 0.2, 0.75, 'square'), 190); }
+        else if (p === 'prep') beep(660, 0.12, 0.45);
+        else if (p === 'done') { beep(880, 0.14, 0.7, 'square'); setTimeout(() => beep(1050, 0.14, 0.7, 'square'), 150); setTimeout(() => beep(1250, 0.26, 0.8, 'square'), 300); }
     }, [beep]);
 
     // ── Core loop ──
@@ -138,7 +140,7 @@ export default function TimerPage() {
         const secLeft = Math.ceil(remaining / 1000);
         if (secLeft <= 3 && secLeft !== lastTickSecondRef.current) {
             lastTickSecondRef.current = secLeft;
-            beep(1000, 0.08, 0.2);
+            beep(1000, 0.09, 0.4);
         }
     }, [beep, goToStep]);
 
