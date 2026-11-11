@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
 
@@ -55,25 +54,64 @@ function fmtClock(totalSeconds: number): string {
 function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, disabled }: {
     label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; accent: string; suffix?: string; disabled?: boolean;
 }) {
+    // Valor en un ref para que el acelerador de mantener-presionado siempre
+    // sume sobre el último valor real, sin esperar a que el prop se actualice.
+    const valueRef = useRef(value);
+    useEffect(() => { valueRef.current = value; }, [value]);
+
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const stepOnce = (dir: 1 | -1) => {
+        const next = Math.max(min, Math.min(max, valueRef.current + dir * step));
+        valueRef.current = next;
+        onChange(next);
+    };
+
+    const stopHold = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        timeoutRef.current = null;
+        intervalRef.current = null;
+    };
+
+    const startHold = (dir: 1 | -1) => {
+        stepOnce(dir);
+        timeoutRef.current = setTimeout(() => {
+            intervalRef.current = setInterval(() => stepOnce(dir), 80);
+        }, 420);
+    };
+
+    useEffect(() => stopHold, []);
+
     return (
-        <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`} style={{ ['--slider-accent' as string]: accent } as React.CSSProperties}>
-            <div className="flex items-center justify-between mb-2.5">
-                <span className="text-sm font-semibold text-white/80">{label}</span>
-                <span className="text-sm font-bold tabular-nums px-2.5 py-0.5 rounded-full" style={{ color: accent, background: `${accent}1A` }}>
-                    {value}{suffix ? ` ${suffix}` : ''}
-                </span>
+        <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
+            <span className="text-sm font-semibold text-white/80 block mb-2">{label}</span>
+            <div className="flex items-center gap-3">
+                <button type="button"
+                    onPointerDown={() => startHold(-1)}
+                    onPointerUp={stopHold}
+                    onPointerLeave={stopHold}
+                    disabled={disabled || value <= min}
+                    className="h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center text-2xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
+                    style={{ background: `${accent}1F`, border: `1px solid ${accent}40` }}>
+                    −
+                </button>
+                <div className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-1.5"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <span className="text-2xl font-black tabular-nums" style={{ color: accent }}>{value}</span>
+                    {suffix && <span className="text-white/30 text-sm font-semibold">{suffix}</span>}
+                </div>
+                <button type="button"
+                    onPointerDown={() => startHold(1)}
+                    onPointerUp={stopHold}
+                    onPointerLeave={stopHold}
+                    disabled={disabled || value >= max}
+                    className="h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center text-2xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
+                    style={{ background: `${accent}1F`, border: `1px solid ${accent}40` }}>
+                    +
+                </button>
             </div>
-            <Slider
-                value={[value]}
-                min={min}
-                max={max}
-                step={step}
-                onValueChange={([v]) => onChange(v)}
-                disabled={disabled}
-                trackClassName="h-2 bg-white/10"
-                rangeClassName="bg-[var(--slider-accent)]"
-                thumbClassName="h-5 w-5 border-2 border-[var(--slider-accent)] bg-white shadow-md"
-            />
         </div>
     );
 }
@@ -295,18 +333,18 @@ export default function TimerPage() {
                             gaugeSecondaryColor="rgba(255,255,255,0.08)"
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
-                            <span className="text-xs font-bold uppercase tracking-[0.25em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
-                            <span className="font-black text-white tabular-nums leading-none mt-3" style={{ fontSize: 'clamp(52px, 16vw, 72px)' }}>
+                            <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
+                            <span className="font-black text-white tabular-nums leading-none mt-2" style={{ fontSize: 'clamp(58px, 18vw, 80px)' }}>
                                 {isRunning || phase === 'done' ? fmtClock(phase === 'done' ? 0 : secondsLeft) : '--:--'}
                             </span>
                             {showRound && (
-                                <span className="text-white/45 text-sm font-semibold mt-3">
-                                    Ronda <NumberTicker value={round} className="text-white/80 font-bold" /> de {totalRounds}
+                                <span className="text-white text-xl font-bold mt-3">
+                                    Ronda <NumberTicker value={round} className="text-white font-black" style={{ color }} /> <span className="text-white/50">de {totalRounds}</span>
                                 </span>
                             )}
                             {phase === 'done' && (
-                                <span className="text-white/45 text-sm font-semibold mt-3">
-                                    <NumberTicker value={totalRounds} className="text-white/80 font-bold" /> rondas completadas
+                                <span className="text-white text-xl font-bold mt-3">
+                                    <NumberTicker value={totalRounds} className="text-white font-black" /> <span className="text-white/50">rondas completadas</span>
                                 </span>
                             )}
                         </div>
