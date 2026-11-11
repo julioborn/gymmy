@@ -9,8 +9,6 @@ type Phase = PhaseKind | 'idle' | 'done';
 type Step = { phase: PhaseKind; duration: number; round: number };
 
 const STORAGE_KEY = 'gymmy_timer_config_v1';
-const NOTIF_BASE_ID = 93000;
-const NOTIF_MAX = 64;
 
 const PHASE_LABEL: Record<Phase, string> = {
     idle: 'Listo para arrancar',
@@ -36,53 +34,6 @@ function buildTimeline(prep: number, work: number, rest: number, rounds: number)
         if (i < rounds) steps.push({ phase: 'rest', duration: rest, round: i });
     }
     return steps;
-}
-
-async function isNativeApp(): Promise<boolean> {
-    try {
-        const { Capacitor } = await import('@capacitor/core');
-        return Capacitor.isNativePlatform();
-    } catch {
-        return false;
-    }
-}
-
-async function cancelTimerNotifications() {
-    try {
-        if (!(await isNativeApp())) return;
-        const { LocalNotifications } = await import('@capacitor/local-notifications');
-        const ids = Array.from({ length: NOTIF_MAX }, (_, i) => ({ id: NOTIF_BASE_ID + i }));
-        await LocalNotifications.cancel({ notifications: ids });
-    } catch {}
-}
-
-async function scheduleTimerNotifications(steps: Step[], startAt: number) {
-    try {
-        if (!(await isNativeApp())) return;
-        const { LocalNotifications } = await import('@capacitor/local-notifications');
-        const { display } = await LocalNotifications.checkPermissions();
-        if (display !== 'granted') {
-            const r = await LocalNotifications.requestPermissions();
-            if (r.display !== 'granted') return;
-        }
-        await cancelTimerNotifications();
-
-        let t = startAt;
-        const notifications: any[] = [];
-        for (let i = 0; i < steps.length && i < NOTIF_MAX - 1; i++) {
-            t += steps[i].duration * 1000;
-            const next = steps[i + 1];
-            const body = !next ? '¡Listo! Terminaste la serie.' : next.phase === 'work' ? `¡A trabajar! Ronda ${next.round}` : next.phase === 'rest' ? 'Descanso' : 'Preparate';
-            notifications.push({
-                id: NOTIF_BASE_ID + i,
-                title: 'SportTime · Timer',
-                body,
-                schedule: { at: new Date(t) },
-                sound: undefined,
-            });
-        }
-        if (notifications.length) await LocalNotifications.schedule({ notifications });
-    } catch {}
 }
 
 export default function TimerPage() {
@@ -191,7 +142,7 @@ export default function TimerPage() {
         }
     }, [beep, goToStep]);
 
-    const handleStart = async () => {
+    const handleStart = () => {
         ensureAudio();
         const steps = buildTimeline(prep, work, rest, rounds);
         if (!steps.length) return;
@@ -199,7 +150,6 @@ export default function TimerPage() {
         setPaused(false);
         const now = Date.now();
         goToStep(0, now);
-        scheduleTimerNotifications(steps, now);
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(tick, 100);
     };
@@ -208,7 +158,6 @@ export default function TimerPage() {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         pausedRemainingRef.current = phaseEndRef.current - Date.now();
         setPaused(true);
-        cancelTimerNotifications();
     };
 
     const handleResume = () => {
@@ -226,7 +175,6 @@ export default function TimerPage() {
         setPaused(false);
         stepsRef.current = [];
         stepIdxRef.current = 0;
-        cancelTimerNotifications();
     };
 
     const isRunning = phase !== 'idle' && phase !== 'done';
@@ -236,7 +184,7 @@ export default function TimerPage() {
 
     const NumField = ({ label, value, onChange, min = 1, max = 999 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number }) => (
         <div className="flex-1">
-            <label className="text-[10px] font-bold text-white/40 uppercase tracking-wide mb-1 block">{label}</label>
+            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block">{label}</label>
             <input
                 type="number"
                 inputMode="numeric"
@@ -245,7 +193,7 @@ export default function TimerPage() {
                 value={value}
                 disabled={isRunning}
                 onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
-                className="w-full border border-white/10 bg-white/[0.04] rounded-xl px-3 py-2.5 text-center text-white font-bold text-lg disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50"
+                className="w-full border border-white/10 bg-white/[0.04] rounded-xl px-3 py-3 text-center text-white font-bold text-2xl disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50"
             />
         </div>
     );
@@ -261,29 +209,29 @@ export default function TimerPage() {
                         <ChevronLeft size={18} />
                     </Link>
                     <div className="flex items-center gap-2">
-                        <TimerIcon size={18} className="text-emerald-400" />
-                        <h1 className="text-white font-bold text-xl">Timer Intermitente</h1>
+                        <TimerIcon size={20} className="text-emerald-400" />
+                        <h1 className="text-white font-bold text-2xl">Timer Intermitente</h1>
                     </div>
                 </div>
 
                 {/* Display */}
                 <div className="rounded-[2rem] p-8 flex flex-col items-center justify-center text-center overflow-hidden relative"
                     style={{ background: `linear-gradient(165deg, ${color}18, rgba(17,17,17,0.95))`, border: `1px solid ${color}40`, boxShadow: `0 0 0 1px ${color}0A inset, 0 10px 30px -12px ${color}35` }}>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2" style={{ color }}>{PHASE_LABEL[phase]}</p>
-                    <p className="font-black text-white leading-none tabular-nums" style={{ fontSize: 'clamp(64px, 20vw, 96px)' }}>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] mb-2" style={{ color }}>{PHASE_LABEL[phase]}</p>
+                    <p className="font-black text-white leading-none tabular-nums" style={{ fontSize: 'clamp(72px, 22vw, 108px)' }}>
                         {isRunning || phase === 'done' ? secondsLeft : '--'}
                     </p>
                     {phase !== 'idle' && phase !== 'done' && phase !== 'prep' && (
-                        <p className="text-white/50 text-sm font-semibold mt-3">Ronda {round} de {totalRounds}</p>
+                        <p className="text-white/50 text-base font-semibold mt-3">Ronda {round} de {totalRounds}</p>
                     )}
                     {phase === 'done' && (
-                        <p className="text-white/50 text-sm font-semibold mt-3">{totalRounds} rondas completadas</p>
+                        <p className="text-white/50 text-base font-semibold mt-3">{totalRounds} rondas completadas</p>
                     )}
                 </div>
 
                 {/* Config */}
                 <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-wide">Configuración</p>
+                    <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
                     <div className="flex gap-2">
                         <NumField label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} />
                         <NumField label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} />
@@ -298,31 +246,31 @@ export default function TimerPage() {
                 <div className="flex gap-2">
                     {!isRunning && phase !== 'done' && (
                         <button onClick={handleStart}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-base transition-all shadow-md shadow-emerald-500/20">
-                            <Play size={18} fill="currentColor" /> Empezar
+                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-lg transition-all shadow-md shadow-emerald-500/20">
+                            <Play size={20} fill="currentColor" /> Empezar
                         </button>
                     )}
                     {isRunning && !paused && (
                         <button onClick={handlePause}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-black font-bold text-base transition-all">
-                            <Pause size={18} fill="currentColor" /> Pausar
+                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-black font-bold text-lg transition-all">
+                            <Pause size={20} fill="currentColor" /> Pausar
                         </button>
                     )}
                     {isRunning && paused && (
                         <button onClick={handleResume}
-                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-base transition-all">
-                            <Play size={18} fill="currentColor" /> Continuar
+                            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white font-bold text-lg transition-all">
+                            <Play size={20} fill="currentColor" /> Continuar
                         </button>
                     )}
                     {(isRunning || phase === 'done') && (
                         <button onClick={handleReset}
                             className="w-16 flex items-center justify-center rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] active:scale-95 text-white/60 transition-all">
-                            <RotateCcw size={18} />
+                            <RotateCcw size={20} />
                         </button>
                     )}
                 </div>
 
-                <p className="text-white/25 text-[11px] text-center px-4">
+                <p className="text-white/25 text-xs text-center px-4">
                     Mantené la app abierta y la pantalla encendida durante el ejercicio para que los avisos sonoros funcionen bien.
                 </p>
             </div>
