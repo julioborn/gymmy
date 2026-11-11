@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { motion, animate } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
@@ -9,7 +10,7 @@ import {
     CheckCircle2, XCircle, AlertCircle, ChevronRight,
     Copy, Check, ExternalLink, Trophy, Flame,
     ChevronLeft, ChevronDown, Banknote, CalendarCheck,
-    Users, UserPlus, Search, Wallet, Landmark, Settings, Bell, DollarSign,
+    Users, UserPlus, Search, Wallet, Landmark, Settings, Bell, DollarSign, Timer,
 } from 'lucide-react';
 import { pagoVigente, estaAlDia } from '@/lib/pagos';
 import { esStaffAlumno } from '@/lib/staffAlumnos';
@@ -740,6 +741,22 @@ export default function MiCuentaPage() {
                     {/* ── RESUMEN ─────────────────────────────────────────── */}
                     {tab === 'resumen' && (
                         <div className="space-y-4">
+
+                            {/* Acceso rápido al timer intermitente */}
+                            <BlurFade delay={0.02}>
+                                <Link href="/timer"
+                                    className="relative flex items-center gap-3 rounded-2xl px-4 py-3 overflow-hidden active:scale-[0.98] transition-transform"
+                                    style={{ background: 'linear-gradient(165deg, rgba(249,115,22,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(249,115,22,0.32)', boxShadow: '0 0 0 1px rgba(249,115,22,0.05) inset, 0 10px 26px -9px rgba(249,115,22,0.34)' }}>
+                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)' }}>
+                                        <Timer size={16} className="text-white" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-white uppercase tracking-wide">Timer intermitente</p>
+                                        <p className="text-white/40 text-xs">Trabajo, descanso y series con sonido</p>
+                                    </div>
+                                    <ChevronRight size={16} className="text-white/30 shrink-0" />
+                                </Link>
+                            </BlurFade>
 
                             {/* Plan activo + Asistencias mes — side by side */}
                             <div className="grid grid-cols-2 gap-3">
