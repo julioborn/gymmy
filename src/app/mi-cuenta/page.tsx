@@ -98,10 +98,10 @@ const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 const ACTIVIDAD_DOT: Record<string, string> = { 'Musculación': 'bg-blue-400', 'Intermitente': 'bg-orange-400', 'Otro': 'bg-yellow-400' };
 const ACTIVIDAD_COLOR: Record<string, string> = { 'Musculación': '#60a5fa', 'Intermitente': '#f97316', 'Otro': '#eab308' };
 const COMBO_PALETTE = [
-    { bg: 'rgba(244,163,71,0.07)', labelColor: '#d97706', dotColor: '#d97706' },
-    { bg: 'rgba(16,185,129,0.07)', labelColor: '#059669', dotColor: '#059669' },
-    { bg: 'rgba(59,130,246,0.07)', labelColor: '#2563eb', dotColor: '#2563eb' },
-    { bg: 'rgba(139,92,246,0.07)', labelColor: '#7c3aed', dotColor: '#7c3aed' },
+    { bg: 'rgba(251,146,60,0.1)', labelColor: '#fb923c', dotColor: '#fb923c' },
+    { bg: 'rgba(16,185,129,0.1)', labelColor: '#34d399', dotColor: '#34d399' },
+    { bg: 'rgba(96,165,250,0.1)', labelColor: '#60a5fa', dotColor: '#60a5fa' },
+    { bg: 'rgba(167,139,250,0.1)', labelColor: '#a78bfa', dotColor: '#a78bfa' },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1072,18 +1072,19 @@ export default function MiCuentaPage() {
                         <div className="space-y-3">
                             {loadingPlan && (
                                 <div className="flex justify-center py-16">
-                                    <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-lime-400 animate-spin" />
+                                    <div className="w-8 h-8 rounded-full border-2 border-white/15 border-t-lime-400 animate-spin" />
                                 </div>
                             )}
 
                             {!loadingPlan && !planEj && (
                                 <BlurFade delay={0.05}>
-                                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
-                                        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                            <Dumbbell size={28} className="text-slate-300" />
+                                    <div className="rounded-2xl p-10 text-center"
+                                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 26px -14px rgba(0,0,0,0.5)' }}>
+                                        <div className="w-16 h-16 bg-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                            <Dumbbell size={28} className="text-white/25" />
                                         </div>
-                                        <p className="text-slate-700 font-semibold mb-1">Sin plan asignado</p>
-                                        <p className="text-slate-400 text-sm">Tu entrenador todavía no te asignó un plan.</p>
+                                        <p className="text-white/80 font-semibold mb-1">Sin plan asignado</p>
+                                        <p className="text-white/40 text-sm">Tu entrenador todavía no te asignó un plan.</p>
                                     </div>
                                 </BlurFade>
                             )}
@@ -1115,38 +1116,40 @@ export default function MiCuentaPage() {
                                 return (
                                     <>
                                         <BlurFade delay={0.05}>
-                                            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl px-4 py-4 flex items-center justify-between gap-3">
+                                            <div className="relative rounded-2xl px-4 py-4 flex items-center justify-between gap-3 overflow-hidden"
+                                                style={{ background: 'linear-gradient(165deg, rgba(16,185,129,0.09), rgba(17,17,17,0.9))', border: '1px solid rgba(16,185,129,0.32)', boxShadow: '0 0 0 1px rgba(16,185,129,0.05) inset, 0 10px 26px -9px rgba(16,185,129,0.34)' }}>
                                                 <div className="min-w-0">
-                                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{planEj.categoria}</p>
-                                                    <h2 className="text-slate-900 font-bold text-base truncate mt-0.5">{planEj.nombre}</h2>
-                                                    <p className="text-slate-400 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas</p>
+                                                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{planEj.categoria}</p>
+                                                    <h2 className="text-white font-bold text-base truncate mt-0.5">{planEj.nombre}</h2>
+                                                    <p className="text-white/40 text-xs mt-0.5">{totalSesiones} sesiones · {totalSem} semanas</p>
                                                 </div>
-                                                <div className="shrink-0 text-center rounded-2xl px-3 py-2 bg-lime-50 border border-lime-100">
-                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-lime-600">Semana</p>
-                                                    <p className="font-black text-2xl leading-none text-slate-900">{sessionBasedWeekNum}</p>
-                                                    <p className="text-[10px] text-lime-600">de {totalSem}</p>
+                                                <div className="shrink-0 text-center rounded-2xl px-3 py-2 bg-lime-400/10 border border-lime-400/25">
+                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-lime-300">Semana</p>
+                                                    <p className="font-black text-2xl leading-none text-white">{sessionBasedWeekNum}</p>
+                                                    <p className="text-[10px] text-lime-300">de {totalSem}</p>
                                                 </div>
                                             </div>
                                         </BlurFade>
 
                                         {planEj.entradaCalor?.ejercicios?.length>0 && (
                                             <BlurFade delay={0.08}>
-                                                <div className="bg-white border border-slate-100 shadow-sm rounded-2xl overflow-hidden">
+                                                <div className="rounded-2xl overflow-hidden"
+                                                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                     <button onClick={()=>setShowCalentamiento(v=>!v)}
-                                                        className="w-full flex items-center justify-between gap-2 px-4 py-3.5 hover:bg-slate-50 transition active:bg-slate-100">
+                                                        className="w-full flex items-center justify-between gap-2 px-4 py-3.5 hover:bg-white/[0.06] transition active:bg-white/[0.1]">
                                                         <div className="flex items-center gap-2">
-                                                            <Flame size={16} className="text-orange-500" />
-                                                            <span className="text-sm font-semibold text-slate-700">Entrada en calor</span>
-                                                            <span className="text-xs text-slate-400">{planEj.entradaCalor.ejercicios.length} ej.</span>
+                                                            <Flame size={16} className="text-orange-400" />
+                                                            <span className="text-sm font-semibold text-white/80">Entrada en calor</span>
+                                                            <span className="text-xs text-white/40">{planEj.entradaCalor.ejercicios.length} ej.</span>
                                                         </div>
-                                                        <ChevronDown size={16} className={cn('text-slate-300 transition-transform', showCalentamiento && 'rotate-180')} />
+                                                        <ChevronDown size={16} className={cn('text-white/30 transition-transform', showCalentamiento && 'rotate-180')} />
                                                     </button>
                                                     {showCalentamiento && (
-                                                        <div className="border-t border-slate-100 divide-y divide-slate-50">
+                                                        <div className="border-t border-white/[0.08] divide-y divide-white/[0.06]">
                                                             {planEj.entradaCalor.ejercicios.map((e,i) => (
                                                                 <div key={i} className="flex items-center justify-between px-4 py-3">
-                                                                    <p className="text-sm font-medium text-slate-700">{e.nombre}</p>
-                                                                    <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">S/R</span>
+                                                                    <p className="text-sm font-medium text-white/80">{e.nombre}</p>
+                                                                    <span className="text-xs font-bold text-white/40 bg-white/[0.08] px-2 py-0.5 rounded-lg">S/R</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -1157,8 +1160,9 @@ export default function MiCuentaPage() {
 
                                         {/* Semana selector */}
                                         <BlurFade delay={0.1}>
-                                            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-3">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Semana</p>
+                                            <div className="rounded-2xl p-3"
+                                                style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-2 px-1">Semana</p>
                                                 <div className="flex gap-1.5">
                                                     {Array.from({length:totalSem},(_,i)=>i+1).map(sem => {
                                                         const isCurrent = sem===sessionBasedWeekNum;
@@ -1168,8 +1172,8 @@ export default function MiCuentaPage() {
                                                             <button key={sem} onClick={()=>setSelectedSemana(sem)}
                                                                 className={cn('flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative overflow-hidden', {
                                                                     'bg-lime-400 text-black shadow-sm': isSelected,
-                                                                    'bg-slate-100 text-slate-400': !isSelected && isPast,
-                                                                    'bg-slate-100 text-slate-500 hover:bg-slate-200': !isSelected && !isPast,
+                                                                    'bg-white/[0.06] text-white/35': !isSelected && isPast,
+                                                                    'bg-white/[0.06] text-white/60 hover:bg-white/[0.1]': !isSelected && !isPast,
                                                                 })}>
                                                                 {sem===totalSem ? 'DESC' : sem}
                                                                 {isPast && <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center">
@@ -1180,7 +1184,7 @@ export default function MiCuentaPage() {
                                                         );
                                                     })}
                                                 </div>
-                                                {selectedSemana===totalSem && <p className="text-center text-xs text-slate-400 mt-2">Semana de descarga</p>}
+                                                {selectedSemana===totalSem && <p className="text-center text-xs text-white/40 mt-2">Semana de descarga</p>}
                                             </div>
                                         </BlurFade>
 
@@ -1194,7 +1198,7 @@ export default function MiCuentaPage() {
                                                         <button key={i} onClick={()=>{setSelectedDia(i);setExpandedEj(null);}}
                                                             className={cn('relative flex-1 h-14 flex flex-col items-center justify-center rounded-2xl transition-all border overflow-hidden', {
                                                                 'bg-lime-400 text-black border-lime-400 shadow-sm': selectedDia===i,
-                                                                'bg-white text-slate-500 border-slate-200 hover:border-slate-300': selectedDia!==i,
+                                                                'bg-white/[0.05] text-white/60 border-white/10 hover:border-white/20': selectedDia!==i,
                                                             })}>
                                                             <span className="text-sm font-bold leading-none">{`Día ${i+1}`}</span>
                                                             {isDayDone && <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-lime-400 flex items-center justify-center">
@@ -1209,23 +1213,24 @@ export default function MiCuentaPage() {
 
                                         {dia?.bloqueActivacion && (
                                             <BlurFade delay={0.14}>
-                                                <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-                                                    <p className="text-xs font-bold text-amber-600 mb-1">Bloque de activación</p>
-                                                    <p className="text-sm text-amber-700 leading-snug">{dia.bloqueActivacion}</p>
+                                                <div className="rounded-2xl px-4 py-3" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}>
+                                                    <p className="text-xs font-bold text-amber-300 mb-1">Bloque de activación</p>
+                                                    <p className="text-sm text-amber-200/80 leading-snug">{dia.bloqueActivacion}</p>
                                                 </div>
                                             </BlurFade>
                                         )}
 
                                         {dia && (
                                             <BlurFade delay={0.16}>
-                                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                                    <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-slate-100">
-                                                        <div className="px-4 py-2.5"><p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">Ejercicio</p></div>
-                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-slate-100"><p className="text-[8px] font-bold text-slate-400 uppercase tracking-wide text-center leading-tight">Trepada</p></div>
-                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-slate-100"><p className="text-[8px] font-bold text-slate-600 uppercase tracking-wide text-center leading-tight">Núcleo</p></div>
-                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-slate-100"><p className="text-[8px] font-bold text-lime-600 uppercase tracking-wide text-center leading-tight">Mis KG</p></div>
+                                                <div className="rounded-2xl overflow-hidden"
+                                                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <div className="grid grid-cols-[1fr_44px_76px_56px] border-b border-white/[0.08]">
+                                                        <div className="px-4 py-2.5"><p className="text-[8px] font-bold text-white/40 uppercase tracking-wide">Ejercicio</p></div>
+                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.08]"><p className="text-[8px] font-bold text-white/40 uppercase tracking-wide text-center leading-tight">Trepada</p></div>
+                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.08]"><p className="text-[8px] font-bold text-white/60 uppercase tracking-wide text-center leading-tight">Núcleo</p></div>
+                                                        <div className="px-1 py-2.5 flex items-center justify-center border-l border-white/[0.08]"><p className="text-[8px] font-bold text-lime-400 uppercase tracking-wide text-center leading-tight">Mis KG</p></div>
                                                     </div>
-                                                    <div className="divide-y divide-slate-100">
+                                                    <div className="divide-y divide-white/[0.06]">
                                                         {dia.ejercicios.map((ej, eIdx) => {
                                                             const semVal = getSemanaField(ej, selectedSemana);
                                                             const trepadaVal = getTrepadaField(ej, selectedSemana);
@@ -1237,7 +1242,7 @@ export default function MiCuentaPage() {
                                                             return (
                                                                 <div key={eIdx} style={combo?{backgroundColor:combo.bg}:undefined}>
                                                                     <button onClick={()=>setExpandedEj(isExpanded?null:eIdx)}
-                                                                        className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-slate-50 transition-colors active:bg-slate-100">
+                                                                        className="w-full grid grid-cols-[1fr_44px_76px_56px] text-left hover:bg-white/[0.04] transition-colors active:bg-white/[0.08]">
                                                                         <div className="px-4 py-3 flex items-center gap-2">
                                                                             <div className="flex-1 min-w-0">
                                                                                 {isFirstInCombo && combo && (
@@ -1246,26 +1251,26 @@ export default function MiCuentaPage() {
                                                                                         <span className="text-[10px] font-bold uppercase tracking-wide" style={{color:combo.labelColor}}>Combinado</span>
                                                                                     </div>
                                                                                 )}
-                                                                                <p className="text-sm font-semibold text-slate-900 leading-tight">{ej.nombre}</p>
-                                                                                {ej.kg && ej.kg!=='-' && <p className="text-sm font-bold text-red-500 mt-0.5">{ej.kg} kg</p>}
-                                                                                {(() => { const obs=(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string)||''; return obs?<p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{obs}</p>:null; })()}
+                                                                                <p className="text-sm font-semibold text-white leading-tight">{ej.nombre}</p>
+                                                                                {ej.kg && ej.kg!=='-' && <p className="text-sm font-bold text-red-400 mt-0.5">{ej.kg} kg</p>}
+                                                                                {(() => { const obs=(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string)||''; return obs?<p className="text-[11px] text-white/40 mt-0.5 leading-snug">{obs}</p>:null; })()}
                                                                             </div>
-                                                                            <ChevronDown size={14} className={cn('text-slate-300 shrink-0 transition-transform', isExpanded&&'rotate-180')} />
+                                                                            <ChevronDown size={14} className={cn('text-white/25 shrink-0 transition-transform', isExpanded&&'rotate-180')} />
                                                                         </div>
-                                                                        <div className="px-1 py-3 border-l border-slate-100 flex items-center justify-center">
-                                                                            <span className={cn('text-sm font-bold text-center leading-tight', trepadaVal&&trepadaVal!=='-'?'text-slate-500':'text-slate-200')}>
+                                                                        <div className="px-1 py-3 border-l border-white/[0.08] flex items-center justify-center">
+                                                                            <span className={cn('text-sm font-bold text-center leading-tight', trepadaVal&&trepadaVal!=='-'?'text-white/60':'text-white/15')}>
                                                                                 {trepadaVal&&trepadaVal!=='-'?trepadaVal:'—'}
                                                                             </span>
                                                                         </div>
-                                                                        <div className="px-2 py-3 border-l border-slate-100 flex items-center justify-center">
-                                                                            <span className={cn('text-sm font-bold text-center leading-tight', semVal?'text-slate-800':'text-slate-200')}>{semVal||'—'}</span>
+                                                                        <div className="px-2 py-3 border-l border-white/[0.08] flex items-center justify-center">
+                                                                            <span className={cn('text-sm font-bold text-center leading-tight', semVal?'text-white/80':'text-white/15')}>{semVal||'—'}</span>
                                                                         </div>
-                                                                        <div className="px-1 py-2 border-l border-slate-100 flex items-center justify-center">
+                                                                        <div className="px-1 py-2 border-l border-white/[0.08] flex items-center justify-center">
                                                                             {(() => {
                                                                                 const kgVal=(ej[`kgAlumno${selectedSemana}` as keyof EjercicioAsignado] as string)||'';
                                                                                 const kgParts=kgVal?kgVal.split(',').map(v=>v.trim()).filter(Boolean):[];
-                                                                                if (!kgParts.length) return <span className="text-xs font-bold text-slate-200">—</span>;
-                                                                                if (kgParts.length===1) return <span className="text-sm font-bold text-lime-600">{kgParts[0]}</span>;
+                                                                                if (!kgParts.length) return <span className="text-xs font-bold text-white/15">—</span>;
+                                                                                if (kgParts.length===1) return <span className="text-sm font-bold text-lime-400">{kgParts[0]}</span>;
                                                                                 return <div className="grid grid-cols-2 gap-x-0.5 gap-y-0.5 w-full">{kgParts.map((kg,i)=><span key={i} className="text-[10px] font-bold text-lime-400 text-center leading-tight">{kg}</span>)}</div>;
                                                                             })()}
                                                                         </div>
@@ -1277,41 +1282,41 @@ export default function MiCuentaPage() {
                                                                         const kgParts=kgRaw.split(',').map(v=>v.trim());
                                                                         while(kgParts.length<seriesCount) kgParts.push('');
                                                                         return (
-                                                                            <div className="px-4 pb-4 pt-2 bg-slate-50 border-t border-slate-100 space-y-3">
-                                                                                {ej.notas && <p className="text-xs text-slate-400 italic">{ej.notas}</p>}
+                                                                            <div className="px-4 pb-4 pt-2 bg-white/[0.03] border-t border-white/[0.06] space-y-3">
+                                                                                {ej.notas && <p className="text-xs text-white/40 italic">{ej.notas}</p>}
                                                                                 <div className="grid grid-cols-2 gap-2">
                                                                                     <div>
-                                                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">Trepada</label>
+                                                                                        <label className="text-[10px] font-bold text-white/40 uppercase tracking-wide mb-1.5 block">Trepada</label>
                                                                                         <input type="text" value={(ej[`trepada${selectedSemana}` as keyof EjercicioAsignado] as string)||''}
                                                                                             onChange={e=>updateEjAlumno(eIdx,`trepada${selectedSemana}`,e.target.value)}
-                                                                                            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-lime-500 text-center" />
+                                                                                            className="w-full border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.06] focus:outline-none focus:border-lime-400 text-center" />
                                                                                     </div>
                                                                                     <div>
-                                                                                        <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1.5 block">Núcleo</label>
+                                                                                        <label className="text-[10px] font-bold text-white/60 uppercase tracking-wide mb-1.5 block">Núcleo</label>
                                                                                         <input type="text" value={semVal} onChange={e=>updateEjAlumno(eIdx,`semana${selectedSemana}`,e.target.value)}
-                                                                                            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-lime-500 text-center" />
+                                                                                            className="w-full border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.06] focus:outline-none focus:border-lime-400 text-center" />
                                                                                     </div>
                                                                                 </div>
                                                                                 <div>
-                                                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">
+                                                                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-wide mb-1.5 block">
                                                                                         Mis KG{seriesCount>1&&<span className="normal-case font-normal"> · {seriesCount} series</span>}
                                                                                     </label>
                                                                                     <div className={cn('grid gap-2', seriesCount===1?'grid-cols-1':seriesCount<=4?`grid-cols-${seriesCount}`:'grid-cols-4')}>
                                                                                         {Array.from({length:seriesCount},(_,si)=>(
                                                                                             <div key={si} className="flex flex-col gap-0.5">
-                                                                                                {seriesCount>1 && <span className="text-[10px] font-bold text-slate-400 text-center">S{si+1}</span>}
+                                                                                                {seriesCount>1 && <span className="text-[10px] font-bold text-white/40 text-center">S{si+1}</span>}
                                                                                                 <input type="number" inputMode="decimal" placeholder="kg" value={kgParts[si]||''}
                                                                                                     onChange={e=>{ const np=[...kgParts]; np[si]=e.target.value; updateEjAlumno(eIdx,`kgAlumno${selectedSemana}`,np.join(',')); }}
-                                                                                                    className="w-full border border-slate-200 rounded-xl px-2 py-2.5 text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-lime-500 text-center" />
+                                                                                                    className="w-full border border-white/15 rounded-xl px-2 py-2.5 text-sm font-semibold text-white bg-white/[0.06] focus:outline-none focus:border-lime-400 text-center placeholder:text-white/20" />
                                                                                             </div>
                                                                                         ))}
                                                                                     </div>
                                                                                 </div>
                                                                                 <div>
-                                                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Observaciones</label>
+                                                                                    <label className="text-[10px] font-bold text-white/40 uppercase tracking-wide">Observaciones</label>
                                                                                     <input type="text" value={(ej[`observacionesAlumno${selectedSemana}` as keyof EjercicioAsignado] as string)||''}
                                                                                         onChange={e=>updateEjAlumno(eIdx,`observacionesAlumno${selectedSemana}`,e.target.value)}
-                                                                                        className="mt-1 w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 bg-white focus:outline-none focus:border-lime-500" />
+                                                                                        className="mt-1 w-full border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white bg-white/[0.06] focus:outline-none focus:border-lime-400" />
                                                                                 </div>
                                                                                 <button onClick={()=>handleSaveEjercicio(eIdx)} disabled={savingEj===eIdx}
                                                                                     className="w-full py-2.5 text-sm font-bold rounded-xl transition-all disabled:opacity-60 bg-lime-400 text-black hover:bg-lime-300 active:bg-lime-500">
