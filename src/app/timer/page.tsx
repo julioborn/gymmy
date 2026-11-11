@@ -184,19 +184,22 @@ export default function TimerPage() {
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
 
-    const NumField = ({ label, value, onChange, min = 1, max = 999 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number }) => (
+    const NumField = ({ label, value, onChange, min = 1, max = 999, step = 1 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number }) => (
         <div className="flex-1">
-            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block">{label}</label>
-            <input
-                type="number"
-                inputMode="numeric"
-                min={min}
-                max={max}
-                value={value}
-                disabled={isRunning}
-                onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
-                className="w-full border border-white/10 bg-white/[0.04] rounded-xl px-3 py-3 text-center text-white font-bold text-2xl disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50"
-            />
+            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block text-center">{label}</label>
+            <div className="flex items-center gap-1 border border-white/10 bg-white/[0.04] rounded-xl p-1">
+                <button type="button" disabled={isRunning || value <= min}
+                    onClick={() => onChange(Math.max(min, value - step))}
+                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-white text-2xl font-bold active:scale-90 disabled:opacity-25 transition-all">
+                    −
+                </button>
+                <span className="flex-1 text-center text-white font-bold text-2xl tabular-nums">{value}</span>
+                <button type="button" disabled={isRunning || value >= max}
+                    onClick={() => onChange(Math.min(max, value + step))}
+                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-white text-2xl font-bold active:scale-90 disabled:opacity-25 transition-all">
+                    +
+                </button>
+            </div>
         </div>
     );
 
@@ -235,12 +238,12 @@ export default function TimerPage() {
                 <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
                     <div className="flex gap-2">
-                        <NumField label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} />
-                        <NumField label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} />
+                        <NumField label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} step={5} />
+                        <NumField label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} step={5} />
                     </div>
                     <div className="flex gap-2">
-                        <NumField label="Series" value={rounds} onChange={setRounds} min={1} max={50} />
-                        <NumField label="Preparación (seg)" value={prep} onChange={setPrep} min={0} max={60} />
+                        <NumField label="Series" value={rounds} onChange={setRounds} min={1} max={50} step={1} />
+                        <NumField label="Preparación (seg)" value={prep} onChange={setPrep} min={0} max={60} step={5} />
                     </div>
                 </div>
 
