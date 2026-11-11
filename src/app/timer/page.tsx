@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
 
@@ -34,6 +34,72 @@ function buildTimeline(prep: number, work: number, rest: number, rounds: number)
         if (i < rounds) steps.push({ phase: 'rest', duration: rest, round: i });
     }
     return steps;
+}
+
+const WHEEL_ITEM_H = 34;
+const WHEEL_VISIBLE = 3;
+
+function WheelPicker({ label, value, onChange, min, max, step = 1, disabled }: {
+    label: string; value: number; onChange: (v: number) => void; min: number; max: number; step?: number; disabled?: boolean;
+}) {
+    const options = useMemo(() => {
+        const arr: number[] = [];
+        for (let v = min; v <= max; v += step) arr.push(v);
+        return arr;
+    }, [min, max, step]);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const settleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const programmaticRef = useRef(false);
+    const padding = WHEEL_ITEM_H * Math.floor(WHEEL_VISIBLE / 2);
+
+    const scrollToValue = useCallback((v: number, smooth: boolean) => {
+        const el = containerRef.current;
+        const idx = options.indexOf(v);
+        if (!el || idx === -1) return;
+        programmaticRef.current = true;
+        el.scrollTo({ top: idx * WHEEL_ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
+        setTimeout(() => { programmaticRef.current = false; }, smooth ? 300 : 50);
+    }, [options]);
+
+    useEffect(() => { scrollToValue(value, false); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleScroll = () => {
+        if (settleRef.current) clearTimeout(settleRef.current);
+        settleRef.current = setTimeout(() => {
+            const el = containerRef.current;
+            if (programmaticRef.current || !el) return;
+            const idx = Math.max(0, Math.min(options.length - 1, Math.round(el.scrollTop / WHEEL_ITEM_H)));
+            const newVal = options[idx];
+            if (newVal !== value) onChange(newVal);
+            scrollToValue(newVal, true);
+        }, 110);
+    };
+
+    return (
+        <div className="flex-1">
+            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block text-center">{label}</label>
+            <div className={`relative ${disabled ? 'opacity-40 pointer-events-none' : ''}`} style={{ height: WHEEL_ITEM_H * WHEEL_VISIBLE }}>
+                <div className="absolute left-0 right-0 rounded-lg bg-white/[0.1] pointer-events-none" style={{ top: padding, height: WHEEL_ITEM_H }} />
+                <div
+                    ref={containerRef}
+                    onScroll={handleScroll}
+                    className="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden"
+                    style={{ scrollSnapType: 'y mandatory', paddingTop: padding, paddingBottom: padding, scrollbarWidth: 'none' }}
+                >
+                    {options.map(opt => (
+                        <div key={opt}
+                            onClick={() => { onChange(opt); scrollToValue(opt, true); }}
+                            style={{ height: WHEEL_ITEM_H, scrollSnapAlign: 'center' }}
+                            className={`flex items-center justify-center font-bold tabular-nums transition-all cursor-pointer ${opt === value ? 'text-white text-2xl' : 'text-white/25 text-base'}`}
+                        >
+                            {opt}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default function TimerPage() {
@@ -184,25 +250,6 @@ export default function TimerPage() {
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
 
-    const NumField = ({ label, value, onChange, min = 1, max = 999, step = 1 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number }) => (
-        <div className="flex-1">
-            <label className="text-xs font-bold text-white/40 uppercase tracking-wide mb-1 block text-center">{label}</label>
-            <div className="flex items-center gap-1 border border-white/10 bg-white/[0.04] rounded-xl p-1">
-                <button type="button" disabled={isRunning || value <= min}
-                    onClick={() => onChange(Math.max(min, value - step))}
-                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-white text-2xl font-bold active:scale-90 disabled:opacity-25 transition-all">
-                    −
-                </button>
-                <span className="flex-1 text-center text-white font-bold text-2xl tabular-nums">{value}</span>
-                <button type="button" disabled={isRunning || value >= max}
-                    onClick={() => onChange(Math.min(max, value + step))}
-                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-white/[0.06] text-white text-2xl font-bold active:scale-90 disabled:opacity-25 transition-all">
-                    +
-                </button>
-            </div>
-        </div>
-    );
-
     return (
         <div className="min-h-screen bg-[#0a0a0a] pb-20">
             <div className="fixed inset-0 pointer-events-none"
@@ -238,12 +285,12 @@ export default function TimerPage() {
                 <div className="rounded-2xl p-4 space-y-3" style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
                     <div className="flex gap-2">
-                        <NumField label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} step={5} />
-                        <NumField label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} step={5} />
+                        <WheelPicker label="Trabajo (seg)" value={work} onChange={setWork} min={5} max={600} step={5} disabled={isRunning} />
+                        <WheelPicker label="Descanso (seg)" value={rest} onChange={setRest} min={0} max={600} step={5} disabled={isRunning} />
                     </div>
                     <div className="flex gap-2">
-                        <NumField label="Series" value={rounds} onChange={setRounds} min={1} max={50} step={1} />
-                        <NumField label="Preparación (seg)" value={prep} onChange={setPrep} min={0} max={60} step={5} />
+                        <WheelPicker label="Series" value={rounds} onChange={setRounds} min={1} max={50} step={1} disabled={isRunning} />
+                        <WheelPicker label="Preparación (seg)" value={prep} onChange={setPrep} min={0} max={60} step={5} disabled={isRunning} />
                     </div>
                 </div>
 
