@@ -319,7 +319,7 @@ export default function EmpleadosPage() {
                             ? `${emp.nombre[0]}${emp.apellido?.[0] ?? ''}`.toUpperCase()
                             : emp.username.slice(0, 2).toUpperCase();
                         const nacimiento = emp.fechaNacimiento
-                            ? new Date(emp.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                            ? new Date(emp.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
                             : null;
                         return (
                             <div

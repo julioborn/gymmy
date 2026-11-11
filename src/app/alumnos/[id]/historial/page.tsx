@@ -2185,7 +2185,7 @@ export default function HistorialAlumnoPage() {
                             <div className="bg-white/[0.05] rounded-xl px-3.5 py-3">
                                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-0.5">Nacimiento</p>
                                 <p className="text-sm font-bold text-white/80">
-                                    {new Date(alumno.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    {new Date(alumno.fechaNacimiento).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })}
                                 </p>
                             </div>
                         )}

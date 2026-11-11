@@ -23,9 +23,11 @@ function normalize(s: string): string { return (s || '').normalize('NFD').replac
 function calcularEdad(fechaNacimiento: string): number {
     const hoy = new Date();
     const nacimiento = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const mes = hoy.getMonth() - nacimiento.getMonth();
-    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+    // fechaNacimiento se guarda como medianoche UTC del dia real de nacimiento;
+    // hay que leerla con los getters UTC, si no en Argentina (UTC-3) se lee un dia antes.
+    let edad = hoy.getFullYear() - nacimiento.getUTCFullYear();
+    const mes = hoy.getMonth() - nacimiento.getUTCMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getUTCDate())) {
         edad--;
     }
     return edad;
