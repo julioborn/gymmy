@@ -87,27 +87,27 @@ function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, dis
     return (
         <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
             <span className="text-sm font-semibold text-white/80 block mb-2">{label}</span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
                 <button type="button"
                     onPointerDown={() => startHold(-1)}
                     onPointerUp={stopHold}
                     onPointerLeave={stopHold}
                     disabled={disabled || value <= min}
-                    className="h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center text-2xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
+                    className="h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center text-xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
                     style={{ background: `${accent}1F`, border: `1px solid ${accent}40` }}>
                     −
                 </button>
-                <div className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-1.5"
+                <div className="flex-1 min-w-0 h-11 rounded-2xl flex flex-col items-center justify-center leading-none"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <span className="text-2xl font-black tabular-nums" style={{ color: accent }}>{value}</span>
-                    {suffix && <span className="text-white/30 text-sm font-semibold">{suffix}</span>}
+                    <span className="text-xl font-black tabular-nums" style={{ color: accent }}>{value}</span>
+                    {suffix && <span className="text-white/30 text-[10px] font-semibold mt-0.5">{suffix}</span>}
                 </div>
                 <button type="button"
                     onPointerDown={() => startHold(1)}
                     onPointerUp={stopHold}
                     onPointerLeave={stopHold}
                     disabled={disabled || value >= max}
-                    className="h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center text-2xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
+                    className="h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center text-xl font-bold text-white active:scale-90 disabled:opacity-30 transition-transform"
                     style={{ background: `${accent}1F`, border: `1px solid ${accent}40` }}>
                     +
                 </button>
@@ -383,13 +383,15 @@ export default function TimerPage() {
                 </div>
 
                 {/* Config */}
-                <div className="rounded-3xl p-5 space-y-5"
+                <div className="rounded-3xl p-5 space-y-4"
                     style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
-                    <ConfigRow label="Trabajo" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" disabled={isRunning} />
-                    <ConfigRow label="Descanso" value={rest} onChange={setRest} min={0} max={180} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
-                    <ConfigRow label="Series" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={LIME} disabled={isRunning} />
-                    <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                        <ConfigRow label="Trabajo" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" disabled={isRunning} />
+                        <ConfigRow label="Descanso" value={rest} onChange={setRest} min={0} max={180} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
+                        <ConfigRow label="Series" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={LIME} disabled={isRunning} />
+                        <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
+                    </div>
                 </div>
 
                 <p className="text-white/25 text-xs text-center px-4">
