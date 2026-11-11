@@ -127,6 +127,7 @@ export default function TimerPage() {
     const [remainingMs, setRemainingMs] = useState(0);
     const [currentDuration, setCurrentDuration] = useState(0);
     const [paused, setPaused] = useState(false);
+    const [snapRing, setSnapRing] = useState(false);
 
     const stepsRef = useRef<Step[]>([]);
     const stepIdxRef = useRef(0);
@@ -239,7 +240,16 @@ export default function TimerPage() {
         setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
+        // El anillo arranca de cero sin la animacion de 1s, para que no se vea
+        // "rebobinando" desde el final de la fase anterior.
+        setSnapRing(true);
     }, [playPhaseSound, releaseWakeLock]);
+
+    useEffect(() => {
+        if (!snapRing) return;
+        const t = setTimeout(() => setSnapRing(false), 60);
+        return () => clearTimeout(t);
+    }, [snapRing]);
 
     const tick = useCallback(() => {
         const remaining = phaseEndRef.current - Date.now();
@@ -293,13 +303,15 @@ export default function TimerPage() {
         stepsRef.current = [];
         stepIdxRef.current = 0;
         releaseWakeLock();
+        setSnapRing(true);
     };
 
     const isRunning = phase !== 'idle' && phase !== 'done';
     const totalRounds = rounds;
     const secondsLeft = Math.ceil(remainingMs / 1000);
     const color = PHASE_COLOR[phase];
-    const pct = phase === 'done' ? 100 : (currentDuration > 0 ? Math.max(0, Math.min(100, (remainingMs / 1000 / currentDuration) * 100)) : 0);
+    // Como las agujas de un reloj: el anillo crece de menos a más a medida que pasa el tiempo.
+    const pct = phase === 'done' ? 100 : (currentDuration > 0 ? Math.max(0, Math.min(100, ((currentDuration - remainingMs / 1000) / currentDuration) * 100)) : 0);
     const showRound = phase === 'work' || phase === 'rest';
     const pulseKey = `${phase}-${round}`;
 
@@ -331,6 +343,7 @@ export default function TimerPage() {
                             max={100}
                             gaugePrimaryColor={color}
                             gaugeSecondaryColor="rgba(255,255,255,0.08)"
+                            transitionLength={snapRing ? '0s' : '1s'}
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
                             <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
