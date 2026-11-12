@@ -302,14 +302,25 @@ export default function TimerPage() {
     }, []);
 
     const updateLiveActivity = useCallback((
-        phase: 'prep' | 'work' | 'rest' | 'done', round: number, phaseEndsAt: number, start: boolean,
+        phase: 'prep' | 'work' | 'rest' | 'done', round: number, phaseEndsAt: number, progress: number, start: boolean,
     ) => {
         if (!isIOSNativeRef.current) return;
         import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => {
-            const payload = { phase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt };
+            const payload = { phase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt, progress };
             return start ? LiveActivity.start(payload) : LiveActivity.update(payload);
         }).catch((e) => console.error('[LiveActivity]', e));
     }, [rounds]);
+
+    // Progreso 0..1 del entrenamiento completo a partir de la duracion total
+    // planificada, no solo de la ronda — asi la barra en la Dynamic Island
+    // avanza en proporcion real aunque trabajo/descanso tengan duraciones distintas.
+    const progressAtStep = useCallback((idx: number) => {
+        const steps = stepsRef.current;
+        const total = steps.reduce((sum, s) => sum + s.duration, 0);
+        if (total <= 0) return 0;
+        const elapsed = steps.slice(0, idx).reduce((sum, s) => sum + s.duration, 0);
+        return Math.max(0, Math.min(1, elapsed / total));
+    }, []);
 
     // ── Core loop ──
     const goToStep = useCallback((idx: number, startAt: number) => {
@@ -320,7 +331,7 @@ export default function TimerPage() {
             playPhaseSound('done');
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
             releaseWakeLock();
-            updateLiveActivity('done', steps[steps.length - 1]?.round ?? 0, Date.now(), false);
+            updateLiveActivity('done', steps[steps.length - 1]?.round ?? 0, Date.now(), 1, false);
             nativeTimerService.stop();
             return;
         }
@@ -333,7 +344,7 @@ export default function TimerPage() {
         setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
-        updateLiveActivity(step.phase, step.round, phaseEndRef.current, idx === 0);
+        updateLiveActivity(step.phase, step.round, phaseEndRef.current, progressAtStep(idx), idx === 0);
         // El anillo arranca de cero sin la animacion de 1s, para que no se vea
         // "rebobinando" desde el final de la fase anterior.
         setSnapRing(true);
@@ -389,7 +400,7 @@ export default function TimerPage() {
         intervalRef.current = setInterval(tick, 100);
         requestWakeLock();
         const step = stepsRef.current[stepIdxRef.current];
-        if (step) updateLiveActivity(step.phase, step.round, phaseEndRef.current, true);
+        if (step) updateLiveActivity(step.phase, step.round, phaseEndRef.current, progressAtStep(stepIdxRef.current), true);
     };
 
     const handleReset = () => {

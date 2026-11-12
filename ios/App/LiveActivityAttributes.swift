@@ -14,13 +14,15 @@ public struct SportTimeWidgetAttributes: ActivityAttributes {
         public var round: Int
         public var totalRounds: Int
         public var phaseEndsAt: Date
+        public var progress: Double // 0...1, del entrenamiento completo
 
-        public init(phase: String, phaseLabel: String, round: Int, totalRounds: Int, phaseEndsAt: Date) {
+        public init(phase: String, phaseLabel: String, round: Int, totalRounds: Int, phaseEndsAt: Date, progress: Double) {
             self.phase = phase
             self.phaseLabel = phaseLabel
             self.round = round
             self.totalRounds = totalRounds
             self.phaseEndsAt = phaseEndsAt
+            self.progress = progress
         }
     }
 

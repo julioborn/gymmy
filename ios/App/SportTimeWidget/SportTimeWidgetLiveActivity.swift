@@ -26,28 +26,32 @@ struct SportTimeWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: SportTimeWidgetAttributes.self) { context in
             let state = context.state
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(state.phaseLabel)
-                        .font(.headline)
-                        .foregroundStyle(phaseColor(state.phase))
-                    if state.totalRounds > 0 {
-                        Text("Ronda \(state.round)/\(state.totalRounds)")
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.6))
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(state.phaseLabel)
+                            .font(.headline)
+                            .foregroundStyle(phaseColor(state.phase))
+                        if state.totalRounds > 0 {
+                            Text("Ronda \(state.round)/\(state.totalRounds)")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                    }
+                    Spacer()
+                    if state.phase == "done" {
+                        Text("🏆")
+                            .font(.system(size: 34))
+                    } else {
+                        Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
+                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                            .frame(width: 110)
                     }
                 }
-                Spacer()
-                if state.phase == "done" {
-                    Text("🏆")
-                        .font(.system(size: 34))
-                } else {
-                    Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(.white)
-                        .frame(width: 110)
-                }
+                ProgressView(value: state.progress)
+                    .tint(phaseColor(state.phase))
             }
             .padding(16)
             .activityBackgroundTint(bg)
@@ -68,12 +72,16 @@ struct SportTimeWidgetLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    if state.phase == "done" {
-                        Text("¡Listo! 🏆").font(.title3.bold())
-                    } else {
-                        Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
-                            .monospacedDigit()
+                    VStack(spacing: 8) {
+                        if state.phase == "done" {
+                            Text("¡Listo! 🏆").font(.title3.bold())
+                        } else {
+                            Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
+                                .monospacedDigit()
+                        }
+                        ProgressView(value: state.progress)
+                            .tint(phaseColor(state.phase))
                     }
                 }
             } compactLeading: {

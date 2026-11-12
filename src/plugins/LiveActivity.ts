@@ -7,6 +7,8 @@ export interface LiveActivityState {
     totalRounds: number;
     /** epoch ms del fin de la fase actual */
     phaseEndsAt: number;
+    /** progreso 0..1 del entrenamiento completo (todas las fases planificadas) */
+    progress: number;
 }
 
 export interface LiveActivityPlugin {

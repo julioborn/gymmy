@@ -26,7 +26,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             phaseLabel: call.getString("phaseLabel") ?? "",
             round: call.getInt("round") ?? 0,
             totalRounds: call.getInt("totalRounds") ?? 0,
-            phaseEndsAt: Date(timeIntervalSince1970: phaseEndsAtMs / 1000)
+            phaseEndsAt: Date(timeIntervalSince1970: phaseEndsAtMs / 1000),
+            progress: call.getDouble("progress") ?? 0
         )
     }
 
