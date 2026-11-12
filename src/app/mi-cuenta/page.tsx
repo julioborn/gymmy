@@ -399,7 +399,14 @@ export default function MiCuentaPage() {
                         <div className="rounded-2xl h-40 animate-pulse" style={{ background: 'rgba(249,115,22,0.06)', border: '1px solid rgba(249,115,22,0.2)' }} />
                     </div>
                     <div className="rounded-2xl h-16 animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
-                    <div className="rounded-2xl h-48 animate-pulse" style={{ background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.2)' }} />
+                    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(14,165,233,0.06)', border: '1px solid rgba(14,165,233,0.2)' }}>
+                        <div className="h-12 animate-pulse" style={{ background: 'rgba(14,165,233,0.1)' }} />
+                        <div className="p-3 space-y-2">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className="h-11 rounded-xl bg-white/[0.04] animate-pulse" />
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
