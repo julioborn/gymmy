@@ -91,7 +91,7 @@ struct SportTimeWidgetLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(spacing: 8) {
                         if state.phase == "done" {
-                            Text("¡Listo! 🏆")
+                            Text(state.totalRounds > 0 ? "¡Listo! \(state.totalRounds) series 🏆" : "¡Listo! 🏆")
                                 .font(.title3.bold())
                                 .foregroundStyle(emerald)
                                 .scaleEffect(1.1)
@@ -108,16 +108,16 @@ struct SportTimeWidgetLiveActivity: Widget {
                     .padding(.bottom, 4)
                 }
             } compactLeading: {
-                if state.phase != "done" {
-                    HStack(spacing: 3) {
+                HStack(spacing: 3) {
+                    if state.phase != "done" {
                         Image(systemName: phaseIcon(state.phase))
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(phaseColor(state.phase))
-                        if state.totalRounds > 0 {
-                            Text("\(state.round)/\(state.totalRounds)")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.75))
-                        }
+                    }
+                    if state.totalRounds > 0 {
+                        Text("\(state.round)/\(state.totalRounds)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(state.phase == "done" ? emerald : .white.opacity(0.75))
                     }
                 }
             } compactTrailing: {
