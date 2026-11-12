@@ -216,6 +216,17 @@ export default function TimerPage() {
                 el.srcObject = dest.stream;
                 el.play().catch(() => {});
                 audioElRef.current = el;
+                // Sin esto, cuando el grafo de audio queda sin ninguna fuente
+                // activa (silencio entre beeps, timer en pausa), WebKit hace
+                // clickear/tildar el <audio> que reproduce el MediaStream.
+                // Un oscilador a volumen 0 lo mantiene "vivo" todo el tiempo.
+                const keepAliveGain = ctx.createGain();
+                keepAliveGain.gain.value = 0;
+                const keepAliveOsc = ctx.createOscillator();
+                keepAliveOsc.frequency.value = 20;
+                keepAliveOsc.connect(keepAliveGain);
+                keepAliveGain.connect(dest);
+                keepAliveOsc.start();
             }
         }
         if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
