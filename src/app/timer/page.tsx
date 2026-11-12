@@ -9,6 +9,7 @@ import { isCapacitor } from '@/hooks/useFCM';
 import { Button } from '@/components/ui/button';
 import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
+import { nativeTimerService } from '@/lib/nativeTimerService';
 
 type PhaseKind = 'prep' | 'work' | 'rest';
 type Phase = PhaseKind | 'idle' | 'done';
@@ -247,6 +248,29 @@ export default function TimerPage() {
         return () => document.removeEventListener('visibilitychange', onVisible);
     }, [requestWakeLock]);
 
+    // ── Android: si se oculta la app mientras corre, el foreground service nativo
+    // toma la posta (notificacion + beeps); al volver, lo paramos y sigue el JS. ──
+    useEffect(() => {
+        const onVisibility = () => {
+            if (document.visibilityState === 'hidden') {
+                if (!runningRef.current) return;
+                const steps = stepsRef.current;
+                const idx = stepIdxRef.current;
+                if (idx >= steps.length) return;
+                const remainingMs = Math.max(0, phaseEndRef.current - Date.now());
+                const resumeSteps = [
+                    { ...steps[idx], duration: Math.ceil(remainingMs / 1000) },
+                    ...steps.slice(idx + 1),
+                ];
+                nativeTimerService.start(resumeSteps, Date.now());
+            } else {
+                nativeTimerService.stop();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => document.removeEventListener('visibilitychange', onVisibility);
+    }, []);
+
     // ── Sound ──
     useEffect(() => {
         (async () => {
@@ -344,6 +368,7 @@ export default function TimerPage() {
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
             releaseWakeLock();
             updateLiveActivity('done', steps[steps.length - 1]?.round ?? 0, Date.now(), false);
+            nativeTimerService.stop();
             return;
         }
         const step = steps[idx];
@@ -430,6 +455,7 @@ export default function TimerPage() {
         cancelBackgroundAlerts();
         endLiveActivity();
         setSnapRing(true);
+        nativeTimerService.stop();
     };
 
     const totalRounds = rounds;
