@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon, Trophy } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { swalNotify } from '@/utils/swalConfig';
-import { isCapacitor } from '@/hooks/useFCM';
 import { Button } from '@/components/ui/button';
 import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
@@ -144,7 +143,6 @@ export default function TimerPage() {
     const isIOSNativeRef = useRef(false);
     const lastTickSecondRef = useRef<number | null>(null);
     const wakeLockRef = useRef<any>(null);
-    const scheduledNotifIdsRef = useRef<number[]>([]);
     const runningRef = useRef(false);
 
     // ── Config persistence ──
@@ -164,7 +162,7 @@ export default function TimerPage() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ work, rest, rounds, prep })); } catch {}
     }, [work, rest, rounds, prep]);
 
-    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); cancelBackgroundAlerts(); endLiveActivity(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); endLiveActivity(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Mantener la pantalla encendida mientras corre ──
     const requestWakeLock = useCallback(async () => {
@@ -192,51 +190,6 @@ export default function TimerPage() {
     useEffect(() => {
         runningRef.current = phase !== 'idle' && phase !== 'done' && !paused;
     }, [phase, paused]);
-
-    // ── Avisos aunque el telefono este bloqueado/en segundo plano ──
-    // El beep en vivo se corta si se bloquea la pantalla (como cualquier app
-    // que no sea de reproduccion de audio). Para no perderse el fin de una
-    // fase, programamos una notificacion local por cada transicion restante,
-    // con hora absoluta, asi el sistema la dispara igual con la app cerrada.
-    const cancelBackgroundAlerts = useCallback(() => {
-        const ids = scheduledNotifIdsRef.current;
-        scheduledNotifIdsRef.current = [];
-        if (!ids.length) return;
-        import('@capacitor/local-notifications')
-            .then(({ LocalNotifications }) => LocalNotifications.cancel({ notifications: ids.map(id => ({ id })) }))
-            .catch(() => {});
-    }, []);
-
-    const scheduleBackgroundAlerts = useCallback(async (fromIdx: number, firstBoundaryAt: number) => {
-        if (!(await isCapacitor())) return;
-        try {
-            const { LocalNotifications } = await import('@capacitor/local-notifications');
-            const { display } = await LocalNotifications.checkPermissions();
-            if (display !== 'granted') {
-                const req = await LocalNotifications.requestPermissions();
-                if (req.display !== 'granted') return;
-            }
-            const steps = stepsRef.current;
-            const BASE_ID = 900000; // rango reservado, no choca con los ids (Date.now()) de las push de FCM
-            let at = firstBoundaryAt;
-            const notifications = [];
-            for (let i = fromIdx; i < steps.length; i++) {
-                const nextPhase = steps[i + 1]?.phase ?? 'done';
-                notifications.push({
-                    id: BASE_ID + i,
-                    title: 'Intermitente',
-                    body: PHASE_LABEL[nextPhase],
-                    schedule: { at: new Date(at) },
-                    // en iOS, sin "sound" la notificacion sale muda
-                    sound: 'default',
-                });
-                at += (steps[i + 1]?.duration ?? 0) * 1000;
-            }
-            if (!notifications.length) return;
-            scheduledNotifIdsRef.current = notifications.map(n => n.id);
-            await LocalNotifications.schedule({ notifications });
-        } catch {}
-    }, []);
 
     // El wake lock se libera solo cuando la pestaña se oculta (se cambia de app, se apaga la pantalla);
     // al volver, si el timer sigue corriendo, lo volvemos a pedir.
@@ -417,7 +370,6 @@ export default function TimerPage() {
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(tick, 100);
         requestWakeLock();
-        scheduleBackgroundAlerts(stepIdxRef.current, phaseEndRef.current);
     };
 
     const handlePause = () => {
@@ -425,7 +377,6 @@ export default function TimerPage() {
         pausedRemainingRef.current = phaseEndRef.current - Date.now();
         setPaused(true);
         releaseWakeLock();
-        cancelBackgroundAlerts();
         // Se cierra la Live Activity porque su countdown nativo seguiria
         // corriendo solo aunque el timer este pausado; se reabre al resumir.
         endLiveActivity();
@@ -437,7 +388,6 @@ export default function TimerPage() {
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(tick, 100);
         requestWakeLock();
-        scheduleBackgroundAlerts(stepIdxRef.current, phaseEndRef.current);
         const step = stepsRef.current[stepIdxRef.current];
         if (step) updateLiveActivity(step.phase, step.round, phaseEndRef.current, true);
     };
@@ -452,7 +402,6 @@ export default function TimerPage() {
         stepsRef.current = [];
         stepIdxRef.current = 0;
         releaseWakeLock();
-        cancelBackgroundAlerts();
         endLiveActivity();
         setSnapRing(true);
         nativeTimerService.stop();
