@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   appName: 'Gymmy',
   webDir: 'out',
   server: {
-    url: isDevelopment ? 'http://192.168.1.91:3000' : 'https://gymmy.com.ar',
+    url: isDevelopment ? 'http://192.168.1.91:3000' : 'https://sporttime.com.ar',
     cleartext: isDevelopment,
     allowNavigation: ['*'],
   },

@@ -137,6 +137,9 @@ export default function TimerPage() {
     const pausedRemainingRef = useRef(0);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const audioCtxRef = useRef<AudioContext | null>(null);
+    const audioDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+    const audioElRef = useRef<HTMLAudioElement | null>(null);
+    const isIOSNativeRef = useRef(false);
     const lastTickSecondRef = useRef<number | null>(null);
     const wakeLockRef = useRef<any>(null);
     const runningRef = useRef(false);
@@ -187,12 +190,36 @@ export default function TimerPage() {
     }, [requestWakeLock]);
 
     // ── Sound ──
+    useEffect(() => {
+        (async () => {
+            try {
+                const { Capacitor } = await import('@capacitor/core');
+                isIOSNativeRef.current = Capacitor.getPlatform() === 'ios';
+            } catch {}
+        })();
+    }, []);
+
     const ensureAudio = useCallback(() => {
         if (!audioCtxRef.current) {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-            audioCtxRef.current = new Ctx();
+            const ctx = new Ctx();
+            audioCtxRef.current = ctx;
+            // iOS (WKWebView): un oscilador conectado directo a ctx.destination
+            // sigue respetando el switch de silencio aunque la sesion nativa
+            // este en modo "playback" — eso solo bypassea <audio>/<video>
+            // reales. Enrutamos el audio generado a un <audio> real via
+            // MediaStreamDestination para que sí ignore el silencio.
+            if (isIOSNativeRef.current && 'createMediaStreamDestination' in ctx) {
+                const dest = ctx.createMediaStreamDestination();
+                audioDestRef.current = dest;
+                const el = new Audio();
+                el.srcObject = dest.stream;
+                el.play().catch(() => {});
+                audioElRef.current = el;
+            }
         }
         if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+        if (audioElRef.current?.paused) audioElRef.current.play().catch(() => {});
         return audioCtxRef.current;
     }, []);
 
@@ -207,7 +234,7 @@ export default function TimerPage() {
             gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
             osc.connect(gain);
-            gain.connect(ctx.destination);
+            gain.connect(audioDestRef.current ?? ctx.destination);
             osc.start();
             osc.stop(ctx.currentTime + duration + 0.02);
         } catch {}
