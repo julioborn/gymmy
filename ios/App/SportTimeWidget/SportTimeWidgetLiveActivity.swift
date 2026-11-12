@@ -55,7 +55,7 @@ struct SportTimeWidgetLiveActivity: Widget {
 
         } dynamicIsland: { context in
             let state = context.state
-            DynamicIsland {
+            return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Text(state.phaseLabel)
                         .font(.headline)

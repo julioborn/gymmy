@@ -331,7 +331,7 @@ export default function TimerPage() {
         import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => {
             const payload = { phase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt };
             return start ? LiveActivity.start(payload) : LiveActivity.update(payload);
-        }).catch(() => {});
+        }).catch((e) => console.error('[LiveActivity]', e));
     }, [rounds]);
 
     // ── Core loop ──

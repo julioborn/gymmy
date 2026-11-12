@@ -75,10 +75,3 @@ struct SportTimeWidget: Widget {
         .description("This is an example widget.")
     }
 }
-
-#Preview(as: .systemSmall) {
-    SportTimeWidget()
-} timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
-}

@@ -24,8 +24,13 @@ public class LiveActivityPlugin: CAPPlugin {
     }
 
     @objc func start(_ call: CAPPluginCall) {
-        guard #available(iOS 16.2, *) else { call.resolve(); return }
+        guard #available(iOS 16.2, *) else {
+            print("[LiveActivity] iOS < 16.2, no se intenta iniciar")
+            call.resolve()
+            return
+        }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("[LiveActivity] areActivitiesEnabled = false (revisar Ajustes > SportTime > Live Activities)")
             call.reject("Live Activities deshabilitadas (Ajustes del usuario)")
             return
         }
@@ -36,9 +41,11 @@ public class LiveActivityPlugin: CAPPlugin {
         let attributes = SportTimeWidgetAttributes(startedAt: Date())
         let state = buildState(call)
         do {
-            _ = try Activity.request(attributes: attributes, content: .init(state: state, staleDate: nil))
+            let activity = try Activity.request(attributes: attributes, content: .init(state: state, staleDate: nil))
+            print("[LiveActivity] iniciada OK, id=\(activity.id)")
             call.resolve()
         } catch {
+            print("[LiveActivity] ERROR al iniciar: \(error)")
             call.reject("No se pudo iniciar la Live Activity: \(error.localizedDescription)")
         }
     }
