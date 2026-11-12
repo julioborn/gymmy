@@ -22,6 +22,17 @@ private func phaseColor(_ phase: String) -> Color {
     }
 }
 
+// Abreviatura para la pill compacta de la Dynamic Island, donde no entra
+// "Trabajo"/"Descanso" completo.
+private func phaseAbbrev(_ phase: String) -> String {
+    switch phase {
+    case "work": return "TRAB"
+    case "rest": return "DESC"
+    case "prep": return "PREP"
+    default: return ""
+    }
+}
+
 struct SportTimeWidgetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: SportTimeWidgetAttributes.self) { context in
@@ -85,7 +96,20 @@ struct SportTimeWidgetLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                Circle().fill(phaseColor(state.phase)).frame(width: 10, height: 10)
+                if state.phase == "done" {
+                    Text("🏆")
+                } else {
+                    HStack(spacing: 3) {
+                        Text(phaseAbbrev(state.phase))
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(phaseColor(state.phase))
+                        if state.totalRounds > 0 {
+                            Text("\(state.round)/\(state.totalRounds)")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.75))
+                        }
+                    }
+                }
             } compactTrailing: {
                 if state.phase == "done" {
                     Text("🏆")
@@ -93,6 +117,7 @@ struct SportTimeWidgetLiveActivity: Widget {
                     Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
                         .font(.caption2)
                         .monospacedDigit()
+                        .foregroundStyle(phaseColor(state.phase))
                         .frame(width: 42)
                 }
             } minimal: {
