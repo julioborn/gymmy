@@ -2,6 +2,27 @@ import UIKit
 import Capacitor
 import AVFoundation
 
+// MARK: - KeepAwakePlugin
+// navigator.wakeLock (Screen Wake Lock API) no es confiable dentro del
+// WKWebView de Capacitor en iOS, asi que controlamos el idle timer nativo
+// directo para evitar que la pantalla se apague durante el timer.
+@objc(KeepAwake)
+public class KeepAwakePlugin: CAPPlugin {
+    @objc func keepAwake(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            UIApplication.shared.isIdleTimerDisabled = true
+            call.resolve()
+        }
+    }
+
+    @objc func allowSleep(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            UIApplication.shared.isIdleTimerDisabled = false
+            call.resolve()
+        }
+    }
+}
+
 // MARK: - AppIconPlugin
 // Capacitor plugin for switching the app icon between default (Gymmy) and gym-specific icons.
 @objc(AppIcon)

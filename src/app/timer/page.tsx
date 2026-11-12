@@ -168,11 +168,22 @@ export default function TimerPage() {
         try {
             if ('wakeLock' in navigator) wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
         } catch {}
+        // navigator.wakeLock no es confiable dentro del WKWebView de iOS,
+        // asi que ademas pedimos el idle timer nativo en esa plataforma.
+        if (isIOSNativeRef.current) {
+            try {
+                const { default: KeepAwake } = await import('@/plugins/KeepAwake');
+                await KeepAwake.keepAwake();
+            } catch {}
+        }
     }, []);
 
     const releaseWakeLock = useCallback(() => {
         try { wakeLockRef.current?.release(); } catch {}
         wakeLockRef.current = null;
+        if (isIOSNativeRef.current) {
+            import('@/plugins/KeepAwake').then(({ default: KeepAwake }) => KeepAwake.allowSleep()).catch(() => {});
+        }
     }, []);
 
     useEffect(() => {
