@@ -189,6 +189,7 @@ export default function MiCuentaPage() {
     const [staffSubTab, setStaffSubTab] = useState<'lista' | 'hoy' | 'caja' | 'nuevo'>('lista');
     const [staffSlotsExpanded, setStaffSlotsExpanded] = useState<Record<string, boolean>>({ Mañana: false, Siesta: false, Tarde: false, Noche: false });
     const isStaffAlumno = esStaffAlumno(alumno?.dni);
+    const puedeVerTimer = isWatcher || isStaffAlumno;
 
     useEffect(() => {
         if (tab !== 'staff' || !isStaffAlumno || staffAlumnos.length > 0) return;
@@ -750,7 +751,7 @@ export default function MiCuentaPage() {
                         <div className="space-y-4">
 
                             {/* Acceso rápido al timer intermitente — en prueba, solo para este DNI por ahora */}
-                            {isWatcher && (
+                            {puedeVerTimer && (
                             <BlurFade delay={0.02}>
                                 <Link href="/timer"
                                     className="relative flex items-center gap-3 rounded-2xl px-4 py-3 overflow-hidden active:scale-[0.98] transition-transform"
