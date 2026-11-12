@@ -163,7 +163,7 @@ export default function TimerPage() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ work, rest, rounds, prep })); } catch {}
     }, [work, rest, rounds, prep]);
 
-    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); cancelBackgroundAlerts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); cancelBackgroundAlerts(); endLiveActivity(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ── Mantener la pantalla encendida mientras corre ──
     const requestWakeLock = useCallback(async () => {
@@ -318,6 +318,22 @@ export default function TimerPage() {
         else if (p === 'done') { beep(880, 0.14, 0.7, 'square'); setTimeout(() => beep(1050, 0.14, 0.7, 'square'), 150); setTimeout(() => beep(1250, 0.26, 0.8, 'square'), 300); }
     }, [beep]);
 
+    // ── Live Activity / Dynamic Island (solo iOS) ──
+    const endLiveActivity = useCallback(() => {
+        if (!isIOSNativeRef.current) return;
+        import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => LiveActivity.end()).catch(() => {});
+    }, []);
+
+    const updateLiveActivity = useCallback((
+        phase: 'prep' | 'work' | 'rest' | 'done', round: number, phaseEndsAt: number, start: boolean,
+    ) => {
+        if (!isIOSNativeRef.current) return;
+        import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => {
+            const payload = { phase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt };
+            return start ? LiveActivity.start(payload) : LiveActivity.update(payload);
+        }).catch(() => {});
+    }, [rounds]);
+
     // ── Core loop ──
     const goToStep = useCallback((idx: number, startAt: number) => {
         const steps = stepsRef.current;
@@ -327,6 +343,7 @@ export default function TimerPage() {
             playPhaseSound('done');
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
             releaseWakeLock();
+            updateLiveActivity('done', steps[steps.length - 1]?.round ?? 0, Date.now(), false);
             return;
         }
         const step = steps[idx];
@@ -338,10 +355,11 @@ export default function TimerPage() {
         setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
+        updateLiveActivity(step.phase, step.round, phaseEndRef.current, idx === 0);
         // El anillo arranca de cero sin la animacion de 1s, para que no se vea
         // "rebobinando" desde el final de la fase anterior.
         setSnapRing(true);
-    }, [playPhaseSound, releaseWakeLock]);
+    }, [playPhaseSound, releaseWakeLock, updateLiveActivity]);
 
     useEffect(() => {
         if (!snapRing) return;
@@ -383,6 +401,9 @@ export default function TimerPage() {
         setPaused(true);
         releaseWakeLock();
         cancelBackgroundAlerts();
+        // Se cierra la Live Activity porque su countdown nativo seguiria
+        // corriendo solo aunque el timer este pausado; se reabre al resumir.
+        endLiveActivity();
     };
 
     const handleResume = () => {
@@ -392,6 +413,8 @@ export default function TimerPage() {
         intervalRef.current = setInterval(tick, 100);
         requestWakeLock();
         scheduleBackgroundAlerts(stepIdxRef.current, phaseEndRef.current);
+        const step = stepsRef.current[stepIdxRef.current];
+        if (step) updateLiveActivity(step.phase, step.round, phaseEndRef.current, true);
     };
 
     const handleReset = () => {
@@ -405,6 +428,7 @@ export default function TimerPage() {
         stepIdxRef.current = 0;
         releaseWakeLock();
         cancelBackgroundAlerts();
+        endLiveActivity();
         setSnapRing(true);
     };
 

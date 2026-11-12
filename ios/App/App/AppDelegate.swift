@@ -1,6 +1,69 @@
 import UIKit
 import Capacitor
 import AVFoundation
+import ActivityKit
+
+// MARK: - LiveActivityPlugin
+// Arranca/actualiza/cierra la Live Activity (lock screen + Dynamic Island)
+// del timer. No guardamos una referencia a la Activity como property de la
+// clase porque su tipo solo existe desde iOS 16.2+ y la app soporta iOS 15 —
+// en cambio, cada llamada busca la activity activa en Activity<...>.activities.
+@objc(LiveActivity)
+public class LiveActivityPlugin: CAPPlugin {
+
+    @available(iOS 16.2, *)
+    private func buildState(_ call: CAPPluginCall) -> SportTimeWidgetAttributes.ContentState {
+        let phaseEndsAtMs = call.getDouble("phaseEndsAt") ?? Date().timeIntervalSince1970 * 1000
+        return SportTimeWidgetAttributes.ContentState(
+            phase: call.getString("phase") ?? "work",
+            phaseLabel: call.getString("phaseLabel") ?? "",
+            round: call.getInt("round") ?? 0,
+            totalRounds: call.getInt("totalRounds") ?? 0,
+            phaseEndsAt: Date(timeIntervalSince1970: phaseEndsAtMs / 1000)
+        )
+    }
+
+    @objc func start(_ call: CAPPluginCall) {
+        guard #available(iOS 16.2, *) else { call.resolve(); return }
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            call.reject("Live Activities deshabilitadas (Ajustes del usuario)")
+            return
+        }
+        // Si habia quedado una activity de una corrida anterior sin cerrar, la cerramos.
+        for activity in Activity<SportTimeWidgetAttributes>.activities {
+            Task { await activity.end(nil, dismissalPolicy: .immediate) }
+        }
+        let attributes = SportTimeWidgetAttributes(startedAt: Date())
+        let state = buildState(call)
+        do {
+            _ = try Activity.request(attributes: attributes, content: .init(state: state, staleDate: nil))
+            call.resolve()
+        } catch {
+            call.reject("No se pudo iniciar la Live Activity: \(error.localizedDescription)")
+        }
+    }
+
+    @objc func update(_ call: CAPPluginCall) {
+        guard #available(iOS 16.2, *) else { call.resolve(); return }
+        let state = buildState(call)
+        Task {
+            for activity in Activity<SportTimeWidgetAttributes>.activities {
+                await activity.update(.init(state: state, staleDate: nil))
+            }
+            call.resolve()
+        }
+    }
+
+    @objc func end(_ call: CAPPluginCall) {
+        guard #available(iOS 16.2, *) else { call.resolve(); return }
+        Task {
+            for activity in Activity<SportTimeWidgetAttributes>.activities {
+                await activity.end(nil, dismissalPolicy: .immediate)
+            }
+            call.resolve()
+        }
+    }
+}
 
 // MARK: - KeepAwakePlugin
 // navigator.wakeLock (Screen Wake Lock API) no es confiable dentro del
