@@ -22,14 +22,14 @@ private func phaseColor(_ phase: String) -> Color {
     }
 }
 
-// Abreviatura para la pill compacta de la Dynamic Island, donde no entra
-// "Trabajo"/"Descanso" completo.
-private func phaseAbbrev(_ phase: String) -> String {
+// Icono para la pill compacta de la Dynamic Island, donde no entra
+// "Trabajo"/"Descanso" completo como texto: play = trabajo, pausa = descanso.
+private func phaseIcon(_ phase: String) -> String {
     switch phase {
-    case "work": return "TRAB"
-    case "rest": return "DESC"
-    case "prep": return "PREP"
-    default: return ""
+    case "work": return "play.fill"
+    case "rest": return "pause.fill"
+    case "prep": return "hourglass"
+    default: return "flag.checkered"
     }
 }
 
@@ -100,7 +100,7 @@ struct SportTimeWidgetLiveActivity: Widget {
                     Text("🏆")
                 } else {
                     HStack(spacing: 3) {
-                        Text(phaseAbbrev(state.phase))
+                        Image(systemName: phaseIcon(state.phase))
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(phaseColor(state.phase))
                         if state.totalRounds > 0 {
