@@ -12,12 +12,14 @@ import SwiftUI
 private let bg = Color(red: 0.067, green: 0.067, blue: 0.067) // #111111, igual que el resto de la app
 private let lime = Color(red: 0.639, green: 0.902, blue: 0.208)   // #a3e635 — work
 private let orange = Color(red: 0.976, green: 0.451, blue: 0.086) // #f97316 — rest
-private let neutral = Color(white: 0.8)                           // prep/done
+private let emerald = Color(red: 0.063, green: 0.725, blue: 0.506) // #10b981 — listo, mismo verde que el trofeo de la app
+private let neutral = Color(white: 0.8)                           // prep
 
 private func phaseColor(_ phase: String) -> Color {
     switch phase {
     case "work": return lime
     case "rest": return orange
+    case "done": return emerald
     default: return neutral
     }
 }
@@ -53,6 +55,8 @@ struct SportTimeWidgetLiveActivity: Widget {
                     if state.phase == "done" {
                         Text("🏆")
                             .font(.system(size: 34))
+                            .scaleEffect(1.15)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.45), value: state.phase)
                     } else {
                         Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
                             .font(.system(size: 34, weight: .bold, design: .rounded))
@@ -87,7 +91,11 @@ struct SportTimeWidgetLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(spacing: 8) {
                         if state.phase == "done" {
-                            Text("¡Listo! 🏆").font(.title3.bold())
+                            Text("¡Listo! 🏆")
+                                .font(.title3.bold())
+                                .foregroundStyle(emerald)
+                                .scaleEffect(1.1)
+                                .animation(.spring(response: 0.35, dampingFraction: 0.45), value: state.phase)
                         } else {
                             Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
                                 .font(.system(size: 30, weight: .bold, design: .rounded))
@@ -102,6 +110,8 @@ struct SportTimeWidgetLiveActivity: Widget {
             } compactLeading: {
                 if state.phase == "done" {
                     Text("🏆")
+                        .scaleEffect(1.15)
+                        .animation(.spring(response: 0.35, dampingFraction: 0.45), value: state.phase)
                 } else {
                     HStack(spacing: 3) {
                         Image(systemName: phaseIcon(state.phase))

@@ -61,9 +61,15 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func update(_ call: CAPPluginCall) {
         guard #available(iOS 16.2, *) else { call.resolve(); return }
         let state = buildState(call)
+        // Al terminar el entrenamiento completo, un alert hace que el sistema
+        // expanda solo la Dynamic Island un instante (igual que una
+        // notificacion), con su animacion, sonido y haptic nativos.
+        let alert: AlertConfiguration? = state.phase == "done"
+            ? AlertConfiguration(title: "¡Entrenamiento completo!", body: "Terminaste todas las series 🏆", sound: .default)
+            : nil
         Task {
             for activity in Activity<SportTimeWidgetAttributes>.activities {
-                await activity.update(.init(state: state, staleDate: nil))
+                await activity.update(.init(state: state, staleDate: nil), alertConfiguration: alert)
             }
             call.resolve()
         }
