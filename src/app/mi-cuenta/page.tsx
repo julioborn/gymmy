@@ -742,7 +742,8 @@ export default function MiCuentaPage() {
                     {tab === 'resumen' && (
                         <div className="space-y-4">
 
-                            {/* Acceso rápido al timer intermitente */}
+                            {/* Acceso rápido al timer intermitente — en prueba, solo para este DNI por ahora */}
+                            {isWatcher && (
                             <BlurFade delay={0.02}>
                                 <Link href="/timer"
                                     className="relative flex items-center gap-3 rounded-2xl px-4 py-3 overflow-hidden active:scale-[0.98] transition-transform"
@@ -757,6 +758,7 @@ export default function MiCuentaPage() {
                                     <ChevronRight size={16} className="text-white/30 shrink-0" />
                                 </Link>
                             </BlurFade>
+                            )}
 
                             {/* Plan activo + Asistencias mes — side by side */}
                             <div className="grid grid-cols-2 gap-3">

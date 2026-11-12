@@ -8,6 +8,7 @@ import { useFCM, getNotificationStatus, requestNotificationPermission, type Noti
 import { CircularProgress, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import Swal from 'sweetalert2';
 import { swalDanger, swalBase, swalNotify } from '@/utils/swalConfig';
+import { TIMER_TESTER_DNI } from '@/lib/timerAccess';
 
 const theme = createTheme({ palette: { primary: { main: '#111827' } } });
 
@@ -518,7 +519,7 @@ function LayoutWithSession({ children }: ClientLayoutProps) {
                                             </Link>
                                         );
                                     })}
-                                    {role !== 'registro' && role !== 'superadmin' && (
+                                    {role !== 'registro' && role !== 'superadmin' && (role !== 'alumno' || session?.user?.username === TIMER_TESTER_DNI) && (
                                         <Link
                                             href="/timer"
                                             onClick={() => setDesktopMenuOpen(false)}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
+import { TIMER_TESTER_DNI } from '@/lib/timerAccess';
 
 export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -31,9 +32,16 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    // Alumno: solo /mi-cuenta (y el timer, que es de uso general)
+    // Alumno: solo /mi-cuenta (y el timer, mientras se prueba, solo para este DNI)
     if (token.role === 'alumno') {
-        if (!pathname.startsWith('/mi-cuenta') && !pathname.startsWith('/timer')) {
+        const puedeUsarTimer = token.username === TIMER_TESTER_DNI;
+        const pideTimer = pathname.startsWith('/timer');
+        if (pideTimer && !puedeUsarTimer) {
+            const url = req.nextUrl.clone();
+            url.pathname = '/mi-cuenta';
+            return NextResponse.redirect(url);
+        }
+        if (!pathname.startsWith('/mi-cuenta') && !pideTimer) {
             const url = req.nextUrl.clone();
             url.pathname = '/mi-cuenta';
             return NextResponse.redirect(url);
