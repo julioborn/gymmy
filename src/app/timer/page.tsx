@@ -287,12 +287,24 @@ export default function TimerPage() {
     }, [ensureAudio]);
 
     const playPhaseSound = useCallback((p: PhaseKind | 'done') => {
-        // Fin de descanso / arranca trabajo: doble beep agudo y marcado
-        if (p === 'work') { beep(1050, 0.16, 0.8, 'square'); setTimeout(() => beep(1050, 0.18, 0.8, 'square'), 170); }
-        // Fin de trabajo / arranca descanso: doble beep grave y marcado
-        else if (p === 'rest') { beep(520, 0.18, 0.75, 'square'); setTimeout(() => beep(520, 0.2, 0.75, 'square'), 190); }
-        else if (p === 'prep') beep(660, 0.12, 0.45);
-        else if (p === 'done') { beep(880, 0.14, 0.7, 'square'); setTimeout(() => beep(1050, 0.14, 0.7, 'square'), 150); setTimeout(() => beep(1250, 0.26, 0.8, 'square'), 300); }
+        // Arranca trabajo: check prolijo, dos notas ascendentes suaves
+        if (p === 'work') {
+            beep(880, 0.1, 0.5, 'sine');
+            setTimeout(() => beep(1318.5, 0.18, 0.55, 'sine'), 90);
+        }
+        // Arranca descanso: tono calido y descendente, mas relajado
+        else if (p === 'rest') {
+            beep(659.25, 0.22, 0.4, 'sine');
+            setTimeout(() => beep(440, 0.34, 0.35, 'sine'), 150);
+        }
+        else if (p === 'prep') beep(660, 0.12, 0.45, 'sine');
+        // Fin del entrenamiento completo: pequeña fanfarria ascendente
+        else if (p === 'done') {
+            beep(523.25, 0.14, 0.6, 'sine');
+            setTimeout(() => beep(659.25, 0.14, 0.6, 'sine'), 140);
+            setTimeout(() => beep(783.99, 0.14, 0.65, 'sine'), 280);
+            setTimeout(() => beep(1046.5, 0.36, 0.75, 'sine'), 420);
+        }
     }, [beep]);
 
     // ── Live Activity / Dynamic Island (solo iOS) ──
@@ -549,10 +561,6 @@ export default function TimerPage() {
                         <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
                     </div>
                 </div>
-
-                <p className="text-white/25 text-xs text-center px-4">
-                    Mantené la app abierta y la pantalla encendida durante el ejercicio para que los avisos sonoros funcionen bien.
-                </p>
             </div>
         </div>
     );
