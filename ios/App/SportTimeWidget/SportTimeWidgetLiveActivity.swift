@@ -108,11 +108,7 @@ struct SportTimeWidgetLiveActivity: Widget {
                     .padding(.bottom, 4)
                 }
             } compactLeading: {
-                if state.phase == "done" {
-                    Text("🏆")
-                        .scaleEffect(1.15)
-                        .animation(.spring(response: 0.35, dampingFraction: 0.45), value: state.phase)
-                } else {
+                if state.phase != "done" {
                     HStack(spacing: 3) {
                         Image(systemName: phaseIcon(state.phase))
                             .font(.system(size: 11, weight: .bold))
@@ -127,6 +123,8 @@ struct SportTimeWidgetLiveActivity: Widget {
             } compactTrailing: {
                 if state.phase == "done" {
                     Text("🏆")
+                        .scaleEffect(1.15)
+                        .animation(.spring(response: 0.35, dampingFraction: 0.45), value: state.phase)
                 } else {
                     Text(timerInterval: Date()...state.phaseEndsAt, countsDown: true)
                         .font(.caption2)
