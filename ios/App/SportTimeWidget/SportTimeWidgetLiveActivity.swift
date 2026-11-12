@@ -75,11 +75,13 @@ struct SportTimeWidgetLiveActivity: Widget {
                     Text(state.phaseLabel)
                         .font(.headline)
                         .foregroundStyle(phaseColor(state.phase))
+                        .padding(.leading, 8)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if state.totalRounds > 0 {
                         Text("\(state.round)/\(state.totalRounds)")
                             .foregroundStyle(.white.opacity(0.7))
+                            .padding(.trailing, 8)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -94,6 +96,8 @@ struct SportTimeWidgetLiveActivity: Widget {
                         ProgressView(value: state.progress)
                             .tint(phaseColor(state.phase))
                     }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 4)
                 }
             } compactLeading: {
                 if state.phase == "done" {
