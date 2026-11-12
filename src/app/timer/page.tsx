@@ -286,26 +286,50 @@ export default function TimerPage() {
         } catch {}
     }, [ensureAudio]);
 
+    // Campana sintetizada: varios parciales en relaciones inarmonicas (modelo
+    // tipo Risset) que decaen cada uno a su propia velocidad, en vez de un
+    // solo tono puro — es lo que da el "dong" metalico de una campana real.
+    const bell = useCallback((freq: number, duration = 1, vol = 0.5) => {
+        try {
+            const ctx = ensureAudio();
+            const dest = audioDestRef.current ?? ctx.destination;
+            const partials = [
+                { ratio: 1, gain: 1 },
+                { ratio: 2, gain: 0.55 },
+                { ratio: 2.76, gain: 0.32 },
+                { ratio: 3, gain: 0.22 },
+                { ratio: 4.07, gain: 0.14 },
+                { ratio: 5.4, gain: 0.08 },
+            ];
+            partials.forEach(({ ratio, gain }, i) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq * ratio;
+                const decay = duration / (1 + i * 0.4);
+                g.gain.setValueAtTime(0, ctx.currentTime);
+                g.gain.linearRampToValueAtTime(vol * gain, ctx.currentTime + 0.006);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + decay);
+                osc.connect(g);
+                g.connect(dest);
+                osc.start();
+                osc.stop(ctx.currentTime + decay + 0.05);
+            });
+        } catch {}
+    }, [ensureAudio]);
+
     const playPhaseSound = useCallback((p: PhaseKind | 'done') => {
-        // Arranca trabajo: check prolijo, dos notas ascendentes suaves
-        if (p === 'work') {
-            beep(880, 0.1, 0.5, 'sine');
-            setTimeout(() => beep(1318.5, 0.18, 0.55, 'sine'), 90);
-        }
-        // Arranca descanso: tono calido y descendente, mas relajado
-        else if (p === 'rest') {
-            beep(659.25, 0.22, 0.4, 'sine');
-            setTimeout(() => beep(440, 0.34, 0.35, 'sine'), 150);
-        }
+        // Arranca trabajo: campana clara y brillante, un solo golpe
+        if (p === 'work') bell(880, 0.85, 0.55);
+        // Arranca descanso: campana mas grave y calida
+        else if (p === 'rest') bell(523.25, 1.1, 0.45);
         else if (p === 'prep') beep(660, 0.12, 0.45, 'sine');
-        // Fin del entrenamiento completo: pequeña fanfarria ascendente
+        // Fin del entrenamiento completo: doble campana triunfal
         else if (p === 'done') {
-            beep(523.25, 0.14, 0.6, 'sine');
-            setTimeout(() => beep(659.25, 0.14, 0.6, 'sine'), 140);
-            setTimeout(() => beep(783.99, 0.14, 0.65, 'sine'), 280);
-            setTimeout(() => beep(1046.5, 0.36, 0.75, 'sine'), 420);
+            bell(659.25, 1.0, 0.6);
+            setTimeout(() => bell(880, 1.3, 0.65), 260);
         }
-    }, [beep]);
+    }, [bell, beep]);
 
     // ── Live Activity / Dynamic Island (solo iOS) ──
     const endLiveActivity = useCallback(() => {
