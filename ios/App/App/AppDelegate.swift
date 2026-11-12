@@ -9,7 +9,14 @@ import ActivityKit
 // clase porque su tipo solo existe desde iOS 16.2+ y la app soporta iOS 15 —
 // en cambio, cada llamada busca la activity activa en Activity<...>.activities.
 @objc(LiveActivity)
-public class LiveActivityPlugin: CAPPlugin {
+public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "LiveActivityPlugin"
+    public let jsName = "LiveActivity"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "update", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "end", returnType: CAPPluginReturnPromise),
+    ]
 
     @available(iOS 16.2, *)
     private func buildState(_ call: CAPPluginCall) -> SportTimeWidgetAttributes.ContentState {
@@ -77,7 +84,14 @@ public class LiveActivityPlugin: CAPPlugin {
 // WKWebView de Capacitor en iOS, asi que controlamos el idle timer nativo
 // directo para evitar que la pantalla se apague durante el timer.
 @objc(KeepAwake)
-public class KeepAwakePlugin: CAPPlugin {
+public class KeepAwakePlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "KeepAwakePlugin"
+    public let jsName = "KeepAwake"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "keepAwake", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "allowSleep", returnType: CAPPluginReturnPromise),
+    ]
+
     @objc func keepAwake(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             UIApplication.shared.isIdleTimerDisabled = true
@@ -96,7 +110,13 @@ public class KeepAwakePlugin: CAPPlugin {
 // MARK: - AppIconPlugin
 // Capacitor plugin for switching the app icon between default (Gymmy) and gym-specific icons.
 @objc(AppIcon)
-public class AppIconPlugin: CAPPlugin {
+public class AppIconPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "AppIconPlugin"
+    public let jsName = "AppIcon"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "setIcon", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getIcon", returnType: CAPPluginReturnPromise),
+    ]
 
     // Logical name → iOS appiconset name in Assets.xcassets
     private func iosIconName(for logicalName: String?) -> String? {
