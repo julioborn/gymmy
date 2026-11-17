@@ -727,7 +727,7 @@ export default function ListaAlumnosPage() {
                                             {alumno.nombre?.[0]}{alumno.apellido?.[0]}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-base truncate" style={{ color: TEXT_PRIMARY }}>
+                                            <p className="font-bold text-base leading-snug" style={{ color: TEXT_PRIMARY }}>
                                                 {alumno.apellido}, {alumno.nombre}
                                             </p>
                                             <p className="text-[13px] mt-0.5" style={{ color: planColor }}>
