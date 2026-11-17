@@ -3,7 +3,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
-import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search, Activity } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -12,6 +12,20 @@ import { estaAlDia, pagosVigentesDelMes, expandirPagosMixtos, getMesActual } fro
 // Lazy loading de componentes
 const FiltrosAlumnos = React.lazy(() => import('@/components/FiltroAlumnos'));
 const ModalEditTarifas = React.lazy(() => import('@/components/ModalEditTarifas'));
+
+// Paleta "Dark Premium" de esta vista — neutros fijos, acentos de marca dinamicos
+// (acento/acento2, los mismos que usa el resto de la app segun el tema del gym).
+const SURFACE = '#121315';
+const SURFACE_2 = '#191A1C';
+const SURFACE_HOVER = '#1C1D1F';
+const BORDER = '#303236';
+const TEXT_PRIMARY = '#F5F5F5';
+const TEXT_SECONDARY = '#A1A1AA';
+const TEXT_MUTED = '#71717A';
+const WARNING = '#FACC15';
+const DANGER = '#EF4444';
+const PAYMENT_BLUE = '#38BDF8';
+const PAYMENT_BLUE_BG = '#102F3B';
 
 type Tarifa = {
     dias: number;
@@ -421,128 +435,117 @@ export default function ListaAlumnosPage() {
         <div className="max-w-7xl mx-auto pt-4 pb-12 px-4 lg:px-8">
 
             {/* Hero */}
-            <div className="rounded-[2rem] p-[1.5px] mb-4" style={{ background: `linear-gradient(135deg, ${acento} 0%, ${acento2} 100%)`, boxShadow: `0 0 24px -9px ${acento}40, 0 0 32px -14px ${acento2}30` }}>
-            <div className="relative bg-[#111] rounded-[30px] overflow-hidden">
-                {/* Dot grid */}
-                <div className="pointer-events-none absolute inset-0 opacity-[0.13]"
-                    style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                {/* Glows */}
-                <div className="pointer-events-none absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl" style={{ background: acento2, opacity: 0.15 }} />
-                <div className="pointer-events-none absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-3xl" style={{ background: acento, opacity: 0.1 }} />
-
-                <div className="relative px-5 pt-5 pb-5">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: acento }}>
-                            <Users size={20} className="text-white" />
-                        </div>
-                        <div className="min-w-0">
-                            <span className="text-white/40 text-[10px] font-semibold uppercase tracking-widest">Gestión</span>
-                            <h1 className="text-2xl font-bold text-white tracking-tight leading-tight">Alumnos</h1>
-                        </div>
-                        {!isLoading && (
-                            <span className="ml-auto flex items-center gap-1.5 bg-white/[0.1] border border-white/[0.13] text-white/80 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0">
-                                <Users size={11} />
-                                {alumnos.length}
-                            </span>
-                        )}
+            <div className="rounded-[26px] px-5 py-5 mb-4" style={{ background: SURFACE, border: `1px solid ${BORDER}`, boxShadow: '0 12px 28px -20px rgba(0,0,0,0.7)' }}>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: acento2 }}>
+                        <Users size={24} className="text-white" />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <button
-                            onClick={() => router.push('/alumnos/nuevo')}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all active:scale-95"
-                            style={{ background: `${acento}1A`, borderColor: `${acento}40`, color: acento }}
-                        >
-                            <UserPlus size={15} />
-                            Registrar
-                        </button>
-                        {session?.user?.role === 'recepcion' && (
-                            <div className="flex flex-col items-center justify-center gap-0.5 px-4 py-2 bg-emerald-400/10 border border-emerald-400/25 rounded-2xl">
-                                <span className="text-emerald-300/70 text-[10px] font-semibold uppercase tracking-wide capitalize">{new Date().toLocaleDateString('es-AR', { month: 'long' })}</span>
-                                <span className="text-emerald-300 text-sm font-bold tabular-nums">
-                                    {alumnos.filter(a => verificarPagoMesActual(a.pagos, a.exentoCuota)).length}/{alumnos.length} alumnos
-                                </span>
-                            </div>
-                        )}
-                        {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
-                            <>
-                                <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionTarifas}>
-                                    <DollarSign size={15} />
-                                    Cuotas
-                                </button>
-                                <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all" onClick={handleConfiguracionRecargos}>
-                                    <Percent size={15} />
-                                    Recargo
-                                </button>
-                            </>
-                        )}
-                        {session?.user?.role === 'dueño' && (
-                            <button
-                                onClick={handleGenerateExcel}
-                                className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
-                                    <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
-                                    <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
-                                    <path fill="#0c8045" d="M14 15.003H29V24.005H14z"></path>
-                                    <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
-                                    <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
-                                    <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
-                                    <path fill="#19ac65" d="M29 15.003H44V24.005H29z"></path>
-                                    <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
-                                    <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
-                                    <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
-                                </svg>
-                                Balance
-                            </button>
-                        )}
-                        {/* Revisar nombres — oculto por ahora, reactivar cuando haga falta
-                        {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
-                            <button
-                                onClick={() => router.push('/alumnos/revision-nombres')}
-                                className="col-span-2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-400/10 border border-sky-400/25 hover:bg-sky-400/15 active:scale-95 text-sky-300 text-sm font-semibold rounded-2xl transition-all"
-                            >
-                                <Search size={15} />
-                                Revisar nombres
-                            </button>
-                        )}
-                        */}
+                    <div className="min-w-0">
+                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: TEXT_SECONDARY }}>Gestión</span>
+                        <h1 className="text-[28px] sm:text-[30px] font-bold tracking-tight leading-tight" style={{ color: TEXT_PRIMARY }}>Alumnos</h1>
                     </div>
+                    {!isLoading && (
+                        <span className="ml-auto flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full shrink-0" style={{ background: SURFACE_2, border: `1px solid ${BORDER}`, color: TEXT_PRIMARY }}>
+                            <Users size={14} />
+                            {alumnos.length}
+                        </span>
+                    )}
                 </div>
-            </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                        onClick={() => router.push('/alumnos/nuevo')}
+                        className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl border text-sm font-bold transition-all duration-200 active:scale-[0.98] hover:brightness-125"
+                        style={{ background: `${acento2}17`, borderColor: `${acento2}40`, color: acento2 }}
+                    >
+                        <UserPlus size={16} />
+                        Registrar
+                    </button>
+                    {session?.user?.role === 'recepcion' && (
+                        <div className="flex flex-col items-center justify-center gap-0.5 px-4 py-3 rounded-2xl border" style={{ background: `${acento}14`, borderColor: `${acento}38` }}>
+                            <span className="text-[10px] font-semibold uppercase tracking-wide capitalize" style={{ color: `${acento}B3` }}>{new Date().toLocaleDateString('es-AR', { month: 'long' })}</span>
+                            <span className="text-sm font-bold tabular-nums" style={{ color: acento }}>
+                                {alumnos.filter(a => verificarPagoMesActual(a.pagos, a.exentoCuota)).length}/{alumnos.length} alumnos
+                            </span>
+                        </div>
+                    )}
+                    {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
+                        <>
+                            <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all duration-200" onClick={handleConfiguracionTarifas}>
+                                <DollarSign size={15} />
+                                Cuotas
+                            </button>
+                            <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all duration-200" onClick={handleConfiguracionRecargos}>
+                                <Percent size={15} />
+                                Recargo
+                            </button>
+                        </>
+                    )}
+                    {session?.user?.role === 'dueño' && (
+                        <button
+                            onClick={handleGenerateExcel}
+                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all duration-200"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
+                                <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
+                                <path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path>
+                                <path fill="#0c8045" d="M14 15.003H29V24.005H14z"></path>
+                                <path fill="#17472a" d="M14 24.005H29V33.055H14z"></path>
+                                <path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path>
+                                <path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path>
+                                <path fill="#19ac65" d="M29 15.003H44V24.005H29z"></path>
+                                <path fill="#129652" d="M29 24.005H44V33.055H29z"></path>
+                                <path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path>
+                                <path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
+                            </svg>
+                            Balance
+                        </button>
+                    )}
+                    {/* Revisar nombres — oculto por ahora, reactivar cuando haga falta
+                    {['dueño', 'admin'].includes(session?.user?.role ?? '') && (
+                        <button
+                            onClick={() => router.push('/alumnos/revision-nombres')}
+                            className="col-span-2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-400/10 border border-sky-400/25 hover:bg-sky-400/15 active:scale-95 text-sky-300 text-sm font-semibold rounded-2xl transition-all"
+                        >
+                            <Search size={15} />
+                            Revisar nombres
+                        </button>
+                    )}
+                    */}
+                </div>
             </div>
 
             {/* Hoy en el gimnasio */}
-            <div className="rounded-2xl mb-4 overflow-hidden"
-                style={{ background: 'linear-gradient(165deg, rgba(163,230,53,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(163,230,53,0.25)', boxShadow: '0 0 0 1px rgba(163,230,53,0.04) inset, 0 8px 20px -10px rgba(163,230,53,0.22)' }}>
+            <div className="rounded-2xl mb-4 overflow-hidden transition-all duration-200" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
                 <button
                     onClick={() => setHoyExpanded(v => !v)}
-                    className="w-full flex items-center justify-between px-4 py-3.5"
+                    className="w-full flex items-center justify-between px-4 py-4"
                 >
                     <div className="flex items-center gap-2.5">
-                        <span className="text-sm font-bold text-white">Hoy en el gimnasio</span>
+                        <Activity size={16} style={{ color: acento }} />
+                        <span className="text-sm font-bold" style={{ color: TEXT_PRIMARY }}>Hoy en el gimnasio</span>
                     </div>
                     <div className="flex items-center gap-2">
                         {!isLoading && (
-                            <span className="text-2xl font-bold text-white tabular-nums leading-none">{totalHoy}</span>
+                            <span className="text-[26px] font-bold tabular-nums leading-none" style={{ color: TEXT_PRIMARY }}>{totalHoy}</span>
                         )}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/30 transition-transform duration-200 shrink-0 ${hoyExpanded ? 'rotate-180' : ''}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform duration-200 shrink-0 ${hoyExpanded ? 'rotate-180' : ''}`} style={{ color: TEXT_MUTED }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                         </svg>
                     </div>
                 </button>
 
                 {hoyExpanded && (
-                    <div className="border-t border-white/[0.08] px-4 pb-4 pt-3">
+                    <div className="px-4 pb-4 pt-3 transition-all duration-200" style={{ borderTop: `1px solid ${BORDER}` }}>
                         {isLoading ? (
                             <div className="space-y-1.5">
-                                {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-white/[0.08] animate-pulse" />)}
+                                {[1,2,3].map(i => <div key={i} className="h-9 rounded-xl bg-white/[0.06] animate-pulse" />)}
                             </div>
                         ) : totalHoy === 0 ? (
-                            <p className="text-white/40 text-sm text-center py-4">Nadie fue hoy todavía.</p>
+                            <p className="text-sm text-center py-4" style={{ color: TEXT_MUTED }}>Nadie fue hoy todavía.</p>
                         ) : (
                             <div className="space-y-2">
                                 {SLOT_CONFIG.filter(s => hoyPorTurno[s.key].length > 0).map(slot => (
-                                    <div key={slot.key} className="border border-white/[0.08] bg-white/[0.04] rounded-xl overflow-hidden">
+                                    <div key={slot.key} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${BORDER}`, background: SURFACE_2 }}>
                                         <button
                                             type="button"
                                             onClick={() => setSlotsExpanded(prev => ({ ...prev, [slot.key]: !prev[slot.key] }))}
@@ -552,7 +555,7 @@ export default function ListaAlumnosPage() {
                                                 <span className={`text-xs font-bold uppercase tracking-wide ${slot.text}`}>{slot.label}</span>
                                                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${slot.bg} ${slot.text}`}>{hoyPorTurno[slot.key].length}</span>
                                             </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`text-white/25 transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`transition-transform duration-200 ${slotsExpanded[slot.key] ? 'rotate-180' : ''}`} style={{ color: TEXT_MUTED }}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                             </svg>
                                         </button>
@@ -562,29 +565,32 @@ export default function ListaAlumnosPage() {
                                                     <div
                                                         key={i}
                                                         onClick={() => router.push(`/alumnos/${a.id}/historial`)}
-                                                        className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 px-3 py-2 rounded-xl hover:bg-white/[0.06] active:scale-[0.99] cursor-pointer transition-all"
+                                                        className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 px-3 py-2 rounded-xl cursor-pointer active:scale-[0.99] transition-all duration-200"
+                                                        style={{ background: 'transparent' }}
+                                                        onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE_HOVER)}
+                                                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                                                     >
                                                         <div className="flex items-center gap-2.5 basis-full sm:basis-0 sm:flex-1 min-w-0">
-                                                            <div className="w-7 h-7 rounded-lg bg-white/[0.1] flex items-center justify-center text-xs font-bold text-white/70 shrink-0">
+                                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: SURFACE, color: TEXT_SECONDARY }}>
                                                                 {a.nombre?.[0]}{a.apellido?.[0]}
                                                             </div>
-                                                            <span className="flex-1 min-w-0 text-sm font-semibold text-white/85 truncate">
+                                                            <span className="flex-1 min-w-0 text-sm font-semibold truncate" style={{ color: TEXT_PRIMARY }}>
                                                                 {a.apellido}, {a.nombre}
                                                             </span>
-                                                            <span className="sm:hidden text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                            <span className="sm:hidden text-xs font-medium shrink-0 tabular-nums" style={{ color: TEXT_MUTED }}>{a.hora}</span>
                                                         </div>
                                                         <div className="flex items-center gap-1.5 pl-9 sm:pl-0">
                                                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${ACTIVIDAD_COLOR[a.actividad] ?? 'bg-white/[0.1] text-white/60'}`}>
                                                                 {a.actividad}
                                                             </span>
                                                             {a.exentoCuota ? (
-                                                                <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.08] text-white/50 shrink-0">
+                                                                <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: SURFACE, color: TEXT_MUTED }}>
                                                                     Exenta
                                                                 </span>
                                                             ) : a.pagado && a.pagosDelMes.length > 0 ? (
                                                                 <div className="flex flex-col gap-1 shrink-0">
                                                                     {a.pagosDelMes.map((p, pi) => (
-                                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold ${p.metodoPago === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                        <span key={pi} className="inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold" style={{ background: PAYMENT_BLUE_BG, color: PAYMENT_BLUE }}>
                                                                             <span className="capitalize">{p.metodoPago === 'mercadopago' ? 'MP' : p.metodoPago}</span>
                                                                             <span className="tabular-nums">${p.tarifa.toLocaleString('es-AR')}</span>
                                                                             {a.pagosDelMes.length === 1 && p.fechaPago && <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>}
@@ -592,11 +598,11 @@ export default function ListaAlumnosPage() {
                                                                     ))}
                                                                 </div>
                                                             ) : !a.pagado ? (
-                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 shrink-0">
+                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(239,68,68,0.15)', color: DANGER }}>
                                                                     Debe
                                                                 </span>
                                                             ) : null}
-                                                            <span className="hidden sm:inline-flex text-xs text-white/40 font-medium shrink-0 tabular-nums">{a.hora}</span>
+                                                            <span className="hidden sm:inline-flex text-xs font-medium shrink-0 tabular-nums" style={{ color: TEXT_MUTED }}>{a.hora}</span>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -611,8 +617,7 @@ export default function ListaAlumnosPage() {
             </div>
 
             {/* Body */}
-            <div className="rounded-2xl p-4 space-y-4"
-                style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="rounded-[18px] p-4 space-y-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
 
                 {/* Filtros */}
                 <Suspense fallback={<Loader />}>
@@ -635,38 +640,41 @@ export default function ListaAlumnosPage() {
                             setFiltroDiasEntrena('');
                             setFiltroArea('');
                         }}
+                        acentoFocus={acento2}
                     />
                 </Suspense>
 
                 {/* Resultados de alumnos de paso */}
                 {busqueda.trim().length >= 2 && (buscandoDePaso || dePasoResultados.length > 0) && (
-                    <div className="rounded-2xl overflow-hidden"
-                        style={{ background: 'linear-gradient(165deg, rgba(251,146,60,0.07), rgba(17,17,17,0.9))', border: '1px solid rgba(251,146,60,0.25)' }}>
-                        <div className="px-4 py-3 border-b border-white/[0.08] flex items-center gap-2">
-                            <UserPlus size={14} className="text-orange-400" />
-                            <span className="text-xs font-bold text-orange-300 uppercase tracking-wide">De paso</span>
+                    <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE_2, border: `1px solid ${acento2}40` }}>
+                        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: `1px solid ${BORDER}` }}>
+                            <UserPlus size={14} style={{ color: acento2 }} />
+                            <span className="text-xs font-bold uppercase tracking-wide" style={{ color: acento2 }}>De paso</span>
                             {!buscandoDePaso && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-400/15 text-orange-300">{dePasoResultados.length}</span>
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${acento2}26`, color: acento2 }}>{dePasoResultados.length}</span>
                             )}
                         </div>
                         <div className="px-3 py-2 space-y-1">
                             {buscandoDePaso ? (
-                                <div className="h-9 rounded-xl bg-white/[0.08] animate-pulse" />
+                                <div className="h-9 rounded-xl bg-white/[0.06] animate-pulse" />
                             ) : (
                                 dePasoResultados.map((r) => (
-                                    <div key={r._id} className="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-2 rounded-xl hover:bg-white/[0.06] transition-all">
+                                    <div key={r._id} className="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-2 rounded-xl transition-all duration-200" style={{ background: 'transparent' }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE_HOVER)}
+                                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                                    >
                                         <div className="flex items-center gap-2.5 basis-full sm:basis-0 sm:flex-1 min-w-0">
-                                            <div className="w-7 h-7 rounded-lg bg-orange-400/15 flex items-center justify-center text-xs font-bold text-orange-300 shrink-0">
+                                            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" style={{ background: `${acento2}26`, color: acento2 }}>
                                                 {r.nombre?.[0]}{r.apellido?.[0]}
                                             </div>
-                                            <span className="flex-1 min-w-0 text-sm font-semibold text-white/85 truncate">
+                                            <span className="flex-1 min-w-0 text-sm font-semibold truncate" style={{ color: TEXT_PRIMARY }}>
                                                 {r.apellido}, {r.nombre}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5 pl-9 sm:pl-0">
-                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.1] text-white/60">{r.actividad}</span>
-                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 tabular-nums">${Number(r.monto).toLocaleString('es-AR')}</span>
-                                            <span className="text-xs text-white/40 tabular-nums">{new Date(r.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: SURFACE, color: TEXT_SECONDARY }}>{r.actividad}</span>
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>${Number(r.monto).toLocaleString('es-AR')}</span>
+                                            <span className="text-xs tabular-nums" style={{ color: TEXT_MUTED }}>{new Date(r.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
                                         </div>
                                     </div>
                                 ))
@@ -679,12 +687,12 @@ export default function ListaAlumnosPage() {
                 {isLoading ? (
                     <div className="space-y-2">
                         {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="h-16 rounded-2xl bg-white/[0.08] animate-pulse" />
+                            <div key={i} className="h-[88px] rounded-2xl bg-white/[0.05] animate-pulse" />
                         ))}
                     </div>
                 ) : alumnosFiltrados.length === 0 ? (
                     <div className="py-14 text-center">
-                        <p className="text-white/40 text-sm font-medium">No se encontraron alumnos</p>
+                        <p className="text-sm font-medium" style={{ color: TEXT_MUTED }}>No se encontraron alumnos</p>
                     </div>
                 ) : (
                     <>
@@ -693,37 +701,40 @@ export default function ListaAlumnosPage() {
                                 const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
                                 const pagosDelMes = alumno.exentoCuota ? [] : expandirPagosMixtos(pagosVigentesDelMes(alumno.pagos, getMesActual(new Date())));
                                 const metodoLabel = (m?: string) => m === 'mercadopago' ? 'MercadoPago' : m;
-                                const metodoCls = (m?: string) => m === 'transferencia' ? 'bg-sky-500/15 text-sky-400' : 'bg-emerald-500/20 text-emerald-400';
                                 const dr = alumno.diasRestantes;
                                 const planText = dr != null
                                     ? `${dr} día${dr !== 1 ? 's' : ''} de plan`
                                     : 'Sin plan';
                                 const planColor = dr == null
-                                    ? 'text-red-400'
+                                    ? DANGER
                                     : dr === 0
-                                        ? 'text-red-500'
+                                        ? DANGER
                                         : dr <= 5
-                                            ? 'text-amber-400'
-                                            : 'text-white/40';
+                                            ? WARNING
+                                            : TEXT_SECONDARY;
                                 return (
                                     <div
                                         key={alumno._id}
-                                        className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.99] cursor-pointer transition-all"
+                                        className="group flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl cursor-pointer transition-all duration-200 active:scale-[0.99]"
+                                        style={{ background: '#1B1C1E', border: `1px solid ${BORDER}`, paddingLeft: 18, paddingRight: 18, paddingTop: 14, paddingBottom: 14 }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = SURFACE_HOVER; e.currentTarget.style.borderColor = '#45474C'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = '#1B1C1E'; e.currentTarget.style.borderColor = BORDER; }}
                                         onClick={() => router.push(`/alumnos/${alumno._id}/historial`)}
                                     >
-                                        <div className="flex items-center gap-3 basis-full sm:basis-0 sm:flex-1 min-w-0">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold ${pagado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        <div className="flex items-center gap-4 basis-full sm:basis-0 sm:flex-1 min-w-0">
+                                        <div className={`w-[54px] h-[54px] rounded-2xl flex items-center justify-center shrink-0 text-sm font-semibold ${pagado ? '' : 'bg-red-500/15 text-red-400'}`}
+                                            style={pagado ? { background: 'rgba(34,197,94,0.14)', color: '#4ADE80' } : undefined}>
                                             {alumno.nombre?.[0]}{alumno.apellido?.[0]}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-white text-sm truncate">
+                                            <p className="font-bold text-base truncate" style={{ color: TEXT_PRIMARY }}>
                                                 {alumno.apellido}, {alumno.nombre}
                                             </p>
-                                            <p className={`text-xs mt-0.5 ${planColor}`}>
+                                            <p className="text-[13px] mt-0.5" style={{ color: planColor }}>
                                                 {alumno.edad ? `${alumno.edad} años · ` : ''}{planText}
                                             </p>
                                             {alumno.area && (
-                                                <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 bg-white/[0.1] text-white/50">
+                                                <span className="inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded-md mt-1" style={{ background: SURFACE_2, color: TEXT_SECONDARY }}>
                                                     {({
                                                         salud: '❤️ Salud', rendimiento: '🏅 Rend.', formacion: '🌱 Formación',
                                                         fuerza: '💪 Fuerza', masa_muscular: '🏋️ Masa musc.', composicion: '⚖️ Composición', retomar: '🔄 Retomar',
@@ -734,37 +745,37 @@ export default function ListaAlumnosPage() {
                                         </div>
                                         <div className="shrink-0 flex items-center gap-2 ml-auto sm:ml-0">
                                             {alumno.exentoCuota ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/[0.08] text-white/50 whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" style={{ background: SURFACE_2, color: TEXT_SECONDARY }}>
                                                     Exenta
                                                 </span>
                                             ) : pagado && pagosDelMes.length > 0 ? (
                                                 <div className="flex flex-col gap-1">
                                                     {pagosDelMes.map((p, pi) => (
-                                                        <span key={pi} className={`inline-flex flex-col items-center leading-tight px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap ${metodoCls(p.metodoPago)}`}>
+                                                        <span key={pi} className="inline-flex flex-col items-center leading-tight px-3 py-1.5 rounded-xl text-[11px] font-semibold whitespace-nowrap" style={{ background: PAYMENT_BLUE_BG, color: PAYMENT_BLUE }}>
                                                             <span className="capitalize">{metodoLabel(p.metodoPago)}</span>
-                                                            <span className="tabular-nums">${(p.tarifa ?? 0).toLocaleString('es-AR')}</span>
+                                                            <span className="tabular-nums text-sm font-bold">${(p.tarifa ?? 0).toLocaleString('es-AR')}</span>
                                                             {pagosDelMes.length === 1 && p.fechaPago && (
-                                                                <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
+                                                                <span className="tabular-nums opacity-70">{new Date(p.fechaPago).toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' })}</span>
                                                             )}
                                                         </span>
                                                     ))}
                                                 </div>
                                             ) : pagado ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
                                                     </svg>
                                                     Pagó
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'rgba(239,68,68,0.15)', color: DANGER }}>
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
                                                     </svg>
                                                     Debe
                                                 </span>
                                             )}
-                                            <svg className="w-4 h-4 text-white/25" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                            <svg className="w-4 h-4 text-zinc-500 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                                             </svg>
                                         </div>
@@ -777,20 +788,22 @@ export default function ListaAlumnosPage() {
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-white hover:bg-white/[0.08]"
+                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                                    style={{ color: TEXT_SECONDARY }}
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
                                 {getPageList(page, Math.ceil(alumnosFiltrados.length / itemsPerPage)).map((n, i) =>
                                     n === '...' ? (
-                                        <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-white/30 text-sm select-none">
+                                        <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-sm select-none" style={{ color: TEXT_MUTED }}>
                                             ···
                                         </span>
                                     ) : (
                                         <button
                                             key={n}
                                             onClick={() => setPage(n)}
-                                            className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${n === page ? 'bg-lime-400 text-black' : 'text-white/60 hover:text-white hover:bg-white/[0.08]'}`}
+                                            className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
+                                            style={n === page ? { background: acento2, color: '#0a0a0a' } : { color: TEXT_SECONDARY }}
                                         >
                                             {n}
                                         </button>
@@ -799,7 +812,8 @@ export default function ListaAlumnosPage() {
                                 <button
                                     onClick={() => setPage(p => Math.min(Math.ceil(alumnosFiltrados.length / itemsPerPage), p + 1))}
                                     disabled={page === Math.ceil(alumnosFiltrados.length / itemsPerPage)}
-                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-white hover:bg-white/[0.08]"
+                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                                    style={{ color: TEXT_SECONDARY }}
                                 >
                                     <ChevronRight size={16} />
                                 </button>
