@@ -470,12 +470,12 @@ export default function ListaAlumnosPage() {
                     )}
                     {!['profesor', 'recepcion'].includes(session?.user?.role ?? '') && (
                         <>
-                            <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 active:scale-95 text-amber-300 text-sm font-semibold rounded-2xl transition-all duration-200" onClick={handleConfiguracionTarifas}>
-                                <DollarSign size={15} />
+                            <button className="flex items-center justify-center gap-2 px-4 py-4 bg-amber-400/10 border border-amber-400/25 hover:bg-amber-400/15 hover:brightness-125 active:scale-[0.98] text-amber-300 text-sm font-bold rounded-2xl transition-all duration-200" onClick={handleConfiguracionTarifas}>
+                                <DollarSign size={16} />
                                 Cuotas
                             </button>
-                            <button className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 active:scale-95 text-orange-300 text-sm font-semibold rounded-2xl transition-all duration-200" onClick={handleConfiguracionRecargos}>
-                                <Percent size={15} />
+                            <button className="flex items-center justify-center gap-2 px-4 py-4 bg-orange-400/10 border border-orange-400/25 hover:bg-orange-400/15 hover:brightness-125 active:scale-[0.98] text-orange-300 text-sm font-bold rounded-2xl transition-all duration-200" onClick={handleConfiguracionRecargos}>
+                                <Percent size={16} />
                                 Recargo
                             </button>
                         </>
@@ -483,7 +483,7 @@ export default function ListaAlumnosPage() {
                     {session?.user?.role === 'dueño' && (
                         <button
                             onClick={handleGenerateExcel}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 active:scale-95 text-emerald-300 text-sm font-semibold rounded-2xl transition-all duration-200"
+                            className="flex items-center justify-center gap-2 px-4 py-4 bg-emerald-400/10 border border-emerald-400/25 hover:bg-emerald-400/15 hover:brightness-125 active:scale-[0.98] text-emerald-300 text-sm font-bold rounded-2xl transition-all duration-200"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 48 48">
                                 <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path>
