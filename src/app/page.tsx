@@ -14,7 +14,7 @@ import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
 import {
     Users, Briefcase, TrendingUp, BarChart3,
-    Eye, EyeOff, ChevronRight, ChevronLeft, UserPlus,
+    Eye, EyeOff, ChevronRight, UserPlus,
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
     Activity, UserCheck, Clock, CheckCircle2,
@@ -236,7 +236,6 @@ export default function HomePage() {
     const [ultimoCierre, setUltimoCierre] = useState<{ fechaHasta: string; totalGeneral: number; registradoPorNombre: string } | null>(null);
     const [diaExpandido, setDiaExpandido] = useState<string | null>(null);
     const [activeSlot, setActiveSlot] = useState<string | null>(null);
-    const [listPage, setListPage] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterActividad, setFilterActividad] = useState('Todos');
     const [sortBy, setSortBy] = useState<'nombre' | 'hora'>('hora');
@@ -512,10 +511,8 @@ export default function HomePage() {
         const toggleSort = (col: 'nombre' | 'hora') => {
             if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
             else { setSortBy(col); setSortDir(col === 'hora' ? 'desc' : 'asc'); }
-            setListPage(0);
         };
 
-        const PAGE_SIZE = 8;
         const baseList: AlumnoAsistencia[] = activeSlot ? (bySlot[activeSlot] ?? []) : (diaActivo?.alumnos ?? []);
         const filteredAlumnos = baseList
             .filter(a => matchesSearch(a.nombre, a.apellido, a.dni) && matchesActividad(a.actividad))
@@ -526,8 +523,6 @@ export default function HomePage() {
                 return sortDir === 'asc' ? cmp : -cmp;
             });
         const filteredDepaso = (diaActivo?.depaso ?? []).filter(a => matchesSearch(a.nombre, a.apellido) && matchesActividad(a.actividad));
-        const totalPages = Math.ceil(filteredAlumnos.length / PAGE_SIZE);
-        const listToShow = filteredAlumnos.slice(listPage * PAGE_SIZE, (listPage + 1) * PAGE_SIZE);
 
         return (
             <div className="min-h-screen bg-[#0a0a0a]">
@@ -555,7 +550,7 @@ export default function HomePage() {
                                         const isToday = dia.key === todayKey;
                                         return (
                                             <button key={dia.key}
-                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); setListPage(0); }}
+                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
                                                 className={cn(
                                                     'flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left',
                                                     sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
@@ -605,7 +600,7 @@ export default function HomePage() {
                                         const isActive = activeSlot === slot.key;
                                         return (
                                             <button key={slot.key}
-                                                onClick={() => { setActiveSlot(isActive ? null : slot.key); setListPage(0); }}
+                                                onClick={() => { setActiveSlot(isActive ? null : slot.key); }}
                                                 className={cn(
                                                     'flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-left',
                                                     isActive
@@ -691,7 +686,7 @@ export default function HomePage() {
                                             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none" />
                                             <input
                                                 value={searchQuery}
-                                                onChange={(e) => { setSearchQuery(e.target.value); setListPage(0); }}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
                                                 placeholder="Buscar alumno..."
                                                 className="w-36 sm:w-48 bg-white/[0.06] border border-white/[0.1] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/35 focus:outline-none focus:border-lime-400/40 focus:bg-white/[0.08] transition-all"
                                             />
@@ -699,7 +694,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <select
                                                 value={filterActividad}
-                                                onChange={(e) => { setFilterActividad(e.target.value); setListPage(0); }}
+                                                onChange={(e) => setFilterActividad(e.target.value)}
                                                 className="appearance-none bg-white/[0.06] border border-white/[0.1] rounded-xl pl-3 pr-7 py-1.5 text-xs font-semibold text-white/80 focus:outline-none focus:border-lime-400/40 cursor-pointer"
                                             >
                                                 <option value="Todos" className="text-black bg-white">Todos</option>
@@ -708,7 +703,7 @@ export default function HomePage() {
                                             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
                                         </div>
                                         {activeSlot && (
-                                            <button onClick={() => { setActiveSlot(null); setListPage(0); }}
+                                            <button onClick={() => setActiveSlot(null)}
                                                 className="text-xs text-white/60 hover:text-white font-semibold transition-colors whitespace-nowrap">
                                                 Ver todos
                                             </button>
@@ -754,9 +749,9 @@ export default function HomePage() {
                                     ) : (
                                         <div>
                                             {/* Alumnos */}
-                                            {listToShow.length > 0 && (
+                                            {filteredAlumnos.length > 0 && (
                                                 <AnimatePresence initial={false}>
-                                                    {listToShow.map((a) => {
+                                                    {filteredAlumnos.map((a) => {
                                                         const debe = !a.pagado && pasoDiez;
                                                         const isNew = justArrived.has(`a-${a.id}`);
                                                         return (
@@ -832,31 +827,11 @@ export default function HomePage() {
                                                 </AnimatePresence>
                                             )}
 
-                                            {/* Pagination */}
                                             {filteredAlumnos.length > 0 && (
-                                                <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06]">
+                                                <div className="px-5 py-3 border-t border-white/[0.06]">
                                                     <span className="text-white/40 text-xs font-medium whitespace-nowrap">
-                                                        Mostrando {listToShow.length} de {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
+                                                        Mostrando {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
                                                     </span>
-                                                    {totalPages > 1 && (
-                                                        <div className="flex items-center gap-1.5">
-                                                            <button
-                                                                onClick={() => setListPage(p => Math.max(0, p - 1))}
-                                                                disabled={listPage === 0}
-                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
-                                                                <ChevronLeft size={14} />
-                                                            </button>
-                                                            <span className="min-w-[1.75rem] h-7 px-2 rounded-lg bg-lime-400 text-black text-xs font-bold flex items-center justify-center tabular-nums">
-                                                                {listPage + 1}
-                                                            </span>
-                                                            <button
-                                                                onClick={() => setListPage(p => Math.min(totalPages - 1, p + 1))}
-                                                                disabled={listPage === totalPages - 1}
-                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
-                                                                <ChevronRight size={14} />
-                                                            </button>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             )}
 
