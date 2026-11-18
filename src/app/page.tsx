@@ -14,7 +14,7 @@ import { twMerge } from 'tailwind-merge';
 import { clsx, type ClassValue } from 'clsx';
 import {
     Users, Briefcase, TrendingUp, BarChart3,
-    Eye, EyeOff, ChevronRight, UserPlus,
+    Eye, EyeOff, ChevronRight, ChevronLeft, UserPlus,
     Banknote, AlertCircle, FileText, Link2,
     Sun, Moon, Sunset, Coffee, AlertTriangle,
     Activity, UserCheck, Clock, CheckCircle2,
@@ -24,6 +24,18 @@ import {
 // ─── Utils ────────────────────────────────────────────────────────────────────
 function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 function normalize(s: string): string { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+function getPageList(current: number, total: number): (number | '...')[] {
+    const delta = 1;
+    const range: (number | '...')[] = [];
+    const start = Math.max(2, current - delta);
+    const end = Math.min(total - 1, current + delta);
+    range.push(1);
+    if (start > 2) range.push('...');
+    for (let i = start; i <= end; i++) range.push(i);
+    if (end < total - 1) range.push('...');
+    if (total > 1) range.push(total);
+    return range;
+}
 
 // ─── Magic UI: NumberTicker ────────────────────────────────────────────────────
 function NumberTicker({ value, prefix = '' }: { value: number; prefix?: string }) {
@@ -238,6 +250,7 @@ export default function HomePage() {
     const [activeSlot, setActiveSlot] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterActividad, setFilterActividad] = useState('Todos');
+    const [listPage, setListPage] = useState(0);
     const [sortBy, setSortBy] = useState<'nombre' | 'hora'>('hora');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
     const [loadingHoy, setLoadingHoy] = useState(false);
@@ -511,6 +524,7 @@ export default function HomePage() {
         const toggleSort = (col: 'nombre' | 'hora') => {
             if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
             else { setSortBy(col); setSortDir(col === 'hora' ? 'desc' : 'asc'); }
+            setListPage(0);
         };
 
         const baseList: AlumnoAsistencia[] = activeSlot ? (bySlot[activeSlot] ?? []) : (diaActivo?.alumnos ?? []);
@@ -523,6 +537,9 @@ export default function HomePage() {
                 return sortDir === 'asc' ? cmp : -cmp;
             });
         const filteredDepaso = (diaActivo?.depaso ?? []).filter(a => matchesSearch(a.nombre, a.apellido) && matchesActividad(a.actividad));
+        const PAGE_SIZE = 8;
+        const totalPages = Math.ceil(filteredAlumnos.length / PAGE_SIZE);
+        const listToShow = filteredAlumnos.slice(listPage * PAGE_SIZE, (listPage + 1) * PAGE_SIZE);
 
         return (
             <div className="min-h-screen bg-[#0a0a0a]">
@@ -550,7 +567,7 @@ export default function HomePage() {
                                         const isToday = dia.key === todayKey;
                                         return (
                                             <button key={dia.key}
-                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); }}
+                                                onClick={() => { setDiaExpandido(sel ? null : dia.key); setActiveSlot(null); setListPage(0); }}
                                                 className={cn(
                                                     'flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left',
                                                     sel ? 'bg-lime-400 shadow-md shadow-lime-400/20' : 'hover:bg-white/[0.06]',
@@ -600,7 +617,7 @@ export default function HomePage() {
                                         const isActive = activeSlot === slot.key;
                                         return (
                                             <button key={slot.key}
-                                                onClick={() => { setActiveSlot(isActive ? null : slot.key); }}
+                                                onClick={() => { setActiveSlot(isActive ? null : slot.key); setListPage(0); }}
                                                 className={cn(
                                                     'flex flex-col gap-1.5 p-3 rounded-2xl border transition-all text-left',
                                                     isActive
@@ -686,7 +703,7 @@ export default function HomePage() {
                                             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none" />
                                             <input
                                                 value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                onChange={(e) => { setSearchQuery(e.target.value); setListPage(0); }}
                                                 placeholder="Buscar alumno..."
                                                 className="w-36 sm:w-48 bg-white/[0.06] border border-white/[0.1] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/35 focus:outline-none focus:border-lime-400/40 focus:bg-white/[0.08] transition-all"
                                             />
@@ -694,7 +711,7 @@ export default function HomePage() {
                                         <div className="relative">
                                             <select
                                                 value={filterActividad}
-                                                onChange={(e) => setFilterActividad(e.target.value)}
+                                                onChange={(e) => { setFilterActividad(e.target.value); setListPage(0); }}
                                                 className="appearance-none bg-white/[0.06] border border-white/[0.1] rounded-xl pl-3 pr-7 py-1.5 text-xs font-semibold text-white/80 focus:outline-none focus:border-lime-400/40 cursor-pointer"
                                             >
                                                 <option value="Todos" className="text-black bg-white">Todos</option>
@@ -703,7 +720,7 @@ export default function HomePage() {
                                             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
                                         </div>
                                         {activeSlot && (
-                                            <button onClick={() => setActiveSlot(null)}
+                                            <button onClick={() => { setActiveSlot(null); setListPage(0); }}
                                                 className="text-xs text-white/60 hover:text-white font-semibold transition-colors whitespace-nowrap">
                                                 Ver todos
                                             </button>
@@ -751,7 +768,7 @@ export default function HomePage() {
                                             {/* Alumnos */}
                                             {filteredAlumnos.length > 0 && (
                                                 <AnimatePresence initial={false}>
-                                                    {filteredAlumnos.map((a) => {
+                                                    {listToShow.map((a) => {
                                                         const debe = !a.pagado && pasoDiez;
                                                         const isNew = justArrived.has(`a-${a.id}`);
                                                         return (
@@ -828,10 +845,35 @@ export default function HomePage() {
                                             )}
 
                                             {filteredAlumnos.length > 0 && (
-                                                <div className="px-5 py-3 border-t border-white/[0.06]">
+                                                <div className="flex items-center justify-between gap-2 px-5 py-3 border-t border-white/[0.06] flex-wrap">
                                                     <span className="text-white/40 text-xs font-medium whitespace-nowrap">
-                                                        Mostrando {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
+                                                        Mostrando {listToShow.length} de {filteredAlumnos.length} {filteredAlumnos.length === 1 ? 'asistente' : 'asistentes'}
                                                     </span>
+                                                    {totalPages > 1 && (
+                                                        <div className="flex items-center gap-1">
+                                                            <button onClick={() => setListPage(p => Math.max(0, p - 1))} disabled={listPage === 0}
+                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                                <ChevronLeft size={14} />
+                                                            </button>
+                                                            {getPageList(listPage + 1, totalPages).map((p, i) =>
+                                                                p === '...' ? (
+                                                                    <span key={`e-${i}`} className="w-7 h-7 flex items-center justify-center text-white/30 text-xs">…</span>
+                                                                ) : (
+                                                                    <button key={p} onClick={() => setListPage(p - 1)}
+                                                                        className={cn(
+                                                                            'min-w-[1.75rem] h-7 px-2 rounded-lg text-xs font-bold flex items-center justify-center tabular-nums transition-all',
+                                                                            listPage === p - 1 ? 'bg-lime-400 text-black' : 'text-white/50 hover:text-white hover:bg-white/[0.06]',
+                                                                        )}>
+                                                                        {p}
+                                                                    </button>
+                                                                )
+                                                            )}
+                                                            <button onClick={() => setListPage(p => Math.min(totalPages - 1, p + 1))} disabled={listPage === totalPages - 1}
+                                                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed text-white/50 hover:text-white hover:bg-white/[0.06]">
+                                                                <ChevronRight size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
 
