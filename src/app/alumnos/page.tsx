@@ -3,7 +3,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePaymentEvents } from '@/hooks/usePaymentEvents';
 import Swal from 'sweetalert2';
-import { ChevronLeft, ChevronRight, Users, UserPlus, DollarSign, Percent, Search, Activity } from 'lucide-react';
+import { Users, UserPlus, DollarSign, Percent, Search, Activity } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useSession } from 'next-auth/react';
 import { swalBase, swalNotify } from '@/utils/swalConfig';
@@ -71,21 +71,6 @@ function verificarPagoMesActual(pagos: any[], exentoCuota?: boolean): boolean {
     return estaAlDia({ pagos, exentoCuota }, getMesActual(new Date()));
 }
 
-// Ventana de paginación: siempre primera/última página + vecinos de la actual,
-// con "..." en los huecos, para que no crezca sin límite con muchos alumnos.
-function getPageList(current: number, total: number): (number | '...')[] {
-    const delta = 1;
-    const range: (number | '...')[] = [];
-    const start = Math.max(2, current - delta);
-    const end = Math.min(total - 1, current + delta);
-    range.push(1);
-    if (start > 2) range.push('...');
-    for (let i = start; i <= end; i++) range.push(i);
-    if (end < total - 1) range.push('...');
-    if (total > 1) range.push(total);
-    return range;
-}
-
 export default function ListaAlumnosPage() {
     const { data: session } = useSession();
     const [alumnos, setAlumnos] = useState<any[]>([]);
@@ -99,8 +84,6 @@ export default function ListaAlumnosPage() {
     const [recargoMes, setRecargoMes] = useState<number>(0);
     const router = useRouter();
     const [editandoTarifas, setEditandoTarifas] = useState(false);
-    const [page, setPage] = useState(1);
-    const [itemsPerPage] = useState(10);
     const [filtroDiasEntrena, setFiltroDiasEntrena] = useState('');
     const [filtroArea, setFiltroArea] = useState('');
     const [acento, setAcento] = useState('#10b981');
@@ -269,11 +252,6 @@ export default function ListaAlumnosPage() {
                 return a.apellido.localeCompare(b.apellido);
             }
         });
-
-    const paginatedAlumnos = alumnosFiltrados.slice(
-        (page - 1) * itemsPerPage,
-        page * itemsPerPage
-    );
 
     const Loader = () => (
         <div className="flex justify-center items-center h-16">
@@ -696,8 +674,8 @@ export default function ListaAlumnosPage() {
                     </div>
                 ) : (
                     <>
-                        <div className="space-y-2">
-                            {paginatedAlumnos.map((alumno) => {
+                        <div className="space-y-2 overflow-y-auto pr-1 alumnos-scroll" style={{ maxHeight: '70vh' }}>
+                            {alumnosFiltrados.map((alumno) => {
                                 const pagado = verificarPagoMesActual(alumno.pagos, alumno.exentoCuota);
                                 const pagosDelMes = alumno.exentoCuota ? [] : expandirPagosMixtos(pagosVigentesDelMes(alumno.pagos, getMesActual(new Date())));
                                 const metodoLabel = (m?: string) => m === 'mercadopago' ? 'MercadoPago' : m;
@@ -783,42 +761,9 @@ export default function ListaAlumnosPage() {
                                 );
                             })}
                         </div>
-                        {Math.ceil(alumnosFiltrados.length / itemsPerPage) > 1 && (
-                            <div className="flex justify-center items-center gap-1.5 flex-wrap pt-2">
-                                <button
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed"
-                                    style={{ color: TEXT_SECONDARY }}
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                {getPageList(page, Math.ceil(alumnosFiltrados.length / itemsPerPage)).map((n, i) =>
-                                    n === '...' ? (
-                                        <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-sm select-none" style={{ color: TEXT_MUTED }}>
-                                            ···
-                                        </span>
-                                    ) : (
-                                        <button
-                                            key={n}
-                                            onClick={() => setPage(n)}
-                                            className="w-8 h-8 rounded-lg text-sm font-bold transition-all"
-                                            style={n === page ? { background: acento2, color: '#0a0a0a' } : { color: TEXT_SECONDARY }}
-                                        >
-                                            {n}
-                                        </button>
-                                    )
-                                )}
-                                <button
-                                    onClick={() => setPage(p => Math.min(Math.ceil(alumnosFiltrados.length / itemsPerPage), p + 1))}
-                                    disabled={page === Math.ceil(alumnosFiltrados.length / itemsPerPage)}
-                                    className="flex items-center justify-center w-8 h-8 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed"
-                                    style={{ color: TEXT_SECONDARY }}
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
+                        <p className="text-center text-xs pt-2" style={{ color: TEXT_MUTED }}>
+                            Mostrando {alumnosFiltrados.length} alumno{alumnosFiltrados.length !== 1 ? 's' : ''}
+                        </p>
                     </>
                 )}
 
