@@ -608,7 +608,7 @@ export default function TimerPage() {
             <div className="fixed inset-0 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative max-w-md mx-auto px-4 pt-4">
+            <div className="relative max-w-md mx-auto px-4 pt-4 flex flex-col gap-3">
                 <div className="rounded-[1.75rem] overflow-hidden border border-white/[0.08]">
 
                     {/* Header: ajustes, tiempo total, reiniciar */}
@@ -618,8 +618,8 @@ export default function TimerPage() {
                             <Settings size={16} />
                         </button>
                         <div className="text-center leading-tight">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/40">Intermitente</p>
-                            <p className="text-base font-black tabular-nums" style={{ color: phase === 'done' ? LIME : displayColor }}>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">Intermitente</p>
+                            <p className="text-xl font-black tabular-nums" style={{ color: phase === 'done' ? LIME : displayColor }}>
                                 {fmtClock(Math.ceil(totalRemainingMs / 1000))}
                             </p>
                         </div>
@@ -635,31 +635,34 @@ export default function TimerPage() {
                     {phase === 'done' ? (
                         <div className="flex flex-col items-center justify-center gap-3 py-16 done-pop"
                             style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)' }}>
-                            <Trophy size={44} className="text-black" />
-                            <span className="text-black font-black text-2xl uppercase tracking-wide">¡Listo!</span>
+                            <Trophy size={48} className="text-black" />
+                            <span className="text-black font-black text-3xl uppercase tracking-wide">¡Listo!</span>
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center gap-1 py-12" style={{ background: displayColor }}>
-                            <span className="text-black font-black text-2xl uppercase tracking-[0.12em]">{displayLabel}</span>
-                            <span className="text-black font-black tabular-nums leading-none" style={{ fontSize: 'clamp(64px, 20vw, 92px)' }}>
+                        <div className="flex flex-col items-center justify-center gap-2 py-12 px-4 text-center" style={{ background: displayColor }}>
+                            <span className="text-black font-black text-3xl uppercase tracking-[0.08em]">{displayLabel}</span>
+                            <span className="text-black font-black tabular-nums leading-none" style={{ fontSize: 'clamp(76px, 23vw, 108px)' }}>
                                 {fmtClock(displaySecondsLeft)}
                             </span>
                         </div>
                     )}
+                </div>
 
-                    {/* Previsualización de la próxima fase */}
-                    {nextStep && phase !== 'done' && (
-                        <div className="flex items-center justify-center gap-3 py-4" style={{ background: PHASE_COLOR[nextStep.phase] }}>
-                            <span className="text-black font-black text-sm uppercase tracking-wide">{PHASE_LABEL[nextStep.phase]}</span>
-                            <span className="text-black font-black tabular-nums text-lg">{fmtClock(nextStep.duration)}</span>
-                        </div>
-                    )}
+                {/* Previsualización de la próxima fase */}
+                {nextStep && phase !== 'done' && (
+                    <div className="mx-auto px-7 py-3 rounded-full" style={{ background: PHASE_COLOR[nextStep.phase] }}>
+                        <span className="text-black font-black text-lg uppercase tracking-wide whitespace-nowrap">
+                            {PHASE_LABEL[nextStep.phase]} · {fmtClock(nextStep.duration)}
+                        </span>
+                    </div>
+                )}
 
+                <div className="rounded-[1.75rem] overflow-hidden border border-white/[0.08]">
                     {/* Rondas / Play-Pausa / Ciclos */}
                     <div className="grid grid-cols-3 items-center px-4 py-7" style={{ background: '#111113' }}>
                         <div className="text-left">
-                            <NumberTicker value={roundsRestantes} className="text-3xl font-black block" style={{ color: BLUE }} />
-                            <p className="text-[9px] font-bold uppercase tracking-wide text-white/40 mt-1">Rondas restantes</p>
+                            <NumberTicker value={roundsRestantes} className="text-4xl font-black block" style={{ color: BLUE }} />
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-white/40 mt-1">Rondas restantes</p>
                         </div>
 
                         <div className="flex flex-col items-center gap-2">
@@ -670,7 +673,7 @@ export default function TimerPage() {
                                         style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
                                         <Play size={26} className="text-black ml-1" fill="currentColor" />
                                     </Button>
-                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Empezar</span>
+                                    <span className="text-sm font-black uppercase tracking-wide text-white/70">Empezar</span>
                                 </>
                             )}
                             {isRunning && !paused && (
@@ -680,7 +683,7 @@ export default function TimerPage() {
                                         style={{ background: RED, boxShadow: `0 10px 28px -10px ${RED}aa` }}>
                                         <Pause size={24} className="text-white" fill="currentColor" />
                                     </Button>
-                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Pausar</span>
+                                    <span className="text-sm font-black uppercase tracking-wide text-white/70">Pausar</span>
                                 </>
                             )}
                             {isRunning && paused && (
@@ -690,7 +693,7 @@ export default function TimerPage() {
                                         style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
                                         <Play size={26} className="text-black ml-1" fill="currentColor" />
                                     </Button>
-                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Reanudar</span>
+                                    <span className="text-sm font-black uppercase tracking-wide text-white/70">Reanudar</span>
                                 </>
                             )}
                             {phase === 'done' && <div className="h-16 w-16" />}
@@ -698,8 +701,8 @@ export default function TimerPage() {
 
                         {ciclos > 1 ? (
                             <div className="text-right">
-                                <NumberTicker value={ciclosRestantes} className="text-3xl font-black block ml-auto" style={{ color: YELLOW }} />
-                                <p className="text-[9px] font-bold uppercase tracking-wide text-white/40 mt-1">Ciclos restantes</p>
+                                <NumberTicker value={ciclosRestantes} className="text-4xl font-black block ml-auto" style={{ color: YELLOW }} />
+                                <p className="text-[10px] font-bold uppercase tracking-wide text-white/40 mt-1">Ciclos restantes</p>
                             </div>
                         ) : <div />}
                     </div>
