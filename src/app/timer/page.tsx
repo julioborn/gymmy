@@ -343,9 +343,18 @@ export default function TimerPage() {
             src.buffer = buffer;
             src.playbackRate.value = rate;
             const gain = ctx.createGain();
-            gain.gain.value = vol;
+            // Boosteado por encima de 1 (el archivo original ya viene casi a full escala);
+            // el compresor absorbe el exceso asi no clipea feo, solo suena mas fuerte y solido.
+            gain.gain.value = vol * 2.2;
+            const comp = ctx.createDynamicsCompressor();
+            comp.threshold.value = -24;
+            comp.knee.value = 12;
+            comp.ratio.value = 12;
+            comp.attack.value = 0.001;
+            comp.release.value = 0.1;
             src.connect(gain);
-            gain.connect(audioDestRef.current ?? ctx.destination);
+            gain.connect(comp);
+            comp.connect(audioDestRef.current ?? ctx.destination);
             src.start();
         } catch {}
     }, [ensureAudio, beep]);
@@ -411,6 +420,10 @@ export default function TimerPage() {
             releaseWakeLock();
             updateLiveActivity('done', steps[steps.length - 1]?.round ?? 0, Date.now(), 1, false);
             nativeTimerService.stop();
+            // La cerramos nosotros a los pocos segundos en vez de esperar a que el usuario
+            // cierre el swal de resumen — si no, si se va de la app sin tocar "Listo", la
+            // Dynamic Island queda trabada mostrando "done" sin forma de sacarla.
+            setTimeout(() => endLiveActivity(), 2500);
             return;
         }
         const step = steps[idx];
@@ -423,7 +436,7 @@ export default function TimerPage() {
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
         updateLiveActivity(step.phase, step.round, phaseEndRef.current, progressAtStep(idx), idx === 0);
-    }, [playPhaseSound, releaseWakeLock, updateLiveActivity, progressAtStep]);
+    }, [playPhaseSound, releaseWakeLock, updateLiveActivity, progressAtStep, endLiveActivity]);
 
     const tick = useCallback(() => {
         const remaining = phaseEndRef.current - Date.now();
