@@ -100,7 +100,7 @@ function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, dis
 
     return (
         <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
-            <span className="text-xs font-bold text-white/50 uppercase tracking-wide block mb-2">{label}</span>
+            <span className="text-sm font-bold text-white uppercase tracking-wide block mb-2">{label}</span>
             <div className="flex items-center gap-2">
                 <button type="button"
                     onPointerDown={() => startHold(-1)}
@@ -138,13 +138,13 @@ function IntervalRow({ dotColor, label, description, value, suffix, expanded, on
             <button type="button" onClick={onToggle} className="w-full flex items-center gap-3 py-4 text-left">
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: dotColor }} />
                 <div className="flex-1 min-w-0">
-                    <p className="text-white font-black text-[15px] uppercase tracking-wide truncate">{label}</p>
-                    <p className="text-white/40 text-[11px] font-semibold mt-0.5 truncate">{description}</p>
+                    <p className="text-white font-black text-lg uppercase tracking-wide truncate">{label}</p>
+                    <p className="text-white text-sm font-semibold mt-0.5 truncate">{description}</p>
                 </div>
-                <span className="text-white font-black text-xl tabular-nums shrink-0">
+                <span className="text-white font-black text-2xl tabular-nums shrink-0">
                     {suffix === 'seg' ? `:${String(value).padStart(2, '0')}` : value}
                 </span>
-                <ChevronDown size={16} className={`text-white/30 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+                <ChevronDown size={18} className={`text-white/30 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
             </button>
             {expanded && <div className="pb-4">{children}</div>}
         </div>
@@ -325,52 +325,24 @@ export default function TimerPage() {
         } catch {}
     }, [ensureAudio]);
 
-    // Campana sintetizada: varios parciales en relaciones inarmonicas (modelo
-    // tipo Risset) que decaen cada uno a su propia velocidad, en vez de un
-    // solo tono puro — es lo que da el "dong" metalico de una campana real.
-    const bell = useCallback((freq: number, duration = 1, vol = 0.5) => {
-        try {
-            const ctx = ensureAudio();
-            const dest = audioDestRef.current ?? ctx.destination;
-            const partials = [
-                { ratio: 1, gain: 1 },
-                { ratio: 2, gain: 0.55 },
-                { ratio: 2.76, gain: 0.32 },
-                { ratio: 3, gain: 0.22 },
-                { ratio: 4.07, gain: 0.14 },
-                { ratio: 5.4, gain: 0.08 },
-            ];
-            partials.forEach(({ ratio, gain }, i) => {
-                const osc = ctx.createOscillator();
-                const g = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = freq * ratio;
-                const decay = duration / (1 + i * 0.4);
-                g.gain.setValueAtTime(0, ctx.currentTime);
-                g.gain.linearRampToValueAtTime(vol * gain, ctx.currentTime + 0.006);
-                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + decay);
-                osc.connect(g);
-                g.connect(dest);
-                osc.start();
-                osc.stop(ctx.currentTime + decay + 0.05);
-            });
-        } catch {}
-    }, [ensureAudio]);
-
     const playPhaseSound = useCallback((p: PhaseKind | 'done') => {
-        // Arranca trabajo: campana clara y brillante, un solo golpe
-        if (p === 'work') bell(880, 0.85, 0.55);
-        // Arranca descanso: campana mas grave y calida
-        else if (p === 'rest') bell(523.25, 1.1, 0.45);
-        // Arranca descanso entre ciclos: campana aun mas grave, para distinguirla del descanso normal
-        else if (p === 'restCycle') bell(392, 1.3, 0.5);
-        else if (p === 'prep') beep(660, 0.12, 0.45, 'sine');
-        // Fin del entrenamiento completo: doble campana triunfal
-        else if (p === 'done') {
-            bell(659.25, 1.0, 0.6);
-            setTimeout(() => bell(880, 1.3, 0.65), 260);
+        // Arranca trabajo: un beep agudo y fuerte, como los timers de gimnasio.
+        if (p === 'work') beep(1100, 0.2, 0.9, 'square');
+        // Arranca descanso: beep mas grave.
+        else if (p === 'rest') beep(600, 0.2, 0.85, 'square');
+        // Arranca descanso entre ciclos: dos beeps graves seguidos, para distinguirlo del descanso normal.
+        else if (p === 'restCycle') {
+            beep(500, 0.18, 0.85, 'square');
+            setTimeout(() => beep(500, 0.18, 0.85, 'square'), 220);
         }
-    }, [bell, beep]);
+        else if (p === 'prep') beep(750, 0.12, 0.6, 'square');
+        // Fin del entrenamiento completo: triple beep.
+        else if (p === 'done') {
+            beep(900, 0.15, 0.9, 'square');
+            setTimeout(() => beep(900, 0.15, 0.9, 'square'), 200);
+            setTimeout(() => beep(1200, 0.3, 0.9, 'square'), 400);
+        }
+    }, [beep]);
 
     // ── Live Activity / Dynamic Island (solo iOS) ──
     const endLiveActivity = useCallback(() => {
@@ -438,7 +410,7 @@ export default function TimerPage() {
         const secLeft = Math.ceil(remaining / 1000);
         if (secLeft <= 3 && secLeft !== lastTickSecondRef.current) {
             lastTickSecondRef.current = secLeft;
-            beep(1000, 0.09, 0.4);
+            beep(1000, 0.1, 0.8, 'square');
         }
     }, [beep, goToStep]);
 
@@ -618,17 +590,15 @@ export default function TimerPage() {
                             <Settings size={16} />
                         </button>
                         <div className="text-center leading-tight">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">Intermitente</p>
-                            <p className="text-xl font-black tabular-nums" style={{ color: phase === 'done' ? LIME : displayColor }}>
+                            <p className="text-xs font-bold uppercase tracking-[0.22em] text-white">Intermitente</p>
+                            <p className="text-2xl font-black tabular-nums" style={{ color: phase === 'done' ? LIME : displayColor }}>
                                 {fmtClock(Math.ceil(totalRemainingMs / 1000))}
                             </p>
                         </div>
-                        {phase !== 'idle' ? (
-                            <button type="button" onClick={handleRestart}
-                                className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
-                                <RotateCw size={16} />
-                            </button>
-                        ) : <div className="w-9 h-9 shrink-0" />}
+                        <button type="button" onClick={handleRestart}
+                            className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
+                            <RotateCw size={16} />
+                        </button>
                     </div>
 
                     {/* Fase actual: bloque de color a pantalla completa */}
@@ -662,7 +632,7 @@ export default function TimerPage() {
                     <div className="grid grid-cols-3 items-center px-4 py-7" style={{ background: '#111113' }}>
                         <div className="text-left">
                             <NumberTicker value={roundsRestantes} className="text-4xl font-black block" style={{ color: BLUE }} />
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-white/40 mt-1">Rondas restantes</p>
+                            <p className="text-xs font-bold uppercase tracking-wide text-white mt-1">Rondas restantes</p>
                         </div>
 
                         <div className="flex flex-col items-center gap-2">
@@ -702,7 +672,7 @@ export default function TimerPage() {
                         {ciclos > 1 ? (
                             <div className="text-right">
                                 <NumberTicker value={ciclosRestantes} className="text-4xl font-black block ml-auto" style={{ color: YELLOW }} />
-                                <p className="text-[10px] font-bold uppercase tracking-wide text-white/40 mt-1">Ciclos restantes</p>
+                                <p className="text-xs font-bold uppercase tracking-wide text-white mt-1">Ciclos restantes</p>
                             </div>
                         ) : <div />}
                     </div>
