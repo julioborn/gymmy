@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Play, Pause, RotateCcw, Timer as TimerIcon, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Play, Pause, Settings, RotateCw, Timer as TimerIcon, Trophy } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { swalNotify } from '@/utils/swalConfig';
 import { Button } from '@/components/ui/button';
-import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circular-progress-bar';
 import { NumberTicker } from '@/components/magicui/number-ticker';
 import { nativeTimerService } from '@/lib/nativeTimerService';
 
@@ -16,29 +15,24 @@ type Step = { phase: PhaseKind; duration: number; round: number; cycle: number }
 
 const STORAGE_KEY = 'gymmy_timer_config_v1';
 
-// Paleta de marca de SportTime — el resto de la app ya usa este mismo par.
+// Paleta: amarillo = preparate/ciclos, verde = entrenar, rojo = descansar, celeste = rondas.
+const YELLOW = '#facc15';
 const LIME = '#a3e635';
-const ORANGE = '#f97316';
-const NEUTRAL = '#cbd5e1';
-// Mismo celeste que "PAYMENT_BLUE" en el resto de la app — identifica todo lo relacionado a ciclos.
-const CYCLE = '#38bdf8';
+const RED = '#ef4444';
+const BLUE = '#38bdf8';
 
-const PHASE_LABEL: Record<Phase, string> = {
-    idle: 'Listo para arrancar',
+const PHASE_LABEL: Record<PhaseKind, string> = {
     prep: 'Preparate',
-    work: 'Trabajo',
-    rest: 'Descanso',
+    work: 'Entrenar',
+    rest: 'Descansar',
     restCycle: 'Descanso entre ciclos',
-    done: '¡Listo!',
 };
 
-const PHASE_COLOR: Record<Phase, string> = {
-    idle: NEUTRAL,
-    prep: NEUTRAL,
+const PHASE_COLOR: Record<PhaseKind, string> = {
+    prep: YELLOW,
     work: LIME,
-    rest: ORANGE,
-    restCycle: CYCLE,
-    done: LIME,
+    rest: RED,
+    restCycle: YELLOW,
 };
 
 // Series dentro de un ciclo (ejercicio + descanso) repetidas "ciclos" veces;
@@ -106,7 +100,7 @@ function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, dis
 
     return (
         <div className={`transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
-            <span className="text-sm font-semibold text-white/80 block mb-2">{label}</span>
+            <span className="text-xs font-bold text-white/50 uppercase tracking-wide block mb-2">{label}</span>
             <div className="flex items-center gap-2">
                 <button type="button"
                     onPointerDown={() => startHold(-1)}
@@ -136,6 +130,27 @@ function ConfigRow({ label, value, onChange, min, max, step, accent, suffix, dis
     );
 }
 
+function IntervalRow({ dotColor, label, description, value, suffix, expanded, onToggle, children }: {
+    dotColor: string; label: string; description: string; value: number; suffix?: string; expanded: boolean; onToggle: () => void; children: React.ReactNode;
+}) {
+    return (
+        <div className="border-b border-white/[0.06] last:border-b-0">
+            <button type="button" onClick={onToggle} className="w-full flex items-center gap-3 py-4 text-left">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ background: dotColor }} />
+                <div className="flex-1 min-w-0">
+                    <p className="text-white font-black text-[15px] uppercase tracking-wide truncate">{label}</p>
+                    <p className="text-white/40 text-[11px] font-semibold mt-0.5 truncate">{description}</p>
+                </div>
+                <span className="text-white font-black text-xl tabular-nums shrink-0">
+                    {suffix === 'seg' ? `:${String(value).padStart(2, '0')}` : value}
+                </span>
+                <ChevronDown size={16} className={`text-white/30 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+            </button>
+            {expanded && <div className="pb-4">{children}</div>}
+        </div>
+    );
+}
+
 export default function TimerPage() {
     const [work, setWork] = useState(30);
     const [rest, setRest] = useState(15);
@@ -144,13 +159,15 @@ export default function TimerPage() {
     const [ciclos, setCiclos] = useState(1);
     const [restCiclos, setRestCiclos] = useState(60);
 
+    const [showConfig, setShowConfig] = useState(true);
+    const [expandedKey, setExpandedKey] = useState<string | null>(null);
+    const toggleExpanded = (key: string) => setExpandedKey(k => k === key ? null : key);
+
     const [phase, setPhase] = useState<Phase>('idle');
     const [round, setRound] = useState(0);
     const [cycle, setCycle] = useState(0);
     const [remainingMs, setRemainingMs] = useState(0);
-    const [currentDuration, setCurrentDuration] = useState(0);
     const [paused, setPaused] = useState(false);
-    const [snapRing, setSnapRing] = useState(false);
 
     const stepsRef = useRef<Step[]>([]);
     const stepIdxRef = useRef(0);
@@ -368,8 +385,9 @@ export default function TimerPage() {
         // El plugin nativo de iOS solo conoce prep/work/rest/done (para color e icono);
         // "restCycle" se manda como "rest" para que siga funcionando, con el texto real en phaseLabel.
         const nativePhase = phase === 'restCycle' ? 'rest' : phase;
+        const phaseLabel = phase === 'done' ? '¡Listo!' : PHASE_LABEL[phase];
         import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => {
-            const payload = { phase: nativePhase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt, progress };
+            const payload = { phase: nativePhase, phaseLabel, round, totalRounds: rounds, phaseEndsAt, progress };
             return start ? LiveActivity.start(payload) : LiveActivity.update(payload);
         }).catch((e) => console.error('[LiveActivity]', e));
     }, [rounds]);
@@ -405,20 +423,10 @@ export default function TimerPage() {
         setRound(step.round);
         setCycle(step.cycle);
         setRemainingMs(step.duration * 1000);
-        setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
         playPhaseSound(step.phase);
         updateLiveActivity(step.phase, step.round, phaseEndRef.current, progressAtStep(idx), idx === 0);
-        // El anillo arranca de cero sin la animacion de 1s, para que no se vea
-        // "rebobinando" desde el final de la fase anterior.
-        setSnapRing(true);
-    }, [playPhaseSound, releaseWakeLock, updateLiveActivity]);
-
-    useEffect(() => {
-        if (!snapRing) return;
-        const t = setTimeout(() => setSnapRing(false), 60);
-        return () => clearTimeout(t);
-    }, [snapRing]);
+    }, [playPhaseSound, releaseWakeLock, updateLiveActivity, progressAtStep]);
 
     const tick = useCallback(() => {
         const remaining = phaseEndRef.current - Date.now();
@@ -473,20 +481,24 @@ export default function TimerPage() {
         setRound(0);
         setCycle(0);
         setRemainingMs(0);
-        setCurrentDuration(0);
         setPaused(false);
         stepsRef.current = [];
         stepIdxRef.current = 0;
         releaseWakeLock();
         endLiveActivity();
-        setSnapRing(true);
         nativeTimerService.stop();
+    };
+
+    // Arranca de cero el mismo entrenamiento (misma config), sin pasar por la pantalla de ajustes.
+    const handleRestart = () => {
+        handleReset();
+        handleStart();
     };
 
     const totalRounds = rounds;
     const totalRoundsAll = rounds * ciclos;
 
-    // Al terminar, un swal con el resumen (no texto apretado adentro del anillo).
+    // Al terminar, un swal con el resumen.
     const doneAlertShownRef = useRef(false);
     useEffect(() => {
         if (phase === 'done' && !doneAlertShownRef.current) {
@@ -500,10 +512,10 @@ export default function TimerPage() {
                             <div style="font-size:2.5rem;font-weight:900;color:${LIME};line-height:1;">${totalRoundsAll}</div>
                             <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">rondas completadas</div>
                             ${ciclos > 1 ? `
-                            <div style="margin-top:0.6rem;font-size:1.3rem;font-weight:800;color:${CYCLE};line-height:1;">${ciclos}</div>
+                            <div style="margin-top:0.6rem;font-size:1.3rem;font-weight:800;color:${YELLOW};line-height:1;">${ciclos}</div>
                             <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">ciclos completados</div>
                             ` : ''}
-                            <div style="margin-top:0.9rem;font-size:1.3rem;font-weight:800;color:${ORANGE};line-height:1;">${fmtClock(work * totalRoundsAll)}</div>
+                            <div style="margin-top:0.9rem;font-size:1.3rem;font-weight:800;color:${BLUE};line-height:1;">${fmtClock(work * totalRoundsAll)}</div>
                             <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">de trabajo total</div>
                         </div>
                     `,
@@ -517,113 +529,179 @@ export default function TimerPage() {
 
     const isRunning = phase !== 'idle' && phase !== 'done';
     const secondsLeft = Math.ceil(remainingMs / 1000);
-    const color = PHASE_COLOR[phase];
-    // Como las agujas de un reloj: el anillo crece de menos a más a medida que pasa el tiempo.
-    const pct = phase === 'done' ? 100 : (currentDuration > 0 ? Math.max(0, Math.min(100, ((currentDuration - remainingMs / 1000) / currentDuration) * 100)) : 0);
-    const showRound = phase === 'work' || phase === 'rest' || phase === 'restCycle';
-    const pulseKey = `${phase}-${round}`;
 
+    // Mientras no arrancó, se previsualiza la primera fase (duración completa, sin descontar).
+    const previewSteps = phase === 'idle' ? buildTimeline(prep, work, rest, rounds, ciclos, restCiclos) : [];
+    const activePhase: PhaseKind = phase === 'idle' ? (previewSteps[0]?.phase ?? 'prep') : (phase === 'done' ? 'work' : phase);
+    const displayColor = PHASE_COLOR[activePhase];
+    const displayLabel = PHASE_LABEL[activePhase];
+    const displaySecondsLeft = phase === 'idle' ? (previewSteps[0]?.duration ?? 0) : secondsLeft;
+    const nextStep: Step | undefined = phase === 'idle' ? previewSteps[1] : stepsRef.current[stepIdxRef.current + 1];
+    const totalRemainingMs = phase === 'done'
+        ? 0
+        : phase === 'idle'
+            ? previewSteps.reduce((s, st) => s + st.duration, 0) * 1000
+            : remainingMs + stepsRef.current.slice(stepIdxRef.current + 1).reduce((s, st) => s + st.duration, 0) * 1000;
+    const roundsRestantes = round === 0 ? totalRounds : totalRounds - round + 1;
+    const ciclosRestantes = cycle === 0 ? ciclos : ciclos - cycle + 1;
+
+    // ── Pantalla de configuración ("Intervalos") ──
+    if (showConfig) {
+        return (
+            <div className="min-h-screen bg-[#0a0a0a] pb-10">
+                <div className="fixed inset-0 pointer-events-none"
+                    style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+                <div className="relative max-w-md mx-auto px-4 pt-4 flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                        <Link href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
+                            <ChevronLeft size={18} />
+                        </Link>
+                        <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+                            <TimerIcon size={20} style={{ color: LIME }} className="shrink-0" />
+                            <h1 className="text-white font-bold text-2xl truncate">Intervalos</h1>
+                        </div>
+                        <div className="w-9 h-9 shrink-0" />
+                    </div>
+
+                    <div className="rounded-3xl overflow-hidden px-5"
+                        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <IntervalRow dotColor={YELLOW} label="Preparate" description="Cuenta atrás antes de empezar"
+                            value={prep} suffix="seg" expanded={expandedKey === 'prep'} onToggle={() => toggleExpanded('prep')}>
+                            <ConfigRow label="Duración" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={YELLOW} suffix="seg" />
+                        </IntervalRow>
+                        <IntervalRow dotColor={LIME} label="Entrenar" description="Hacer ejercicios durante este tiempo"
+                            value={work} suffix="seg" expanded={expandedKey === 'work'} onToggle={() => toggleExpanded('work')}>
+                            <ConfigRow label="Duración" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" />
+                        </IntervalRow>
+                        <IntervalRow dotColor={RED} label="Descansar" description="Descansar durante este tiempo"
+                            value={rest} suffix="seg" expanded={expandedKey === 'rest'} onToggle={() => toggleExpanded('rest')}>
+                            <ConfigRow label="Duración" value={rest} onChange={setRest} min={0} max={180} step={5} accent={RED} suffix="seg" />
+                        </IntervalRow>
+                        <IntervalRow dotColor={BLUE} label="Rondas" description="Una ronda es ejercicio + descanso"
+                            value={rounds} expanded={expandedKey === 'rounds'} onToggle={() => toggleExpanded('rounds')}>
+                            <ConfigRow label="Cantidad" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={BLUE} />
+                        </IntervalRow>
+                        <IntervalRow dotColor={YELLOW} label="Ciclos" description={`Un ciclo son ${rounds} ${rounds === 1 ? 'ronda' : 'rondas'}`}
+                            value={ciclos} expanded={expandedKey === 'ciclos'} onToggle={() => toggleExpanded('ciclos')}>
+                            <ConfigRow label="Cantidad" value={ciclos} onChange={setCiclos} min={1} max={20} step={1} accent={YELLOW} />
+                        </IntervalRow>
+                        <IntervalRow dotColor={YELLOW} label="Desc. entre ciclos" description="Intervalo de recuperación"
+                            value={restCiclos} suffix="seg" expanded={expandedKey === 'restCiclos'} onToggle={() => toggleExpanded('restCiclos')}>
+                            <ConfigRow label="Duración" value={restCiclos} onChange={setRestCiclos} min={0} max={300} step={5} accent={YELLOW} suffix="seg" disabled={ciclos <= 1} />
+                        </IntervalRow>
+                    </div>
+
+                    <Button onClick={() => setShowConfig(false)}
+                        className="h-14 rounded-2xl font-black text-base uppercase tracking-wide active:scale-[0.98] transition-transform"
+                        style={{ background: LIME, color: '#000' }}>
+                        Listo
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // ── Pantalla de ejecución ──
     return (
-        <div className="min-h-screen bg-[#0a0a0a] pb-20">
+        <div className="min-h-screen bg-[#0a0a0a] pb-10">
             <div className="fixed inset-0 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative max-w-md mx-auto px-4 pt-4 space-y-5">
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
-                        <ChevronLeft size={18} />
-                    </Link>
-                    <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
-                        <TimerIcon size={20} style={{ color: LIME }} className="shrink-0" />
-                        <h1 className="text-white font-bold text-2xl truncate">Intermitente</h1>
+            <div className="relative max-w-md mx-auto px-4 pt-4">
+                <div className="rounded-[1.75rem] overflow-hidden border border-white/[0.08]">
+
+                    {/* Header: ajustes, tiempo total, reiniciar */}
+                    <div className="flex items-center justify-between px-4 py-3" style={{ background: '#111113' }}>
+                        <button type="button" onClick={() => { handleReset(); setShowConfig(true); }}
+                            className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
+                            <Settings size={16} />
+                        </button>
+                        <div className="text-center leading-tight">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/40">Intermitente</p>
+                            <p className="text-base font-black tabular-nums" style={{ color: phase === 'done' ? LIME : displayColor }}>
+                                {fmtClock(Math.ceil(totalRemainingMs / 1000))}
+                            </p>
+                        </div>
+                        {phase !== 'idle' ? (
+                            <button type="button" onClick={handleRestart}
+                                className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
+                                <RotateCw size={16} />
+                            </button>
+                        ) : <div className="w-9 h-9 shrink-0" />}
                     </div>
-                    <div className="w-9 h-9 shrink-0" />
-                </div>
 
-                {/* Dial */}
-                <div className="flex justify-center py-2">
-                    <div className="relative" style={{ width: 288, height: 288 }}>
-                        {phase !== 'idle' && (
-                            <div key={pulseKey} className="absolute inset-0 rounded-full timer-pulse-ring pointer-events-none" style={{ border: `3px solid ${color}` }} />
-                        )}
-                        <AnimatedCircularProgressBar
-                            className="size-72"
-                            value={pct}
-                            max={100}
-                            gaugePrimaryColor={color}
-                            gaugeSecondaryColor="rgba(255,255,255,0.08)"
-                            transitionLength={snapRing ? '0s' : '1s'}
-                        />
-                        {phase === 'done' ? (
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none done-pop">
-                                <div className="w-24 h-24 rounded-full flex items-center justify-center"
-                                    style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)', boxShadow: '0 0 0 1px rgba(163,230,53,0.2) inset, 0 10px 30px -6px rgba(163,230,53,0.55)' }}>
-                                    <Trophy size={42} className="text-black" />
-                                </div>
+                    {/* Fase actual: bloque de color a pantalla completa */}
+                    {phase === 'done' ? (
+                        <div className="flex flex-col items-center justify-center gap-3 py-16 done-pop"
+                            style={{ background: 'linear-gradient(135deg, #10b981, #a3e635)' }}>
+                            <Trophy size={44} className="text-black" />
+                            <span className="text-black font-black text-2xl uppercase tracking-wide">¡Listo!</span>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center gap-1 py-12" style={{ background: displayColor }}>
+                            <span className="text-black font-black text-2xl uppercase tracking-[0.12em]">{displayLabel}</span>
+                            <span className="text-black font-black tabular-nums leading-none" style={{ fontSize: 'clamp(64px, 20vw, 92px)' }}>
+                                {fmtClock(displaySecondsLeft)}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Previsualización de la próxima fase */}
+                    {nextStep && phase !== 'done' && (
+                        <div className="flex items-center justify-center gap-3 py-4" style={{ background: PHASE_COLOR[nextStep.phase] }}>
+                            <span className="text-black font-black text-sm uppercase tracking-wide">{PHASE_LABEL[nextStep.phase]}</span>
+                            <span className="text-black font-black tabular-nums text-lg">{fmtClock(nextStep.duration)}</span>
+                        </div>
+                    )}
+
+                    {/* Rondas / Play-Pausa / Ciclos */}
+                    <div className="grid grid-cols-3 items-center px-4 py-7" style={{ background: '#111113' }}>
+                        <div className="text-left">
+                            <NumberTicker value={roundsRestantes} className="text-3xl font-black block" style={{ color: BLUE }} />
+                            <p className="text-[9px] font-bold uppercase tracking-wide text-white/40 mt-1">Rondas restantes</p>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-2">
+                            {!isRunning && phase !== 'done' && (
+                                <>
+                                    <Button onClick={handleStart}
+                                        className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                                        style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
+                                        <Play size={26} className="text-black ml-1" fill="currentColor" />
+                                    </Button>
+                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Empezar</span>
+                                </>
+                            )}
+                            {isRunning && !paused && (
+                                <>
+                                    <Button onClick={handlePause}
+                                        className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                                        style={{ background: RED, boxShadow: `0 10px 28px -10px ${RED}aa` }}>
+                                        <Pause size={24} className="text-white" fill="currentColor" />
+                                    </Button>
+                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Pausar</span>
+                                </>
+                            )}
+                            {isRunning && paused && (
+                                <>
+                                    <Button onClick={handleResume}
+                                        className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
+                                        style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
+                                        <Play size={26} className="text-black ml-1" fill="currentColor" />
+                                    </Button>
+                                    <span className="text-xs font-black uppercase tracking-wide text-white/70">Reanudar</span>
+                                </>
+                            )}
+                            {phase === 'done' && <div className="h-16 w-16" />}
+                        </div>
+
+                        {ciclos > 1 ? (
+                            <div className="text-right">
+                                <NumberTicker value={ciclosRestantes} className="text-3xl font-black block ml-auto" style={{ color: YELLOW }} />
+                                <p className="text-[9px] font-bold uppercase tracking-wide text-white/40 mt-1">Ciclos restantes</p>
                             </div>
-                        ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center">
-                                <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color }}>{PHASE_LABEL[phase]}</span>
-                                <span className="font-black text-white tabular-nums leading-none mt-2" style={{ fontSize: 'clamp(58px, 18vw, 80px)' }}>
-                                    {isRunning ? fmtClock(secondsLeft) : '--:--'}
-                                </span>
-                                {showRound && (
-                                    <span className="text-white text-xl font-bold mt-3">
-                                        Ronda <NumberTicker value={round} className="text-white font-black" style={{ color }} /> <span className="text-white/50">de {totalRounds}</span>
-                                    </span>
-                                )}
-                                {showRound && ciclos > 1 && (
-                                    <span className="text-sm font-bold mt-1" style={{ color: CYCLE }}>
-                                        Ciclo {cycle} <span className="text-white/40">de {ciclos}</span>
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Controles */}
-                <div className="flex items-center justify-center gap-4">
-                    {!isRunning && phase !== 'done' && (
-                        <Button onClick={handleStart}
-                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
-                            style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
-                            <Play size={26} className="text-black ml-1" fill="currentColor" />
-                        </Button>
-                    )}
-                    {isRunning && !paused && (
-                        <Button onClick={handlePause}
-                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
-                            style={{ background: ORANGE, boxShadow: `0 10px 28px -10px ${ORANGE}aa` }}>
-                            <Pause size={24} className="text-black" fill="currentColor" />
-                        </Button>
-                    )}
-                    {isRunning && paused && (
-                        <Button onClick={handleResume}
-                            className="h-16 w-16 rounded-full p-0 active:scale-90 transition-transform"
-                            style={{ background: LIME, boxShadow: `0 10px 28px -10px ${LIME}aa` }}>
-                            <Play size={26} className="text-black ml-1" fill="currentColor" />
-                        </Button>
-                    )}
-                    {(isRunning || phase === 'done') && (
-                        <Button onClick={handleReset} variant="outline"
-                            className="h-14 w-14 rounded-full p-0 border-white/15 bg-white/[0.05] hover:bg-white/10 active:scale-90 transition-transform">
-                            <RotateCcw size={20} className="text-white/70" />
-                        </Button>
-                    )}
-                </div>
-
-                {/* Config */}
-                <div className="rounded-3xl p-5 space-y-4"
-                    style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(17,17,17,0.9))', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <p className="text-xs font-bold text-white/40 uppercase tracking-wide">Configuración</p>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-                        <ConfigRow label="Trabajo" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" disabled={isRunning} />
-                        <ConfigRow label="Descanso" value={rest} onChange={setRest} min={0} max={180} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
-                        <ConfigRow label="Series" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={LIME} disabled={isRunning} />
-                        <ConfigRow label="Ciclos" value={ciclos} onChange={setCiclos} min={1} max={20} step={1} accent={CYCLE} disabled={isRunning} />
-                        <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
-                        <ConfigRow label="Desc. entre ciclos" value={restCiclos} onChange={setRestCiclos} min={0} max={300} step={5} accent={CYCLE} suffix="seg" disabled={isRunning || ciclos <= 1} />
+                        ) : <div />}
                     </div>
                 </div>
             </div>
