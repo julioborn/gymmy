@@ -324,10 +324,18 @@ export default function TimerPage() {
             osc.type = type;
             osc.frequency.value = freq;
             gain.gain.setValueAtTime(0, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.01);
+            // Boosteado por encima de 1 + compresor: mismo truco que playBeepFile para que suene mas fuerte sin clipear feo.
+            gain.gain.linearRampToValueAtTime(vol * 2.4, ctx.currentTime + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+            const comp = ctx.createDynamicsCompressor();
+            comp.threshold.value = -24;
+            comp.knee.value = 12;
+            comp.ratio.value = 12;
+            comp.attack.value = 0.001;
+            comp.release.value = 0.1;
             osc.connect(gain);
-            gain.connect(audioDestRef.current ?? ctx.destination);
+            gain.connect(comp);
+            comp.connect(audioDestRef.current ?? ctx.destination);
             osc.start();
             osc.stop(ctx.currentTime + duration + 0.02);
         } catch {}
@@ -345,7 +353,7 @@ export default function TimerPage() {
             const gain = ctx.createGain();
             // Boosteado por encima de 1 (el archivo original ya viene casi a full escala);
             // el compresor absorbe el exceso asi no clipea feo, solo suena mas fuerte y solido.
-            gain.gain.value = vol * 2.2;
+            gain.gain.value = vol * 2.8;
             const comp = ctx.createDynamicsCompressor();
             comp.threshold.value = -24;
             comp.knee.value = 12;
