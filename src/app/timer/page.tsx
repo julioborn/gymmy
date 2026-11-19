@@ -273,11 +273,19 @@ export default function TimerPage() {
         })();
     }, []);
 
+    const beepBufferRef = useRef<AudioBuffer | null>(null);
+
     const ensureAudio = useCallback(() => {
         if (!audioCtxRef.current) {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new Ctx();
             audioCtxRef.current = ctx;
+            // Beep real (mixkit) para entrenar/descansar; se carga una vez y se reutiliza el buffer.
+            fetch('/sounds/beep.wav')
+                .then(res => res.arrayBuffer())
+                .then(data => ctx.decodeAudioData(data))
+                .then(buf => { beepBufferRef.current = buf; })
+                .catch(() => {});
             // iOS (WKWebView): un oscilador conectado directo a ctx.destination
             // sigue respetando el switch de silencio aunque la sesion nativa
             // este en modo "playback" — eso solo bypassea <audio>/<video>
@@ -325,11 +333,28 @@ export default function TimerPage() {
         } catch {}
     }, [ensureAudio]);
 
+    // Beep real (el que subiste), con el tono variado segun la fase via playbackRate.
+    const playBeepFile = useCallback((rate: number, vol = 0.9) => {
+        try {
+            const ctx = ensureAudio();
+            const buffer = beepBufferRef.current;
+            if (!buffer) { beep(1000 * rate, 0.15, vol, 'square'); return; } // fallback si todavia no cargo el archivo
+            const src = ctx.createBufferSource();
+            src.buffer = buffer;
+            src.playbackRate.value = rate;
+            const gain = ctx.createGain();
+            gain.gain.value = vol;
+            src.connect(gain);
+            gain.connect(audioDestRef.current ?? ctx.destination);
+            src.start();
+        } catch {}
+    }, [ensureAudio, beep]);
+
     const playPhaseSound = useCallback((p: PhaseKind | 'done') => {
-        // Arranca trabajo: un beep agudo y fuerte, como los timers de gimnasio.
-        if (p === 'work') beep(1100, 0.2, 0.9, 'square');
-        // Arranca descanso: beep mas grave.
-        else if (p === 'rest') beep(600, 0.2, 0.85, 'square');
+        // Arranca trabajo: el beep real, mas agudo.
+        if (p === 'work') playBeepFile(1.35, 1);
+        // Arranca descanso: el mismo beep real, mas grave.
+        else if (p === 'rest') playBeepFile(0.75, 0.95);
         // Arranca descanso entre ciclos: dos beeps graves seguidos, para distinguirlo del descanso normal.
         else if (p === 'restCycle') {
             beep(500, 0.18, 0.85, 'square');
@@ -342,7 +367,7 @@ export default function TimerPage() {
             setTimeout(() => beep(900, 0.15, 0.9, 'square'), 200);
             setTimeout(() => beep(1200, 0.3, 0.9, 'square'), 400);
         }
-    }, [beep]);
+    }, [beep, playBeepFile]);
 
     // ── Live Activity / Dynamic Island (solo iOS) ──
     const endLiveActivity = useCallback(() => {
@@ -410,7 +435,7 @@ export default function TimerPage() {
         const secLeft = Math.ceil(remaining / 1000);
         if (secLeft <= 3 && secLeft !== lastTickSecondRef.current) {
             lastTickSecondRef.current = secLeft;
-            beep(1000, 0.1, 0.8, 'square');
+            beep(1000, 0.1, 1, 'square');
         }
     }, [beep, goToStep]);
 
