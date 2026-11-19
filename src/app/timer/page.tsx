@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Play, Pause, Settings, RotateCw, Timer as TimerIcon, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Play, Pause, Settings, RotateCw, Volume2, Timer as TimerIcon, Trophy } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { swalNotify } from '@/utils/swalConfig';
 import { Button } from '@/components/ui/button';
@@ -467,6 +467,16 @@ export default function TimerPage() {
         handleStart();
     };
 
+    // Reproduce los 5 sonidos del timer en fila, para poder probarlos sin arrancar un entrenamiento.
+    const handlePreviewSounds = () => {
+        ensureAudio();
+        playPhaseSound('prep');
+        setTimeout(() => playPhaseSound('work'), 500);
+        setTimeout(() => playPhaseSound('rest'), 1000);
+        setTimeout(() => playPhaseSound('restCycle'), 1500);
+        setTimeout(() => playPhaseSound('done'), 2200);
+    };
+
     const totalRounds = rounds;
     const totalRoundsAll = rounds * ciclos;
 
@@ -533,7 +543,10 @@ export default function TimerPage() {
                             <TimerIcon size={20} style={{ color: LIME }} className="shrink-0" />
                             <h1 className="text-white font-bold text-2xl truncate">Intervalos</h1>
                         </div>
-                        <div className="w-9 h-9 shrink-0" />
+                        <button type="button" onClick={handlePreviewSounds}
+                            className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.1] transition-all shrink-0">
+                            <Volume2 size={18} />
+                        </button>
                     </div>
 
                     <div className="rounded-3xl overflow-hidden px-5"
