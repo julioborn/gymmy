@@ -10,9 +10,9 @@ import { AnimatedCircularProgressBar } from '@/components/magicui/animated-circu
 import { NumberTicker } from '@/components/magicui/number-ticker';
 import { nativeTimerService } from '@/lib/nativeTimerService';
 
-type PhaseKind = 'prep' | 'work' | 'rest';
+type PhaseKind = 'prep' | 'work' | 'rest' | 'restCycle';
 type Phase = PhaseKind | 'idle' | 'done';
-type Step = { phase: PhaseKind; duration: number; round: number };
+type Step = { phase: PhaseKind; duration: number; round: number; cycle: number };
 
 const STORAGE_KEY = 'gymmy_timer_config_v1';
 
@@ -20,12 +20,15 @@ const STORAGE_KEY = 'gymmy_timer_config_v1';
 const LIME = '#a3e635';
 const ORANGE = '#f97316';
 const NEUTRAL = '#cbd5e1';
+// Mismo celeste que "PAYMENT_BLUE" en el resto de la app — identifica todo lo relacionado a ciclos.
+const CYCLE = '#38bdf8';
 
 const PHASE_LABEL: Record<Phase, string> = {
     idle: 'Listo para arrancar',
     prep: 'Preparate',
     work: 'Trabajo',
     rest: 'Descanso',
+    restCycle: 'Descanso entre ciclos',
     done: '¡Listo!',
 };
 
@@ -34,15 +37,29 @@ const PHASE_COLOR: Record<Phase, string> = {
     prep: NEUTRAL,
     work: LIME,
     rest: ORANGE,
+    restCycle: CYCLE,
     done: LIME,
 };
 
-function buildTimeline(prep: number, work: number, rest: number, rounds: number): Step[] {
+// Series dentro de un ciclo (ejercicio + descanso) repetidas "ciclos" veces;
+// entre un ciclo y el siguiente, el descanso normal se reemplaza por uno más
+// largo ("descanso entre ciclos"). Con ciclos=1 el comportamiento es idéntico
+// al timer simple de siempre.
+function buildTimeline(prep: number, work: number, rest: number, rounds: number, cycles: number, restCycles: number): Step[] {
     const steps: Step[] = [];
-    if (prep > 0) steps.push({ phase: 'prep', duration: prep, round: 0 });
-    for (let i = 1; i <= rounds; i++) {
-        steps.push({ phase: 'work', duration: work, round: i });
-        if (i < rounds) steps.push({ phase: 'rest', duration: rest, round: i });
+    if (prep > 0) steps.push({ phase: 'prep', duration: prep, round: 0, cycle: 1 });
+    for (let c = 1; c <= cycles; c++) {
+        for (let i = 1; i <= rounds; i++) {
+            steps.push({ phase: 'work', duration: work, round: i, cycle: c });
+            const isLastRoundOverall = c === cycles && i === rounds;
+            if (isLastRoundOverall) continue;
+            const isLastRoundOfCycle = i === rounds;
+            if (isLastRoundOfCycle) {
+                if (restCycles > 0) steps.push({ phase: 'restCycle', duration: restCycles, round: i, cycle: c });
+            } else {
+                steps.push({ phase: 'rest', duration: rest, round: i, cycle: c });
+            }
+        }
     }
     return steps;
 }
@@ -124,9 +141,12 @@ export default function TimerPage() {
     const [rest, setRest] = useState(15);
     const [rounds, setRounds] = useState(8);
     const [prep, setPrep] = useState(10);
+    const [ciclos, setCiclos] = useState(1);
+    const [restCiclos, setRestCiclos] = useState(60);
 
     const [phase, setPhase] = useState<Phase>('idle');
     const [round, setRound] = useState(0);
+    const [cycle, setCycle] = useState(0);
     const [remainingMs, setRemainingMs] = useState(0);
     const [currentDuration, setCurrentDuration] = useState(0);
     const [paused, setPaused] = useState(false);
@@ -155,12 +175,14 @@ export default function TimerPage() {
                 if (c.rest) setRest(c.rest);
                 if (c.rounds) setRounds(c.rounds);
                 if (c.prep != null) setPrep(c.prep);
+                if (c.ciclos) setCiclos(c.ciclos);
+                if (c.restCiclos != null) setRestCiclos(c.restCiclos);
             }
         } catch {}
     }, []);
     useEffect(() => {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ work, rest, rounds, prep })); } catch {}
-    }, [work, rest, rounds, prep]);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ work, rest, rounds, prep, ciclos, restCiclos })); } catch {}
+    }, [work, rest, rounds, prep, ciclos, restCiclos]);
 
     useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); releaseWakeLock(); endLiveActivity(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -323,6 +345,8 @@ export default function TimerPage() {
         if (p === 'work') bell(880, 0.85, 0.55);
         // Arranca descanso: campana mas grave y calida
         else if (p === 'rest') bell(523.25, 1.1, 0.45);
+        // Arranca descanso entre ciclos: campana aun mas grave, para distinguirla del descanso normal
+        else if (p === 'restCycle') bell(392, 1.3, 0.5);
         else if (p === 'prep') beep(660, 0.12, 0.45, 'sine');
         // Fin del entrenamiento completo: doble campana triunfal
         else if (p === 'done') {
@@ -338,11 +362,14 @@ export default function TimerPage() {
     }, []);
 
     const updateLiveActivity = useCallback((
-        phase: 'prep' | 'work' | 'rest' | 'done', round: number, phaseEndsAt: number, progress: number, start: boolean,
+        phase: PhaseKind | 'done', round: number, phaseEndsAt: number, progress: number, start: boolean,
     ) => {
         if (!isIOSNativeRef.current) return;
+        // El plugin nativo de iOS solo conoce prep/work/rest/done (para color e icono);
+        // "restCycle" se manda como "rest" para que siga funcionando, con el texto real en phaseLabel.
+        const nativePhase = phase === 'restCycle' ? 'rest' : phase;
         import('@/plugins/LiveActivity').then(({ default: LiveActivity }) => {
-            const payload = { phase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt, progress };
+            const payload = { phase: nativePhase, phaseLabel: PHASE_LABEL[phase], round, totalRounds: rounds, phaseEndsAt, progress };
             return start ? LiveActivity.start(payload) : LiveActivity.update(payload);
         }).catch((e) => console.error('[LiveActivity]', e));
     }, [rounds]);
@@ -376,6 +403,7 @@ export default function TimerPage() {
         phaseEndRef.current = startAt + step.duration * 1000;
         setPhase(step.phase);
         setRound(step.round);
+        setCycle(step.cycle);
         setRemainingMs(step.duration * 1000);
         setCurrentDuration(step.duration);
         lastTickSecondRef.current = null;
@@ -408,7 +436,7 @@ export default function TimerPage() {
 
     const handleStart = () => {
         ensureAudio();
-        const steps = buildTimeline(prep, work, rest, rounds);
+        const steps = buildTimeline(prep, work, rest, rounds, ciclos, restCiclos);
         if (!steps.length) return;
         stepsRef.current = steps;
         setPaused(false);
@@ -443,6 +471,7 @@ export default function TimerPage() {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         setPhase('idle');
         setRound(0);
+        setCycle(0);
         setRemainingMs(0);
         setCurrentDuration(0);
         setPaused(false);
@@ -455,6 +484,7 @@ export default function TimerPage() {
     };
 
     const totalRounds = rounds;
+    const totalRoundsAll = rounds * ciclos;
 
     // Al terminar, un swal con el resumen (no texto apretado adentro del anillo).
     const doneAlertShownRef = useRef(false);
@@ -467,9 +497,13 @@ export default function TimerPage() {
                     title: '¡Entrenamiento completo!',
                     html: `
                         <div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding-bottom:1.5rem;">
-                            <div style="font-size:2.5rem;font-weight:900;color:${LIME};line-height:1;">${totalRounds}</div>
+                            <div style="font-size:2.5rem;font-weight:900;color:${LIME};line-height:1;">${totalRoundsAll}</div>
                             <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">rondas completadas</div>
-                            <div style="margin-top:0.9rem;font-size:1.3rem;font-weight:800;color:${ORANGE};line-height:1;">${fmtClock(work * totalRounds)}</div>
+                            ${ciclos > 1 ? `
+                            <div style="margin-top:0.6rem;font-size:1.3rem;font-weight:800;color:${CYCLE};line-height:1;">${ciclos}</div>
+                            <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">ciclos completados</div>
+                            ` : ''}
+                            <div style="margin-top:0.9rem;font-size:1.3rem;font-weight:800;color:${ORANGE};line-height:1;">${fmtClock(work * totalRoundsAll)}</div>
                             <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">de trabajo total</div>
                         </div>
                     `,
@@ -486,7 +520,7 @@ export default function TimerPage() {
     const color = PHASE_COLOR[phase];
     // Como las agujas de un reloj: el anillo crece de menos a más a medida que pasa el tiempo.
     const pct = phase === 'done' ? 100 : (currentDuration > 0 ? Math.max(0, Math.min(100, ((currentDuration - remainingMs / 1000) / currentDuration) * 100)) : 0);
-    const showRound = phase === 'work' || phase === 'rest';
+    const showRound = phase === 'work' || phase === 'rest' || phase === 'restCycle';
     const pulseKey = `${phase}-${round}`;
 
     return (
@@ -538,6 +572,11 @@ export default function TimerPage() {
                                         Ronda <NumberTicker value={round} className="text-white font-black" style={{ color }} /> <span className="text-white/50">de {totalRounds}</span>
                                     </span>
                                 )}
+                                {showRound && ciclos > 1 && (
+                                    <span className="text-sm font-bold mt-1" style={{ color: CYCLE }}>
+                                        Ciclo {cycle} <span className="text-white/40">de {ciclos}</span>
+                                    </span>
+                                )}
                             </div>
                         )}
                     </div>
@@ -582,7 +621,9 @@ export default function TimerPage() {
                         <ConfigRow label="Trabajo" value={work} onChange={setWork} min={5} max={300} step={5} accent={LIME} suffix="seg" disabled={isRunning} />
                         <ConfigRow label="Descanso" value={rest} onChange={setRest} min={0} max={180} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
                         <ConfigRow label="Series" value={rounds} onChange={setRounds} min={1} max={30} step={1} accent={LIME} disabled={isRunning} />
+                        <ConfigRow label="Ciclos" value={ciclos} onChange={setCiclos} min={1} max={20} step={1} accent={CYCLE} disabled={isRunning} />
                         <ConfigRow label="Preparación" value={prep} onChange={setPrep} min={0} max={60} step={5} accent={ORANGE} suffix="seg" disabled={isRunning} />
+                        <ConfigRow label="Desc. entre ciclos" value={restCiclos} onChange={setRestCiclos} min={0} max={300} step={5} accent={CYCLE} suffix="seg" disabled={isRunning || ciclos <= 1} />
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 
-export type NativeTimerStep = { phase: 'prep' | 'work' | 'rest'; duration: number; round: number };
+export type NativeTimerStep = { phase: 'prep' | 'work' | 'rest' | 'restCycle'; duration: number; round: number };
 
 interface TimerServicePlugin {
     start(options: { steps: NativeTimerStep[]; startAt: number }): Promise<void>;

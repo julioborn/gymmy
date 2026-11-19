@@ -192,7 +192,7 @@ public class TimerForegroundService extends Service {
         if (toneGenerator == null) return;
         int tone = "work".equals(phase)
             ? ToneGenerator.TONE_PROP_BEEP2
-            : "rest".equals(phase)
+            : ("rest".equals(phase) || "restCycle".equals(phase))
                 ? ToneGenerator.TONE_PROP_BEEP
                 : ToneGenerator.TONE_PROP_ACK;
         toneGenerator.startTone(tone, 220);
@@ -228,6 +228,7 @@ public class TimerForegroundService extends Service {
         switch (phase) {
             case "work": return "Trabajo";
             case "rest": return "Descanso";
+            case "restCycle": return "Descanso entre ciclos";
             case "prep": return "Preparate";
             default: return "Intermitente";
         }
