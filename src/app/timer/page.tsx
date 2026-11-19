@@ -139,7 +139,7 @@ function IntervalRow({ dotColor, label, description, value, suffix, expanded, on
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: dotColor }} />
                 <div className="flex-1 min-w-0">
                     <p className="text-white font-black text-lg uppercase tracking-wide truncate">{label}</p>
-                    <p className="text-white text-sm font-semibold mt-0.5 truncate">{description}</p>
+                    <p className="text-white/70 text-sm font-semibold mt-0.5 truncate">{description}</p>
                 </div>
                 <span className="text-white font-black text-2xl tabular-nums shrink-0">
                     {suffix === 'seg' ? `:${String(value).padStart(2, '0')}` : value}
